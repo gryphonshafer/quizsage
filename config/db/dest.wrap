@@ -1,0 +1,53 @@
+#!/usr/bin/env perl
+use exact -cli, -conf;
+use Mojo::File 'path';
+use Mojo::Util 'decode';
+use Omniframe;
+
+my $obj = Omniframe->with_roles('+Database')->new;
+$obj->conf->put( qw( database settings sqlite_allow_multiple_statements ) => 1 );
+
+my $sql_file = path( $ARGV[0] );
+my ($name)   = $sql_file->to_abs->dirname =~ m|/config/db/([^/]+)/[^/]+$|;
+my $dq       = $obj->dq($name);
+my $sql      = decode( 'UTF-8', $sql_file->slurp );
+
+unless ( $ARGV[1] eq 'verify' ) {
+    $dq->do('PRAGMA foreign_keys = OFF');
+    $dq->begin_work;
+
+    try {
+        $dq->do($sql);
+        $dq->commit;
+    }
+    catch {
+        my $e = $dq->errstr;
+        $dq->rollback;
+        die $e;
+    }
+
+    $dq->do('PRAGMA foreign_keys = ON');
+}
+else {
+    my $sth = $dq->sql($sql)->run;
+    say $sth->value;
+}
+
+=head1 NAME
+
+dest.wrap - Wrapper for App::Dest database actions execution
+
+=head1 SYNOPSIS
+
+    dest.wrap OPTIONS
+        -h, --help
+        -m, --man
+
+=head1 DESCRIPTION
+
+This program is a wrapper for App::Dest database actions execution. It's
+unlikely you'll want to run this program directly. It's far more likely you'll
+want to run this via a C<dest> call from the command-line:
+
+    dest status
+    dest update

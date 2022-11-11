@@ -1,0 +1,42 @@
+# Local Files
+local/
+
+# Temporary Files
+*.tmp
+
+# Archives
+*.gz
+*.tar
+*.tgz
+*.zip
+
+# MacOS
+.DS_Store
+
+# Sublime Projects
+*.sublime-project
+*.sublime-workspace
+
+#-------------------------------------------------------------------------------
+
+# Prove
+.prove
+
+# Devel::Cover
+cover_db/
+
+# Devel::NYTProf
+nytprof/
+nytprof.out
+
+#-------------------------------------------------------------------------------
+
+# Dest Status
+/.dest/
+
+#-------------------------------------------------------------------------------
+
+# Application
+/static/app.css
+/static/json/material
+/static/rules

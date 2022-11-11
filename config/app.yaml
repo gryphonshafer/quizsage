@@ -1,0 +1,30 @@
+---
+preinclude: ../omniframe/config/app.yaml
+default:
+    omniframe: ../omniframe
+    libs: ../omniframe/lib
+    # mojo_app_lib: QuizSage::Control
+    database:
+        shards:
+            app:
+                default_shard: 1
+                file: local/db/app.sqlite
+                log:
+                    all: local/db/app.sql
+            material:
+                file: local/db/material.sqlite
+    # logging:
+    #     alert_email:
+    #         - gryphon@quizsage.org
+    # mojolicious:
+    #     secrets:
+    #         - 65.zH1eZb4m7Q19Jf1OUtzxeYg92Ngqy
+    #     session:
+    #         cookie_name: quizsage_session
+    # email:
+    #     from: QuizSage <gryphon@quizsage.org>
+    # bcrypt:
+    #     salt: 63MWT0N6PQlNU43R
+    data:
+        obml: local/obml
+optional_include: local/conf.yaml
