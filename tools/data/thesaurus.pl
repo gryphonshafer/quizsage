@@ -4,7 +4,7 @@ use Mojo::JSON qw( encode_json decode_json );
 use Mojo::UserAgent;
 use Omniframe;
 
-my $opt = options( qw{ sleep|s=i } );
+my $opt = options( qw{ sleep|s=i estimate|e } );
 $opt->{sleep} //= 4;
 
 my $dq        = Omniframe->with_roles('+Database')->new->dq('material');
@@ -23,6 +23,23 @@ my @words_to  = grep {
 } keys %words;
 
 my ( $start, $total ) = ( time, scalar(@words_to) );
+
+if ( $opt->{estimate} ) {
+    my $seconds_remaining = $total * $opt->{sleep};
+
+    my $hours   = int( $seconds_remaining / 60 / 60 );
+    my $minutes = int( ( $seconds_remaining - $hours * 60 * 60 ) / 60 );
+    my $seconds = ( $seconds_remaining - $hours * 60 * 60 - $minutes * 60 );
+
+    printf " Words to get: %9s\nSeconds sleep: %9s\nTime estimate: %3d:%02d:%02d\n",
+        $total,
+        $opt->{sleep},
+        $hours,
+        $minutes,
+        $seconds;
+
+    exit;
+}
 
 for ( my $i = 0; $i < @words_to; $i++ ) {
     my $word = $words_to[$i];
@@ -93,6 +110,7 @@ thesaurus.pl - Get synonyms and other data and save it a material SQLite databas
 
     thesaurus.pl OPTIONS
         -s, --sleep SECONDS  # default: 4
+        -e, --estimate
         -h, --help
         -m, --man
 
@@ -104,3 +122,7 @@ database.
 =head2 -s, --sleep
 
 Integer of number of seconds to sleep between chapter pulls. Defaults to 4.
+
+=head2 -e, --estimate
+
+Estimates the time required to complete, but won't actually run.
