@@ -15,7 +15,7 @@ my $relevance = {
     'css-1n6g4vv eh475bn0' => 3,
 };
 
-my %words     = map { map { $_ => 1 } @{ decode_json($_) } } $dq->sql('SELECT words FROM verse')->run->column;
+my %words     = map { map { $_ => 1 } split(/\s/) } $dq->sql('SELECT string FROM verse')->run->column;
 my @words_pre = @{ $dq->sql('SELECT text FROM word')->run->column };
 my @words_to  = grep {
     my $word = $_;
@@ -41,19 +41,33 @@ if ( $opt->{estimate} ) {
     exit;
 }
 
+my $insert_word    = $dq->prepare('INSERT INTO word (text) VALUES (?)');
+my $select_word_id = $dq->prepare('SELECT word_id FROM word WHERE text = ?');
+
 for ( my $i = 0; $i < @words_to; $i++ ) {
     my $word = $words_to[$i];
     my $dom  = $ua->get( 'https://www.thesaurus.com/browse/' . $word )->result->dom;
 
     $dq->begin_work;
 
-    my $word_id = $dq->sql('INSERT INTO word (text) VALUES (?)')->run($word)->up->last_insert_id;
+    $insert_word->bind_param( 1, $word, 12 );
+    $insert_word->execute;
+    my $word_id = $insert_word->last_insert_id;
 
     if ( $dom->at('div#headword') ) {
         my $target_word = $dom->at('h1')->text;
         if ( $word ne $target_word ) { # word results in a redirect
-            my $target_word_id = $dq->sql('INSERT INTO word (text) VALUES (?)')
-                ->run($target_word)->up->last_insert_id;
+            $select_word_id->bind_param( 1, $target_word, 12 );
+            $select_word_id->execute;
+            my ($target_word_id) = $select_word_id->fetchrow_array;
+
+            unless ($target_word_id) {
+                $insert_word->bind_param( 1, $target_word, 12 );
+                $insert_word->execute;
+                $target_word_id = $insert_word->last_insert_id;
+                @words_to = grep { $_ ne $target_word } @words_to;
+            }
+
             $dq->sql('UPDATE word SET redirect_id = ? WHERE word_id = ?')->run( $target_word_id, $word_id );
             $word_id = $target_word_id;
         }
@@ -77,6 +91,20 @@ for ( my $i = 0; $i < @words_to; $i++ ) {
                 } )->to_array;
                 $meaning;
             } )->to_array;
+
+        for (@$meanings) {
+            $_->{word} = delete $_->{meaning};
+
+            my $by_verity;
+            push( @{ $by_verity->{ $_->{relevance} } }, $_->{word} ) for ( @{ $_->{synonyms} } );
+
+            $_->{synonyms} = [
+                map { +{
+                    verity => $_,
+                    words  => $by_verity->{$_},
+                } } sort { $a <=> $b } keys %$by_verity
+            ];
+        }
 
         $dq->sql('UPDATE word SET meanings = ? WHERE word_id = ?')->run( encode_json($meanings), $word_id );
     }

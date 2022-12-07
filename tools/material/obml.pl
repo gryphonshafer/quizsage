@@ -10,7 +10,7 @@ my $opt = options( qw{ bible|b=s@ range|r=s obml|o=s sleep|s=i } );
 $opt->{sleep} //= 4;
 
 my $obml_parent_dir = $opt->{obml} ||
-    conf->get( qw{ config_app root_dir } ) . '/' . conf->get( 'data', 'obml');
+    conf->get( qw{ config_app root_dir } ) . '/' . conf->get( qw{ material obml } );
 
 my $gw           = Bible::OBML::Gateway->new;
 my @translations = map { map { $_->{acronym} } @{ $_->{translations} } } @{ $gw->translations };

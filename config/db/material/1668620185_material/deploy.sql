@@ -15,8 +15,7 @@ CREATE TABLE IF NOT EXISTS verse (
     chapter        INTEGER NOT NULL,
     verse          INTEGER NOT NULL,
     text           TEXT    NOT NULL, -- "This is a sentence. This is another sentence."
-    string         TEXT    NOT NULL, -- " this is a sentence "
-    words          TEXT    NOT NULL, -- JSON: [ 'this', 'is', 'a', 'sentence' ]
+    string         TEXT    NOT NULL, -- "this is a sentence this is another sentence"
     FOREIGN KEY (bible_id) REFERENCES bible(bible_id) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (book_id)  REFERENCES book(book_id)   ON UPDATE CASCADE ON DELETE CASCADE
 );

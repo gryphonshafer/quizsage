@@ -2,17 +2,19 @@
 use exact -cli, -conf;
 use Mojo::ByteStream;
 use Mojo::File 'path';
-use Mojo::JSON 'encode_json';
 use Text::Unidecode 'unidecode';
 use Omniframe;
+use QuizSage::Util::Material 'text2words';
 
 my $opt      = options( qw{ bible|b=s@ obml|o=s size|s=i } );
-my $obml_dir = $opt->{obml} || conf->get( qw{ config_app root_dir } ) . '/' . conf->get( 'data', 'obml');
+my $obml_dir = $opt->{obml} ||
+    conf->get( qw{ config_app root_dir } ) . '/' . conf->get( qw{ material obml } );
 
-my %bibles = map { uc($_) => 1 } @{ $opt->{bible} || [] };
-my @bibles = grep {
+my $bibles_saved = path($obml_dir)->list({ dir => 1 })->map('basename')->to_array;
+my %bibles       = map { uc($_) => 1 } @{ $opt->{bible} || [] };
+my @bibles       = grep {
     my $bible = $_;
-    grep { $bible eq $_ } @{ path($obml_dir)->list({ dir => 1 })->map('basename')->to_array };
+    grep { $bible eq $_ } @$bibles_saved;
 } keys %bibles;
 
 pod2usage('Must supply at least 1 valid Bible translation by acronym') unless (@bibles);
@@ -28,9 +30,9 @@ my ( $verse_put_batch, $verse_put_single ) = map {
     $dq->sql(
         q{
             INSERT OR IGNORE INTO verse (
-                bible_id, book_id, chapter, verse, text, string, words
+                bible_id, book_id, chapter, verse, text, string
             ) VALUES
-        } . join( ',', ( '( ?, ?, ?, ?, ?, ?, ? )' ) x $_ )
+        } . join( ',', ( '( ?, ?, ?, ?, ?, ? )' ) x $_ )
     )
 } ( $opt->{size}, 1 );
 
@@ -49,35 +51,28 @@ for my $bible (@bibles) {
             $last_book = "$bible $book";
         }
 
-        $obml =~ s/(\r?\n\r?\n[ ]*\|\d+\|)/$1/msg; # replace paragraph breaks
-        $obml =~ s/~[^~]*?~//msg;                  # remove material references
-        $obml =~ s/=+[^=]*?=+//msg;                # remove headers
-        $obml =~ s/[\*\^]//msg;                    # remove red text and italic
-        $obml =~ s/\r?\n\s*#.*\r?\n/\n/msg;        # remove line comments
-
         # remove crossreferences and footnotes
         $obml =~ s/([\}\]])\s+([\.\?\!\,\;\:])/$1$2/msg;
         $obml =~ s/\{[^\}]*?\}//msg;
         $obml =~ s/\[[^\]]*?\]//msg;
 
+        # general de-OBML-ing
+        $obml =~ s/(\r?\n\r?\n[ ]*\|\d+\|)/$1/msg; # replace paragraph breaks
+        $obml =~ s/~[^~]*?~//msg;                  # remove material references
+        $obml =~ s/=+[^=]*?=+//msg;                # remove headers
+        $obml =~ s/[\*\^\\]//msg;                  # remove red text, italic, and small-caps
+        $obml =~ s/\r?\n\s*#.*\r?\n/\n/msg;        # remove line comments
+
         # remove extraneous spaces
         $obml =~ s/\s+/ /msg;
         $obml =~ s/(^\s+|\s+$)//msg;
 
-        for ( split( /(?=\|\d+\|)/, $obml ) ) {
-            s/\s+$//msg;
-            s/\|(?<verse>\d+)\|\s*//;
+        for ( split( /(?=\|\d+\|)/, $obml ) ) { # for each verse
+            s/\s+$//msg;              # trim trailing whitespace
+            s/\|(?<verse>\d+)\|\s*//; # remove verse number
 
             my ( $verse, $text ) = ( $+{verse}, $_ );
-
-            s/(\W)'(\w.*?\w)'(\W)/$1$2$3/g;
-            s/[^A-Za-z0-9'\-]/ /gi;
-            s/(?<!\w)'/ /g;
-            s/\-{2,}/ /g;
-            s/\s+/ /g;
-            s/(?:^\s|\s$)//g;
-
-            my @words = split( /\s/, lc($_) );
+            next unless ( $text =~ /\w/ );
 
             $bibles->{$bible} //= $bible_put->run($bible)->up->last_insert_id;
             $books->{$book}   //= $book_put->run($book)->up->last_insert_id;
@@ -88,8 +83,7 @@ for my $bible (@bibles) {
                 $chapter,
                 $verse,
                 $text,
-                ' ' . join( ' ', @words ) . ' ',
-                encode_json( \@words ),
+                join( ' ', @{ text2words($text) } ),
             ] );
 
             if ( @verse_insert_cache == $opt->{size} ) {
@@ -123,6 +117,10 @@ database.
 =head2 -b, --bible
 
 One or more Bible translation acronyms.
+
+    ./material.pl \
+        -b AKJV -b AMP -b ESV  -b HCSB -b KJ21  -b KJV \
+        -b NASB -b NIV -b NKJV -b NLT  -b NRSVA -b RSV
 
 =head2 -o, --obml
 

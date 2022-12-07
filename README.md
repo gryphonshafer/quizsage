@@ -19,20 +19,22 @@ Change directory to the QuizSage project root directory, and run the following:
 To run the QuizSage application, follow the instructions in the `~/app.psgi`
 file within the project's root directory.
 
-## Data
+## Material Data
 
-It's likely you'll want to setup some data for the installation. Assuming you
-are in the QuizSage project root directory you can read the documentation for
-the tools with the following commands:
+It's likely you'll want to setup some material data for the installation.
+Assuming you are in the QuizSage project root directory you can read the
+documentation for the tools with the following commands:
 
-- `./bin/data/obml.pl --man`
-- `./bin/data/material.pl --man`
-- `./bin/data/thesaurus.pl --man`
+- `./tools/material/obml.pl --man`
+- `./tools/material/material.pl --man`
+- `./tools/material/thesaurus.pl --man`
 
 ----
 
 ## Tasks
 
-- Build thesaurus database based on OBML words (Perl: `./bin/data/material.pl`)
-- Build JSON from OBML + thesaurus data (Perl: `./bin/data/thesaurus.pl`)
-- Create queries (Javascript)
+- Bugs in `./tools/material/*`
+    - `select text from word where redirect_id is null and meanings is null limit 1000, 50;`
+    - `select * from verse where text regexp ',[A-z]';`
+- Integrate the `age3` repository (and deprecate)
+- Optimize material JSON (`./tools/material/json.pl`) for use client side in generating queries (see Age3)

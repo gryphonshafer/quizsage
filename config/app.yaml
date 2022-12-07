@@ -25,6 +25,7 @@ default:
     #     from: QuizSage <gryphon@quizsage.org>
     # bcrypt:
     #     salt: 63MWT0N6PQlNU43R
-    data:
+    material:
         obml: local/obml
+        json: static/json/material
 optional_include: local/conf.yaml
