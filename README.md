@@ -29,12 +29,53 @@ documentation for the tools with the following commands:
 - `./tools/material/material.pl --man`
 - `./tools/material/thesaurus.pl --man`
 
-----
+--------------------------------------------------------------------------------
 
-## Tasks
+## File System Notes
 
-- Bugs in `./tools/material/*`
-    - `select text from word where redirect_id is null and meanings is null limit 1000, 50;`
-    - `select * from verse where text regexp ',[A-z]';`
-- Integrate the `age3` repository (and deprecate)
-- Optimize material JSON (`./tools/material/json.pl`) for use client side in generating queries (see Age3)
+    static
+        favicon.ico
+        robots.txt
+        static.css
+        fonts
+            Roboto
+        downloads
+            scoresheet.xlsx
+        graphics
+            components
+                nav_bar_bottom.png
+            images
+                quizzers_being_happy.png
+        json
+            material
+                James_NIV.json
+        js
+            classes (which are always isomorphic modules)
+                quiz.js
+                queries.js
+                scoring.js
+                rulings.js
+                material.js
+            modules
+                isomorphic
+                    pi.js
+                browser
+                    cookies.js
+            iife
+                browser
+                    import_links.js
+                    websocket.js
+            vue
+                apps
+                    quiz.js
+                    register.js
+                components
+                    lookup.js
+                    search.js
+                    lookup.html
+                    search.html
+                stores
+                    material.js
+            lib
+                vue.js
+                vue.prod.js

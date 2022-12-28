@@ -5,9 +5,15 @@ use QuizSage::Util::Material 'json';
 my $opt = options( qw{ label|l=s force|f } );
 
 try {
-    say json( $opt->{label}, $opt->{force} );
+    my $result = json( $opt->{label}, $opt->{force} );
+    say
+        ' Label: "', $result->{label}, '"', "\n",
+        'Output: ', $result->{output};
 }
 catch ($error) {
+
+die $error;
+
     $error =~ s/\sat\s\S+\sline\s\d+\.\s*$//g;
     pod2usage($error);
 }

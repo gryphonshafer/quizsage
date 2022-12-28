@@ -91,7 +91,10 @@ sub json ( $label, $force ) {
     # return JSON file path/name if it already exists
     ( my $filename = $data->{label} ) =~ tr/\(\);: /\{\}+%_/;
     my $output = path( join( '/', conf->get( qw{ material json } ), $filename . '.json' ) );
-    return $output->to_string if ( not $force and -f $output );
+    return {
+        label  => $data->{label},
+        output => $output->to_string,
+    } if ( not $force and -f $output );
 
     # add verse content
     my $verses_to_filter;
@@ -137,7 +140,11 @@ sub json ( $label, $force ) {
     # save data to JSON file and return path/name
     make_path( $output->dirname ) unless ( -d $output->dirname );
     $output->spurt( encode_json($data) );
-    return $output->to_string;
+
+    return {
+        label  => $data->{label},
+        output => $output->to_string,
+    };
 }
 
 sub text2words ($text) {

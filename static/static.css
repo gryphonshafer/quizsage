@@ -1,0 +1,179 @@
+body {
+    background-color : #0c0c0c;
+    color            : #ccc;
+    font-family      : sans-serif;
+    font-size        : 13px;
+}
+
+[v-cloak] * {
+    display : none;
+}
+
+[v-cloak]::before {
+    display       : block;
+    content       : " ";
+    border-radius : 50%;
+    border        : 0.5rem solid gray;
+    border-top    : 0.5rem solid blue;
+    width         : 1rem;
+    height        : 1rem;
+    animation     : v-cloak-spinner 1s linear infinite;
+}
+
+@keyframes v-cloak-spinner {
+    0% {
+        transform : rotate(0deg);
+    }
+    100% {
+        transform : rotate(360deg);
+    }
+}
+
+div.section_1,
+div.section_2 {
+    display        : inline-block;
+    vertical-align : top;
+}
+
+div.section_1 {
+    margin-right: 1em;
+}
+
+div.query_reply p.announcement {
+    margin-top: 0;
+}
+
+div.query_reply p.announcement span,
+div.query_reply div.prompt_reply,
+div.material div.content {
+    border           : 1px solid #666;
+    background-color : #232323;
+    color            : #ccc;
+    padding          : 0px 2px;
+}
+
+div.query_reply div.prompt_reply,
+div.material div.content {
+    height: 6em;
+}
+
+div.query_reply div.prompt_reply,
+div.material div.content {
+    width         : 30em;
+    padding       : 0.5em;
+    margin-bottom : 1em;
+}
+
+div.material div.content {
+    margin-top : 1em;
+}
+
+div.query_reply div.prompt_reply span {
+    border           : 1px solid #666;
+    background-color : #333;
+    color            : #ccc;
+    padding          : 0px 2px;
+    display          : inline-block;
+    margin           : 0em 0.5em 0.5em 0em
+}
+
+div.material,
+div.timer,
+div.select_type,
+div.results {
+    margin-bottom : 1em;
+}
+
+div.timer div.timer_display {
+    background-color : #333;
+    border           : 3px double #666;
+    padding          : 5px;
+    margin-right     : 1em;
+    display          : inline-block;
+}
+
+button {
+    background-color : #38383d;
+    border           : 1px solid transparent;
+    color            : #ccc;
+    font-family      : inherit;
+    font-size        : inherit;
+    border-radius    : 5px;
+    padding          : 5px;
+    margin-right     : 1em;
+}
+
+button:hover {
+    cursor : pointer;
+    border : 1px solid #666;
+}
+
+button:active {
+    border : 1px solid #fff;
+}
+
+button.selected {
+    background-color : #666;
+}
+
+ul.thesaurus {
+    list-style : none;
+    padding    : 0;
+    margin     : 0;
+}
+
+ul.thesaurus span.word {
+    font-weight     : bold;
+    text-decoration : underline;
+}
+
+ul.thesaurus ul {
+    padding : 0 0 0 2em;
+}
+
+div.thesaurus {
+    height     : 400px !important;
+    overflow-x : scroll;
+}
+
+table {
+    border-collapse : collapse;
+}
+
+table.score td {
+    padding          : 1px 3px;
+    text-align       : center;
+    border           : 1px solid #666;
+    background-color : #232323;
+    color            : #ccc;
+}
+
+table.score td.upper_left_corner {
+    border-top       : none;
+    border-left      : none;
+    background-color : transparent;
+}
+
+table.score tr td.team_status,
+table.score tr.quizzer_names td {
+    writing-mode : vertical-rl;
+    padding      : 3px 0 3px 1em;
+    min-width    : 2em;
+}
+
+table.score tr.quizzer_names td {
+    vertical-align : top;
+    cursor         : pointer;
+}
+
+table.score tr.quizzer_names td:hover {
+    background-color : #333;
+}
+
+table.score tr.quizzer_names td.selected {
+    background-color : #666;
+}
+
+table.score tr.active_event td {
+    background-color : #333;
+}
