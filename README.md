@@ -21,13 +21,9 @@ file within the project's root directory.
 
 ## Material Data
 
-It's likely you'll want to setup some material data for the installation.
-Assuming you are in the QuizSage project root directory you can read the
-documentation for the tools with the following commands:
-
-- `./tools/material/obml.pl --man`
-- `./tools/material/material.pl --man`
-- `./tools/material/thesaurus.pl --man`
+It's likely you'll want to setup some material data for the installation. Run
+any of the tools in `./tools/material` with `--man` as a command-line argument
+to view the tool's documentation.
 
 --------------------------------------------------------------------------------
 

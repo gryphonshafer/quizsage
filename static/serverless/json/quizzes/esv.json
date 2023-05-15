@@ -1,0 +1,8 @@
+{
+    "material" : "Acts 1-20 ESV",
+    "teams"    : [
+        [ "Team 1", [ "Alpha Bravo",   "Charlie Delta", "Echo Foxtrot",   "Whiskey X-Ray" ] ],
+        [ "Team 2", [ "Gulf Hotel",    "India Juliet",  "Kilo Lima",      "Yankee Zulu"   ] ],
+        [ "Team 3", [ "Mike November", "Oscar Papa",    "Uniform Victor", "John Doe"      ] ]
+    ]
+}

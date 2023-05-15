@@ -156,8 +156,8 @@ sub text2words ($text) {
     s/[,:](?=\D)//g;                  # remove commas and colons except for "1,234" and "3:00"
     s/[^A-Za-z0-9'\-,:]/ /gi;         # remove all but "usable" characters
     s/(\d)\-(\d)/$1 $2/g;             # convert dashes between numbers into spaces
-    s/(?<!\w)'/ /g;                   # remove sigle-quote following a non-word character
-    s/(\w)'(?=\W|$)/$1/g;             # remove sigle-quote following a word character prior to a non-word
+    s/(?<!\w)'/ /g;                   # remove single-quote following a non-word character
+    s/(\w)'(?=\W|$)/$1/g;             # remove single-quote following a word character prior to a non-word
     s/\-{2,}/ /g;                     # convert double-dashes into spaces
     s/\s+/ /g;                        # compact multi-spaces
     s/(?:^\s|\s$)//g;                 # trim spacing
