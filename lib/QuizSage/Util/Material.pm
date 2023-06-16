@@ -166,3 +166,104 @@ sub text2words ($text) {
 }
 
 1;
+
+=head1 NAME
+
+QuizSage::Util::Material
+
+=head1 SYNOPSIS
+
+    use QuizSage::Util::Material qw( json text2words );
+
+    my @words = text2words(
+        q{Jesus asked, "What's (the meaning of) this: 'I and my Father are one.'"}
+    )->@*;
+
+    my %results = json( 'Acts 1-20 NIV', 'force' )->%*;
+
+=head1 DESCRIPTION
+
+This package provides exportable utility functions.
+
+=head1 FUNCTIONS
+
+=head2 json
+
+This function accepts a material label string and will build a JSON material
+data file using data from the material database. A material label represents
+the reference range blocks, weights, and translations for the expected output.
+For example:
+
+    Romans 1-4; James (1) Romans 5-8 (1) ESV NASB NIV
+
+The function accepts an optional second value, an boolean value, to indicate if
+an existing JSON file should be rebuilt. (Default is false.)
+
+    my %results = json( 'Acts 1-20 NIV', 'force' )->%*;
+
+The function returns a hashref with a C<label> and C<output> keys. The "label"
+will be the canonicalized material label, and the "output" is the file that was
+created or recreated.
+
+=head3 JSON DATA STRUCTURE
+
+The JSON data structure should look like this:
+
+    label  : "Romans 1-4; James (1) Romans 5-8 (1) ESV NASB NIV",
+    bibles : [ "NIV", "ESV", "NASB" ],
+    blocks : [
+        {
+            range   : "Romans 1-4; James",
+            weight  : 50,
+            content : {
+                NIV : [
+                    {
+                        book    : "Romans",
+                        chapter : 1,
+                        verse   : 1,
+                        text    : "Paul, a servant of Christ Jesus, called to",
+                        string  : "paul a servant of christ jesus called to",
+                    },
+                ],
+                ESV  : [],
+                NASB : [],
+            },
+        },
+        {
+            range   : "Romans 5-8",
+            weight  : 50,
+            content : {
+                NIV  : [],
+                ESV  : [],
+                NASB : [],
+            },
+        },
+    ],
+    thesaurus : {
+        called : [
+            {
+                type     : "adj.",
+                word     : "named",
+                synonyms : [
+                    {
+                        verity : 1,
+                        words  : ["labeled"],
+                    },
+                    {
+                        verity : 2,
+                        words  : [ "christened", "termed" ],
+                    },
+                ],
+            ],
+        ],
+        almighty : "the Almighty",
+    }
+
+=head2 text2words
+
+This function accepts a string and will return an arrayref of lower-case words
+from the string.
+
+    my @words = text2words(
+        q{Jesus asked, "What's (the meaning of) this: 'I and my Father are one.'"};
+    )->@*;

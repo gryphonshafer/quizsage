@@ -1,0 +1,25 @@
+---
+google_fonts:
+    dest:
+        fonts : static/fonts
+        css   : config/assets/css/fonts
+    fonts:
+        'Open Sans':
+            variants:
+                - regular
+                - italic
+                - 700
+                - 700italic
+            subsets:
+                - latin
+                - latin-ext
+            formats:
+                - woff2
+                - woff
+vue:
+    dest: static/js/vue/lib
+    libs:
+        vue/dist/vue.global.js     : vue.global.js
+        vue/dist/vue.global.prod.js: vue.global.prod.js
+        vue-demi                   : demi.iife.js
+        pinia/dist/pinia.iife.js   : pinia.iife.js

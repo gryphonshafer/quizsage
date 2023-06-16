@@ -1,6 +1,6 @@
 import {min_verity_level} from 'modules/constants';
 
-const json_material_path = '../../../json/material';
+const json_material_path = '../../../../json/material';
 
 export default class Material {
     constructor (label) {

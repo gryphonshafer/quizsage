@@ -16,4 +16,10 @@ is(
     'text2words',
 );
 
+is(
+    text2words( q{Jesus asked, "What's (the meaning of) this: 'I and my Father are one.'"} ),
+    [ qw( jesus asked what's the meaning of this i and my father are one ) ],
+    'text2words again',
+);
+
 done_testing;

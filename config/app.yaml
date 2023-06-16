@@ -1,9 +1,9 @@
 ---
 preinclude: ../omniframe/config/app.yaml
 default:
-    omniframe: ../omniframe
     libs: ../omniframe/lib
-    # mojo_app_lib: QuizSage::Control
+    omniframe: ../omniframe
+    mojo_app_lib: QuizSage::Control
     database:
         shards:
             app:
@@ -13,19 +13,19 @@ default:
                     all: local/db/app.sql
             material:
                 file: local/db/material.sqlite
-    # logging:
-    #     alert_email:
-    #         - gryphon@quizsage.org
-    # mojolicious:
-    #     secrets:
-    #         - 65.zH1eZb4m7Q19Jf1OUtzxeYg92Ngqy
-    #     session:
-    #         cookie_name: quizsage_session
-    # email:
-    #     from: QuizSage <gryphon@quizsage.org>
-    # bcrypt:
-    #     salt: 63MWT0N6PQlNU43R
+    logging:
+        alert_email:
+            - gryphon@quizsage.org
+    mojolicious:
+        secrets:
+            - 65.zH1eZb4m7Q19Jf1OUtzxeYg92Ngqy
+        session:
+            cookie_name: quizsage_session
+    email:
+        from: QuizSage <gryphon@quizsage.org>
+    bcrypt:
+        salt: 63MWT0N6PQlNU43R
     material:
         obml: local/obml
         json: static/json/material
-optional_include: local/conf.yaml
+optional_include: local/config.yaml
