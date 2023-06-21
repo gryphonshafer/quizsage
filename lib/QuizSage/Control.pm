@@ -1,18 +1,38 @@
 package QuizSage::Control;
 
 use exact 'Omniframe::Control';
+use QuizSage::Model::User;
 
 sub startup ($self) {
-    $self->setup;
-    $self->routes->any( '/*null' => { null => undef } => sub ($c) {
-        $c->stash(
-            package => __PACKAGE__,
-            now     => scalar(localtime),
-            copy    => "\xa9",
-            input   => $c->param('input'),
-        );
-        $c->render( template => 'example/index' );
+    $self->setup( skip => [ qw( document devdocs ) ] );
+
+    my $all = $self->routes->under( sub ($c) {
+        $c->stash( page => { wrappers => ['page.html.tt'] } );
+
+        if ( my $user_id = $c->session('user_id') ) {
+            try {
+                $c->stash( 'user' => QuizSage::Model::User->new->load($user_id) );
+            }
+            catch {
+                delete $c->session->{'user_id'};
+                $c->notice( 'Failed user load based on session "user_id" value: "' . $user_id . '"' );
+            }
+        }
+        return 1;
     } );
+
+    my $users = $all->under( sub ($c) {
+        return 1 if ( $c->stash('user') );
+        $c->info('Login required but not yet met');
+        $c->flash( message => 'Login required for the previously requested resource.' );
+        $c->redirect_to('/');
+        return 0;
+    } );
+
+    $all->any( '/', sub ($c) { $c->render( template => 'main/home' ) } );
+    $all->any("/user/$_")->to("user#$_") for ( qw( create forgot_password login logout ) );
+    $all->any("/user/$_/:user_id/:user_hash")->to("user#$_") for ( qw( verify reset_password ) );
+    $all->any( '/*null' => { null => undef } => sub ($c) { $c->redirect_to('/') } );
 }
 
 1;

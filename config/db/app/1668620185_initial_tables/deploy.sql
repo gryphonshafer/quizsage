@@ -1,11 +1,11 @@
 CREATE TABLE IF NOT EXISTS user (
     user_id       INTEGER PRIMARY KEY,
-    username      TEXT NOT NULL UNIQUE,
-    passwd        TEXT NOT NULL,
-    first_name    TEXT,
-    last_name     TEXT,
     email         TEXT NOT NULL UNIQUE,
-    phone         TEXT,
+    passwd        TEXT NOT NULL,
+    first_name    TEXT NOT NULL,
+    last_name     TEXT NOT NULL,
+    phone         TEXT NOT NULL,
+    settings      TEXT,
     last_login    TEXT,
     last_modified TEXT NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) ),
     created       TEXT NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) ),
@@ -13,12 +13,12 @@ CREATE TABLE IF NOT EXISTS user (
 );
 
 CREATE TRIGGER IF NOT EXISTS user_after_update AFTER UPDATE OF
-    username,
+    email,
     passwd,
     first_name,
     last_name,
-    email,
     phone,
+    settings,
     last_login,
     active
 ON user

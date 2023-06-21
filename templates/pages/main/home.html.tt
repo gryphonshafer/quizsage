@@ -1,0 +1,24 @@
+[% UNLESS user %]
+    <a href="[% c.url_for('/user/create') %]">Create New User</a>
+
+    <form method="post" action="[% c.url_for('/user/login') %]">
+        <fieldset>
+            <legend>Login</legend>
+
+            <label>
+                Email:
+                <input type="email" name="email" value="[% email %]" placeholder="Email">
+            </label>
+            <label>
+                Password:
+                <input type="password" name="passwd" value="[% passwd %]" placeholder="Password">
+            </label>
+
+            <input type="submit" value="Login">
+        </fieldset>
+    </form>
+
+    <a href="[% c.url_for('/user/forgot_password') %]">Forgot Password</a>
+[% ELSE %]
+    <p>You're logged in. <a href="[% c.url_for('/user/logout') %]">Logout</a>.</p>
+[% END %]

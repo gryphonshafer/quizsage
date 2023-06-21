@@ -12,7 +12,7 @@ my $mock = mock 'Omniframe::Control' => (
 Test2::MojoX->new('QuizSage::Control')->get_ok('/')
     ->status_is(200)
     ->header_is( 'content-type' => 'text/html;charset=UTF-8' )
-    ->text_is( title => 'Example Page' )
+    ->text_is( title => 'QuizSage' )
     ->attr_like( 'link[rel="stylesheet"]:last-of-type', 'href', qr|\bapp.css\?version=\d+| );
 
 done_testing;

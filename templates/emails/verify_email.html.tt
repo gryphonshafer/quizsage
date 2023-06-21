@@ -1,0 +1,18 @@
+<title>QuizSage: Email Verification</title>
+
+<p>Greetings [% user.first_name %],</p>
+
+<p>This email address was used to create a new QuizSage account.</p>
+
+<ul>
+    <li>Username: <b>[% user.username %]</b></li>
+    <li>Real Name: <b>[% user.first_name %] [% user.last_name %]</b></li>
+    <li>Email: <b>[% user.email %]</b></li>
+</ul>
+
+<p>
+    If this was not you, just delete this email. If this was indeed you, please
+    click on the following link to verify (and unlock) your new QuizSage account:
+</p>
+
+<p><a href="[% url %]">[% url %]</a></p>
