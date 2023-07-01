@@ -8,7 +8,7 @@ use Mojo::File 'path';
 use Mojo::JSON qw( encode_json decode_json );
 use Omniframe;
 
-exact->exportable( qw{ json text2words } );
+exact->exportable( qw{ material_json text2words label2path path2label } );
 
 my $ref = Bible::Reference->new(
     acronyms   => 0,
@@ -41,7 +41,7 @@ my $thesaurus = $dq->sql(q{
     WHERE w.text = ?
 });
 
-sub json ( $label, $force ) {
+sub material_json ( $label, $force = 0 ) {
     my $data;
 
     # add bibles
@@ -165,6 +165,18 @@ sub text2words ($text) {
     return [ split( /\s/, lc($_) ) ];
 }
 
+sub label2path ($text) {
+    $text =~ tr/\(\);: /\{\}+%_/;
+    return $text . '.json';
+}
+
+sub path2label ($text) {
+    $text =~ s/\.json$//i;
+    $text =~ tr/\{\}+%_/\(\);: /;
+    return $text;
+}
+
+
 1;
 
 =head1 NAME
@@ -173,13 +185,13 @@ QuizSage::Util::Material
 
 =head1 SYNOPSIS
 
-    use QuizSage::Util::Material qw( json text2words );
+    use QuizSage::Util::Material qw( material_json text2words label2path path2label );
 
     my @words = text2words(
         q{Jesus asked, "What's (the meaning of) this: 'I and my Father are one.'"}
     )->@*;
 
-    my %results = json( 'Acts 1-20 NIV', 'force' )->%*;
+    my %results = material_json( 'Acts 1-20 NIV', 'force' )->%*;
 
 =head1 DESCRIPTION
 
@@ -187,7 +199,7 @@ This package provides exportable utility functions.
 
 =head1 FUNCTIONS
 
-=head2 json
+=head2 material_json
 
 This function accepts a material label string and will build a JSON material
 data file using data from the material database. A material label represents
@@ -199,7 +211,7 @@ For example:
 The function accepts an optional second value, an boolean value, to indicate if
 an existing JSON file should be rebuilt. (Default is false.)
 
-    my %results = json( 'Acts 1-20 NIV', 'force' )->%*;
+    my %results = material_json( 'Acts 1-20 NIV', 'force' )->%*;
 
 The function returns a hashref with a C<label> and C<output> keys. The "label"
 will be the canonicalized material label, and the "output" is the file that was
@@ -267,3 +279,11 @@ from the string.
     my @words = text2words(
         q{Jesus asked, "What's (the meaning of) this: 'I and my Father are one.'"};
     )->@*;
+
+=head2 label2path
+
+Convert a material label to a path.
+
+=head2 path2label
+
+Convert a material path to a label.

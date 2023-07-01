@@ -1,11 +1,11 @@
 #!/usr/bin/env perl
 use exact -cli, -conf;
-use QuizSage::Util::Material 'json';
+use QuizSage::Util::Material 'material_json';
 
 my $opt = options( qw{ label|l=s force|f } );
 
 try {
-    my $result = json( $opt->{label}, $opt->{force} );
+    my $result = material_json( $opt->{label}, $opt->{force} );
     say
         ' Label: "', $result->{label}, '"', "\n",
         'Output: ', $result->{output};

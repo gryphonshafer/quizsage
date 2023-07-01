@@ -82,23 +82,33 @@ sub forgot_password ($self) {
 
 sub reset_password ($self) {
     if ( my $passwd = $self->param('passwd') ) {
-        if (
-            QuizSage::Model::User->new->reset_password(
-                $self->stash('user_id'),
-                $self->stash('user_hash'),
-                $passwd,
-            )
-        ) {
-            $self->flash(
-                message => {
-                    type => 'success',
-                    text => 'Successfully reset password. Login with your new password.',
-                }
-            );
-            return $self->redirect_to('/');
+        try {
+            if (
+                QuizSage::Model::User->new->reset_password(
+                    $self->stash('user_id'),
+                    $self->stash('user_hash'),
+                    $passwd,
+                )
+            ) {
+                $self->flash(
+                    message => {
+                        type => 'success',
+                        text => 'Successfully reset password. Login with your new password.',
+                    }
+                );
+                $self->redirect_to('/');
+            }
+            else {
+                $self->stash( message => 'Failed to reset password.' );
+            }
         }
-        else {
-            $self->stash( message => 'Failed to reset password.' );
+        catch ($e) {
+            $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
+            $e =~ s/^"([^""]+)"/ '"' . join( ' ', map { ucfirst($_) } split( '_', $1 ) ) . '"' /e;
+            $e =~ s/DBD::\w+::st execute failed:\s*//;
+            $e .= '. Please try again.';
+
+            $self->stash( message => $e );
         }
     }
 }
@@ -119,7 +129,7 @@ sub login ($self) {
             'Login failed. Please try again, or try the ' .
             '<a href="' . $self->url_for('/user/reset_password') . '">Reset Password page</a>.'
         );
-    };
+    }
 
     $self->redirect_to('/');
 }
@@ -132,6 +142,7 @@ sub logout ($self) {
     $self->session(
         user_id           => undef,
         last_request_time => undef,
+        quiz_password     => undef,
     );
 
     $self->redirect_to('/');

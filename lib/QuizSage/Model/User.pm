@@ -9,6 +9,9 @@ with qw( Omniframe::Role::Model Omniframe::Role::Bcrypt );
 
 class_has active => 1;
 
+my $min_passwd_length = 8;
+my $user_hash_length  = 12;
+
 before 'create' => sub ( $self, $params ) {
     $params->{active} //= 0;
 };
@@ -23,24 +26,20 @@ sub validate ($self) {
 
 sub freeze ( $self, $data ) {
     if ( $data->{passwd} ) {
-        croak('Password supplied is not at least 10 characters in length')
-            unless ( length $data->{passwd} >= 10 );
+        croak("Password supplied is not at least $min_passwd_length characters in length")
+            unless ( length $data->{passwd} >= $min_passwd_length );
         $data->{passwd} = $self->bcrypt( $data->{passwd} );
     }
 
-    $data->{settings} = (
-        ref $data->{settings} and %{ $data->{settings} }
-    ) ? encode_json( $data->{settings} ) : undef;
+    $data->{settings} = encode_json( $data->{settings} ) if ( defined $data->{settings} );
 
     return $data;
 }
 
 sub thaw ( $self, $data ) {
-    $data->{settings} = ( $data->{settings} ) ? decode_json( $data->{settings} ) : {};
+    $data->{settings} = decode_json( $data->{settings} ) if ( defined $data->{settings} );
     return $data;
 }
-
-my $user_hash_length = 12;
 
 sub send_email ( $self, $type, $url ) {
     croak('User object not data-loaded') unless ( $self->id );
@@ -66,6 +65,9 @@ sub verify ( $self, $user_id, $user_hash ) {
 }
 
 sub reset_password ( $self, $user_id, $user_hash, $new_password ) {
+    croak("Password supplied is not at least $min_passwd_length characters in length")
+        unless ( length $new_password >= $min_passwd_length );
+
     my $user_found = length $user_hash == $user_hash_length and $self->dq->sql(q{
         SELECT COUNT(*) FROM user WHERE user_id = ? AND passwd LIKE ?
     })->run( $user_id, $user_hash . '%' )->value > 0;

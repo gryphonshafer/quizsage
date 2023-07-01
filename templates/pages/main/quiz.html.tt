@@ -1,0 +1,201 @@
+[%
+    page.title     = 'Quiz Room',
+    page.js.import = quiz.data.importmap;
+    page.vue       = 1;
+    page.js.module = 'vue/apps/quiz.js';
+%]
+
+<div id="quiz" v-cloak>
+    <div class="reading">
+        <div class="query">
+            <p class="announcement">
+                Query <span>{{ current_event.id }}</span>
+                for <span>{{ eligible_teams }}</span>
+                is a
+                <br>
+                <span>{{ current_event.query.type_name }}</span>
+                from the <span>{{ current_event.bible }}</span>.
+                Ready. Begin.
+            </p>
+
+            <p class="prompt">{{ current_event.query.prompt }}</p>
+
+            <p class="reply">
+                <template v-if="current_event.type != 'X'">
+                    {{ current_event.query.reply }}
+                </template>
+                <template v-else>
+                    <span v-for="reference in current_event.query.references">{{ reference }}</span>
+                </template>
+            </p>
+        </div>
+
+        <div class="material" v-if="current_event.query.type != 'X'">
+            <button
+                v-for="material in current_event.query.material"
+                :class="selected.material.bible == material.bible ? 'selected' : ''"
+                @click="selected.material = material"
+            >{{ material.bible }}</button>
+
+            <span class="reference">{{
+                current_event.query.book + ' ' +
+                current_event.query.chapter + ':' +
+                current_event.query.verse
+            }}</span>
+
+            <button @click="replace_query()">Replace</button>
+
+            <p class="content">{{ ( selected.material ) ? selected.material.text : '' }}</p>
+
+            <div class="thesaurus">
+                <ul class="thesaurus" v-if="selected.material">
+                    <li v-for="set in selected.material.thesaurus">
+                        <span class="word"><a :name="set.word">{{ set.word }}</a></span>
+                        <ul>
+                            <li v-for="meaning in set.meanings">
+                                <i>{{ meaning.word }} ({{ meaning.type }})</i>
+                                <ul>
+                                    <li v-for="
+                                        set in meaning.synonyms
+                                            .sort( ( a, b ) => b.verity - a.verity )
+                                    ">
+                                        {{ set.verity }}: {{ set.words.join(', ') }}
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="operation">
+        <div class="timer">
+            <div class="timer_display">{{ timer.value }}</div>
+            <div class="button_group">
+                <button @click="timer_toggle">{{ timer.state }}</button><br>
+                <button @click="timer_reset(40)">40s</button><br>
+                <button @click="timer_reset( 3 * 60 )">3m</button>
+            </div>
+        </div>
+
+        <div class="select_type">
+            <button
+                @click="select_type('synonymous')"
+                :class="selected.type.synonymous_verbatim_open_book == 'synonymous' ? 'selected' : ''"
+            >Synonymous</button>
+            <button
+                @click="select_type('verbatim')"
+                :class="selected.type.synonymous_verbatim_open_book == 'verbatim' ? 'selected' : ''"
+            >Verbatim</button>
+            <button
+                @click="select_type('open_book')"
+                :class="selected.type.synonymous_verbatim_open_book == 'open_book' ? 'selected' : ''"
+            >Open Book</button>
+            <button
+                @click="select_type('with_reference')"
+                :class="selected.type.with_reference ? 'selected' : ''"
+            >With Reference</button>
+            <button
+                @click="select_type('add_verse')"
+                :class="selected.type.add_verse ? 'selected' : ''"
+            >Add Verse</button>
+        </div>
+
+        <div class="results">
+            <button @click="trigger_event('no_trigger')">No Trigger</button>
+            <button @click="trigger_event('correct')">Correct</button>
+            <button @click="trigger_event('incorrect')">Incorrect</button>
+            <button @click="trigger_event('reset')">Reset</button>
+            <button @click="trigger_event('foul')">Foul</button>
+            <button @click="trigger_event('timeout')">Timeout</button>
+            <button @click="trigger_event('appeal_accepted')">Appeal +</button>
+            <button @click="trigger_event('appeal_declined')">Appeal -</button>
+        </div>
+
+        <table class="board">
+            <thead>
+                <tr>
+                    <td colspan="3" rowspan="5" class="top_left_corner">
+                        <button @click="delete_last_action()">Delete</button>
+                    </td>
+                    <template v-for="team in teams">
+                        <td :colspan="team.quizzers.length">{{ team.name }}</td>
+                        <td class="center">
+                            {{ ( team.score.position == 0 ) ? '' : team.score.position }}<sup>{{
+                                ( team.score.position == 0 ) ? '' :
+                                ( team.score.position == 1 ) ? 'st' :
+                                ( team.score.position == 2 ) ? 'nd' :
+                                ( team.score.position == 3 ) ? 'rd' : 'th'
+                            }}</sup>
+                        </td>
+                    </template>
+                </tr>
+                <tr>
+                    <template v-for="team in teams">
+                        <td class="center" v-for="quizzer in team.quizzers">
+                            {{ quizzer.score.points }} ({{ quizzer.score.team_points }})
+                        </td>
+                        <td class="center">{{ team.score.points }}</td>
+                    </template>
+                </tr>
+                <tr class="vertical">
+                    <template v-for="team in teams">
+                        <td v-for="quizzer in team.quizzers"
+                            @click="select_quizzer( quizzer.id, team.id )"
+                            :class="selected.quizzer_id == quizzer.id ? 'quizzer selected' : 'quizzer'"
+                        >{{ quizzer.name }}</td>
+
+                        <td rowspan="3">
+                            TOs: {{ team.timeouts_remaining }}
+                            &nbsp;&nbsp;
+                            ADs: {{ team.appeals_declined }}
+                        </td>
+                    </template>
+                </tr>
+                <tr>
+                    <template v-for="team in teams">
+                        <td class="center" v-for="quizzer in team.quizzers">{{ quizzer.bible }}</td>
+                    </template>
+                </tr>
+                <tr>
+                    <template v-for="team in teams">
+                        <td class="center" v-for="quizzer in team.quizzers">
+                            {{ quizzer.score.correct }} ({{ quizzer.score.open_book }})
+                        </td>
+                    </template>
+                </tr>
+            </thead>
+            <tbody>
+                <tr
+                    v-for="record in board"
+                    :class="record.current ? 'selected' : ''"
+                >
+                    <td>{{ record.id }}</td>
+                    <td>{{ record.type }}</td>
+                    <td>{{ record.bible }}</td>
+                    <template v-for="team in teams">
+                        <td class="center" v-for="quizzer in team.quizzers">{{
+                            ( quizzer.id == record.quizzer_id ) ? record.quizzer_label : ''
+                        }}</td>
+                        <td class="center">{{ ( team.id == record.team_id ) ? record.team_label : '' }}</td>
+                    </template>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="search">
+        <input type="text" v-model="search_text" placeholder="Search Text">
+        <label><input type="checkbox" v-model="search_exact"> Exact</label>
+
+        <table v-if="matched_verses.length">
+            <tr v-for="verse in matched_verses">
+                <td>{{ verse.bible }}</td>
+                <td>{{ verse.book }} {{ verse.chapter }}:{{ verse.verse }}</td>
+                <td>{{ verse.text }}</td>
+            </tr>
+        </table>
+    </div>
+</div>

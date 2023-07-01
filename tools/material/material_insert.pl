@@ -118,8 +118,8 @@ This program will insert OBML source content into a material SQLite database.
 One or more Bible translation acronyms.
 
     ./material_insert.pl \
-        -b AKJV -b AMP -b ESV  -b HCSB -b KJ21  -b KJV \
-        -b NASB -b NIV -b NKJV -b NLT  -b NRSVA -b RSV
+        -b AKJV -b AMP -b BSB -b ESV -b HCSB -b KJ21 -b KJV \
+        -b NASB -b NASB1995 -b NIV -b NKJV -b NLT -b NRSVA -b RSV
 
 =head2 -o, --obml
 

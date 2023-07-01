@@ -1,5 +1,7 @@
 [% page.title = 'Create New User' %]
 
+<h1>[% page.title %]</h1>
+
 <form method="post">
     <fieldset>
         <legend>Create New User</legend>

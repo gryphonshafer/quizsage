@@ -4,7 +4,7 @@ google_fonts:
         fonts : static/fonts
         css   : config/assets/css/fonts
     fonts:
-        'Open Sans':
+        'Inter Tight':
             variants:
                 - regular
                 - italic
