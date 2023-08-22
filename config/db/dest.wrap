@@ -20,8 +20,8 @@ unless ( $ARGV[1] eq 'verify' ) {
         $dq->do($sql);
         $dq->commit;
     }
-    catch {
-        my $e = $dq->errstr;
+    catch ($e) {
+        $e = $dq->errstr;
         $dq->rollback;
         die $e;
     }

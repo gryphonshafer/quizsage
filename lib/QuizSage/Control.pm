@@ -13,7 +13,7 @@ sub startup ($self) {
             try {
                 $c->stash( 'user' => QuizSage::Model::User->new->load($user_id) );
             }
-            catch {
+            catch ($e) {
                 delete $c->session->{'user_id'};
                 $c->notice( 'Failed user load based on session "user_id" value: "' . $user_id . '"' );
             }

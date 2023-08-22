@@ -123,7 +123,7 @@ sub login ($self) {
             last_request_time => time,
         );
     }
-    catch {
+    catch ($e) {
         $self->info( 'Login failure for ' . $self->param('email') );
         $self->flash( message =>
             'Login failed. Please try again, or try the ' .
