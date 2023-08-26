@@ -1,17 +1,107 @@
-[% page.title = 'Quiz Settings' %]
+[%
+    page.title = 'Quiz Settings';
+
+    teams = 'Team A
+Alpha Bravo NIV
+Carlie Delta NIV
+Echo Foxtrot NIV
+
+Team B
+India Gulf NIV
+Juliet Hotel NIV
+Kilo Lima NIV
+
+Team C
+Mike November NIV
+Oscar Papa NIV
+Romeo Quebec NIV
+';
+
+    translations = 'NIV
+NASB1995
+ESV
+';
+
+    ranges = 'Eph 1-6
+Gal 1-6
+Phil 1-4
+Col 1-4
+';
+
+    club_100      = 1;
+    club_250      = 2;
+    full_material = 3;
+
+    # c.param('teams')
+    # c.param('translations')
+
+    prelims = [ 1, 2, 3 ];
+    top_9   = [ 0, 0, 1 ];
+    cons    = [ 3, 2, 1 ];
+
+%]
 
 <h1>[% page.title %]</h1>
 
-<p>Enter the teams for the quiz. Write in 1 team name per line.</p>
+<p>
+    Enter the quiz's settings.
+
+    The teams/quizzers field needs to have a single entry per line, with team
+    name first on a line, then each quizzer on a line. There needs to be at
+    least a single blank line between each team.
+
+    The range(s) field may contain any number of lines, each line representing
+    a material range. There must be at least 1 valid range.
+
+    The translation(s) field may contain any number of supported translations by
+    official acronym. There must be at least 1 valid translation.
+
+    The weights fields must each contain some valid integer value for weights.
+</p>
 
 <form method="post">
-    <fieldset>
-        <legend>Quiz Teams</legend>
-
+    <fieldset style="vertical-align: top">
+        <legend>Teams/Quizzers</legend>
         <textarea
-            rows="3"
-            name="teams" placeholder="1 team name per line">[% c.param('teams') %]</textarea>
-
-        <input type="submit" value="Run Quiz">
+            rows="15"
+            cols="15"
+            name="teams">[% teams %]</textarea>
     </fieldset>
+
+    <fieldset style="vertical-align: top">
+        <legend>Range(s)</legend>
+        <textarea
+            rows="5"
+            cols="10"
+            name="ranges">[% ranges %]</textarea>
+    </fieldset>
+
+    <fieldset style="vertical-align: top">
+        <legend>Translation(s)</legend>
+        <textarea
+            rows="4"
+            cols="10"
+            name="translations">[% translations %]</textarea>
+    </fieldset>
+
+    <fieldset style="vertical-align: top">
+        <legend>Weights</legend>
+        <label>Club 100      <input size="2" name="club_100" value="[% club_100 %]"></label>
+        <label>Club 250      <input size="2" name="club_250" value="[% club_250 %]"></label>
+        <label>Full Material <input size="2" name="full_material" value="[% full_material %]"></label>
+    </fieldset>
+
+    <input type="submit" value="Run Quiz">
 </form>
+
+[% js_hash_test = BLOCK %]
+    async function digest_message(message) {
+        const hash_buffer = await crypto.subtle.digest( 'SHA-256', new TextEncoder().encode(message) );
+        const hash_hex    = Array.from( new Uint8Array(hash_buffer) )
+            .map( byte => byte.toString(16).padStart( 2, '0' ) )
+            .join('');
+        return hash_hex;
+    }
+    digest_message('John 3:16').then( hex => console.log(hex) );
+[% END %]
+[%# page.js.inline.push(js_hash_test) %]

@@ -60,12 +60,13 @@ export default class Material {
 
     // convert material label into JSON filename
     label2path( label = this.label ) {
-        return json_material_path + '/' + label
-            .replace( / /g,  '_' )
-            .replace( /\(/g, '{' )
-            .replace( /\)/g, '}' )
-            .replace( /;/g,  '+' )
-            .replace( /:/g,  '%' ) + '.json';
+        // return json_material_path + '/' + label
+        //     .replace( / /g,  '_' )
+        //     .replace( /\(/g, '{' )
+        //     .replace( /\)/g, '}' )
+        //     .replace( /;/g,  '+' )
+        //     .replace( /:/g,  '%' ) + '.json';
+        return json_material_path + '/' + label + '.json';
     }
 
     // shuffled bibles sequence

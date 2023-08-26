@@ -29,13 +29,14 @@ sub startup ($self) {
         return 0;
     } );
 
-    $users->any( '/json/material/:label' => [ format => ['json'] ] )->to('material#json');
+    # $users->any( '/json/material/:label' => [ format => ['json'] ] )->to('material#json');
     $users->any('/user/logout')->to('user#logout');
     $users->any('/quiz')->to('main#quiz');
     $users->any( '/quiz/data/:quiz_id' => [ format => ['json'] ] )->to('main#quiz_data');
     $users->any('/quiz/save_data/:quiz_id')->to('main#save_quiz_data');
     $users->any('/quiz/password')->to('main#quiz_password');
-    $users->any('/quiz/settings/:quiz_id')->to('main#quiz_settings');
+    # $users->any('/quiz/settings/:quiz_id')->to('main#quiz_settings');
+    $users->any('/quiz/settings')->to('main#quiz_settings');
 
     $all->any('/')->to('main#home');
     $all->any("/user/$_")->to("user#$_") for ( qw( create forgot_password login logout ) );

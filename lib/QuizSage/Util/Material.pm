@@ -2,13 +2,14 @@ package QuizSage::Util::Material;
 
 use exact -conf;
 use Bible::Reference;
+use Digest;
 use File::Path 'make_path';
 use Math::Prime::Util 'divisors';
 use Mojo::File 'path';
 use Mojo::JSON qw( encode_json decode_json );
 use Omniframe;
 
-exact->exportable( qw{ material_json text2words label2path path2label } );
+exact->exportable( qw{ canonicalize_label material_json text2words label2path path2label } );
 
 my $ref = Bible::Reference->new(
     acronyms   => 0,
@@ -41,7 +42,7 @@ my $thesaurus = $dq->sql(q{
     WHERE w.text = ?
 });
 
-sub material_json ( $label, $force = 0 ) {
+sub canonicalize_label($label) {
     my $data;
 
     # add bibles
@@ -88,12 +89,22 @@ sub material_json ( $label, $force = 0 ) {
         ( @{ $data->{bibles} } ),
     );
 
+    return $data;
+}
+
+sub material_json ( $label, $force = 0 ) {
+    my $data = canonicalize_label($label);
+
     # return JSON file path/name if it already exists
-    ( my $filename = $data->{label} ) =~ tr/\(\);: /\{\}+%_/;
-    my $output = path( join( '/', conf->get( qw{ material json } ), $filename . '.json' ) );
+    # ( my $filename = $data->{label} ) =~ tr/\(\);: /\{\}+%_/;
+    # my $output = path( join( '/', conf->get( qw{ material json } ), $filename . '.json' ) );
+
+    my $hash   = Digest->new('SHA-256')->add( $data->{label} )->hexdigest;
+    my $output = path( join( '/', conf->get( qw{ material json } ), $hash . '.json' ) );
     return {
         label  => $data->{label},
         output => $output->to_string,
+        hash   => $hash,
     } if ( not $force and -f $output );
 
     # add verse content
@@ -144,6 +155,7 @@ sub material_json ( $label, $force = 0 ) {
     return {
         label  => $data->{label},
         output => $output->to_string,
+        hash   => $hash,
     };
 }
 
@@ -175,7 +187,6 @@ sub path2label ($text) {
     $text =~ tr/\{\}+%_/\(\);: /;
     return $text;
 }
-
 
 1;
 

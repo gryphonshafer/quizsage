@@ -21,7 +21,8 @@
     </form>
 
     <a href="[% c.url_for('/user/forgot_password') %]">Forgot Password</a>
-[% ELSIF NOT c.session.quiz_password.defined %]
+[%# ELSIF NOT c.session.quiz_password.defined %]
+[% ELSIF 0 %]
     <p>
         If you are going to be a QM, please enter the Quiz Write-Data Access
         password below. Otherwise, just submit the form blank.
@@ -39,7 +40,7 @@
             <input type="submit" value="Submit Quiz Password">
         </fieldset>
     </form>
-[% ELSE %]
+[% ELSIF 0 %]
     <p>You're logged in, [% user.data.first_name %]. <a href="[% c.url_for('/user/logout') %]">Logout</a>.</p>
 
     [% FOR season IN active_quizzes.seasons %]
