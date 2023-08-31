@@ -99,8 +99,7 @@ export default class Quiz {
                 if ( record.action == 'correct' || record.action == 'incorrect' )
                     record.type = record.type.toUpperCase() + record.qsstypes;
             }
-
-            if ( record.action == 'foul' ) {
+            else if ( record.action == 'foul' ) {
                 record.quizzer_label = 'F';
             }
             else if ( record.action == 'timeout' ) {
@@ -118,8 +117,19 @@ export default class Quiz {
             this.state.board.push(record);
         } );
 
+        let append_final_query = false;
+        if ( distribution.length == 0 ) {
+            const previous_ruling = this.state.board.findLast( existing_record =>
+                existing_record.action == 'incorrect'
+            );
+            if (previous_ruling) {
+                const id_letter_code = previous_ruling.id.charCodeAt( previous_ruling.id.length - 1 );
+                if ( id_letter_code < 64 + this.state.teams.length ) append_final_query = true;
+            }
+        }
+
         // setup next query if there's more of the quiz remaining
-        if ( distribution.length ) {
+        if ( distribution.length || append_final_query ) {
             const record = { current: true };
             this.#setup_query( record, queries, distribution );
             this.state.board.push(record);

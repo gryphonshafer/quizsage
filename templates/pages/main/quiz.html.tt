@@ -118,7 +118,8 @@
             <thead>
                 <tr>
                     <td colspan="3" rowspan="5" class="top_left_corner">
-                        <button @click="delete_last_action()">Delete</button>
+                        <button @click="delete_last_action()">Delete Last</button><br>
+                        <button @click="exit_quiz()">Exit Quiz</button>
                     </td>
                     <template v-for="team in teams">
                         <td :colspan="team.quizzers.length">{{ team.name }}</td>

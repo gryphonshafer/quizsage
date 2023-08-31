@@ -207,6 +207,10 @@ fetch( new URL( '/quiz/data/' + url.searchParams.get('id') + '.json', url ) )
                             this.save_quiz_data();
                         },
 
+                        exit_quiz() {
+                            document.location.href = new URL( '/', url );
+                        },
+
                         search_material() {
                             this.matched_verses = quiz.queries.material.search(
                                 this.search_text,

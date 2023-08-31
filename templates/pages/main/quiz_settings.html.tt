@@ -94,6 +94,8 @@ Col 1-4
     <input type="submit" value="Run Quiz">
 </form>
 
+<a href="[% c.url_for('/user/logout') %]">Logout</a>
+
 [% js_hash_test = BLOCK %]
     async function digest_message(message) {
         const hash_buffer = await crypto.subtle.digest( 'SHA-256', new TextEncoder().encode(message) );
