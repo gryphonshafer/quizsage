@@ -9,8 +9,6 @@ default:
             app:
                 default_shard: 1
                 file: local/db/app.sqlite
-                log:
-                    all: local/db/app.sql
             material:
                 file: local/db/material.sqlite
     logging:
@@ -28,4 +26,15 @@ default:
     material:
         obml: local/obml
         json: static/json/material
+www:
+    logging:
+        filter: ~
+    email:
+        active: 1
+tauntaun:
+    database:
+        shards:
+            app:
+                log:
+                    all: local/db/app.sql
 optional_include: local/config.yaml
