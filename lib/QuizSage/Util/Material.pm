@@ -228,6 +228,10 @@ The function returns a hashref with a C<label> and C<output> keys. The "label"
 will be the canonicalized material label, and the "output" is the file that was
 created or recreated.
 
+=head2 canonicalize_label
+
+Take a string input of a material label and return that label canonicalized.
+
 =head3 JSON DATA STRUCTURE
 
 The JSON data structure should look like this:

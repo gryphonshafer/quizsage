@@ -97,6 +97,8 @@ This class is the model for quiz objects.
 
 =head1 OBJECT METHODS
 
+=head2 freeze, thaw
+
 =head2 active_quizzes
 
 =head1 WITH ROLE
