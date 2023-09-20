@@ -2,14 +2,14 @@ import Material from 'classes/material';
 
 export default class Queries {
     static settings = {
-        phrase_minimum_prompt_length           : 6,
-        phrase_minimum_reply_length            : 2,
-        chapter_reference_minimum_prompt_length: { key: 3, additional: 3 },
-        chapter_reference_minimum_reply_length : 2,
+        phrase_minimum_prompt_length           : 7,
+        phrase_minimum_reply_length            : 1,
+        chapter_reference_minimum_prompt_length: { key: 3, additional: 4 },
+        chapter_reference_minimum_reply_length : 1,
         finish_prompt_length                   : 5,
-        finish_minimum_reply_length            : 2,
-        cross_reference_minimum_prompt_length  : 4,
-        cross_reference_minimum_references     : 2,
+        finish_minimum_reply_length            : 1,
+        // cross_reference_minimum_prompt_length  : 4,
+        // cross_reference_minimum_references     : 2,
     };
 
     constructor ( input = {} ) {
