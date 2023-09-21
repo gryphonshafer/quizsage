@@ -1,8 +1,0 @@
-{
-    "material" : "Acts 1-20 BSB NIV",
-    "teams"    : [
-        [ "Team 1", [ "Alpha Bravo",   "Charlie Delta", "Echo Foxtrot"   ] ],
-        [ "Team 2", [ "Gulf Hotel",    "India Juliet",  "Kilo Lima"      ] ],
-        [ "Team 3", [ "Mike November", "Oscar Papa",    "Uniform Victor" ] ]
-    ]
-}
