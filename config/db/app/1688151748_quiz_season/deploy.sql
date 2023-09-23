@@ -1,3 +1,5 @@
+-- dest.prereq: config/db/app/1668620185_user
+
 CREATE TABLE IF NOT EXISTS season (
     season_id INTEGER PRIMARY KEY,
     name      TEXT    NOT NULL CHECK( LENGTH(name) > 0 ) UNIQUE
