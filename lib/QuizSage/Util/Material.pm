@@ -150,7 +150,7 @@ sub material_json ( $label, $force = 0 ) {
 
     # save data to JSON file and return path/name
     make_path( $output->dirname ) unless ( -d $output->dirname );
-    $output->spurt( encode_json($data) );
+    $output->spew( encode_json($data) );
 
     return {
         label  => $data->{label},

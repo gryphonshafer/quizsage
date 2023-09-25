@@ -64,7 +64,7 @@ $files->each( sub ( $item, $count ) {
 
         make_path( $item->{target}->dirname );
 
-        $item->{target}->spurt(
+        $item->{target}->spew(
             Mojo::ByteStream->new(
                 $obml
             )->encode . "\n"

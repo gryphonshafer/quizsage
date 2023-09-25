@@ -23,7 +23,7 @@ my $structure;
 $structure = decode_json $opt->{structure}->slurp if ( -f $opt->{structure} );
 
 sub save {
-    $opt->{structure}->spurt( encode_json $structure );
+    $opt->{structure}->spew( encode_json $structure );
 }
 
 my $gets_count;
@@ -73,7 +73,7 @@ for my $bible ( keys $structure->%* ) {
 
             print $target->to_string, ' <= ';
             $target->dirname->make_path;
-            $target->spurt( result( lc($bible) . '/' . $book->{path} . '/' . $chapter . '.htm' )->body );
+            $target->spew( result( lc($bible) . '/' . $book->{path} . '/' . $chapter . '.htm' )->body );
         }
     }
 }
