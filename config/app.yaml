@@ -37,4 +37,7 @@ tauntaun:
             app:
                 log:
                     all: local/db/app.sql
+            material:
+                log:
+                    all: local/db/material.sql
 optional_include: local/config.yaml
