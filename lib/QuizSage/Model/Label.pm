@@ -26,18 +26,23 @@ sub aliases ($self) {
     return $self->dq->get(
         [
             [ [ qw( label l ) ] ],
-            [ \q{ FULL OUTER JOIN }, { 'user' => 'u' }, 'user_id' ],
+            [ \q{ LEFT JOIN }, { 'user' => 'u' }, 'user_id' ],
         ],
         [
             'l.*',
-            { 'u.first_name' => 'user_first_name' },
-            { 'u.last_name'  => 'user_last_name'  },
-            { 'u.email'      => 'user_email'      },
+            'u.first_name', 'u.last_name', 'u.email',
+            'CASE u.user_id WHEN 2 THEN 1 ELSE 0 END AS is_self_made',
         ],
         [
             -bool             => 'l.public',
             maybe 'u.user_id' => $self->user_id,
         ],
+        { order_by => [
+            { -desc => { -length => 'l.name' } },
+            'l.name',
+            'l.public',
+            { -desc => 'is_self_made' },
+        ] }
     )->run->all({});
 }
 
@@ -51,7 +56,10 @@ sub parse ( $self, $input = $self->data->{label} ) {
     for my $alias (
         sort {
             length $b->{name} <=> length $a->{name} ||
-            $a->{name} cmp $b->{name} }
+            $a->{name} cmp $b->{name} ||
+            $a->{public} <=> $b->{public} ||
+            $b->{is_self_made} <=> $a->{is_self_made}
+        }
         $self->user_aliases->@*
     ) {
         ( my $re = '\b' . $alias->{name} . '\b' ) =~ s/\s+/\\s+/g;

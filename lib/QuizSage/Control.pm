@@ -29,7 +29,6 @@ sub startup ($self) {
         return 0;
     } );
 
-    # $users->any( '/json/material/:label' => [ format => ['json'] ] )->to('material#json');
     $users->any('/user/logout')->to('user#logout');
     $users->any('/quiz')->to('main#quiz');
     $users->any( '/quiz/data/:quiz_id' => [ format => ['json'] ] )->to('main#quiz_data');
