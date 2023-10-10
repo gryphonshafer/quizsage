@@ -445,13 +445,11 @@ sub format( $self, $data ) {
         $alter_ify->('filters'),
         (
             ( $data->{bibles} )
-                ? join( ' ', sort grep { defined }
-                    ( $data->{bibles}{primary} )
-                        ? $data->{bibles}{primary}->@*
-                        : undef,
-                    ( $data->{bibles}{auxiliary} )
-                        ? ( map { $_ . '*' } $data->{bibles}{auxiliary}->@* )
-                        : undef,
+                ? join( ' ',
+                    map { $_->[0] . ( ( $_->[1] ) ? '*' : '' )  }
+                    sort { $a->[0] cmp $b->[0] }
+                    ( map { [ $_, 0 ] } $data->{bibles}{primary  }->@* ),
+                    ( map { [ $_, 1 ] } $data->{bibles}{auxiliary}->@* ),
                 )
                 : undef
         ),

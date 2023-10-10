@@ -30,12 +30,31 @@
         <script type="module">
 
             // import Material from 'classes/material';
-            // window.material = new Material( { label: '29ee320981c0ba006c6084b7164df0b909aee8a63d31d5b922d4fc709232fcf5' } );
+            // window.material = new Material( { material_json: '30149a4347e15fe1' } );
             // material.ready.then( () => console.log('READY...') );
 
+            // import Queries from 'classes/queries';
+            // window.queries = new Queries( { material_json: 'c37be3eb3c8b113d' } );
+            // window.queries.ready.then( () => {
+            //     window.material = queries.material;
+            //     console.log('READY...')
+            // } );
+
             import Quiz from 'classes/quiz';
-            window.quiz = new Quiz( { label: '29ee320981c0ba006c6084b7164df0b909aee8a63d31d5b922d4fc709232fcf5' } );
-            quiz.ready.then( () => console.log('READY...') );
+            window.quiz = new Quiz( { material_json: 'c37be3eb3c8b113d' } );
+            window.quiz.ready.then( () => {
+                window.material = window.quiz.queries.material;
+                window.queries  = window.quiz.queries;
+                console.log('READY...');
+            } );
+
+            // import distribution from 'modules/distribution';
+            // window.distribution = distribution;
+            // console.log( window.distribution(
+            //     [ 'P', 'C', 'Q', 'F' ],   // query types
+            //     [ 'ESV', 'NASB', 'NIV' ], // primary translations
+            //     3,                        // number of teams
+            // ) );
 
         </script>
     </head>

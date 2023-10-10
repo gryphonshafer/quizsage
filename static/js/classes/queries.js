@@ -130,7 +130,7 @@ export default class Queries {
         const verse     = structuredClone( verses[ Math.floor( Math.random() * verses.length ) ] );
         verse.reference = verse.book + ' ' + verse.chapter  + ':' + verse.verse;
         verse.words     = verse.string.split(/\s+/);
-        verse.bible     = bible || this.material.bible();
+        verse.bible     = bible || this.material.current_bible();
 
         return verse;
     }

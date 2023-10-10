@@ -23,6 +23,8 @@ sub text2words ($text) {
     $text =~ s/\s+/ /g;                # compact multi-spaces
     $text =~ s/(?:^\s|\s$)//g;         # trim spacing
 
+    # lower-case
+    # split with spaces
     return [ split( /\s/, lc($text) ) ];
 }
 
@@ -55,28 +57,46 @@ fun material_json (
 
     # setup data structure
     my $data = $model_label->parse($description);
-    $data->{description} = $description;
-    $_->{range} = $_->{range}[0] for ( $data->{ranges}->@* );
 
     croak('Must supply at least 1 valid reference range') unless ( $data->{ranges}->@* );
     croak('Must have least 1 primary supported Bible translation by canonical acronym')
         unless ( $data->{bibles} and $data->{bibles}{primary} and $data->{bibles}{primary}->@* );
 
+    $data->{description} = $description;
+
+    for ( $data->{ranges}->@* ) {
+        $_->{range}  = $_->{range}[0];
+        $_->{verses} = $model_label->bible_ref->clear->simplify(0)->in( $_->{range} )->as_verses;
+    }
+
+    $data->{bibles} = {
+        map { $_->[0] => { type => ( ( $_->[1] ) ? 'auxiliary' : 'primary' ) } }
+        sort { $a->[0] cmp $b->[0] }
+        ( map { [ $_, 0 ] } $data->{bibles}{primary  }->@* ),
+        ( map { [ $_, 1 ] } $data->{bibles}{auxiliary}->@* ),
+    };
+
     my $dq_material = $model_label->dq('material');
 
-    # add verse content
-    my @bibles = sort $data->{bibles}{primary}->@*, $data->{bibles}{auxiliary}->@*;
+    # # add verse content
+    my @bibles = sort keys $data->{bibles}->%*;
     my %words;
     for my $range ( $data->{ranges}->@* ) {
-        for my $ref ( $model_label->bible_ref->clear->simplify(0)->in( $range->{range} )->as_verses->@* ) {
-            $ref =~ /^(?<book>.+)\s+(?<chapter>\d+):(?<verse>\d+)$/;
+        for ( my $i = 0; $i < $range->{verses}->@*; $i++ ) {
+            next if (
+                $data->{bibles}{ $bibles[0] }{content} and
+                $data->{bibles}{ $bibles[0] }{content}{ $range->{verses}[$i] }
+            );
+
+            $range->{verses}[$i] =~ /^(?<book>.+)\s+(?<chapter>\d+):(?<verse>\d+)$/;
+
             my $material = $dq_material->get(
                 [
                     [ [ 'verse' => 'v' ] ],
                     [ { 'bible' => 't' }, 'bible_id' ],
                     [ { 'book'  => 'b' }, 'book_id'  ],
                 ],
-                [ [ 't.acronym', 'bible' ], [ 'b.name', 'book' ], 'v.chapter', 'v.verse', 'v.text' ],
+                [ [ 't.acronym', 'bible' ], 'v.text' ],
                 {
                     't.acronym' => \@bibles,
                     'b.name'    => $+{book},
@@ -84,11 +104,17 @@ fun material_json (
                     'v.verse'   => $+{verse},
                 },
             )->run->all({});
-            next unless ( @$material == @bibles );
+
+            unless ( @$material == @bibles ) {
+                splice( @{ $range->{verses} }, $i, 1 );
+                next;
+            }
+
             for my $verse (@$material) {
-                $verse->{words} = text2words( $verse->{text} );
-                $words{$_} = 1 for ( $verse->{words}->@* );
-                push( @{ $range->{content}{ delete $verse->{bible} } }, $verse );
+                $words{$_} = 1 for ( @{ text2words( $verse->{text} ) } );
+                $data->{bibles}{ $verse->{bible} }{content}{ $range->{verses}[$i] } = {
+                    text => $verse->{text},
+                };
             }
         }
     }
