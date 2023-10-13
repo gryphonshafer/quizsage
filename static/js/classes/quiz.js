@@ -120,9 +120,11 @@ export default class Quiz {
         let append_final_query = false;
         if ( distribution.length == 0 ) {
             const previous_ruling = this.state.board.findLast( existing_record =>
+                existing_record.action == 'no_trigger' ||
+                existing_record.action == 'correct'    ||
                 existing_record.action == 'incorrect'
             );
-            if (previous_ruling) {
+            if ( previous_ruling && previous_ruling.action == 'incorrect' ) {
                 const id_letter_code = previous_ruling.id.charCodeAt( previous_ruling.id.length - 1 );
                 if ( id_letter_code < 64 + this.state.teams.length ) append_final_query = true;
             }
