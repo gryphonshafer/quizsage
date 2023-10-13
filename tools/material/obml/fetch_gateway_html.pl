@@ -34,7 +34,7 @@ unless ( -w $opt->{status} ) {
         )
     ];
 
-    $opt->{status}->spurt( encode_json($status) );
+    $opt->{status}->spew( encode_json($status) );
 }
 else {
     $status = decode_json( $opt->{status}->slurp );
@@ -56,7 +56,7 @@ for my $bible ( shuffle(@$status) ) {
             } @{ $bg->structure( $bible->{bible} ) }
         ];
 
-        $opt->{status}->spurt( encode_json($status) );
+        $opt->{status}->spew( encode_json($status) );
     }
 }
 
@@ -100,7 +100,7 @@ for ( my $i = 0; $i < @chapters; $i++ ) {
     sleep $opt->{wait};
 
     try {
-        $chapter->{file}->spurt( Mojo::ByteStream->new( $bg->fetch(
+        $chapter->{file}->spew( Mojo::ByteStream->new( $bg->fetch(
             $chapter->{book_display}  . ' ' . $chapter->{chapter},
             $chapter->{bible},
         ) )->encode );

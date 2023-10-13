@@ -2,7 +2,7 @@ const json_material_path = '../../json/material';
 
 export default class Material {
     static settings = {
-        label         : '',
+        material_id   : undefined,
         minimum_verity: 3,
     };
 
@@ -11,42 +11,40 @@ export default class Material {
             this[key] = ( input[key] !== undefined ) ? input[key] : this.constructor.settings[key]
         );
 
-        if ( ! this.label ) throw 'Material label not defined';
+        if ( ! this.material_id ) throw 'Material JSON hash not defined';
 
-        this.path  = this.label2path( this.label );
-        this.ready = fetch( new URL( this.path, import.meta.url ) )
+        this.ready = fetch( new URL(
+            json_material_path + '/' + this.material_id + '.json',
+            import.meta.url,
+        ) )
             .then( reply => reply.json() )
             .then( loaded_data => {
-                this.loaded_data     = loaded_data;
-                this.bibles_sequence = this.bibles();
+                this.loaded_data = loaded_data;
 
-                this.all_verses = this.loaded_data.blocks.flatMap( block =>
-                    Object.keys( block.content ).flatMap( bible =>
-                        block.content[bible].map( verse => ( { ...verse, bible: bible } ) )
-                    )
-                )
-                .filter( ( verse, index, self ) =>
-                    index === self.findIndex( this_verse =>
-                        this_verse.bible   === verse.bible   &&
-                        this_verse.book    === verse.book    &&
-                        this_verse.chapter === verse.chapter &&
-                        this_verse.verse   === verse.verse
-                    )
+                Object.keys( this.loaded_data.bibles ).forEach( bible =>
+                    Object.keys( this.loaded_data.bibles[bible].content ).forEach( reference => {
+                        const ref_parts = reference.match(/^(.+)\s+(\d+):(\d+)$/);
+                        const verse     = this.loaded_data.bibles[bible].content[reference];
+
+                        verse.bible     = bible;
+                        verse.reference = reference;
+                        verse.book      = ref_parts[1];
+                        verse.chapter   = parseInt( ref_parts[2] );
+                        verse.verse     = parseInt( ref_parts[3] );
+                        verse.string    = this.text2string( verse.text );
+
+                        [ verse.words, verse.breaks ] = this.text2words( verse.text );
+                    } )
                 );
 
-                this.verses_by_bible = {};
-                this.loaded_data.bibles.forEach( bible =>
-                    this.verses_by_bible[bible] = this.loaded_data.blocks.flatMap( block =>
-                        block.content[bible].map( verse => ( { ...verse, bible: bible } ) )
-                    )
-                    .filter( ( verse, index, self ) =>
-                        index === self.findIndex( this_verse =>
-                            this_verse.book    === verse.book    &&
-                            this_verse.chapter === verse.chapter &&
-                            this_verse.verse   === verse.verse
-                        )
-                    )
-                );
+                this.primary_bibles = Object.keys( this.loaded_data.bibles )
+                    .filter( bible => this.loaded_data.bibles[bible].type == 'primary' );
+
+                this.all_verses = Object.values( this.loaded_data.bibles )
+                    .flatMap( bible => Object.values( bible.content ) );
+
+                this.verses_by_bible = Object.fromEntries( Object.keys( this.loaded_data.bibles )
+                    .map( bible => [ bible, Object.values( this.loaded_data.bibles[bible].content ) ] ) );
 
                 return this;
             } );
@@ -58,96 +56,86 @@ export default class Material {
         };
     }
 
-    // convert material label into JSON filename
-    label2path( label = this.label ) {
-        // return json_material_path + '/' + label
-        //     .replace( / /g,  '_' )
-        //     .replace( /\(/g, '{' )
-        //     .replace( /\)/g, '}' )
-        //     .replace( /;/g,  '+' )
-        //     .replace( /:/g,  '%' ) + '.json';
-        return json_material_path + '/' + label + '.json';
+    text2string( text, include_sentence_breaks = false ) {
+        text = text.toLowerCase()
+            .replaceAll( /(^|\W)'(\w.*?)'(\W|$)/g, '$1$2$3' ) // rm single-quotes from around words/phrases
+            .replaceAll( /[,:\-]+$/g, '' )                    // rm commas, colons, and dashes at end of lines
+            .replaceAll( /,'/g, '' )                          // rm commas followed by single-quote
+            .replaceAll( /[,:](?=\D)/g, '' );                 // rm commas/colons except for "1,234" and "3:00"
+
+        if (include_sentence_breaks) {
+            text = text
+                .replaceAll( /[\.\?\!]/g, '|' )          // unify sentence terminations
+                .replaceAll( /[^a-z0-9'\-,:\|]/gi, ' ' ) // rm all but "usable" characters
+                .replaceAll( /\|\s*\|/g, '|' )           // rm duplicate breaks
+                .replace( /\s*\|$/, '' );                // rm text-end break
+        }
+        else {
+            text = text.replaceAll( /[^a-z0-9'\-,:]/gi, ' ' ); // rm all but "usable" characters
+        }
+
+        text = text
+            .replaceAll( /(\d)\-(\d)/g, '$1 $2' ) // convert dashes between numbers into spaces
+            .replaceAll( /(?<!\w)'/g, ' ' )       // rm single-quote after a non-word character
+            .replaceAll( /(\w)'(?=\W|$)/g, '$1' ) // rm single-quote after a word char prior to a non-word
+            .replaceAll( /\-{2,}/g, ' ' )         // convert double-dashes into spaces
+            .replaceAll( /\s+/g, ' ' )            // compact multi-spaces
+            .replaceAll( /(?:^\s|\s$)/g, '' );    // trim spacing
+
+        return text;
     }
 
-    // shuffled bibles sequence
-    bibles() {
-        return this.loaded_data.bibles
-            .map( value => ( { value, sort: Math.random() } ) )
-            .sort( ( a, b ) => a.sort - b.sort )
-            .map( ( {value} ) => value );
+    text2words(string) {
+        string = this.text2string( string, true );
+
+        const words  = string.split(/\s/);
+        const breaks = [];
+
+        if ( string.match(/\|/) ) {
+            for ( let i = 0; i < words.length; i++ ) {
+                words[i] = words[i].replace( /\|/, () => {
+                    if ( i < words.length - 1 ) breaks.push( i + 1 );
+                    return '';
+                } );
+            }
+        }
+
+        return [ words, breaks ];
     }
 
     // next bible in an object-level shuffled sequence
     next_bible() {
-        this.bibles_sequence.push( this.bibles_sequence.shift() );
-        return this.bible();
+        this.primary_bibles.push( this.primary_bibles.shift() );
+        return this.current_bible();
     }
 
     // current bible
-    bible() {
-        return this.bibles_sequence[ this.bibles_sequence.length - 1 ];
+    current_bible() {
+        return this.primary_bibles[ this.primary_bibles.length - 1 ];
     }
 
-    // verses from a random-by-weight block given a bible (or the next bible in sequence)
+    // verses from a random-by-weight range given a bible (or the next bible in sequence)
     verses( bible = this.next_bible() ) {
         bible = bible.toUpperCase();
-        if ( this.loaded_data.bibles.filter( item => item == bible ).length != 1 )
-            throw '"' + bible + '" is not a valid Bible';
+        if ( this.loaded_data.bibles[bible] === undefined ) throw '"' + bible + '" is not a valid Bible';
 
-        const weights = this.loaded_data.blocks
-            .map( ( block, index ) => Array( block.weight ).fill(index) )
+        const weights = this.loaded_data.ranges
+            .map( ( range, index ) => Array( range.weight ).fill(index) )
             .flatMap( value => value );
 
-        return this.loaded_data.blocks[
+        return this.loaded_data.ranges[
             weights[ Math.floor( Math.random() * weights.length ) ]
-        ].content[bible];
+        ].verses.map( reference => this.loaded_data.bibles[bible].content[reference] );
     }
 
     // verse(s) given a bible, book, chapter (and optionally verse number)
     lookup( bible, book, chapter, verse_number = undefined ) {
-        return this.loaded_data.blocks
-            .flatMap( block => block.content[bible] )
-            .filter( this_verse =>
+        return (verse_number)
+            ? [ this.loaded_data.bibles[bible].content[ book + ' ' + chapter + ':' + verse_number ] ]
+            : this.verses_by_bible[bible].filter( this_verse =>
                 book    == this_verse.book    &&
-                chapter == this_verse.chapter &&
-                ( ! verse_number || verse_number == this_verse.verse )
-            )
-            .filter( ( verse, index, self ) =>
-                index === self.findIndex( this_verse =>
-                    this_verse.book    === verse.book    &&
-                    this_verse.chapter === verse.chapter &&
-                    this_verse.verse   === verse.verse
-                )
+                chapter == this_verse.chapter
             );
-    }
-
-    // split a text string into pure lowercase words
-    static text2words(text) {
-        return text
-            // remove single-quotes from around words/phrases
-            .replaceAll( /(^|\W)'(\w.*?)'(\W|$)/g, '$1$2$3')
-            // remove commas, colons, and dashes at end of lines
-            .replaceAll( /[,:\-]+$/g, '')
-            // remove commas followed by single-quote
-            .replaceAll( /,'/g, '')
-            // remove commas and colons except for "1,234" and "3:00"
-            .replaceAll( /[,:](?=\D)/g, '')
-            // remove all but "usable" characters
-            .replaceAll( /[^A-Za-z0-9'\-,:]/gi,    ' ')
-            // convert dashes between numbers into spaces
-            .replaceAll( /(\d)\-(\d)/g, '$1 $2')
-            // remove single-quote following a non-word character
-            .replaceAll( /(?<!\w)'/g, ' ')
-            // remove single-quote following a word character prior to a non-word
-            .replaceAll( /(\w)'(?=\W|$)/g, '$1')
-            // convert double-dashes into spaces
-            .replaceAll( /\-{2,}/g, ' ')
-            // compact multi-spaces
-            .replaceAll( /\s+/g, ' ')
-            // trim spacing
-            .replaceAll( /(?:^\s|\s$)/g, '')
-            .toLowerCase()
-            .split(/\s/);
     }
 
     // search for verses given a substring
@@ -155,7 +143,7 @@ export default class Material {
     //     type "exact"   = match input against verse.text
     //     type "prompt"  = match lower-case words of input against verse.string with boundary edges
     search( input, bible = undefined, type = 'inexact' ) {
-        if ( type == 'inexact' ) input = this.constructor.text2words(input).join(' ').toLowerCase();
+        if ( type == 'inexact' ) input = this.text2string(input);
         const boundary_regex = ( type == 'prompt' ) ? new RegExp( '\\b' + input + '\\b' ) : null;
 
         return ( ( ! bible ) ? this.all_verses : this.verses_by_bible[bible] )
@@ -173,7 +161,7 @@ export default class Material {
 
     // given a verse reference, return the "next verse"
     next_verse( book, chapter, verse, bible = undefined ) {
-        bible ||= this.bible();
+        bible ||= this.current_bible();
 
         let found_verse = this.verses_by_bible[bible].find( this_verse =>
             this_verse.book    == book    &&
@@ -196,18 +184,18 @@ export default class Material {
         let key = Object.keys( this.loaded_data.thesaurus ).find( key => key.toLowerCase() == word );
         if ( ! key ) return;
 
-        let entry = this.loaded_data.thesaurus[key];
+        let entry = structuredClone( this.loaded_data.thesaurus[key] );
         if ( typeof entry === 'string' ) {
             key   = entry;
             entry = this.loaded_data.thesaurus[key];
         }
 
         entry
-            .filter( block => block.type == 'pron.' || block.type == 'article' )
+            .filter( block => block.type == 'pron.' || block.type == 'article' || block.type == 'prep.' )
             .forEach( block => block.synonyms = [] );
 
-        entry.forEach( block =>
-            block.synonyms = block.synonyms.filter( synonym => synonym.verity <= this.minimum_verity )
+        entry.forEach( range =>
+            range.synonyms = range.synonyms.filter( synonym => synonym.verity <= this.minimum_verity )
         );
 
         return { word: key, meanings: entry };
@@ -215,11 +203,10 @@ export default class Material {
 
     // given a verse reference, return the synonyms at or above a given verity
     synonyms_of_verse( book, chapter, verse, bible = undefined ) {
-        bible ||= this.bible();
+        bible ||= this.current_bible();
 
         return [ ...new Set(
-            this.all_verses.find( this_verse =>
-                this_verse.bible   == bible   &&
+            this.verses_by_bible[bible].find( this_verse =>
                 this_verse.book    == book    &&
                 this_verse.chapter == chapter &&
                 this_verse.verse   == verse
@@ -227,10 +214,11 @@ export default class Material {
         ) ].map( word => this.synonyms_of_word(word) ).filter( set => set );
     }
 
-    // given a bible and verse object, return a multibible set of verses
+    // given a verse object, return a multi-bible set of verses
     multibible_verses(verse_object) {
-        const other_bibles = this.loaded_data.bibles.filter( bible => bible != verse_object.bible );
         let other_verses   = [];
+        const other_bibles = Object.keys( this.loaded_data.bibles )
+            .filter( bible => bible != verse_object.bible );
 
         if (other_bibles) {
             other_verses = other_bibles.map( other_bible => {

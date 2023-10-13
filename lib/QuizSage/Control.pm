@@ -1,10 +1,10 @@
 package QuizSage::Control;
 
-use exact 'Omniframe::Control';
+use exact -conf, 'Omniframe::Control';
 use QuizSage::Model::User;
 
 sub startup ($self) {
-    $self->setup( skip => [ qw( document devdocs ) ] );
+    $self->setup;
 
     my $all = $self->routes->under( sub ($c) {
         $c->stash( page => { wrappers => ['page.html.tt'] } );
@@ -29,7 +29,6 @@ sub startup ($self) {
         return 0;
     } );
 
-    # $users->any( '/json/material/:label' => [ format => ['json'] ] )->to('material#json');
     $users->any('/user/logout')->to('user#logout');
     $users->any('/quiz')->to('main#quiz');
     $users->any( '/quiz/data/:quiz_id' => [ format => ['json'] ] )->to('main#quiz_data');
@@ -41,6 +40,19 @@ sub startup ($self) {
     $all->any('/')->to('main#home');
     $all->any("/user/$_")->to("user#$_") for ( qw( create forgot_password login logout ) );
     $all->any("/user/$_/:user_id/:user_hash")->to("user#$_") for ( qw( verify reset_password ) );
+
+    $all->any( '/docs/*name' => sub ($c) {
+        $c->document( 'docs/' . $c->stash('name') );
+        $c->stash( docs_nav => $c->docs_nav('docs') );
+
+        if ( $c->stash('html') ) {
+            $c->render( template => 'docs' );
+        }
+        else {
+            $c->redirect_to('/');
+        }
+    } );
+
     $all->any( '/*null' => { null => undef } => sub ($c) { $c->redirect_to('/') } );
 }
 

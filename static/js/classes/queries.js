@@ -2,14 +2,14 @@ import Material from 'classes/material';
 
 export default class Queries {
     static settings = {
-        phrase_minimum_prompt_length           : 6,
-        phrase_minimum_reply_length            : 2,
-        chapter_reference_minimum_prompt_length: { key: 3, additional: 3 },
-        chapter_reference_minimum_reply_length : 2,
+        phrase_minimum_prompt_length           : 7,
+        phrase_minimum_reply_length            : 1,
+        chapter_reference_minimum_prompt_length: { key: 3, additional: 4 },
+        chapter_reference_minimum_reply_length : 1,
         finish_prompt_length                   : 5,
-        finish_minimum_reply_length            : 2,
-        cross_reference_minimum_prompt_length  : 4,
-        cross_reference_minimum_references     : 2,
+        finish_minimum_reply_length            : 1,
+        // cross_reference_minimum_prompt_length  : 4,
+        // cross_reference_minimum_references     : 2,
     };
 
     constructor ( input = {} ) {
@@ -90,14 +90,15 @@ export default class Queries {
             this.finish_prompt_length + this.finish_minimum_reply_length
         ) verse = this.#select_verse(bible);
 
-        const [ prompt, reply, prompt_words ] =
+        const [ prompt, reply, full_reply, prompt_words ] =
             this.#prompt_reply_text( verse, 0, this.finish_prompt_length );
 
         return this.#prep_return_data({
-            type  : 'F',
-            prompt: prompt,
-            reply : reply,
-            verse : verse,
+            type      : 'F',
+            prompt    : prompt,
+            reply     : reply,
+            full_reply: full_reply,
+            verse     : verse,
         });
     }
 
@@ -114,38 +115,41 @@ export default class Queries {
         const verses = this.material.verses(bible).filter( verse =>
             type != 'xr' &&
             ! [ ...this.references_selected, ...refs_filter ].find(
-                reference => reference == verse.book + ' ' + verse.chapter  + ':' + verse.verse
+                reference => reference == verse.reference
             ) ||
             type == 'xr' &&
             ! this.prompts_selected.find(
                 prompt => verse.string.match( '\\b' + prompt.join('\\W+') + '\\b' )
             ) &&
-            ! refs_filter.find(
-                reference => reference == verse.book + ' ' + verse.chapter  + ':' + verse.verse
-            )
+            ! refs_filter.find( reference => reference == verse.reference )
         );
 
         if ( verses.length == 0 ) throw 'Exhausted available verses';
 
-        const verse     = structuredClone( verses[ Math.floor( Math.random() * verses.length ) ] );
-        verse.reference = verse.book + ' ' + verse.chapter  + ':' + verse.verse;
-        verse.words     = verse.string.split(/\s+/);
-        verse.bible     = bible || this.material.bible();
-
-        return verse;
+        return structuredClone( verses[ Math.floor( Math.random() * verses.length ) ] );
     }
 
-    #prompt_reply_text( verse, phrase_start, phrase_length ) {
+    #prompt_reply_text( verse, phrase_start, phrase_length, next_break = undefined ) {
         const prompt_words = verse.words.slice( phrase_start, phrase_start + phrase_length );
 
         const match = verse.text.match(
             new RegExp( '(\\b' + prompt_words.join('\\W+') + '\\b)\\W*(.+)', 'i' )
         );
 
-        const prompt = match[1] + '...';
-        const reply  = '...' + match[2];
+        const prompt     = match[1] + '...';
+        const full_reply = '...' + match[2];
+        const reply      = (next_break)
+            ? '...' + match[2].match(
+                new RegExp(
+                    '(\\b' + verse.words.slice(
+                        phrase_start + phrase_length, next_break
+                    ).join('\\W+') + '\\b\\S*)',
+                    'i',
+                )
+            )[1]
+            : full_reply;
 
-        return [ prompt, reply, prompt_words ];
+        return [ prompt, reply, full_reply, prompt_words ];
     }
 
     #find_phrase_block( bible, type, min_prompt, min_reply ) {
@@ -265,25 +269,32 @@ export default class Queries {
 
                 if ( phrase_start + phrase_length + min_reply >= verse.words.length ) continue;
 
+                let next_break;
+                if ( type == 'phrase' || type == 'cr' ) {
+                    next_break = verse.breaks.find( this_break => phrase_start + phrase_length < this_break );
+                    if ( next_break && phrase_start + phrase_length + min_reply > next_break ) continue;
+                }
+
                 if ( phrase_suffix_length > 0 )
                     prompt_words = verse.words.slice( phrase_start, phrase_start + phrase_length ).join(' ');
 
                 if ( type != 'xr' ) {
                     if ( [ ...verse.string.matchAll( '\\b' + prompt_words + '\\b' ) ].length == 1 ) {
-                        const [ prompt, reply, prompt_words ] =
-                            this.#prompt_reply_text( verse, phrase_start, phrase_length );
+                        const [ prompt, reply, full_reply, prompt_words ] =
+                            this.#prompt_reply_text( verse, phrase_start, phrase_length, next_break );
 
                         return {
-                            type  : type,
-                            prompt: prompt,
-                            reply : reply,
-                            verse : verse,
+                            type      : type,
+                            prompt    : prompt,
+                            reply     : reply,
+                            full_reply: full_reply,
+                            verse     : verse,
                         };
                     }
                 }
                 else {
                     if ( verses_with_phrase.length >= min_reply ) {
-                        const [ prompt, reply, prompt_words ] =
+                        const [ prompt, reply, full_reply, prompt_words ] =
                             this.#prompt_reply_text( verse, phrase_start, phrase_length );
 
                         return {
@@ -323,12 +334,13 @@ export default class Queries {
 
             return_data = {
                 ...return_data,
-                reply   : block.reply,
-                bible   : block.verse.bible,
-                book    : block.verse.book,
-                chapter : block.verse.chapter,
-                verse   : block.verse.verse,
-                material: material,
+                reply     : block.reply,
+                full_reply: block.full_reply,
+                bible     : block.verse.bible,
+                book      : block.verse.book,
+                chapter   : block.verse.chapter,
+                verse     : block.verse.verse,
+                material  : material,
             };
         }
         else {
@@ -347,6 +359,8 @@ export default class Queries {
     }
 
     add_verse(query) {
+        if ( query.type == 'xr' ) return query;
+
         const next_verse = this.material.next_verse(
             query.book,
             query.chapter,
@@ -361,7 +375,7 @@ export default class Queries {
         if ( query.type.substr( 0, 1 ).toUpperCase() == 'Q' ) query.prompt =
             `Quote ${query.book}, chapter ${query.chapter}, verses ${query.verse} and ${next_verse.verse}.`;
 
-        query.reply += ' ' + next_verse.text;
+        query.reply = query.full_reply + ' ' + next_verse.text;
         query.verse += '-' + next_verse.verse;
 
         const added_material = this.material.multibible_verses(next_verse);
@@ -384,6 +398,7 @@ export default class Queries {
     }
 
     remove_verse(query) {
+        if ( query.type == 'xr' ) return query;
         if ( ! query.original ) throw 'Unable to remove verse';
 
         for ( let key in query ) {

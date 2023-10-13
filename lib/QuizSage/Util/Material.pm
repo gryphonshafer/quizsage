@@ -1,147 +1,136 @@
 package QuizSage::Util::Material;
 
-use exact -conf;
-use Bible::Reference;
+use exact -conf, -fun;
 use Digest;
 use File::Path 'make_path';
-use Math::Prime::Util 'divisors';
 use Mojo::File 'path';
 use Mojo::JSON qw( encode_json decode_json );
-use Omniframe;
+use QuizSage::Model::Label;
 
-exact->exportable( qw{ canonicalize_label material_json text2words label2path path2label } );
+exact->exportable( qw{ text2words material_json } );
 
-my $ref = Bible::Reference->new(
-    acronyms   => 0,
-    sorting    => 1,
-    add_detail => 1,
-);
+sub text2words ($text) {
+    $text = lc $text;
 
-my $dq = Omniframe->with_roles('+Database')->new->dq('material');
+    $text =~ s/(^|\W)'(\w.*?)'(\W|$)/$1$2$3/g; # rm single-quotes from around words/phrases
+    $text =~ s/[,:\-]+$//g;                    # rm commas, colons, and dashes at end of lines
+    $text =~ s/,'//g;                          # rm commas followed by single-quote
+    $text =~ s/[,:](?=\D)//g;                  # rm commas/colons except for "1,234" and "3:00"
+    $text =~ s/[^a-z0-9'\-,:]/ /gi;            # rm all but "usable" characters
+    $text =~ s/(\d)\-(\d)/$1 $2/g;             # convert dashes between numbers into spaces
+    $text =~ s/(?<!\w)'/ /g;                   # rm single-quote after a non-word character
+    $text =~ s/(\w)'(?=\W|$)/$1/g;             # rm single-quote after a word char prior to a non-word
+    $text =~ s/\-{2,}/ /g;                     # convert double-dashes into spaces
+    $text =~ s/\s+/ /g;                        # compact multi-spaces
+    $text =~ s/(?:^\s|\s$)//g;                 # trim spacing
 
-my $material = $dq->sql(q{
-    SELECT
-        b.name AS book,
-        v.chapter,
-        v.verse,
-        v.text,
-        v.string
-    FROM verse AS v
-    JOIN bible AS t USING (bible_id)
-    JOIN book AS b USING (book_id)
-    WHERE t.acronym = ? AND b.name = ? AND v.chapter = ? AND v.verse = ?
-});
-
-my $thesaurus = $dq->sql(q{
-    SELECT
-        w.text AS text,
-        r.text AS redirected_to,
-        COALESCE( w.meanings, r.meanings ) AS meanings
-    FROM word AS w
-    LEFT JOIN word AS r ON w.redirect_id = r.word_id
-    WHERE w.text = ?
-});
-
-sub canonicalize_label($label) {
-    my $data;
-
-    # add bibles
-    my $bible_re = '\b(' . join( '|', @{ $dq->sql('SELECT acronym FROM bible')->run->column } ) . ')\b';
-    $data->{bibles}{ uc $1 } = 1 while ( $label =~ s/$bible_re//i );
-    $data->{bibles} = [ sort keys %{ $data->{bibles} } ];
-    croak('Must supply at least 1 supported Bible translation by acronym') unless ( @{ $data->{bibles} } );
-
-    # add range/weight blocks
-    my $last_weight;
-    $data->{blocks} = [
-        grep { $_->{range} } map {
-            s/\(([^\)]+)$//;
-            ( my $weight = $1 || '' ) =~ s/[^\d]+//g;;
-            $weight      = 0 + ( $weight || $last_weight || 1 );
-            $last_weight = $weight;
-
-            my $verses = $ref->clear->simplify(0)->in($_)->as_verses;
-
-            +{
-                range   => $ref->clear->simplify(1)->in($_)->refs,
-                weight  => 0 + ( $weight || 1 ),
-                content => { map { $_ => [@$verses] } @{ $data->{bibles} } },
-            };
-        } split( /(?<=\([^\)]{,64})\)/, $label )
-    ];
-    croak('Must supply at least 1 valid reference range') unless ( @{ $data->{blocks} } );
-
-    # lcd weights
-    my @weights = map { $_->{weight} } @{ $data->{blocks} };
-    my %factors;
-    $factors{$_}++ for ( map { divisors($_) } @weights );
-    my ($largest_common_factor) = sort { $b <=> $a } grep { $factors{$_} == @weights } keys %factors;
-    @weights = map { $_ / $largest_common_factor } @weights;
-    $_->{weight} = shift @weights for ( @{ $data->{blocks} } );
-
-    # add canonicalized label
-    $data->{label} = join( ' ',
-        (
-            map {
-                $_->{range} . ( ( @{ $data->{blocks} } > 1 ) ? ' (' . $_->{weight} . ')' : '' )
-            } @{ $data->{blocks} }
-        ),
-        ( @{ $data->{bibles} } ),
-    );
-
-    return $data;
+    return [ split( /\s/, $text ) ];
 }
 
-sub material_json ( $label, $force = 0 ) {
-    my $data = canonicalize_label($label);
+fun material_json (
+    :$description = undef, # assumed to be canonical
+    :$label       = undef, # not required to be canonical
+    :$user        = undef, # user ID from application database
+    :$force       = 0,
+) {
+    croak('Must provide either label or description (and not both)')
+        if ( not $description and not $label or $description and $label );
 
-    # return JSON file path/name if it already exists
-    # ( my $filename = $data->{label} ) =~ tr/\(\);: /\{\}+%_/;
-    # my $output = path( join( '/', conf->get( qw{ material json } ), $filename . '.json' ) );
+    my $model_label = QuizSage::Model::Label->new( user_id => $user );
+    $description    = $model_label->descriptionize($label) if ($label);
+    my $material_id = substr( Digest->new('SHA-256')->add($description)->hexdigest, 0, 16 );
 
-    my $hash   = Digest->new('SHA-256')->add( $data->{label} )->hexdigest;
-    my $output = path( join( '/', conf->get( qw{ material json } ), $hash . '.json' ) );
-    return {
-        label  => $data->{label},
-        output => $output->to_string,
-        hash   => $hash,
-    } if ( not $force and -f $output );
+    my $json_file = path(
+        join( '/',
+            conf->get( qw{ config_app root_dir } ),
+            conf->get( qw{ material json } ),
+            $material_id . '.json',
+        )
+    );
 
-    # add verse content
-    my $verses_to_filter;
-    for my $block ( @{ $data->{blocks} } ) {
-        for my $bible ( keys %{ $block->{content} } ) {
-            $block->{content}{$bible} = [ grep { defined } map {
-                /^(?<book>.+)\s+(?<chapter>\d+):(?<verse>\d+)$/;
-                my $verse = $material->run( $bible, $+{book}, $+{chapter}, $+{verse} )->first({});
-                $verses_to_filter->{ join( '|', $+{book}, $+{chapter}, $+{verse} ) } = 1
-                    unless ( $verse and $verse->{text} );
-                $verse;
-            } @{ $block->{content}{$bible} } ];
-        }
+    my $return = {
+        description => $description,
+        json_file   => $json_file->to_string,
+        material_id => $material_id,
+    };
+
+    return $return if ( not $force and -f $json_file );
+
+    # setup data structure
+    my $data = $model_label->parse($description);
+
+    croak('Must supply at least 1 valid reference range') unless ( $data->{ranges}->@* );
+    croak('Must have least 1 primary supported Bible translation by canonical acronym')
+        unless ( $data->{bibles} and $data->{bibles}{primary} and $data->{bibles}{primary}->@* );
+
+    $data->{description} = $description;
+
+    for ( $data->{ranges}->@* ) {
+        $_->{range}  = $_->{range}[0];
+        $_->{verses} = $model_label->bible_ref->clear->simplify(0)->in( $_->{range} )->as_verses;
     }
-    my $words;
-    for my $block ( @{ $data->{blocks} } ) {
-        for my $bible ( keys %{ $block->{content} } ) {
-            $block->{content}{$bible} = [ grep { defined } map {
-                my $verse = $_;
-                unless (
-                    $verses_to_filter->{
-                        join( '|', $verse->{book}, $verse->{chapter}, $verse->{verse} )
-                    }
-                ) {
-                    $words->{$_} = 1 for ( split( /\s/, $verse->{string} ) );
-                    $verse;
-                }
-                else {
-                    undef;
-                }
-            } @{ $block->{content}{$bible} } ];
+
+    $data->{bibles} = {
+        map { $_->[0] => { type => ( ( $_->[1] ) ? 'auxiliary' : 'primary' ) } }
+        sort { $a->[0] cmp $b->[0] }
+        ( map { [ $_, 0 ] } $data->{bibles}{primary  }->@* ),
+        ( map { [ $_, 1 ] } $data->{bibles}{auxiliary}->@* ),
+    };
+
+    my $dq_material = $model_label->dq('material');
+
+    # # add verse content
+    my @bibles = sort keys $data->{bibles}->%*;
+    my %words;
+    for my $range ( $data->{ranges}->@* ) {
+        for ( my $i = 0; $i < $range->{verses}->@*; $i++ ) {
+            next if (
+                $data->{bibles}{ $bibles[0] }{content} and
+                $data->{bibles}{ $bibles[0] }{content}{ $range->{verses}[$i] }
+            );
+
+            $range->{verses}[$i] =~ /^(?<book>.+)\s+(?<chapter>\d+):(?<verse>\d+)$/;
+
+            my $material = $dq_material->get(
+                [
+                    [ [ 'verse' => 'v' ] ],
+                    [ { 'bible' => 't' }, 'bible_id' ],
+                    [ { 'book'  => 'b' }, 'book_id'  ],
+                ],
+                [ [ 't.acronym', 'bible' ], 'v.text' ],
+                {
+                    't.acronym' => \@bibles,
+                    'b.name'    => $+{book},
+                    'v.chapter' => $+{chapter},
+                    'v.verse'   => $+{verse},
+                },
+            )->run->all({});
+
+            unless ( @$material == @bibles ) {
+                splice( @{ $range->{verses} }, $i, 1 );
+                next;
+            }
+
+            for my $verse (@$material) {
+                $words{$_} = 1 for ( @{ text2words( $verse->{text} ) } );
+                $data->{bibles}{ $verse->{bible} }{content}{ $range->{verses}[$i] } = {
+                    text => $verse->{text},
+                };
+            }
         }
     }
 
     # add thesaurus
-    for my $word ( sort keys %$words ) {
+    my $thesaurus = $dq_material->sql(q{
+        SELECT
+            w.text AS text,
+            r.text AS redirected_to,
+            COALESCE( w.meanings, r.meanings ) AS meanings
+        FROM word AS w
+        LEFT JOIN word AS r ON w.redirect_id = r.word_id
+        WHERE w.text = ?
+    });
+    for my $word ( sort keys %words ) {
         my $synonym = $thesaurus->run($word)->first({});
         next unless ( $synonym->{meanings} );
         $data->{thesaurus}{ $synonym->{redirected_to} // $word } = decode_json( $synonym->{meanings} );
@@ -149,43 +138,10 @@ sub material_json ( $label, $force = 0 ) {
     }
 
     # save data to JSON file and return path/name
-    make_path( $output->dirname ) unless ( -d $output->dirname );
-    $output->spurt( encode_json($data) );
+    make_path( $json_file->dirname ) unless ( -d $json_file->dirname );
+    $json_file->spew( encode_json($data) );
 
-    return {
-        label  => $data->{label},
-        output => $output->to_string,
-        hash   => $hash,
-    };
-}
-
-sub text2words ($text) {
-    $_ = $text;
-
-    s/(^|\W)'(\w.*?)'(\W|$)/$1$2$3/g; # remove single-quotes from around words/phrases
-    s/[,:\-]+$//g;                    # remove commas, colons, and dashes at end of lines
-    s/,'//g;                          # remove commas followed by single-quote
-    s/[,:](?=\D)//g;                  # remove commas and colons except for "1,234" and "3:00"
-    s/[^A-Za-z0-9'\-,:]/ /gi;         # remove all but "usable" characters
-    s/(\d)\-(\d)/$1 $2/g;             # convert dashes between numbers into spaces
-    s/(?<!\w)'/ /g;                   # remove single-quote following a non-word character
-    s/(\w)'(?=\W|$)/$1/g;             # remove single-quote following a word character prior to a non-word
-    s/\-{2,}/ /g;                     # convert double-dashes into spaces
-    s/\s+/ /g;                        # compact multi-spaces
-    s/(?:^\s|\s$)//g;                 # trim spacing
-
-    return [ split( /\s/, lc($_) ) ];
-}
-
-sub label2path ($text) {
-    $text =~ tr/\(\);: /\{\}+%_/;
-    return $text . '.json';
-}
-
-sub path2label ($text) {
-    $text =~ s/\.json$//i;
-    $text =~ tr/\{\}+%_/\(\);: /;
-    return $text;
+    return $return;
 }
 
 1;
@@ -196,7 +152,7 @@ QuizSage::Util::Material
 
 =head1 SYNOPSIS
 
-    use QuizSage::Util::Material qw( material_json text2words label2path path2label );
+    use QuizSage::Util::Material qw( material_json text2words );
 
     my @words = text2words(
         q{Jesus asked, "What's (the meaning of) this: 'I and my Father are one.'"}
@@ -217,7 +173,7 @@ data file using data from the material database. A material label represents
 the reference range blocks, weights, and translations for the expected output.
 For example:
 
-    Romans 1-4; James (1) Romans 5-8 (1) ESV NASB NIV
+    Romans 1-4; James (1) Romans 5-8 (1) ESV NASB* NASB1995 NIV
 
 The function accepts an optional second value, an boolean value, to indicate if
 an existing JSON file should be rebuilt. (Default is false.)
@@ -228,7 +184,7 @@ The function returns a hashref with a C<label> and C<output> keys. The "label"
 will be the canonicalized material label, and the "output" is the file that was
 created or recreated.
 
-=head2 canonicalize_label
+sub =head2 canonicalize_label($label) {
 
 Take a string input of a material label and return that label canonicalized.
 
@@ -241,7 +197,7 @@ The JSON data structure should look like this:
     blocks : [
         {
             range   : "Romans 1-4; James",
-            weight  : 50,
+            weight  : 1,
             content : {
                 NIV : [
                     {
@@ -258,7 +214,7 @@ The JSON data structure should look like this:
         },
         {
             range   : "Romans 5-8",
-            weight  : 50,
+            weight  : 1,
             content : {
                 NIV  : [],
                 ESV  : [],
@@ -295,10 +251,22 @@ from the string.
         q{Jesus asked, "What's (the meaning of) this: 'I and my Father are one.'"};
     )->@*;
 
-=head2 label2path
+=head2 aliases
 
-Convert a material label to a path.
+Subroutine C<aliases>.
 
-=head2 path2label
+=head2 parse_label
 
-Convert a material path to a label.
+Subroutine C<parse_label>.
+
+=head2 canonicalize_label
+
+Subroutine C<canonicalize_label>.
+
+=head2 descriptionize_label
+
+Subroutine C<descriptionize_label>.
+
+=head2 data_structure
+
+Subroutine C<data_structure>.

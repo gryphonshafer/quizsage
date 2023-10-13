@@ -11,17 +11,19 @@ CREATE TABLE IF NOT EXISTS user (
     created       TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) ),
     active        INTEGER NOT NULL CHECK( active = 1 OR active = 0 ) DEFAULT 0
 );
-CREATE TRIGGER IF NOT EXISTS user_after_update AFTER UPDATE OF
-    email,
-    passwd,
-    first_name,
-    last_name,
-    phone,
-    settings,
-    last_login,
-    active
-ON user
-BEGIN
-    UPDATE user SET last_modified = STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' )
-    WHERE user_id = old.user_id;
-END;
+CREATE TRIGGER IF NOT EXISTS user_last_modified
+    AFTER UPDATE OF
+        email,
+        passwd,
+        first_name,
+        last_name,
+        phone,
+        settings,
+        last_login,
+        active
+    ON user
+    BEGIN
+        UPDATE user
+            SET last_modified = STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' )
+            WHERE user_id = OLD.user_id;
+    END;

@@ -90,11 +90,15 @@ export default class Scoring {
                     ! quizzer.score.open_book
                 ) ? this.ceiling_bonus : 0;
 
+                const preceding_numeric_id  = parseInt( scoring_events[index].id ) - 1;
                 event.score.follow_bonus = (
                     index > 0 &&
-                    scoring_events[ index - 1 ].action     == 'correct'     &&
-                    scoring_events[ index - 1 ].team_id    == event.team_id &&
-                    scoring_events[ index - 1 ].quizzer_id != event.quizzer_id
+                    scoring_events.find( scoring_event =>
+                        scoring_event.action         == 'correct' &&
+                        scoring_event.team_id        == event.team_id &&
+                        scoring_event.quizzer_id     != event.quizzer_id &&
+                        parseInt( scoring_event.id ) == preceding_numeric_id
+                    )
                 ) ? this.follow_bonus : 0;
 
                 event.score.nth_quizzer_bonus = ( quizzer.score.correct != 1 ) ? 0 : team.quizzers

@@ -3,6 +3,7 @@ use exact -cli, -conf;
 use Mojo::JSON qw( encode_json decode_json );
 use Mojo::UserAgent;
 use Omniframe;
+use QuizSage::Util::Material 'text2words';
 
 my $opt = options( qw{ sleep|s=i estimate|e } );
 $opt->{sleep} //= 4;
@@ -15,7 +16,7 @@ my $relevance = {
     'css-1n6g4vv eh475bn0' => 3,
 };
 
-my %words     = map { map { $_ => 1 } split(/\s/) } $dq->sql('SELECT string FROM verse')->run->column;
+my %words     = map { map { $_ => 1 } @{ text2words($_) } } $dq->sql('SELECT text FROM verse')->run->column;
 my @words_pre = @{ $dq->sql('SELECT text FROM word')->run->column };
 my @words_to  = grep {
     my $word = $_;
