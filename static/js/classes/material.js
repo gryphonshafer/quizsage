@@ -22,17 +22,17 @@ export default class Material {
                 this.loaded_data = loaded_data;
 
                 Object.keys( this.loaded_data.bibles ).forEach( bible =>
-                    Object.keys( this.loaded_data.bibles[bible].content ).forEach( ref => {
-                        const ref_parts = ref.match(/^(.+)\s+(\d+):(\d+)$/);
-                        const verse     = this.loaded_data.bibles[bible].content[ref];
+                    Object.keys( this.loaded_data.bibles[bible].content ).forEach( reference => {
+                        const ref_parts = reference.match(/^(.+)\s+(\d+):(\d+)$/);
+                        const verse     = this.loaded_data.bibles[bible].content[reference];
 
-                        verse.bible   = bible;
-                        verse.ref     = ref;
-                        verse.book    = ref_parts[1];
-                        verse.chapter = parseInt( ref_parts[2] );
-                        verse.verse   = parseInt( ref_parts[3] );
-                        verse.words   = this.constructor.text2words( verse.text );
-                        verse.string  = verse.words.join(' ');
+                        verse.bible     = bible;
+                        verse.reference = reference;
+                        verse.book      = ref_parts[1];
+                        verse.chapter   = parseInt( ref_parts[2] );
+                        verse.verse     = parseInt( ref_parts[3] );
+                        verse.words     = this.constructor.text2words( verse.text );
+                        verse.string    = verse.words.join(' ');
                     } )
                 );
 
@@ -109,7 +109,7 @@ export default class Material {
 
         return this.loaded_data.ranges[
             weights[ Math.floor( Math.random() * weights.length ) ]
-        ].verses.map( ref => this.loaded_data.bibles[bible].content[ref] );
+        ].verses.map( reference => this.loaded_data.bibles[bible].content[reference] );
     }
 
     // verse(s) given a bible, book, chapter (and optionally verse number)
