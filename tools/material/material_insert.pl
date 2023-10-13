@@ -4,7 +4,7 @@ use Mojo::ByteStream;
 use Mojo::File 'path';
 use Text::Unidecode 'unidecode';
 use Omniframe;
-use QuizSage::Util::Material 'text2words';
+use QuizSage::Util::Material 'text2string';
 
 my $opt      = options( qw{ bible|b=s@ obml|o=s size|s=i } );
 my $obml_dir = $opt->{obml} ||
@@ -30,9 +30,9 @@ my ( $verse_put_batch, $verse_put_single ) = map {
     $dq->sql(
         q{
             INSERT OR IGNORE INTO verse (
-                bible_id, book_id, chapter, verse, text, string
+                bible_id, book_id, chapter, verse, text
             ) VALUES
-        } . join( ',', ( '( ?, ?, ?, ?, ?, ? )' ) x $_ )
+        } . join( ',', ( '( ?, ?, ?, ?, ? )' ) x $_ )
     )
 } ( $opt->{size}, 1 );
 
@@ -83,7 +83,7 @@ for my $bible (@bibles) {
                 $chapter,
                 $verse,
                 $text,
-                join( ' ', @{ text2words($text) } ),
+                join( ' ', @{ text2string($text) } ),
             ] );
 
             if ( @verse_insert_cache == $opt->{size} ) {

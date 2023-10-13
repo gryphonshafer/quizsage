@@ -1,8 +1,8 @@
 use Test2::V0;
 use exact -conf;
-use QuizSage::Util::Material qw{ material_json text2words label2path path2label };
+use QuizSage::Util::Material qw{ text2words material_json };
 
-imported_ok( qw{ material_json text2words label2path path2label } );
+imported_ok( qw{ text2words material_json } );
 
 is(
     text2words(
