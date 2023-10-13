@@ -143,7 +143,7 @@ sub quiz_settings ($self) {
             join( ' ', split( /[ \t]*\r?\n[ \t]*/, $self->param('translations') ) ),
         );
 
-        my $material = material_json($label);
+        my $material = material_json( label => $label );
 
         my $quiz = QuizSage::Model::Quiz->new->create({
             user_id   => $self->stash('user')->id,
@@ -155,14 +155,8 @@ sub quiz_settings ($self) {
                 'modules/distribution' => 'modules/distribution.js',
             },
             settings => {
-                label => $material->{hash},
-                # label => $label, # 'Romans 1-4; James (1) Romans 5-8 (3) ESV NASB NIV',
-                # teams => [
-                #     [ 'Team 1', [ [ 'Alpha Bravo',   'NIV' ], [ 'Charlie Delta', 'NIV' ], [ 'Echo Foxtrot', 'NIV' ] ] ],
-                #     [ 'Team 2', [ [ 'Gulf Hotel',    'ESV' ], [ 'India Juliet',  'ESV' ], [ 'Kilo Lima',    'ESV' ] ] ],
-                #     [ 'Team 3', [ [ 'Mike November', 'NIV' ], [ 'Oscar Papa',    'NIV' ], [ 'Quebec Romeo', 'NIV' ] ] ],
-                # ],
-                teams => [ map {
+                material_id => $material->{material_id},
+                teams       => [ map {
                     my ( $team_name, @quizzers ) = split( /[ \t]*\r?\n[ \t]*/ );
                     [ $team_name, [ map { [ split /\s+(?=\S+$)/ ] } @quizzers ] ];
                 } split( /\r?\n[ \t]*\r?\n/, $self->param('teams') ) ],

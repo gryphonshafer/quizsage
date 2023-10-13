@@ -39,18 +39,20 @@ fun material_json (
 
     my $model_label = QuizSage::Model::Label->new( user_id => $user );
     $description    = $model_label->descriptionize($label) if ($label);
+    my $material_id = substr( Digest->new('SHA-256')->add($description)->hexdigest, 0, 16 );
 
     my $json_file = path(
         join( '/',
             conf->get( qw{ config_app root_dir } ),
             conf->get( qw{ material json } ),
-            substr( Digest->new('SHA-256')->add($description)->hexdigest, 0, 16 ) . '.json',
+            $material_id . '.json',
         )
     );
 
     my $return = {
         description => $description,
         json_file   => $json_file->to_string,
+        material_id => $material_id,
     };
 
     return $return if ( not $force and -f $json_file );

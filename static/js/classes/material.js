@@ -2,7 +2,7 @@ const json_material_path = '../../json/material';
 
 export default class Material {
     static settings = {
-        material_json : undefined,
+        material_id   : undefined,
         minimum_verity: 3,
     };
 
@@ -11,10 +11,10 @@ export default class Material {
             this[key] = ( input[key] !== undefined ) ? input[key] : this.constructor.settings[key]
         );
 
-        if ( ! this.material_json ) throw 'Material JSON not defined';
+        if ( ! this.material_id ) throw 'Material JSON hash not defined';
 
         this.ready = fetch( new URL(
-            json_material_path + '/' + this.material_json + '.json',
+            json_material_path + '/' + this.material_id + '.json',
             import.meta.url,
         ) )
             .then( reply => reply.json() )
