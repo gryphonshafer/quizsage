@@ -31,8 +31,9 @@ export default class Material {
                         verse.book      = ref_parts[1];
                         verse.chapter   = parseInt( ref_parts[2] );
                         verse.verse     = parseInt( ref_parts[3] );
-                        verse.words     = this.constructor.text2words( verse.text );
-                        verse.string    = verse.words.join(' ');
+                        verse.string    = this.text2string( verse.text );
+
+                        [ verse.words, verse.breaks ] = this.text2words( verse.text );
                     } )
                 );
 
@@ -55,36 +56,51 @@ export default class Material {
         };
     }
 
-    // split a text string into pure lowercase words ()
-    static text2words(text) {
-        // remove single-quotes from around words/phrases
-        // remove commas, colons, and dashes at end of lines
-        // remove commas followed by single-quote
-        // remove commas and colons except for "1,234" and "3:00"
-        // remove all but "usable" characters
-        // convert dashes between numbers into spaces
-        // remove single-quote following a non-word character
-        // remove single-quote following a word character prior to a non-word
-        // convert double-dashes into spaces
-        // compact multi-spaces
-        // trim spacing
-        // lower-case
-        // split with spaces
+    text2string( text, include_sentence_breaks = false ) {
+        text = text.toLowerCase()
+            .replaceAll( /(^|\W)'(\w.*?)'(\W|$)/g, '$1$2$3' ) // rm single-quotes from around words/phrases
+            .replaceAll( /[,:\-]+$/g, '' )                    // rm commas, colons, and dashes at end of lines
+            .replaceAll( /,'/g, '' )                          // rm commas followed by single-quote
+            .replaceAll( /[,:](?=\D)/g, '' );                 // rm commas/colons except for "1,234" and "3:00"
 
-        return text
-            .replaceAll( /(^|\W)'(\w.*?)'(\W|$)/g, '$1$2$3' )
-            .replaceAll( /[,:\-]+$/g, '' )
-            .replaceAll( /,'/g, '' )
-            .replaceAll( /[,:](?=\D)/g, '' )
-            .replaceAll( /[^A-Za-z0-9'\-,:]/gi, ' ' )
-            .replaceAll( /(\d)\-(\d)/g, '$1 $2' )
-            .replaceAll( /(?<!\w)'/g, ' ' )
-            .replaceAll( /(\w)'(?=\W|$)/g, '$1' )
-            .replaceAll( /\-{2,}/g, ' ' )
-            .replaceAll( /\s+/g, ' ' )
-            .replaceAll( /(?:^\s|\s$)/g, '' )
-            .toLowerCase()
-            .split(/\s/);
+        if (include_sentence_breaks) {
+            text = text
+                .replaceAll( /[\.\?\!]/g, '|' )          // unify sentence terminations
+                .replaceAll( /[^a-z0-9'\-,:\|]/gi, ' ' ) // rm all but "usable" characters
+                .replaceAll( /\|\s*\|/g, '|' )           // rm duplicate breaks
+                .replace( /\s*\|$/, '' );                // rm text-end break
+        }
+        else {
+            text = text.replaceAll( /[^a-z0-9'\-,:]/gi, ' ' ); // rm all but "usable" characters
+        }
+
+        text = text
+            .replaceAll( /(\d)\-(\d)/g, '$1 $2' ) // convert dashes between numbers into spaces
+            .replaceAll( /(?<!\w)'/g, ' ' )       // rm single-quote after a non-word character
+            .replaceAll( /(\w)'(?=\W|$)/g, '$1' ) // rm single-quote after a word char prior to a non-word
+            .replaceAll( /\-{2,}/g, ' ' )         // convert double-dashes into spaces
+            .replaceAll( /\s+/g, ' ' )            // compact multi-spaces
+            .replaceAll( /(?:^\s|\s$)/g, '' );    // trim spacing
+
+        return text;
+    }
+
+    text2words(string) {
+        string = this.text2string( string, true );
+
+        const words  = string.split(/\s/);
+        const breaks = [];
+
+        if ( string.match(/\|/) ) {
+            for ( let i = 0; i < words.length; i++ ) {
+                words[i] = words[i].replace( /\|/, () => {
+                    if ( i < words.length - 1 ) breaks.push( i + 1 );
+                    return '';
+                } );
+            }
+        }
+
+        return [ words, breaks ];
     }
 
     // next bible in an object-level shuffled sequence
@@ -127,7 +143,7 @@ export default class Material {
     //     type "exact"   = match input against verse.text
     //     type "prompt"  = match lower-case words of input against verse.string with boundary edges
     search( input, bible = undefined, type = 'inexact' ) {
-        if ( type == 'inexact' ) input = this.constructor.text2words(input).join(' ').toLowerCase();
+        if ( type == 'inexact' ) input = this.text2string(input);
         const boundary_regex = ( type == 'prompt' ) ? new RegExp( '\\b' + input + '\\b' ) : null;
 
         return ( ( ! bible ) ? this.all_verses : this.verses_by_bible[bible] )

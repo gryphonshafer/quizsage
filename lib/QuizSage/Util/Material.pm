@@ -10,22 +10,21 @@ use QuizSage::Model::Label;
 exact->exportable( qw{ text2words material_json } );
 
 sub text2words ($text) {
-    $text =~ s/(^|\W)'(\w.*?)'(\W|$)/$1$2$3/g; # remove single-quotes from around words/phrases
+    $text = lc $text;
 
-    $text =~ s/[,:\-]+$//g;            # remove commas, colons, and dashes at end of lines
-    $text =~ s/,'//g;                  # remove commas followed by single-quote
-    $text =~ s/[,:](?=\D)//g;          # remove commas and colons except for "1,234" and "3:00"
-    $text =~ s/[^A-Za-z0-9'\-,:]/ /gi; # remove all but "usable" characters
-    $text =~ s/(\d)\-(\d)/$1 $2/g;     # convert dashes between numbers into spaces
-    $text =~ s/(?<!\w)'/ /g;           # remove single-quote following a non-word character
-    $text =~ s/(\w)'(?=\W|$)/$1/g;     # remove single-quote following a word character prior to a non-word
-    $text =~ s/\-{2,}/ /g;             # convert double-dashes into spaces
-    $text =~ s/\s+/ /g;                # compact multi-spaces
-    $text =~ s/(?:^\s|\s$)//g;         # trim spacing
+    $text =~ s/(^|\W)'(\w.*?)'(\W|$)/$1$2$3/g; # rm single-quotes from around words/phrases
+    $text =~ s/[,:\-]+$//g;                    # rm commas, colons, and dashes at end of lines
+    $text =~ s/,'//g;                          # rm commas followed by single-quote
+    $text =~ s/[,:](?=\D)//g;                  # rm commas/colons except for "1,234" and "3:00"
+    $text =~ s/[^a-z0-9'\-,:]/ /gi;            # rm all but "usable" characters
+    $text =~ s/(\d)\-(\d)/$1 $2/g;             # convert dashes between numbers into spaces
+    $text =~ s/(?<!\w)'/ /g;                   # rm single-quote after a non-word character
+    $text =~ s/(\w)'(?=\W|$)/$1/g;             # rm single-quote after a word char prior to a non-word
+    $text =~ s/\-{2,}/ /g;                     # convert double-dashes into spaces
+    $text =~ s/\s+/ /g;                        # compact multi-spaces
+    $text =~ s/(?:^\s|\s$)//g;                 # trim spacing
 
-    # lower-case
-    # split with spaces
-    return [ split( /\s/, lc($text) ) ];
+    return [ split( /\s/, $text ) ];
 }
 
 fun material_json (
