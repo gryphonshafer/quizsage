@@ -5,9 +5,9 @@ fetch( new URL( '/quiz/data/' + url.searchParams.get('id') + '.json', url ) )
     .then( reply => reply.json() )
     .then( data => {
         data.settings.state = data.state;
-        window.quiz = new Quiz( data.settings );
+        const quiz = new Quiz( data.settings );
         quiz.ready.then( () => {
-            window.app = Vue
+            Vue
                 .createApp({
                     data() {
                         return {
