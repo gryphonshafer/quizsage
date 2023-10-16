@@ -147,6 +147,9 @@ export default class Scoring {
                 if ( quiz.state.teams.filter( team => team.trigger_eligible == true ).length == 0 )
                     quiz.state.teams.forEach( team => team.trigger_eligible = true );
             }
+            else if ( event.action == 'no_trigger' ) {
+                quiz.state.teams.forEach( team => team.trigger_eligible = true );
+            }
         } );
 
         let position = 0;
