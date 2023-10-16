@@ -182,7 +182,7 @@ export default class Quiz {
     ];
 
     action( action, team_id = undefined, quizzer_id = undefined, qsstypes = undefined ) {
-        action = this.constructor.#actions.find(
+        action = Quiz.#actions.find(
             canonical_action => canonical_action == action.toLowerCase()
         );
         if ( ! action ) throw '"' + action + '" is not a valid action';
