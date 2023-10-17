@@ -53,8 +53,17 @@
                         <span class="word"><a :name="set.word">{{ set.word }}</a></span>
                         <ul>
                             <li v-for="meaning in set.meanings">
-                                <i>{{ meaning.word }} ({{ meaning.type }})</i>
-                                <ul>
+                                <i>
+                                    {{ meaning.type }}
+                                    <template v-if="! meaning.ignored">
+                                        <b>{{ meaning.word }}</b>
+                                    </template>
+                                    <template v-else>
+                                        ignored ({{ meaning.word }})
+                                    </template>
+                                </i>
+
+                                <ul v-if="! meaning.ignored">
                                     <li v-for="
                                         set in meaning.synonyms
                                             .sort( ( a, b ) => b.verity - a.verity )
