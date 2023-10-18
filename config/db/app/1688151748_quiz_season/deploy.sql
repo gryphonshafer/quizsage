@@ -40,5 +40,25 @@ CREATE TABLE IF NOT EXISTS quiz (
     scheduled_start    TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) ),
     scheduled_duration INTEGER NOT NULL DEFAULT 30,
     settings           TEXT,
-    state              TEXT
+    state              TEXT,
+    last_modified      TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) ),
+    created            TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) )
 );
+CREATE TRIGGER IF NOT EXISTS quiz_last_modified
+    AFTER UPDATE OF
+        user_id,
+        meet_id,
+        name,
+        password,
+        importmap,
+        room,
+        scheduled_start,
+        scheduled_duration,
+        settings,
+        state
+    ON quiz
+    BEGIN
+        UPDATE quiz
+            SET last_modified = STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' )
+            WHERE quiz_id = OLD.quiz_id;
+    END;
