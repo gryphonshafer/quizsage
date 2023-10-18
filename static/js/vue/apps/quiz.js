@@ -41,7 +41,10 @@ fetch( new URL( '/quiz/data/' + url.searchParams.get('id') + '.json', url ) )
                             this.selected.quizzer_id = undefined;
                             this.selected.team_id    = undefined;
 
-                            const current_event = quiz.state.board.find( event => event.current );
+                            this.set_current_event( quiz.state.board.find( event => event.current ) );
+                        },
+
+                        set_current_event(current_event) {
                             if (current_event) {
                                 this.current_event     = current_event;
                                 this.eligible_teams    = this.get_eligible_teams();
@@ -196,8 +199,13 @@ fetch( new URL( '/quiz/data/' + url.searchParams.get('id') + '.json', url ) )
 
                                 this.save_quiz_data();
                             }
-                            else if ( quiz.state.board.find( event => event.current ) ) {
-                                this.current_event.type = this.current_event.type.substr( 0, 1 );
+                            else {
+                                const board_current = quiz.state.board.find( event => event.current );
+                                if (
+                                    board_current &&
+                                    this.current_event &&
+                                    this.current_event.id == board_current.id
+                                ) this.current_event.type = this.current_event.type.substr( 0, 1 );
                             }
 
                             this.setup();
