@@ -69,7 +69,6 @@ export default class Quiz {
             ...Object.fromEntries( Object.keys( this.constructor.settings ).map( key => [ key, this[key] ] ) ),
             ...this.scoring.data(),
             ...this.queries.data(),
-            ...this.queries.material.data(),
             state       : this.state,
             teams       : this.teams,
             distribution: this.distribution,
@@ -77,12 +76,12 @@ export default class Quiz {
     }
 
     #build_board() {
-        this.state.teams   ||= structuredClone( this.teams );
-        this.state.queries ||= [];
+        const distribution       = structuredClone( this.distribution );
+        this.state.teams       ||= structuredClone( this.teams );
+        this.state.board       ||= [];
+        this.state.query_cache ||= [];
 
-        const distribution = structuredClone( this.distribution  );
-        const queries      = structuredClone( this.state.queries );
-
+        this.state.query_cache.unshift( ...this.state.board.map( row => row.query ).filter( query => query ) );
         this.state.board = [];
 
         this.state.events.forEach( event => {
@@ -94,7 +93,7 @@ export default class Quiz {
                 record.action == 'correct'    ||
                 record.action == 'incorrect'
             ) {
-                this.#setup_query( record, queries, distribution );
+                this.#setup_query( record, distribution );
 
                 if ( record.action == 'correct' || record.action == 'incorrect' )
                     record.type = record.type.toUpperCase() + record.qsstypes;
@@ -133,7 +132,7 @@ export default class Quiz {
         // setup next query if there's more of the quiz remaining
         if ( distribution.length || append_final_query ) {
             const record = { current: true };
-            this.#setup_query( record, queries, distribution );
+            this.#setup_query( record, distribution );
             this.state.board.push(record);
         }
 
@@ -145,7 +144,7 @@ export default class Quiz {
         this.scoring.score(this);
     }
 
-    #setup_query( record, queries, distribution ) {
+    #setup_query( record, distribution ) {
         const previous_ruling = this.state.board.findLast( existing_record =>
             existing_record.action == 'no_trigger' ||
             existing_record.action == 'correct'    ||
@@ -164,15 +163,19 @@ export default class Quiz {
         if ( ! record.id ) Object.assign( record, distribution.shift() );
         if ( record.id == parseInt( record.id ) ) record.id += 'A';
 
-        // append a query to the record (try from cache first; otherwise create)
-        const found_index = queries.findIndex( query =>
-            record.type.substr( 0, 1 ) == record.type.substr( 0, 1 ) &&
-            record.bible == record.bible
-        );
-        if ( found_index > -1 ) record.query = queries.splice( found_index, 1 ).shift();
         if ( ! record.query ) {
-            record.query = this.queries.create( record.type.substr( 0, 1 ), record.bible );
-            this.state.queries.push( record.query );
+            const found_index = this.state.query_cache.findIndex( query =>
+                record.type.substr( 0, 1 ) == query.type.substr( 0, 1 ) &&
+                record.bible == query.bible
+            );
+
+            if ( found_index > -1 ) {
+                record.query = this.state.query_cache.splice( found_index, 1 ).shift();
+            }
+            else {
+                record.query = this.queries.create( record.type.substr( 0, 1 ), record.bible );
+                this.state.query_cache = [];
+            }
         }
     }
 
@@ -214,20 +217,8 @@ export default class Quiz {
     }
 
     replace_query() {
-        const record      = this.state.board.find( record => record.current );
-        const query_index = this.state.queries.findIndex( query =>
-            query.bible   == record.query.bible   &&
-            query.book    == record.query.book    &&
-            query.chapter == record.query.chapter &&
-            query.verse   == record.query.verse   &&
-            query.prompt  == record.query.prompt  &&
-            query.type    == record.query.type
-        );
-
-        const new_query = this.queries.create( record.query.type, record.query.bible );
-
-        this.state.queries[query_index] = new_query;
-        record.query                    = new_query;
+        const record = this.state.board.find( record => record.current );
+        record.query = this.queries.create( record.query.type, record.query.bible );
     }
 
     delete_last_action() {
