@@ -105,6 +105,13 @@ fetch( new URL( '/quiz/data/' + url.searchParams.get('id') + '.json', url ) )
 
                             if ( type == 'synonymous' || type == 'verbatim' || type == 'open_book' ) {
                                 this.selected.type.synonymous_verbatim_open_book = type;
+
+                                if ( type == 'open_book' ) {
+                                    if ( this.selected.type.with_reference )
+                                        this.select_type('with_reference');
+                                    if ( this.selected.type.add_verse )
+                                        this.select_type('add_verse');
+                                }
                             }
                             else if ( type == 'with_reference' ) {
                                 this.selected.type.with_reference = ! this.selected.type.with_reference;

@@ -91,6 +91,10 @@
 
         <div class="select_type">
             <button
+                @click="select_type('open_book')"
+                :class="selected.type.synonymous_verbatim_open_book == 'open_book' ? 'selected' : ''"
+            >Open Book</button>
+            <button
                 @click="select_type('synonymous')"
                 :class="selected.type.synonymous_verbatim_open_book == 'synonymous' ? 'selected' : ''"
             >Synonymous</button>
@@ -98,10 +102,6 @@
                 @click="select_type('verbatim')"
                 :class="selected.type.synonymous_verbatim_open_book == 'verbatim' ? 'selected' : ''"
             >Verbatim</button>
-            <button
-                @click="select_type('open_book')"
-                :class="selected.type.synonymous_verbatim_open_book == 'open_book' ? 'selected' : ''"
-            >Open Book</button>
             <button
                 @click="select_type('with_reference')"
                 :class="selected.type.with_reference ? 'selected' : ''"
