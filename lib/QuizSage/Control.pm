@@ -30,15 +30,16 @@ sub startup ($self) {
     } );
 
     $users->any('/user/logout')->to('user#logout');
-    $users->any('/quiz')->to('main#quiz');
-    $users->any( '/quiz/data/:quiz_id' => [ format => ['json'] ] )->to('main#quiz_data');
-    $users->any('/quiz/save_data/:quiz_id')->to('main#save_quiz_data');
-    $users->any('/quiz/password')->to('main#quiz_password');
-    # $users->any('/quiz/settings/:quiz_id')->to('main#quiz_settings');
-    $users->any('/quiz/settings')->to('main#quiz_settings');
+
+    $users->any('/quiz')->to('quiz#quiz');
+    # $users->any('/quiz/settings/:quiz_id')->to('quiz#quiz_settings');
+    $users->any('/quiz/settings')->to('quiz#quiz_settings');
+    $users->any( '/quiz/data/:quiz_id' => [ format => ['json'] ] )->to('quiz#quiz_data');
+    $users->any('/quiz/save_data/:quiz_id')->to('quiz#save_quiz_data');
+    $users->any('/quiz/password')->to('quiz#quiz_password');
 
     $all->any('/')->to('main#home');
-    $all->any("/user/$_")->to("user#$_") for ( qw( create forgot_password login logout ) );
+    $all->any("/user/$_")->to("user#$_") for ( qw( create forgot_password login ) );
     $all->any("/user/$_/:user_id/:user_hash")->to("user#$_") for ( qw( verify reset_password ) );
 
     $all->any( '/docs/*name' => sub ($c) {
