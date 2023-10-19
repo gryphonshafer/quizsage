@@ -139,13 +139,16 @@ sub quiz_settings ($self) {
         my $material = material_json( label => $label );
 
         my $quiz = QuizSage::Model::Quiz->new->create({
-            user_id   => $self->stash('user')->id,
-            importmap => {
-                'classes/material'     => 'classes/material.js',
-                'classes/queries'      => 'classes/queries.js',
-                'classes/quiz'         => 'classes/quiz.js',
-                'classes/scoring'      => 'classes/scoring.js',
-                'modules/distribution' => 'modules/distribution.js',
+            user_id     => $self->stash('user')->id,
+            application => {
+                module    => 'vue/apps/quiz.js',
+                importmap => {
+                    'classes/material'     => 'classes/material.js',
+                    'classes/queries'      => 'classes/queries.js',
+                    'classes/quiz'         => 'classes/quiz.js',
+                    'classes/scoring'      => 'classes/scoring.js',
+                    'modules/distribution' => 'modules/distribution.js',
+                },
             },
             settings => {
                 material_id => $material->{material_id},

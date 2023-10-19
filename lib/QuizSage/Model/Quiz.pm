@@ -6,7 +6,7 @@ use Mojo::JSON qw( encode_json decode_json );
 with qw( Omniframe::Role::Model Omniframe::Role::Time );
 
 sub freeze ( $self, $data ) {
-    for ( qw( importmap settings state ) ) {
+    for ( qw( application settings state ) ) {
         $data->{$_} = encode_json( $data->{$_} ) if ( defined $data->{$_} );
     }
 
@@ -14,7 +14,7 @@ sub freeze ( $self, $data ) {
 }
 
 sub thaw ( $self, $data ) {
-    for ( qw( importmap settings state ) ) {
+    for ( qw( application settings state ) ) {
         $data->{$_} = decode_json( $data->{$_} ) if ( defined $data->{$_} );
     }
 

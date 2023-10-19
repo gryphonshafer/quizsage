@@ -1,8 +1,8 @@
 [%
     page.title     = 'Quiz Room',
-    page.js.import = quiz.data.importmap;
     page.vue       = 1;
-    page.js.module = 'vue/apps/quiz.js';
+    page.js.import = quiz.data.application.importmap;
+    page.js.module = quiz.data.application.module;
 %]
 
 <div id="quiz" v-cloak>
