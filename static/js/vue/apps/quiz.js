@@ -200,6 +200,11 @@ fetch( new URL( '/quiz/data/' + url.searchParams.get('id') + '.json', url ) )
                                 this.save_quiz_data();
                             }
                             else {
+                                if ( this.selected.type.with_reference )
+                                    this.select_type('with_reference');
+                                if ( this.selected.type.add_verse )
+                                    this.select_type('add_verse');
+
                                 const board_current = quiz.state.board.find( event => event.current );
                                 if (
                                     board_current &&
