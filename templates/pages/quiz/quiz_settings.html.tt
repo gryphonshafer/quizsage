@@ -43,56 +43,71 @@ Col 1-4
 
 <h1>[% page.title %]</h1>
 
-<p>
-    Enter the quiz's settings.
-
-    The teams/quizzers field needs to have a single entry per line, with team
-    name first on a line, then each quizzer on a line. There needs to be at
-    least a single blank line between each team.
-
-    The range(s) field may contain any number of lines, each line representing
-    a material range. There must be at least 1 valid range.
-
-    The translation(s) field may contain any number of supported translations by
-    official acronym. There must be at least 1 valid translation.
-
-    The weights fields must each contain some valid integer value for weights.
-</p>
+<p>Enter the teams for the quiz. Write in 1 team name per line.</p>
 
 <form method="post">
-    <fieldset style="vertical-align: top">
-        <legend>Teams/Quizzers</legend>
+    <fieldset>
+        <legend>Quiz Teams</legend>
         <textarea
-            rows="15"
-            cols="15"
-            name="teams">[% teams %]</textarea>
-    </fieldset>
+            rows="3"
+            name="teams" placeholder="1 team name per line">[% c.param('teams') %]</textarea>
 
-    <fieldset style="vertical-align: top">
-        <legend>Range(s)</legend>
-        <textarea
-            rows="5"
-            cols="10"
-            name="ranges">[% ranges %]</textarea>
+        <input type="submit" value="Run Quiz">
     </fieldset>
-
-    <fieldset style="vertical-align: top">
-        <legend>Translation(s)</legend>
-        <textarea
-            rows="4"
-            cols="10"
-            name="translations">[% translations %]</textarea>
-    </fieldset>
-
-    <fieldset style="vertical-align: top">
-        <legend>Weights</legend>
-        <label>Club 100      <input size="2" name="club_100" value="[% club_100 %]"></label>
-        <label>Club 250      <input size="2" name="club_250" value="[% club_250 %]"></label>
-        <label>Full Material <input size="2" name="full_material" value="[% full_material %]"></label>
-    </fieldset>
-
-    <input type="submit" value="Run Quiz">
 </form>
+
+<!--
+    <p>
+        Enter the quiz's settings.
+
+        The teams/quizzers field needs to have a single entry per line, with team
+        name first on a line, then each quizzer on a line. There needs to be at
+        least a single blank line between each team.
+
+        The range(s) field may contain any number of lines, each line representing
+        a material range. There must be at least 1 valid range.
+
+        The translation(s) field may contain any number of supported translations by
+        official acronym. There must be at least 1 valid translation.
+
+        The weights fields must each contain some valid integer value for weights.
+    </p>
+
+    <form method="post">
+        <fieldset style="vertical-align: top">
+            <legend>Teams/Quizzers</legend>
+            <textarea
+                rows="15"
+                cols="15"
+                name="teams">[% teams %]</textarea>
+        </fieldset>
+
+        <fieldset style="vertical-align: top">
+            <legend>Range(s)</legend>
+            <textarea
+                rows="5"
+                cols="10"
+                name="ranges">[% ranges %]</textarea>
+        </fieldset>
+
+        <fieldset style="vertical-align: top">
+            <legend>Translation(s)</legend>
+            <textarea
+                rows="4"
+                cols="10"
+                name="translations">[% translations %]</textarea>
+        </fieldset>
+
+        <fieldset style="vertical-align: top">
+            <legend>Weights</legend>
+            <label>Club 100      <input size="2" name="club_100" value="[% club_100 %]"></label>
+            <label>Club 250      <input size="2" name="club_250" value="[% club_250 %]"></label>
+            <label>Full Material <input size="2" name="full_material" value="[% full_material %]"></label>
+        </fieldset>
+
+        <input type="submit" value="Run Quiz">
+    </form>
+-->
 
 <a href="[% c.url_for('/user/logout') %]">Logout</a>
 
