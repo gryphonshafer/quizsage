@@ -6,6 +6,7 @@ use QuizSage::Util::Material 'material_json';
 use Bible::Reference;
 
 sub quiz_password ($self) {
+    $self->warn('QUIZ PASSWORD');
     $self->session( quiz_password => $self->param('passwd') );
     return $self->redirect_to('/');
 }

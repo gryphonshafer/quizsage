@@ -39,6 +39,8 @@
             <input type="submit" value="Submit Quiz Password">
         </fieldset>
     </form>
+
+    <p><a href="[% c.url_for('/user/logout') %]">Logout</a></p>
 [% ELSE %]
     <p>You're logged in, [% user.data.first_name %]. <a href="[% c.url_for('/user/logout') %]">Logout</a>.</p>
 

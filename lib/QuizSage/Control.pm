@@ -31,12 +31,12 @@ sub startup ($self) {
 
     $users->any('/user/logout')->to('user#logout');
 
-    $users->any('/quiz')->to('quiz#quiz');
+    $users->any('/quiz/password')->to('quiz#quiz_password');
     $users->any('/quiz/settings/:quiz_id')->to('quiz#quiz_settings');
     # $users->any('/quiz/settings')->to('quiz#quiz_settings');
     $users->any( '/quiz/data/:quiz_id' => [ format => ['json'] ] )->to('quiz#quiz_data');
     $users->any('/quiz/save_data/:quiz_id')->to('quiz#save_quiz_data');
-    $users->any('/quiz/password')->to('quiz#quiz_password');
+    $users->any('/quiz')->to('quiz#quiz');
 
     $all->any('/')->to('main#home');
     $all->any("/user/$_")->to("user#$_") for ( qw( create forgot_password login ) );
