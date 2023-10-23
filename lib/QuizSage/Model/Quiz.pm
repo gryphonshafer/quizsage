@@ -18,22 +18,22 @@ sub thaw ( $self, $data ) {
         $data->{$_} = decode_json( $data->{$_} ) if ( defined $data->{$_} );
     }
 
-    if ( $data->{settings}{teams} ) {
-        $data->{settings}{teams} = [ map {
-            +{
-                name     => $_,
-                quizzers => $self->dq->sql(q{
-                    SELECT
-                        q.quizzer_id AS id,
-                        q.name,
-                        r.bible
-                    FROM registration r
-                    JOIN quizzer q USING (quizzer_id)
-                    WHERE r.meet_id = ? AND r.team = ?
-                })->run( $data->{meet_id}, $_ )->all({}),
-            }
-        } $data->{settings}{teams}->@* ];
-    }
+    # if ( $data->{settings}{teams} ) {
+    #     $data->{settings}{teams} = [ map {
+    #         +{
+    #             name     => $_,
+    #             quizzers => $self->dq->sql(q{
+    #                 SELECT
+    #                     q.quizzer_id AS id,
+    #                     q.name,
+    #                     r.bible
+    #                 FROM registration r
+    #                 JOIN quizzer q USING (quizzer_id)
+    #                 WHERE r.meet_id = ? AND r.team = ?
+    #             })->run( $data->{meet_id}, $_ )->all({}),
+    #         }
+    #     } $data->{settings}{teams}->@* ];
+    # }
 
     return $data;
 }

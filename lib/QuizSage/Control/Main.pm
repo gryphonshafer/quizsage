@@ -5,8 +5,8 @@ use QuizSage::Model::Quiz;
 
 sub home ($self) {
     if ( $self->stash('user') ) {
-        $self->stash( active_quizzes => QuizSage::Model::Quiz->new->active_quizzes );
-        # $self->redirect_to('/quiz/settings');
+        # $self->stash( active_quizzes => QuizSage::Model::Quiz->new->active_quizzes );
+        $self->redirect_to('/quiz/settings');
     }
 }
 
