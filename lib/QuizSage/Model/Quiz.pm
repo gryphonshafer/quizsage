@@ -6,7 +6,7 @@ use Mojo::JSON qw( encode_json decode_json );
 with qw( Omniframe::Role::Model Omniframe::Role::Time );
 
 sub freeze ( $self, $data ) {
-    for ( qw( importmap settings state ) ) {
+    for ( qw( application settings state ) ) {
         $data->{$_} = encode_json( $data->{$_} ) if ( defined $data->{$_} );
     }
 
@@ -14,7 +14,7 @@ sub freeze ( $self, $data ) {
 }
 
 sub thaw ( $self, $data ) {
-    for ( qw( importmap settings state ) ) {
+    for ( qw( application settings state ) ) {
         $data->{$_} = decode_json( $data->{$_} ) if ( defined $data->{$_} );
     }
 
@@ -40,8 +40,8 @@ sub thaw ( $self, $data ) {
 
 sub active_quizzes ($self) {
     my $rooms;
-    my $seasons = [ map {
-        $_->{meets} = [ map {
+    my $seasons = [ grep { defined } map {
+        $_->{meets} = [ grep { defined } map {
             $_->{quizzes} = [ map {
                 $_->{scheduled_start} =
                     $self->time->parse( $_->{scheduled_start} )->strftime('%a %b %e %l:%M %p');
@@ -63,12 +63,14 @@ sub active_quizzes ($self) {
                     scheduled_duration,
                     settings
                 FROM quiz
-                WHERE meet_id = ?
+                WHERE
+                    meet_id = ? AND
+                    ABS( STRFTIME( '%s', scheduled_start ) - STRFTIME( '%s', 'NOW' ) ) < 60 * 60 * 24 * 7
                 ORDER BY scheduled_start, room
             })->run( $_->{meet_id} )->all({})->@* ];
-            $_;
+            ( $_->{quizzes}->@* ) ? $_ : undef;
         } $self->dq->sql('SELECT * FROM meet WHERE season_id = ?')->run( $_->{season_id} )->all({})->@* ];
-        $_;
+        ( $_->{meets}->@* ) ? $_ : undef;
     } $self->dq->sql('SELECT * FROM season')->run->all({})->@* ];
 
     $rooms = [ sort { ( $a =~ /^[\d\.]$/ and $b =~ /^[\d\.]$/ ) ? $a <=> $b : $a cmp $b } keys %$rooms ];

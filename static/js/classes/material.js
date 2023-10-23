@@ -4,6 +4,7 @@ export default class Material {
     static settings = {
         material_id   : undefined,
         minimum_verity: 3,
+        ignored_types : [ 'pron.', 'article', 'prep.' ],
     };
 
     constructor ( input = {} ) {
@@ -191,8 +192,8 @@ export default class Material {
         }
 
         entry
-            .filter( block => block.type == 'pron.' || block.type == 'article' || block.type == 'prep.' )
-            .forEach( block => block.synonyms = [] );
+            .filter( block => this.ignored_types.find( type => type == block.type ) )
+            .forEach( block => block.ignored  = true );
 
         entry.forEach( range =>
             range.synonyms = range.synonyms.filter( synonym => synonym.verity <= this.minimum_verity )
@@ -210,7 +211,7 @@ export default class Material {
                 this_verse.book    == book    &&
                 this_verse.chapter == chapter &&
                 this_verse.verse   == verse
-            ).string.split(/\s/)
+            ).words
         ) ].map( word => this.synonyms_of_word(word) ).filter( set => set );
     }
 
@@ -232,7 +233,7 @@ export default class Material {
                 return {
                     bible: other_bible,
                     text : other_verse.text,
-                    words: other_verse.string.split(/\s+/),
+                    words: other_verse.words,
                 };
             } );
         }

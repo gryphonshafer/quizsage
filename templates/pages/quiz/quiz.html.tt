@@ -1,8 +1,8 @@
 [%
     page.title     = 'Quiz Room',
-    page.js.import = quiz.data.importmap;
     page.vue       = 1;
-    page.js.module = 'vue/apps/quiz.js';
+    page.js.import = quiz.data.application.importmap;
+    page.js.module = quiz.data.application.module;
 %]
 
 <div id="quiz" v-cloak>
@@ -33,7 +33,7 @@
         <div class="material" v-if="current_event.query.type != 'X'">
             <button
                 v-for="material in current_event.query.material"
-                :class="selected.material.bible == material.bible ? 'selected' : ''"
+                :class="{ selected: selected.material.bible == material.bible }"
                 @click="selected.material = material"
             >{{ material.bible }}</button>
 
@@ -53,8 +53,17 @@
                         <span class="word"><a :name="set.word">{{ set.word }}</a></span>
                         <ul>
                             <li v-for="meaning in set.meanings">
-                                <i>{{ meaning.word }} ({{ meaning.type }})</i>
-                                <ul>
+                                <i>
+                                    {{ meaning.type }}
+                                    <template v-if="! meaning.ignored">
+                                        <b>{{ meaning.word }}</b>
+                                    </template>
+                                    <template v-else>
+                                        ignored ({{ meaning.word }})
+                                    </template>
+                                </i>
+
+                                <ul v-if="! meaning.ignored">
                                     <li v-for="
                                         set in meaning.synonyms
                                             .sort( ( a, b ) => b.verity - a.verity )
@@ -82,24 +91,24 @@
 
         <div class="select_type">
             <button
+                @click="select_type('open_book')"
+                :class="{ selected: selected.type.synonymous_verbatim_open_book == 'open_book' }"
+            >Open Book</button>
+            <button
                 @click="select_type('synonymous')"
-                :class="selected.type.synonymous_verbatim_open_book == 'synonymous' ? 'selected' : ''"
+                :class="{ selected: selected.type.synonymous_verbatim_open_book == 'synonymous' }"
             >Synonymous</button>
             <button
                 @click="select_type('verbatim')"
-                :class="selected.type.synonymous_verbatim_open_book == 'verbatim' ? 'selected' : ''"
+                :class="{ selected: selected.type.synonymous_verbatim_open_book == 'verbatim' }"
             >Verbatim</button>
             <button
-                @click="select_type('open_book')"
-                :class="selected.type.synonymous_verbatim_open_book == 'open_book' ? 'selected' : ''"
-            >Open Book</button>
-            <button
                 @click="select_type('with_reference')"
-                :class="selected.type.with_reference ? 'selected' : ''"
+                :class="{ selected: selected.type.with_reference }"
             >With Reference</button>
             <button
                 @click="select_type('add_verse')"
-                :class="selected.type.add_verse ? 'selected' : ''"
+                :class="{ selected: selected.type.add_verse }"
             >Add Verse</button>
         </div>
 
@@ -145,7 +154,10 @@
                     <template v-for="team in teams">
                         <td v-for="quizzer in team.quizzers"
                             @click="select_quizzer( quizzer.id, team.id )"
-                            :class="selected.quizzer_id == quizzer.id ? 'quizzer selected' : 'quizzer'"
+                            :class="{
+                                selected : selected.quizzer_id == quizzer.id,
+                                clickable: true,
+                            }"
                         >{{ quizzer.name }}</td>
 
                         <td rowspan="3">
@@ -171,9 +183,15 @@
             <tbody>
                 <tr
                     v-for="record in board"
-                    :class="record.current ? 'selected' : ''"
+                    :class="{ selected: record.current }"
                 >
-                    <td>{{ record.id }}</td>
+                    <td
+                        @click="set_current_event(record)"
+                        :class="{
+                            clickable: record.query,
+                            selected : record.id == current_event.id,
+                        }"
+                    >{{ record.id }}</td>
                     <td>{{ record.type }}</td>
                     <td>{{ record.bible }}</td>
                     <template v-for="team in teams">

@@ -5,9 +5,9 @@ fetch( new URL( '/quiz/data/' + url.searchParams.get('id') + '.json', url ) )
     .then( reply => reply.json() )
     .then( data => {
         data.settings.state = data.state;
-        window.quiz = new Quiz( data.settings );
+        const quiz = new Quiz( data.settings );
         quiz.ready.then( () => {
-            window.app = Vue
+            Vue
                 .createApp({
                     data() {
                         return {
@@ -41,7 +41,10 @@ fetch( new URL( '/quiz/data/' + url.searchParams.get('id') + '.json', url ) )
                             this.selected.quizzer_id = undefined;
                             this.selected.team_id    = undefined;
 
-                            const current_event = quiz.state.board.find( event => event.current );
+                            this.set_current_event( quiz.state.board.find( event => event.current ) );
+                        },
+
+                        set_current_event(current_event) {
                             if (current_event) {
                                 this.current_event     = current_event;
                                 this.eligible_teams    = this.get_eligible_teams();
@@ -105,6 +108,13 @@ fetch( new URL( '/quiz/data/' + url.searchParams.get('id') + '.json', url ) )
 
                             if ( type == 'synonymous' || type == 'verbatim' || type == 'open_book' ) {
                                 this.selected.type.synonymous_verbatim_open_book = type;
+
+                                if ( type == 'open_book' ) {
+                                    if ( this.selected.type.with_reference )
+                                        this.select_type('with_reference');
+                                    if ( this.selected.type.add_verse )
+                                        this.select_type('add_verse');
+                                }
                             }
                             else if ( type == 'with_reference' ) {
                                 this.selected.type.with_reference = ! this.selected.type.with_reference;
@@ -189,8 +199,18 @@ fetch( new URL( '/quiz/data/' + url.searchParams.get('id') + '.json', url ) )
 
                                 this.save_quiz_data();
                             }
-                            else if ( quiz.state.board.find( event => event.current ) ) {
-                                this.current_event.type = this.current_event.type.substr( 0, 1 );
+                            else {
+                                if ( this.selected.type.with_reference )
+                                    this.select_type('with_reference');
+                                if ( this.selected.type.add_verse )
+                                    this.select_type('add_verse');
+
+                                const board_current = quiz.state.board.find( event => event.current );
+                                if (
+                                    board_current &&
+                                    this.current_event &&
+                                    this.current_event.id == board_current.id
+                                ) this.current_event.type = this.current_event.type.substr( 0, 1 );
                             }
 
                             this.setup();
