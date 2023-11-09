@@ -79,7 +79,7 @@ fun material_json (
 
     my $dq_material = $model_label->dq('material');
 
-    # # add verse content
+    # add verse content
     my @bibles = sort keys $data->{bibles}->%*;
     my %words;
     for my $range ( $data->{ranges}->@* ) {
