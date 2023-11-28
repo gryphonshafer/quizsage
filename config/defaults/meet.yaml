@@ -1,0 +1,119 @@
+---
+brackets:
+  - name: Preliminary
+    quizzes_per_team: 5
+    rooms: 4
+    teams:
+        slotting: random
+        source: roster
+    type: Score Sum
+    weight: 1
+  - name: Top 9
+    rooms: 3
+    teams:
+        places:
+            max: 9
+            min: 1
+        slotting: striped
+        source: Preliminary
+    template: Single Elimination
+    type: Positional
+    weight: 1
+  - name: Auxiliary
+    quiz_duration: 30
+    quizzes_per_team: 5
+    rooms: 2
+    teams:
+        places:
+            min: 10
+        slotting: striped
+        source: Preliminary
+    type: Score Sum
+    weight: 0.5
+  - name: Finals
+    rooms: 1
+    teams:
+        places:
+            max: 3
+            min: 1
+        slotting: striped
+        source: Top 9
+    template: Single Elimination
+    type: Finals
+    weight: 0
+material:
+    label: Ephesians NIV
+password: password
+roster:
+    data: |
+        TEAM 1
+        Alpha Bravo ESV
+        Charlie Delta (Rookie)
+        Echo Foxtrox
+
+        TEAM 2
+        Gulf Hotel
+        India Juliet NASB1995
+        Kilo Lima (Rookie)
+
+        TEAM 3
+        Mike November
+        Oscar Papa
+
+        TEAM 4 (Rookie)
+        Quebec Romeo
+        Sierra Tango
+        Uniform Victor
+
+        TEAM 5 ESV
+        Whiskey Xray BSB
+        Yankee Zulu
+        Awesome Breakfast
+
+        TEAM 6
+        Count Dracula
+        Elliot Fractal ESV
+        Gene Hackman (Rookie)
+
+        TEAM 7
+        Indy Jest NASB1995
+        Kick Luck
+
+        TEAM 8
+        Mark Nevada
+        Oregon Pacific
+        Qatar Rome
+
+        TEAM 9
+        Sea Turtle
+        Ultra Violet
+        Wax Xenon
+
+        TEAM 10
+        Bravo Alpha ESV
+        Delta Charlie (Rookie)
+        Foxtrox Echo
+
+        TEAM 11
+        Hotel Gulf
+        Juliet India NASB1995
+        Lima Kilo (Rookie)
+
+        TEAM 12
+        November Mike
+        Papa Oscar
+
+        TEAM 13 (Rookie)
+        Romeo Quebec
+        Tango Sierra
+        Victor Uniform
+
+        TEAM 14 ESV
+        Xray Whiskey BSB
+        Zulu Yankee
+        Breakfast Awesome
+
+        TEAM 15
+        Dracula Count
+        Fractal Elliot ESV
+        Hackman Gene (Rookie)

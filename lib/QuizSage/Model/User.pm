@@ -16,12 +16,11 @@ before 'create' => sub ( $self, $params ) {
     $params->{active} //= 0;
 };
 
-sub validate ($self) {
-    my ($address) = Email::Address->parse( $self->data->{email} );
+sub validate ( $self, $data ) {
+    my ($address) = Email::Address->parse( $data->{email} );
     croak('Email not provided properly') unless ($address);
-    $self->data->{email} = $address->address;
-
-    $self->data->{settings} //= {};
+    $data->{email} = $address->address;
+    return $data;
 };
 
 sub freeze ( $self, $data ) {
@@ -31,13 +30,12 @@ sub freeze ( $self, $data ) {
         $data->{passwd} = $self->bcrypt( $data->{passwd} );
     }
 
-    $data->{settings} = encode_json( $data->{settings} ) if ( defined $data->{settings} );
-
+    $data->{settings} = encode_json( $data->{settings} // {} );
     return $data;
 }
 
 sub thaw ( $self, $data ) {
-    $data->{settings} = decode_json( $data->{settings} ) if ( defined $data->{settings} );
+    $data->{settings} = ( defined $data->{settings} ) ? decode_json( $data->{settings} ) : {};
     return $data;
 }
 
@@ -87,7 +85,7 @@ sub login ( $self, $email, $passwd ) {
         active => 1,
     });
 
-    $self->save({ last_login => \q/( STRFTIME( '%Y-%m-%d %H:%M:%S:%s', 'NOW', 'LOCALTIME' ) )/ });
+    $self->save({ last_login => \q/( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) )/ });
 
     return $self;
 }

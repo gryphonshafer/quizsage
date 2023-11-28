@@ -3,17 +3,17 @@
 CREATE TABLE IF NOT EXISTS season (
     season_id INTEGER PRIMARY KEY,
     name      TEXT    NOT NULL CHECK( LENGTH(name) > 0 ) UNIQUE,
-    start     TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) ),
-    days      INTEGER NOT NULL DEFAULT 365,
-    settings  TEXT
+    location  TEXT,
+    start     TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%S', 'NOW', 'LOCALTIME' ) ),
+    days      INTEGER NOT NULL DEFAULT 365
 );
 
 CREATE TABLE IF NOT EXISTS meet (
     meet_id       INTEGER PRIMARY KEY,
     season_id     INTEGER NOT NULL REFERENCES season(season_id) ON UPDATE CASCADE ON DELETE CASCADE,
     name          TEXT    NOT NULL CHECK( LENGTH(name) > 0 ),
-    location      TEXT
-    start         TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) ),
+    location      TEXT,
+    start         TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%S', 'NOW', 'LOCALTIME' ) ),
     days          INTEGER NOT NULL DEFAULT 365,
     settings      TEXT,
     state         TEXT,
