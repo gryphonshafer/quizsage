@@ -6,7 +6,6 @@ import:
     classes/quiz: classes/quiz
     classes/scoring: classes/scoring
     modules/distribution: modules/distribution
-quiz_duration: 30
 roster:
     default_bible: NIV
     tags:

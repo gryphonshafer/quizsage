@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS season (
     name      TEXT    NOT NULL CHECK( LENGTH(name) > 0 ) UNIQUE,
     location  TEXT,
     start     TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%S', 'NOW', 'LOCALTIME' ) ),
-    days      INTEGER NOT NULL DEFAULT 365
+    days      INTEGER NOT NULL DEFAULT 365,
+    settings  TEXT
 );
 
 CREATE TABLE IF NOT EXISTS meet (
@@ -14,9 +15,9 @@ CREATE TABLE IF NOT EXISTS meet (
     name          TEXT    NOT NULL CHECK( LENGTH(name) > 0 ),
     location      TEXT,
     start         TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%S', 'NOW', 'LOCALTIME' ) ),
-    days          INTEGER NOT NULL DEFAULT 365,
+    days          INTEGER NOT NULL DEFAULT 1,
     settings      TEXT,
-    state         TEXT,
+    build         TEXT,
     last_modified TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) ),
     created       TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) )
 );
@@ -29,7 +30,7 @@ CREATE TRIGGER IF NOT EXISTS meet_last_modified
         start,
         days,
         settings,
-        state
+        build
     ON meet
     BEGIN
         UPDATE meet
@@ -38,20 +39,22 @@ CREATE TRIGGER IF NOT EXISTS meet_last_modified
     END;
 
 CREATE TABLE IF NOT EXISTS quiz (
-    quiz_id            INTEGER PRIMARY KEY,
-    meet_id            INTEGER NULL REFERENCES meet(meet_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    name               TEXT,
-    room               TEXT,
-    settings           TEXT,
-    state              TEXT,
-    last_modified      TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) ),
-    created            TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) )
+    quiz_id       INTEGER PRIMARY KEY,
+    meet_id       INTEGER NULL REFERENCES meet(meet_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    user_id       INTEGER NULL REFERENCES user(user_id) ON UPDATE CASCADE ON DELETE SET NULL,
+    bracket       TEXT,
+    name          TEXT,
+    settings      TEXT,
+    state         TEXT,
+    last_modified TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) ),
+    created       TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) )
 );
 CREATE TRIGGER IF NOT EXISTS quiz_last_modified
     AFTER UPDATE OF
         meet_id,
+        user_id,
+        bracket,
         name,
-        room,
         settings,
         state
     ON quiz

@@ -4,45 +4,38 @@ brackets:
     quizzes_per_team: 5
     rooms: 4
     teams:
-        slotting: random
-        source: roster
-    type: Score Sum
+        slotting: random # random, striped, snaked, sequential
+        source: roster # roster, "bracket name"
+    type: score_sum # score_sum, positional
     weight: 1
+  - name: Auxiliary
+    quizzes_per_team: 2
+    rooms: 1
+    teams:
+        places:
+            min: 10
+        slotting: striped # random, striped, snaked, sequential
+        source: Preliminary # roster, "bracket name"
+    type: score_sum # score_sum, positional
+    weight: 0.5
   - name: Top 9
     rooms: 3
     teams:
         places:
             max: 9
             min: 1
-        slotting: striped
-        source: Preliminary
-    template: Single Elimination
-    type: Positional
+        slotting: striped # random, striped, snaked, sequential
+        source: Preliminary # roster, "bracket name"
+    template: double_elimination
+    type: positional # score_sum, positional
+    quizzes:
+      - name: J
+        weight: 0
     weight: 1
-  - name: Auxiliary
-    quiz_duration: 30
-    quizzes_per_team: 5
-    rooms: 2
-    teams:
-        places:
-            min: 10
-        slotting: striped
-        source: Preliminary
-    type: Score Sum
-    weight: 0.5
-  - name: Finals
-    rooms: 1
-    teams:
-        places:
-            max: 3
-            min: 1
-        slotting: striped
-        source: Top 9
-    template: Single Elimination
-    type: Finals
-    weight: 0
 material:
     label: Ephesians NIV
+    # description: Ephesians NIV
+    # material_id: 1a2b4c5d6e7f8901
 password: password
 roster:
     data: |
@@ -112,8 +105,3 @@ roster:
         Xray Whiskey BSB
         Zulu Yankee
         Breakfast Awesome
-
-        TEAM 15
-        Dracula Count
-        Fractal Elliot ESV
-        Hackman Gene (Rookie)

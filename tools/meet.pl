@@ -22,11 +22,9 @@ $opt->{context} =
     ( $opt->{context} =~ /^m/i ) ? 'meet'   : '';
 
 $opt->{action} =
-    ( not $opt->{action}      ) ? ''        :
-    ( $opt->{action} =~ /^b/i ) ? 'build'   :
-    ( $opt->{action} =~ /^r/i ) ? 'rebuild' :
-    ( $opt->{action} =~ /^u/i ) ? 'unbuild' :
-    ( $opt->{action} =~ /^d/i ) ? 'delete'  : '';
+    ( not $opt->{action}      ) ? ''       :
+    ( $opt->{action} =~ /^b/i ) ? 'build'  :
+    ( $opt->{action} =~ /^d/i ) ? 'delete' : '';
 
 pod2usage('Most provide valid context and either a season name or meet name or primary ID') unless (
     $opt->{context} eq 'season' and $opt->{season} or
@@ -98,7 +96,7 @@ meet.pl - Build and edit meets and seasons
         -s, --start    DATETIME|EPOCH
         -d, --days     DURATION
         -y, --yaml     YAML_SETTINGS_FILE
-        -a, --action   ACTION # build | rebuild | unbuild | delete
+        -a, --action   ACTION # build | delete
         -h, --help
         -m, --man
 
@@ -137,4 +135,4 @@ YAML source file for settings.
 
 =head2 -a, --action
 
-Execute a valid action. Valid actions are: build, rebuild, unbuild, and delete.
+Execute a valid action. Valid actions are: "build" and "delete".

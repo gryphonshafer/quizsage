@@ -26,6 +26,7 @@ default:
     material:
         obml: local/obml
         json: static/json/material
+    default_bible: NIV
 www:
     logging:
         filter: ~
