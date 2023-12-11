@@ -5,7 +5,7 @@ use Email::Address;
 use Mojo::JSON qw( encode_json decode_json );
 use Omniframe::Class::Email;
 
-with qw( Omniframe::Role::Model Omniframe::Role::Bcrypt );
+with qw( Omniframe::Role::Bcrypt Omniframe::Role::Model );
 
 class_has active => 1;
 
@@ -174,4 +174,4 @@ to find and login the user. If successful, it will return a loaded user object.
 
 =head1 WITH ROLES
 
-L<Omniframe::Role::Model>, L<Omniframe::Role::Bcrypt>.
+L<Omniframe::Role::Bcrypt>, L<Omniframe::Role::Model>.

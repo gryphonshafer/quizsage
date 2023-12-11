@@ -2,11 +2,14 @@ package QuizSage::Model::Meet;
 
 use exact -class;
 use Mojo::JSON qw( encode_json decode_json );
+use Omniframe::Class::Javascript;
 use QuizSage::Model::Meet;
 use QuizSage::Util::Material 'material_json';
 use YAML::XS qw( LoadFile Load Dump );
 
-with qw( Omniframe::Role::Model Omniframe::Role::Time );
+with qw( Omniframe::Role::Bcrypt Omniframe::Role::Model Omniframe::Role::Time );
+
+my $min_passwd_length = 8;
 
 sub validate ( $self, $data ) {
     if ( $data->{start} ) {
@@ -24,6 +27,12 @@ sub validate ( $self, $data ) {
 };
 
 sub freeze ( $self, $data ) {
+    if ( $data->{passwd} ) {
+        croak("Password supplied is not at least $min_passwd_length characters in length")
+            unless ( length $data->{passwd} >= $min_passwd_length );
+        $data->{passwd} = $self->bcrypt( $data->{passwd} );
+    }
+
     for ( qw( settings build ) ) {
         $data->{$_} = encode_json( $data->{$_} ) if ( defined $data->{$_} );
     }
@@ -40,8 +49,9 @@ sub thaw ( $self, $data ) {
 sub build ( $self, $user_id = undef ) {
     my $build_settings = $self->_merge_meet_and_season_settings;
     $self->_parse_and_structure_roster_text( \$build_settings->{roster} );
-    $self->_build_material_jsons( $build_settings, $user_id );
-    $self->_build_bracket_data( $_, $build_settings ) for ( $build_settings->{brackets}->@* );
+    $self->_create_material_json( $build_settings, $user_id );
+    $self->_build_bracket_data($build_settings);
+    $self->_add_distributions($build_settings);
     $self->_build_settings_cleanup($build_settings);
     $self->save({ build => $build_settings });
     return;
@@ -49,9 +59,8 @@ sub build ( $self, $user_id = undef ) {
 
 sub _merge_meet_and_season_settings ($self) {
     my $meet_settings   = Load( Dump( $self->data->{settings} // {} ) );
-    my $season_settings = Load( Dump(
-        QuizSage::Model::Season->new->load( $self->data->{season_id} )->data->{settings} // {}
-    ) );
+    my $season_settings =
+        QuizSage::Model::Season->new->load( $self->data->{season_id} )->data->{settings} // {};
 
     my $build_settings;
 
@@ -126,132 +135,132 @@ sub _parse_and_structure_roster_text ( $self, $roster_ref ) {
     return;
 }
 
-sub _build_material_jsons ( $self, $build_settings, $user_id = undef ) {
-    for my $set ( $build_settings, $build_settings->{per_quiz} ) {
+sub _create_material_json ( $self, $build_settings, $user_id = undef ) {
+    for my $set ( $build_settings->{per_quiz}, $build_settings->{brackets}->@* ) {
         next unless ( defined $set->{material} );
 
-        my $material_json_build_results = material_json(
-            label      => $set->{material}{label},
+        my $label = $set->{material};
+        $set->{material} = material_json(
+            label      => $label,
             maybe user => $user_id,
         );
-
-        $set->{material}{description} = $material_json_build_results->{description};
-        $set->{material}{material_id} = $material_json_build_results->{material_id};
+        $set->{material}{label} = $label;
     }
-
-    return;
 }
 
-sub _build_bracket_data ( $self, $bracket, $build_settings ) {
-    my $teams = ( $bracket->{teams}{source} eq 'roster' )
-        ? $build_settings->{roster}
-        : [
-            map {
-                +{
-                    position => $_,
-                    bracket  => $bracket->{teams}{source},
-                };
-            } (
-                1 .. (
-                    grep { $bracket->{teams}{source} eq $_->{name} } $build_settings->{brackets}->@*
-                )[0]->{teams}{derived_count} // scalar( @{ $build_settings->{roster} } )
-            )
-        ];
+sub _build_bracket_data ( $self, $build_settings ) {
+    for my $bracket ( $build_settings->{brackets}->@* ) {
+        my $teams = ( $bracket->{teams}{source} eq 'roster' )
+            ? $build_settings->{roster}
+            : [
+                map {
+                    +{
+                        position => $_,
+                        bracket  => $bracket->{teams}{source},
+                    };
+                } (
+                    1 .. (
+                        grep { $bracket->{teams}{source} eq $_->{name} } $build_settings->{brackets}->@*
+                    )[0]->{teams}{derived_count} // scalar( @{ $build_settings->{roster} } )
+                )
+            ];
 
-    $teams = [ @$teams[
-        ( ( $bracket->{teams}{places}{min} ) ? $bracket->{teams}{places}{min} - 1 : 0 )
-        ..
-        ( ( $bracket->{teams}{places}{max} ) ? $bracket->{teams}{places}{max} - 1 : @$teams - 1 )
-    ] ] if ( $bracket->{teams}{places} );
+        $teams = [ @$teams[
+            ( ( $bracket->{teams}{places}{min} ) ? $bracket->{teams}{places}{min} - 1 : 0 )
+            ..
+            ( ( $bracket->{teams}{places}{max} ) ? $bracket->{teams}{places}{max} - 1 : @$teams - 1 )
+        ] ] if ( $bracket->{teams}{places} );
 
-    $bracket->{teams}{derived_count} = @$teams;
+        $bracket->{teams}{derived_count} = @$teams;
 
-    if ( $bracket->{teams}{slotting} ) {
-        if ( $bracket->{teams}{slotting} // '' eq 'random' ) {
-            $teams = [ map { $_->[0] } sort { $a->[1] <=> $b->[1] } map { [ $_, rand ] } @$teams ];
-        }
-        elsif ( $bracket->{teams}{slotting} // '' eq 'striped' ) {
-            my %queues;
-            push( @{ $queues{ $_ % $bracket->{rooms} } }, $teams->[$_] ) for ( 0 .. @$teams - 1 );
-            $teams = [ map { $queues{$_}->@* } sort { $a <=> $b } keys %queues ];
-        }
-        elsif ( $bracket->{teams}{slotting} // '' eq 'snaked' ) {
-            my %queues;
-            push( @{ $queues{
-                ( $_ / $bracket->{rooms} % 2 )
-                    ? abs( $_ % $bracket->{rooms} - ( $bracket->{rooms} - 1 ) )
-                    : $_ % $bracket->{rooms}
-            } }, $teams->[$_] ) for ( 0 .. @$teams - 1 );
-            $teams = [ map { $queues{$_}->@* } sort { $a <=> $b } keys %queues ];
-        }
-    }
-
-    if ( $bracket->{type} eq 'score_sum' ) {
-        my ($meet) = $self->_build_score_sum_draw(
-            $teams,
-            $bracket->{rooms},
-            $bracket->{quizzes_per_team},
-        );
-
-        my $name;
-        $bracket->{sets} = [
-            map {
-                my $room;
-                +{
-                    rooms => [
-                        map {
-                            +{
-                                name   => ++$name,
-                                room   => ++$room,
-                                roster => $_,
-                            };
-                        } @$_,
-                    ],
-                };
-            } @$meet
-        ];
-    }
-    elsif ( $bracket->{type} eq 'positional' ) {
-        my $template = LoadFile(
-            $self->conf->get( qw( config_app root_dir ) ) .
-                '/config/brackets/' . $bracket->{template} . '.yaml'
-        );
-
-        for my $quiz_override ( $bracket->{quizzes}->@* ) {
-            my ($quiz_to_override) = grep { $quiz_override->{name} eq $_->{name} } $template->{quizzes}->@*;
-            $quiz_to_override->{$_} = $quiz_override->{$_} for ( keys %$quiz_override );
+        if ( $bracket->{teams}{slotting} ) {
+            if ( $bracket->{teams}{slotting} // '' eq 'random' ) {
+                $teams = [ map { $_->[0] } sort { $a->[1] <=> $b->[1] } map { [ $_, rand ] } @$teams ];
+            }
+            elsif ( $bracket->{teams}{slotting} // '' eq 'striped' ) {
+                my %queues;
+                push( @{ $queues{ $_ % $bracket->{rooms} } }, $teams->[$_] ) for ( 0 .. @$teams - 1 );
+                $teams = [ map { $queues{$_}->@* } sort { $a <=> $b } keys %queues ];
+            }
+            elsif ( $bracket->{teams}{slotting} // '' eq 'snaked' ) {
+                my %queues;
+                push( @{ $queues{
+                    ( $_ / $bracket->{rooms} % 2 )
+                        ? abs( $_ % $bracket->{rooms} - ( $bracket->{rooms} - 1 ) )
+                        : $_ % $bracket->{rooms}
+                } }, $teams->[$_] ) for ( 0 .. @$teams - 1 );
+                $teams = [ map { $queues{$_}->@* } sort { $a <=> $b } keys %queues ];
+            }
         }
 
-        for ( grep { not exists $_->{roster} } $template->{quizzes}->@* ) {
-            push( @{ $_->{roster} }, shift @$teams ) while ( @$teams and @{ $_->{roster} // [] } < 3 );
-        }
-
-        my ( $current_set, $current_room );
-        my $push_set = sub {
-            push( @{ $bracket->{sets} }, { rooms => $current_set } );
-            $current_room = 1;
-            $current_set  = [];
-        };
-        while ( my $quiz = shift $template->{quizzes}->@* ) {
-            $current_room++;
-
-            $push_set->() if (
-                $current_room > $bracket->{rooms}
-                or do {
-                    my @current_set_quiz_names = map { $_->{name} } $current_set->@*;
-                    scalar grep {
-                        my $this_name = $_->{quiz};
-                        grep { $this_name and $this_name eq $_ } @current_set_quiz_names;
-                    } $quiz->{roster}->@*;
-                }
+        if ( $bracket->{type} eq 'score_sum' ) {
+            my ($meet) = $self->_build_score_sum_draw(
+                $teams,
+                $bracket->{rooms},
+                $bracket->{quizzes_per_team},
             );
 
-            $quiz->{room} = $current_room;
-            push( @$current_set, $quiz );
+            my $name;
+            $bracket->{sets} = [
+                map {
+                    my $room;
+                    +{
+                        rooms => [
+                            map {
+                                +{
+                                    name   => ++$name,
+                                    room   => ++$room,
+                                    roster => $_,
+                                };
+                            } @$_,
+                        ],
+                    };
+                } @$meet
+            ];
         }
-        $push_set->();
+        elsif ( $bracket->{type} eq 'positional' ) {
+            my $template = LoadFile(
+                $self->conf->get( qw( config_app root_dir ) ) .
+                    '/config/brackets/' . $bracket->{template} . '.yaml'
+            );
 
-        $bracket->{rankings} = $template->{rankings};
+            for my $quiz_override ( $bracket->{quizzes}->@* ) {
+                my ($quiz_to_override) =
+                    grep { $quiz_override->{name} eq $_->{name} } $template->{quizzes}->@*;
+                $quiz_to_override->{$_} = $quiz_override->{$_} for ( keys %$quiz_override );
+            }
+
+            for ( grep { not exists $_->{roster} } $template->{quizzes}->@* ) {
+                push( @{ $_->{roster} }, shift @$teams ) while ( @$teams and @{ $_->{roster} // [] } < 3 );
+            }
+
+            my ( $current_set, $current_room );
+            my $push_set = sub {
+                push( @{ $bracket->{sets} }, { rooms => $current_set } );
+                $current_room = 1;
+                $current_set  = [];
+            };
+            while ( my $quiz = shift $template->{quizzes}->@* ) {
+                $current_room++;
+
+                $push_set->() if (
+                    $current_room > $bracket->{rooms}
+                    or do {
+                        my @current_set_quiz_names = map { $_->{name} } $current_set->@*;
+                        scalar grep {
+                            my $this_name = $_->{quiz};
+                            grep { $this_name and $this_name eq $_ } @current_set_quiz_names;
+                        } $quiz->{roster}->@*;
+                    }
+                );
+
+                $quiz->{room} = $current_room;
+                push( @$current_set, $quiz );
+            }
+            $push_set->();
+
+            $bracket->{rankings} = $template->{rankings};
+        }
     }
 
     return;
@@ -330,8 +339,8 @@ sub _build_score_sum_draw (
                 }
 
                 my ($selected_team) = sort {
-                    ( $a->{quizzes}              || 0 ) <=> ( $b->{quizzes}              || 0 ) ||
-                    ( $a->{seen_team_weight}     || 0 ) <=> ( $b->{seen_team_weight}     || 0 ) ||
+                    ( $a->{quizzes}          || 0 ) <=> ( $b->{quizzes}          || 0 ) ||
+                    ( $a->{seen_team_weight} || 0 ) <=> ( $b->{seen_team_weight} || 0 ) ||
                     (
                         ( grep { $set_count == $_ } @$skip_room_sort_on )
                             ? 0
@@ -411,15 +420,58 @@ sub _build_score_sum_draw (
     return $meet, $team_stats, $quiz_stats;
 }
 
-sub _build_settings_cleanup( $self, $build_settings ) {
-    for ( $build_settings->{brackets}->@* ) {
-        delete $_->{quizzes_per_team};
-        delete $_->{rooms};
-        delete $_->{teams};
-        delete $_->{template};
-        delete $_->{type};
-        delete $_->{quizzes};
+sub _add_distributions ( $self, $build_settings ) {
+    my ( $material_json_bibles, $importmap_js );
+    my $js_basepath = $self->conf->get( qw( config_app root_dir ) ) . '/static/js';
+
+    for my $bracket ( $build_settings->{brackets}->@* ) {
+        for my $quiz ( map { $_->{rooms}->@* } $bracket->{sets}->@* ) {
+            my $material = $quiz->{material} || $bracket->{material} || $build_settings->{per_quiz}{material};
+
+            $material_json_bibles->{ $material->{json_file}->to_string } //= do {
+                my $bibles = decode_json( $material->{json_file}->slurp )->{bibles};
+                [ grep { $bibles->{$_}{type} eq 'primary' } keys %$bibles ];
+            };
+
+            my $importmap =
+                $quiz->{importmap} || $bracket->{importmap} || $build_settings->{per_quiz}{importmap};
+
+            my $importmap_yaml = Dump($importmap);
+
+            $importmap_js->{$importmap_yaml} //= Omniframe::Class::Javascript->new(
+                basepath  => $js_basepath,
+                importmap => $importmap,
+            );
+
+            $quiz->{distribution} = $importmap_js->{$importmap_yaml}->run(
+                $js_basepath . '/modules/build_distribution.js',
+                {
+                    bibles      => $material_json_bibles->{ $material->{json_file}->to_string },
+                    teams_count => scalar( $quiz->{roster}->@* ),
+                },
+            )->[0][0];
+        }
     }
+
+    return;
+}
+
+sub _build_settings_cleanup( $self, $build_settings ) {
+    delete $build_settings->{per_quiz}{material}{json_file} if ( $build_settings->{per_quiz}{material} );
+
+    for my $bracket ( $build_settings->{brackets}->@* ) {
+        delete $bracket->{quizzes_per_team};
+        delete $bracket->{rooms};
+        delete $bracket->{teams};
+        delete $bracket->{template};
+        delete $bracket->{type};
+        delete $bracket->{quizzes};
+        delete $bracket->{material}{json_file} if ( $bracket->{material} );
+        for ( map { $_->{rooms}->@* } $bracket->{sets}->@* ) {
+            delete $_->{material}{json_file} if ( $_->{material} );
+        }
+    }
+
     return;
 }
 
@@ -443,6 +495,8 @@ This class is the model for meet objects.
 
 =head2 validate, freeze, thaw
 
+=head2 build
+
 =head1 WITH ROLE
 
-L<Omniframe::Role::Model>, L<Omniframe::Role::Time>.
+L<Omniframe::Role::Bcrypt>, L<Omniframe::Role::Model>, L<Omniframe::Role::Time>.

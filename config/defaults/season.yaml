@@ -1,6 +1,6 @@
 ---
 application: vue/apps/quiz
-import:
+importmap:
     classes/material: classes/material
     classes/queries: classes/queries
     classes/quiz: classes/quiz

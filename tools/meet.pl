@@ -6,12 +6,13 @@ use YAML::XS 'LoadFile';
 
 my $opt = options( qw{
     context|c=s
-    id|s=i
+    id|i=i
     season|e=s
     name|n=s
     location|l=s
     start|s=s
     days|d=i
+    password|p=s
     yaml|y=s
     action|a=s
 } );
@@ -54,6 +55,7 @@ my $data = {
     maybe location  => $opt->{location},
     maybe start     => $opt->{start},
     maybe days      => $opt->{days},
+    maybe passwd    => $opt->{password},
     maybe settings  => $opt->{settings},
 };
 
@@ -90,11 +92,13 @@ meet.pl - Build and edit meets and seasons
 
     meet.pl OPTIONS
         -c, --context  CONTEXT # season | meet
+        -i, --id       PRIMARY_KEY_ID
         -e, --season   SEASON_NAME
         -n, --name     MEET_NAME
         -l, --location LOCATION
         -s, --start    DATETIME|EPOCH
         -d, --days     DURATION
+        -p, --password PASSWORD
         -y, --yaml     YAML_SETTINGS_FILE
         -a, --action   ACTION # build | delete
         -h, --help
@@ -107,6 +111,10 @@ This program will build and edit meets and seasons.
 =head2 -c, --context
 
 Run the program either in the "season" or "meet" context.
+
+=head2 -i, --id
+
+Primary key ID of the row of the C<context> desired.
 
 =head2 -e, --season
 
@@ -128,6 +136,10 @@ string (with or without timezone) or epoch.
 =head2 -d, --days
 
 Number of days of season or meet duration.
+
+=head2 -p, --password
+
+Officials' authorization password for a meet.
 
 =head2 -y, --yaml
 

@@ -50,7 +50,7 @@ fun material_json (
 
     my $return = {
         description => $description,
-        json_file   => $json_file->to_string,
+        json_file   => $json_file,
         material_id => $material_id,
     };
 
