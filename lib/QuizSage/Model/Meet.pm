@@ -458,19 +458,54 @@ sub _add_distributions ( $self, $build_settings ) {
 
 sub _build_settings_cleanup( $self, $build_settings ) {
     delete $build_settings->{per_quiz}{material}{json_file} if ( $build_settings->{per_quiz}{material} );
-
     for my $bracket ( $build_settings->{brackets}->@* ) {
-        delete $bracket->{quizzes_per_team};
-        delete $bracket->{rooms};
-        delete $bracket->{teams};
-        delete $bracket->{template};
-        delete $bracket->{type};
-        delete $bracket->{quizzes};
+        delete $bracket->{$_} for ( qw( quizzes_per_team rooms teams template type quizzes ) );
         delete $bracket->{material}{json_file} if ( $bracket->{material} );
-        for ( map { $_->{rooms}->@* } $bracket->{sets}->@* ) {
-            delete $_->{material}{json_file} if ( $_->{material} );
+        delete $_->{material}{json_file}
+            for ( grep { $_->{material} } map { $_->{rooms}->@* } $bracket->{sets}->@* );
+    }
+    return;
+}
+
+sub schedule ($self) {
+    my $build = Load( Dump( $self->data->{build} ) );
+
+    for my $bracket ( $build->{brackets}->@* ) {
+        for my $set ( $bracket->{sets}->@* ) {
+            for my $quiz ( $set->{rooms}->@* ) {
+                _merge_data_into_quiz( $quiz, $set, $bracket, $build );
+            }
         }
     }
+
+    return $build;
+}
+
+sub quiz ( $self, $bracket_name, $quiz_name ) {
+    my $build = Load( Dump( $self->data->{build} ) );
+
+    my ($bracket) = grep { $_->{name} eq $bracket_name } $build->{brackets}->@*;
+    return unless $bracket;
+
+    my $find_pointers = sub {
+        for my $set ( $bracket->{sets}->@* ) {
+            for my $quiz ( $set->{rooms}->@* ) {
+                return $quiz, $set, $bracket if ( $quiz->{name} eq $quiz_name );
+            }
+        }
+    };
+    my ( $quiz, $set, $bracket ) = $find_pointers->();
+    return unless $quiz;
+
+    _merge_data_into_quiz( $quiz, $set, $bracket, $build );
+    return $quiz;
+}
+
+sub _merge_data_into_quiz ( $quiz, $set, $bracket, $build ) {
+    $quiz->{$_} //= $set->{$_} // $bracket->{$_} // $build->{per_quiz}{$_}
+        for ( qw( application importmap material settings ) );
+
+    $quiz->{bracket} = $bracket->{name};
 
     return;
 }
@@ -496,6 +531,10 @@ This class is the model for meet objects.
 =head2 validate, freeze, thaw
 
 =head2 build
+
+=head2 schedule
+
+=head2 quiz
 
 =head1 WITH ROLE
 
