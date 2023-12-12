@@ -11,6 +11,11 @@ sub quiz_password ($self) {
 }
 
 sub quiz ($self) {
+    $self->warn( [
+        $self->param('bracket'),
+        $self->param('name'),
+    ] );
+
     my $quiz = QuizSage::Model::Quiz->new->load( $self->param('id') );
 
     # my $message = (
@@ -31,13 +36,13 @@ sub quiz ($self) {
     #     return $self->redirect_to( '/quiz/settings/' . $self->param('id') );
     # }
 
-    $self->stash(
-        quiz    => $quiz,
-        # message => $message,
-    );
+    # $self->stash(
+    #     # quiz    => $quiz,
+    #     # message => $message,
+    # );
 }
 
-sub quiz_settings ($self) {
+sub settings ($self) {
     if (
         defined $self->param('teams') and
         defined $self->param('ranges') and

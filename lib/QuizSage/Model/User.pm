@@ -35,6 +35,7 @@ sub freeze ( $self, $data ) {
 }
 
 sub thaw ( $self, $data ) {
+    delete $data->{passwd};
     $data->{settings} = ( defined $data->{settings} ) ? decode_json( $data->{settings} ) : {};
     return $data;
 }

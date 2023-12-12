@@ -1,0 +1,46 @@
+<h1>QuizSage: Meet</h1>
+
+<a href="[% c.url_for('/') %]">Main Page</a>
+
+[% FOR bracket IN schedule.brackets %]
+    <h2>[% bracket.name %]</h2>
+
+    [% FOR set IN bracket.sets %]
+        <div>
+            [% FOR quiz IN set.rooms %]
+                <div class="quiz_summary_box">
+                    <a href="[%
+                        c.url_for('/quiz').query( bracket => quiz.bracket, name => quiz.name )
+                    %]"><b>Quiz: [% quiz.name %]</b></a><br>
+                    Room: [% quiz.room %]
+
+                    <ul>
+                        [% FOR team IN quiz.roster %]
+                            <li>[%
+                                IF team.team;
+                                    team.team;
+                                ELSE;
+                                    IF team.position == 1;
+                                        '1st';
+                                    ELSIF team.position == 2;
+                                        '2nd';
+                                    ELSIF team.position == 3;
+                                        '3rd';
+                                    ELSE;
+                                        team.position _ 'th';
+                                    END;
+
+                                    IF team.quiz;
+                                        ' in ' _ team.quiz;
+                                    ELSE;
+                                        ' of ' _ team.bracket;
+                                    END;
+                                END;
+                            %]</li>
+                        [% END %]
+                    </ul>
+                </div>
+            [% END %]
+        </div>
+    [% END %]
+[% END %]

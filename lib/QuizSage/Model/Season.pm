@@ -2,6 +2,7 @@ package QuizSage::Model::Season;
 
 use exact -class;
 use Mojo::JSON qw( encode_json decode_json );
+use QuizSage::Model::Meet;
 use YAML::XS 'LoadFile';
 
 with qw( Omniframe::Role::Model Omniframe::Role::Time );
@@ -29,6 +30,46 @@ sub freeze ( $self, $data ) {
 sub thaw ( $self, $data ) {
     $data->{settings} = decode_json( $data->{settings} ) if ( defined $data->{settings} );
     return $data;
+}
+
+sub active_seasons ($self) {
+    return [
+        map {
+            $_->{meets} = [
+                map {
+                    $_->{start} = $self->time
+                        ->parse( $_->{start}, 'America/Los_Angeles' )
+                        ->strftime('%a, %b %e, %Y at %l:%M %p');
+                    $_;
+                }
+                $self->dq->get(
+                    'meet',
+                    [
+                        qw( meet_id name location ),
+                        [ \q{ STRFTIME( '%s', start ) } => 'start' ],
+                    ],
+                    { $self->id_name => $_->{season_id} },
+                    { order_by => 'start' },
+                )->run->all({})->@*
+            ];
+            $_;
+        } $self->dq->get(
+            $self->name,
+            [
+                qw( season_id name location ),
+            ],
+            {
+                0 => {
+                    '<',
+                    \q{
+                        STRFTIME( '%s', start ) + days * 24 * 60 * 60 -
+                        STRFTIME( '%s', 'NOW' )
+                    },
+                },
+            },
+            { order_by => [ 'location', 'name' ] },
+        )->run->all({})->@*
+    ];
 }
 
 1;

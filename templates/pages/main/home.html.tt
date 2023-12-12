@@ -21,73 +21,44 @@
     </form>
 
     <a href="[% c.url_for('/user/forgot_password') %]">Forgot Password</a>
-[% ELSIF NOT c.session.quiz_password.defined %]
-    <p>
-        If you are going to be a QM, please enter the Quiz Write-Data Access
-        password below. Otherwise, just submit the form blank.
-    </p>
-
-    <form method="post" action="[% c.url_for('/quiz/password') %]">
-        <fieldset>
-            <legend>Quiz Write-Data Access</legend>
-
-            <label>
-                Password:
-                <input type="password" name="passwd" value="" placeholder="Quiz Write-Data Password">
-            </label>
-
-            <input type="submit" value="Submit Quiz Password">
-        </fieldset>
-    </form>
+[% ELSE %]
+    <p>You're logged in, [% user.data.first_name %].
 
     <p><a href="[% c.url_for('/user/logout') %]">Logout</a></p>
-[% ELSE %]
-    <p>You're logged in, [% user.data.first_name %]. <a href="[% c.url_for('/user/logout') %]">Logout</a>.</p>
 
-    [% FOR season IN active_quizzes.seasons %]
-        <h2>[% season.name %]</h2>
+    <p><a href="[% c.url_for('/qm_auth') %]">Set Official Password</a></p>
 
-        [% FOR meet IN season.meets %]
-            <h3>[% meet.name %]</h3>
+    <h2>Active Seasons</h2>
+    [% IF active_seasons.size > 0 %]
+        [% FOR season IN active_seasons %]
+            <h3>[% IF season.location %][% season.location %]: [% END %][% season.name %]</h3>
 
-            [% FOR quiz IN meet.quizzes %]
-                <div class="quiz_summary_box">
-                    <a href="[%
-                        c.url_for('/quiz').query( id => quiz.quiz_id )
-                    %]"><b>Quiz: [% quiz.name %]</b></a><br>
-
-                    Room: [% quiz.room %]<br>
-                    Start: [% quiz.scheduled_start %]
-
-                    [% IF quiz.settings_state.teams %]
-                        <ul>
-                            [% FOR team IN quiz.settings_state.teams %]
-                                <li>[%
-                                    IF team.ref == 'HASH';
-                                        IF team.position == 1;
-                                            '1st';
-                                        ELSIF team.position == 2;
-                                            '2nd';
-                                        ELSIF team.position == 3;
-                                            '3rd';
-                                        ELSE;
-                                            team.position _ 'th';
-                                        END;
-
-                                        IF team.quiz;
-                                            ' in ' _ team.quiz;
-                                        ELSE;
-                                            ' in Pts';
-                                        END;
-                                    ELSE;
-                                        team;
-                                    END;
-                                %]</li>
-                            [% END %]
-                        </ul>
-                    [% END %]
-                </div>
+            [% IF season.meets.size > 0 %]
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Location</th>
+                            <th>Start</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        [% FOR meet IN season.meets %]
+                            <tr>
+                                <td><a href="[%
+                                    c.url_for( '/meet/' _ meet.meet_id )
+                                %]">[% meet.name %]</a></td>
+                                <td>[% meet.location %]</td>
+                                <td>[% meet.start %]</td>
+                            </tr>
+                        [% END %]
+                    </tbody>
+                </table>
+            [% ELSE %]
+                <p>There are no meets setup for this season.</p>
             [% END %]
         [% END %]
+    [% ELSE %]
+        <p>There are no active seasons.</p>
     [% END %]
 [% END %]

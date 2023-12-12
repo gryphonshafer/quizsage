@@ -1,12 +1,34 @@
 package QuizSage::Control::Main;
 
 use exact 'Mojolicious::Controller';
-use QuizSage::Model::Quiz;
+use QuizSage::Model::Season;
+use QuizSage::Model::Meet;
+
+with 'Omniframe::Role::Bcrypt';
 
 sub home ($self) {
     if ( $self->stash('user') ) {
-        # $self->stash( active_quizzes => QuizSage::Model::Quiz->new->active_quizzes );
-        $self->redirect_to('/quiz/settings');
+        $self->stash( active_seasons => QuizSage::Model::Season->new->active_seasons );
+    }
+}
+
+sub meet ($self) {
+    try {
+        $self->stash( schedule => QuizSage::Model::Meet->new->load( $self->param('meet_id') )->schedule );
+    }
+    catch ($e) {
+        $self->notice(
+            'User ' . $self->stash('user')->id . ' requested missing meet ID ' . $self->param('meet_id')
+        );
+        $self->redirect_to('/');
+    }
+}
+
+sub qm_auth ($self) {
+    if ( my $qm_auth = $self->param('qm_auth') ) {
+        $self->stash('user')->{data}{settings}{qm_auth} =  $self->bcrypt($qm_auth);
+        $self->stash('user')->save;
+        $self->redirect_to('/');
     }
 }
 

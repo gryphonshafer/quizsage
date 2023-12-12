@@ -494,7 +494,8 @@ sub quiz ( $self, $bracket_name, $quiz_name ) {
             }
         }
     };
-    my ( $quiz, $set, $bracket ) = $find_pointers->();
+    my ( $quiz, $set );
+    ( $quiz, $set, $bracket ) = $find_pointers->();
     return unless $quiz;
 
     _merge_data_into_quiz( $quiz, $set, $bracket, $build );

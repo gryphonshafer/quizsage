@@ -8,15 +8,18 @@
 
         <label>
             First Name:
-            <input type="text" name="first_name" value="[% first_name %]" placeholder="First Name">
+            <input type="text" name="first_name" value="[% first_name %]" placeholder="First Name"
+                autocomplete="given-name">
         </label>
         <label>
             Last Name:
-            <input type="text" name="last_name" value="[% last_name %]" placeholder="Last Name">
+            <input type="text" name="last_name" value="[% last_name %]" placeholder="Last Name"
+                autocomplete="family-name">
         </label>
         <label>
             Email:
-            <input type="email" name="email" value="[% email %]" placeholder="Email">
+            <input type="email" name="email" value="[% email %]" placeholder="Email"
+                autocomplete="email">
         </label>
         <label>
             Password:
@@ -25,7 +28,8 @@
         </label>
         <label>
             Phone:
-            <input type="tel" name="phone" value="[% phone %]" placeholder="Phone">
+            <input type="tel" name="phone" value="[% phone %]" placeholder="Phone"
+                autocomplete="tel">
         </label>
 
         <input type="submit" value="Create New User">
