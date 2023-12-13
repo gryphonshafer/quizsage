@@ -41,8 +41,6 @@ This class is the model for quiz objects.
 
 =head2 freeze, thaw
 
-=head2 active_quizzes
-
 =head1 WITH ROLE
 
 L<Omniframe::Role::Model>.

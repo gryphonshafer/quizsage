@@ -3,7 +3,7 @@ package QuizSage::Model::Meet;
 use exact -class;
 use Mojo::JSON qw( encode_json decode_json );
 use Omniframe::Class::Javascript;
-use QuizSage::Model::Meet;
+use QuizSage::Model::Season;
 use QuizSage::Util::Material 'material_json';
 use YAML::XS qw( LoadFile Load Dump );
 
@@ -20,7 +20,7 @@ sub validate ( $self, $data ) {
     }
 
     $data->{settings} = LoadFile(
-        $self->conf->get( qw( config_app root_dir ) ) . '/config/defaults/meet.yaml'
+        $self->conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/meet.yaml'
     ) unless ( defined $data->{settings} );
 
     return $data;
@@ -174,15 +174,15 @@ sub _build_bracket_data ( $self, $build_settings ) {
         $bracket->{teams}{derived_count} = @$teams;
 
         if ( $bracket->{teams}{slotting} ) {
-            if ( $bracket->{teams}{slotting} // '' eq 'random' ) {
+            if ( ( $bracket->{teams}{slotting} // '' ) eq 'random' ) {
                 $teams = [ map { $_->[0] } sort { $a->[1] <=> $b->[1] } map { [ $_, rand ] } @$teams ];
             }
-            elsif ( $bracket->{teams}{slotting} // '' eq 'striped' ) {
+            elsif ( ( $bracket->{teams}{slotting} // '' ) eq 'striped' ) {
                 my %queues;
                 push( @{ $queues{ $_ % $bracket->{rooms} } }, $teams->[$_] ) for ( 0 .. @$teams - 1 );
                 $teams = [ map { $queues{$_}->@* } sort { $a <=> $b } keys %queues ];
             }
-            elsif ( $bracket->{teams}{slotting} // '' eq 'snaked' ) {
+            elsif ( ( $bracket->{teams}{slotting} // '' ) eq 'snaked' ) {
                 my %queues;
                 push( @{ $queues{
                     ( $_ / $bracket->{rooms} % 2 )
@@ -221,7 +221,7 @@ sub _build_bracket_data ( $self, $build_settings ) {
         elsif ( $bracket->{type} eq 'positional' ) {
             my $template = LoadFile(
                 $self->conf->get( qw( config_app root_dir ) ) .
-                    '/config/brackets/' . $bracket->{template} . '.yaml'
+                    '/config/meets/brackets/' . $bracket->{template} . '.yaml'
             );
 
             for my $quiz_override ( $bracket->{quizzes}->@* ) {

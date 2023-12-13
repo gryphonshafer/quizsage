@@ -16,7 +16,7 @@ sub validate ( $self, $data ) {
     }
 
     $data->{settings} = LoadFile(
-        $self->conf->get( qw( config_app root_dir ) ) . '/config/defaults/season.yaml'
+        $self->conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/season.yaml'
     ) unless ( defined $data->{settings} );
 
     return $data;

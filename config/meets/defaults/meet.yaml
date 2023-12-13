@@ -26,7 +26,7 @@ brackets:
         places:
             max: 9
             min: 1
-        slotting: striped # random, striped, snaked, sequential
+        slotting: snaked # random, striped, snaked, sequential
         source: Preliminary # roster, "bracket name"
     template: double_elimination
     type: positional # score_sum, positional
