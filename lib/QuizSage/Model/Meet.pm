@@ -422,7 +422,9 @@ sub _build_score_sum_draw (
 
 sub _add_distributions ( $self, $build_settings ) {
     my ( $material_json_bibles, $importmap_js );
-    my $js_basepath = $self->conf->get( qw( config_app root_dir ) ) . '/static/js';
+
+    my $root_dir    = $self->conf->get( qw( config_app root_dir ) );
+    my $js_basepath = $root_dir . '/static/js';
 
     for my $bracket ( $build_settings->{brackets}->@* ) {
         for my $quiz ( map { $_->{rooms}->@* } $bracket->{sets}->@* ) {
@@ -444,7 +446,7 @@ sub _add_distributions ( $self, $build_settings ) {
             );
 
             $quiz->{distribution} = $importmap_js->{$importmap_yaml}->run(
-                $js_basepath . '/modules/build_distribution.js',
+                $root_dir . '/ocjs/lib/Model/Meet/distribution.js',
                 {
                     bibles      => $material_json_bibles->{ $material->{json_file}->to_string },
                     teams_count => scalar( $quiz->{roster}->@* ),
