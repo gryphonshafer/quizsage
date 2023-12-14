@@ -1,17 +1,32 @@
 <h1>QuizSage: Meet</h1>
 
-<a href="[% c.url_for('/') %]">Main Page</a>
+<p><a href="[% c.url_for('/') %]">Main Page</a></p>
 
-[% FOR bracket IN schedule.brackets %]
-    <h2>[% bracket.name %]</h2>
+<p><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/roster') %]">Roster</a></p>
+
+<p><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/distribution') %]">Distribution</a></p>
+
+[% FOR bracket IN build.brackets %]
+    <h2>Bracket: [% bracket.name %]</h2>
 
     [% FOR set IN bracket.sets %]
         <div>
             [% FOR quiz IN set.rooms %]
                 <div class="quiz_summary_box">
-                    <a href="[%
-                        c.url_for('/quiz').query( bracket => quiz.bracket, name => quiz.name )
-                    %]"><b>Quiz: [% quiz.name %]</b></a><br>
+                    [%
+                        href =
+                            ( quiz.id ) ? c.url_for( '/quiz/' _ quiz.id ) :
+                            ( qm_auth ) ? c.url_for('/quiz/build').query(
+                                meet    => c.param('meet_id'),
+                                bracket => bracket.name,
+                                quiz    => quiz.name,
+                            ) :
+                            undef
+                    %]
+                    [% IF href %]<a href="[% href %]">[% END %]<b>Quiz: [%
+                        quiz.name
+                    %]</b>[% IF href %]</a>[% END %]<br>
+
                     Room: [% quiz.room %]
 
                     <ul>

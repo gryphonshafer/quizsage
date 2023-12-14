@@ -469,18 +469,19 @@ sub _build_settings_cleanup( $self, $build_settings ) {
     return;
 }
 
-sub schedule ($self) {
+sub quizzes ($self) {
     my $build = Load( Dump( $self->data->{build} ) );
 
+    my $quizzes;
     for my $bracket ( $build->{brackets}->@* ) {
         for my $set ( $bracket->{sets}->@* ) {
             for my $quiz ( $set->{rooms}->@* ) {
-                _merge_data_into_quiz( $quiz, $set, $bracket, $build );
+                push( @$quizzes, _merge_data_into_quiz( $quiz, $set, $bracket, $build ) );
             }
         }
     }
 
-    return $build;
+    return $quizzes;
 }
 
 sub quiz ( $self, $bracket_name, $quiz_name ) {
@@ -498,19 +499,16 @@ sub quiz ( $self, $bracket_name, $quiz_name ) {
     };
     my ( $quiz, $set );
     ( $quiz, $set, $bracket ) = $find_pointers->();
-    return unless $quiz;
 
-    _merge_data_into_quiz( $quiz, $set, $bracket, $build );
-    return $quiz;
+    return unless $quiz;
+    return _merge_data_into_quiz( $quiz, $set, $bracket, $build );
 }
 
 sub _merge_data_into_quiz ( $quiz, $set, $bracket, $build ) {
     $quiz->{$_} //= $set->{$_} // $bracket->{$_} // $build->{per_quiz}{$_}
         for ( qw( application importmap material settings ) );
-
     $quiz->{bracket} = $bracket->{name};
-
-    return;
+    return $quiz;
 }
 
 1;
@@ -535,7 +533,7 @@ This class is the model for meet objects.
 
 =head2 build
 
-=head2 schedule
+=head2 quizzes
 
 =head2 quiz
 

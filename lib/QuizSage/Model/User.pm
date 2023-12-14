@@ -4,6 +4,7 @@ use exact -class;
 use Email::Address;
 use Mojo::JSON qw( encode_json decode_json );
 use Omniframe::Class::Email;
+use QuizSage::Model::Meet;
 
 with qw( Omniframe::Role::Bcrypt Omniframe::Role::Model );
 
@@ -91,6 +92,20 @@ sub login ( $self, $email, $passwd ) {
     return $self;
 }
 
+sub qm_auth ( $self, $meet ) {
+    try {
+        $meet = QuizSage::Model::Meet->new->load($meet) unless ( $meet isa QuizSage::Model::Meet );
+        return (
+            $meet->data->{passwd} and
+            $self->data->{settings}{meet_passwd} and
+            $meet->data->{passwd} eq $self->data->{settings}{meet_passwd}
+        ) ? 1 : 0;
+    }
+    catch ($e) {
+        return undef;
+    }
+}
+
 1;
 
 =head1 NAME
@@ -172,6 +187,8 @@ password, and the new password to set.
 
 This method requires a username and password string inputs. It will then attempt
 to find and login the user. If successful, it will return a loaded user object.
+
+=head2 qm_auth
 
 =head1 WITH ROLES
 

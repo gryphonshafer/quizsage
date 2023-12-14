@@ -1,0 +1,42 @@
+<h1>QuizSage: Distribution</h1>
+
+<p><a href="[% c.url_for('/') %]">Main Page</a></p>
+
+<p><a href="[% c.url_for( '/meet/' _ c.param('meet_id') ) %]">Meet Page</a></p>
+
+[% IF per_quiz.material %]<p>Material: [% per_quiz.material.label %]</p>[% END %]
+
+[% FOR bracket IN build.brackets %]
+    <h2>Bracket: [% bracket.name %]</h2>
+
+    [% IF bracket.material %]<p>Material: [% bracket.material.label %]</p>[% END %]
+
+    [% FOR set IN bracket.sets %]
+        <div>
+            [% FOR quiz IN set.rooms %]
+                <div class="quiz_summary_box" style="width: 10rem; height: 28rem">
+                    <b>Quiz: [% quiz.name %]</b>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Type</th>
+                                <th>Bible</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            [% FOR query IN quiz.distribution %]
+                                <tr>
+                                    <td class="right">[% query.id %]</td>
+                                    <td>[% query.type %]</td>
+                                    <td>[% query.bible %]</td>
+                                </tr>
+                            [% END %]
+                        </tbody>
+                    </table>
+                </div>
+            [% END %]
+        </div>
+    [% END %]
+[% END %]

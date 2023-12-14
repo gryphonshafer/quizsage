@@ -88,6 +88,8 @@ This class is the model for season objects.
 
 =head2 validate, freeze, thaw
 
+=head2 active_seasons
+
 =head1 WITH ROLE
 
 L<Omniframe::Role::Model>, L<Omniframe::Role::Time>.

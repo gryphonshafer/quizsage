@@ -30,14 +30,18 @@ sub startup ($self) {
     } );
 
     $users->any('/user/logout')->to('user#logout');
-    $users->any('/meet/:meet_id')->to('main#meet');
-    $users->any('/qm_auth')->to('main#qm_auth');
+
+    $users->any('/meet/passwd')->to('meet#passwd');
+    $users->any('/meet/:meet_id/roster')->to('meet#roster');
+    $users->any('/meet/:meet_id/distribution')->to('meet#distribution');
+    $users->any('/meet/:meet_id')->to('meet#schedule');
 
     # $users->any('/quiz/password')->to('quiz#quiz_password');
     # $users->any('/quiz/settings/:quiz_id')->to('quiz#quiz_settings');
     # $users->any('/quiz/settings')->to('quiz#quiz_settings');
     # $users->any( '/quiz/data/:quiz_id' => [ format => ['json'] ] )->to('quiz#quiz_data');
     # $users->any('/quiz/save_data/:quiz_id')->to('quiz#save_quiz_data');
+
     $users->any('/quiz')->to('quiz#quiz');
 
     $all->any('/')->to('main#home');

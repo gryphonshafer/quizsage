@@ -1,7 +1,7 @@
 <h1>QuizSage</h1>
 
 [% UNLESS user %]
-    <a href="[% c.url_for('/user/create') %]">Create New User</a>
+    <p><a href="[% c.url_for('/user/create') %]">Create New User</a></p>
 
     <form method="post" action="[% c.url_for('/user/login') %]">
         <fieldset>
@@ -20,13 +20,13 @@
         </fieldset>
     </form>
 
-    <a href="[% c.url_for('/user/forgot_password') %]">Forgot Password</a>
+    <p><a href="[% c.url_for('/user/forgot_password') %]">Forgot Password</a></p>
 [% ELSE %]
     <p>You're logged in, [% user.data.first_name %].
 
     <p><a href="[% c.url_for('/user/logout') %]">Logout</a></p>
 
-    <p><a href="[% c.url_for('/qm_auth') %]">Set Official Password</a></p>
+    <p><a href="[% c.url_for('/meet/passwd') %]">Set Meet Officials' Password</a></p>
 
     <h2>Active Seasons</h2>
     [% IF active_seasons.size > 0 %]

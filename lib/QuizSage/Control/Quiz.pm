@@ -253,6 +253,8 @@ Handler for quiz data.
 
 Handler for saving quiz data.
 
+=head2 settings
+
 =head1 INHERITANCE
 
 L<Mojolicious::Controller>.
