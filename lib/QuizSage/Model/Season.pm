@@ -9,9 +9,9 @@ with qw( Omniframe::Role::Model Omniframe::Role::Time );
 
 sub validate ( $self, $data ) {
     if ( $data->{start} ) {
-        my $dt = $self->time->parse( $data->{start}, 'local' );
+        my $dt = $self->time->parse( $data->{start}, delete $data->{start_olson} || 'local' );
         $data->{start} =
-            $dt->strftime( $self->time->formats->{ansi} ) .
+            $dt->strftime('%Y-%m-%d %H:%M') .
             $self->time->format_offset( $dt->offset );
     }
 
@@ -32,13 +32,13 @@ sub thaw ( $self, $data ) {
     return $data;
 }
 
-sub active_seasons ($self) {
+sub active_seasons ( $self, $olson = 'America/Los_Angeles' ) {
     return [
         map {
             $_->{meets} = [
                 map {
                     $_->{start} = $self->time
-                        ->parse( $_->{start}, 'America/Los_Angeles' )
+                        ->parse( $_->{start}, $olson )
                         ->strftime('%a, %b %e, %Y at %l:%M %p');
                     $_;
                 }
@@ -55,17 +55,13 @@ sub active_seasons ($self) {
             $_;
         } $self->dq->get(
             $self->name,
-            [
-                qw( season_id name location ),
-            ],
-            {
-                0 => {
-                    '<',
-                    \q{
-                        STRFTIME( '%s', start ) + days * 24 * 60 * 60 -
-                        STRFTIME( '%s', 'NOW' )
-                    },
-                },
+            [ qw( season_id name location ) ],
+            \q{
+                STRFTIME( '%s', 'NOW' )
+                    BETWEEN
+                        STRFTIME( '%s', start )
+                    AND
+                        STRFTIME( '%s', start, days || ' days' )
             },
             { order_by => [ 'location', 'name' ] },
         )->run->all({})->@*

@@ -110,15 +110,3 @@ Col 1-4
 </form>
 
 <a href="[% c.url_for('/user/logout') %]">Logout</a>
-
-[% js_hash_test = BLOCK %]
-    async function digest_message(message) {
-        const hash_buffer = await crypto.subtle.digest( 'SHA-256', new TextEncoder().encode(message) );
-        const hash_hex    = Array.from( new Uint8Array(hash_buffer) )
-            .map( byte => byte.toString(16).padStart( 2, '0' ) )
-            .join('');
-        return hash_hex;
-    }
-    digest_message('John 3:16').then( hex => console.log(hex) );
-[% END %]
-[%# page.js.inline.push(js_hash_test) %]

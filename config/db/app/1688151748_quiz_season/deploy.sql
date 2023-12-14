@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS season (
     season_id INTEGER PRIMARY KEY,
     name      TEXT    NOT NULL CHECK( LENGTH(name) > 0 ) UNIQUE,
     location  TEXT,
-    start     TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%S', 'NOW', 'LOCALTIME' ) ),
+    start     TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M-08:00', 'NOW', 'LOCALTIME' ) ),
     days      INTEGER NOT NULL DEFAULT 365,
     settings  TEXT
 );
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS meet (
     season_id     INTEGER NOT NULL REFERENCES season(season_id) ON UPDATE CASCADE ON DELETE CASCADE,
     name          TEXT    NOT NULL CHECK( LENGTH(name) > 0 ),
     location      TEXT,
-    start         TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%S', 'NOW', 'LOCALTIME' ) ),
+    start         TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M-08:00', 'NOW', 'LOCALTIME' ) ),
     days          INTEGER NOT NULL DEFAULT 1,
     passwd        TEXT    NULL CHECK( passwd IS NULL OR LENGTH(passwd) > 8 ),
     settings      TEXT,
@@ -30,6 +30,7 @@ CREATE TRIGGER IF NOT EXISTS meet_last_modified
         location,
         start,
         days,
+        passwd,
         settings,
         build
     ON meet

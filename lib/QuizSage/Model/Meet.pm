@@ -13,10 +13,16 @@ my $min_passwd_length = 8;
 
 sub validate ( $self, $data ) {
     if ( $data->{start} ) {
-        my $dt = $self->time->parse( $data->{start}, 'local' );
+        my $dt = $self->time->parse( $data->{start}, delete $data->{start_olson} || 'local' );
         $data->{start} =
-            $dt->strftime( $self->time->formats->{ansi} ) .
+            $dt->strftime('%Y-%m-%d %H:%M') .
             $self->time->format_offset( $dt->offset );
+    }
+
+    if ( $data->{passwd} ) {
+        croak("Password supplied is not at least $min_passwd_length characters in length")
+            unless ( length $data->{passwd} >= $min_passwd_length );
+        $data->{passwd} = $self->bcrypt( $data->{passwd} );
     }
 
     $data->{settings} = LoadFile(
@@ -27,12 +33,6 @@ sub validate ( $self, $data ) {
 };
 
 sub freeze ( $self, $data ) {
-    if ( $data->{passwd} ) {
-        croak("Password supplied is not at least $min_passwd_length characters in length")
-            unless ( length $data->{passwd} >= $min_passwd_length );
-        $data->{passwd} = $self->bcrypt( $data->{passwd} );
-    }
-
     for ( qw( settings build ) ) {
         $data->{$_} = encode_json( $data->{$_} ) if ( defined $data->{$_} );
     }
