@@ -3,7 +3,7 @@ package QuizSage::Model::Quiz;
 use exact -class;
 use Mojo::JSON qw( encode_json decode_json );
 
-with qw( Omniframe::Role::Model Omniframe::Role::Time );
+with 'Omniframe::Role::Model';
 
 sub freeze ( $self, $data ) {
     for ( qw( application settings state ) ) {

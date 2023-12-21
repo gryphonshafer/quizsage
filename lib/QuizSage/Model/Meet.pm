@@ -12,12 +12,7 @@ with qw( Omniframe::Role::Bcrypt Omniframe::Role::Model Omniframe::Role::Time );
 my $min_passwd_length = 8;
 
 sub validate ( $self, $data ) {
-    if ( $data->{start} ) {
-        my $dt = $self->time->parse( $data->{start}, delete $data->{start_olson} || 'local' );
-        $data->{start} =
-            $dt->strftime('%Y-%m-%d %H:%M') .
-            $self->time->format_offset( $dt->offset );
-    }
+    $data->{start} = $self->time->parse( $data->{start} )->format('sqlite_min') if ( $data->{start} );
 
     if ( $data->{passwd} ) {
         croak("Password supplied is not at least $min_passwd_length characters in length")

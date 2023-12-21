@@ -8,12 +8,7 @@ use YAML::XS 'LoadFile';
 with qw( Omniframe::Role::Model Omniframe::Role::Time );
 
 sub validate ( $self, $data ) {
-    if ( $data->{start} ) {
-        my $dt = $self->time->parse( $data->{start}, delete $data->{start_olson} || 'local' );
-        $data->{start} =
-            $dt->strftime('%Y-%m-%d %H:%M') .
-            $self->time->format_offset( $dt->offset );
-    }
+    $data->{start} = $self->time->parse( $data->{start} )->format('sqlite_min') if ( $data->{start} );
 
     $data->{settings} = LoadFile(
         $self->conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/season.yaml'
@@ -32,14 +27,14 @@ sub thaw ( $self, $data ) {
     return $data;
 }
 
-sub active_seasons ( $self, $olson = 'America/Los_Angeles' ) {
+sub active_seasons ($self) {
     return [
         map {
             $_->{meets} = [
                 map {
                     $_->{start} = $self->time
-                        ->parse( $_->{start}, $olson )
-                        ->strftime('%a, %b %e, %Y at %l:%M %p');
+                        ->parse( $_->{start} )
+                        ->format('%a, %b %e, %Y at %l:%M %p');
                     $_;
                 }
                 $self->dq->get(
