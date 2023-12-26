@@ -27,6 +27,7 @@ default:
         obml: local/obml
         json: static/json/material
     default_bible: NIV
+    default_quiz_duration: 30
 www:
     logging:
         filter: ~

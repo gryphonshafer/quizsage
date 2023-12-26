@@ -11,6 +11,13 @@
 
     [% FOR set IN bracket.sets %]
         <div>
+            <div class="quiz_summary_box" style="width: 6rem">
+                [% set.rooms.0.schedule.date %]<br>
+                [% set.rooms.0.schedule.start %]<br>
+                [% set.rooms.0.schedule.stop %]<br>
+                [% set.rooms.0.schedule.duration %] minutes
+            </div>
+
             [% FOR quiz IN set.rooms %]
                 <div class="quiz_summary_box">
                     [%

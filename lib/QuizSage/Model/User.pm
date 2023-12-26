@@ -17,26 +17,26 @@ before 'create' => sub ( $self, $params ) {
     $params->{active} //= 0;
 };
 
-sub validate ( $self, $data ) {
-    my ($address) = Email::Address->parse( $data->{email} );
-    croak('Email not provided properly') unless ($address);
-    $data->{email} = $address->address;
-    return $data;
-};
-
 sub freeze ( $self, $data ) {
-    if ( $data->{passwd} ) {
+    if ( $self->is_dirty( 'email', $data ) or not exists $data->{email} ) {
+        my ($address) = Email::Address->parse( $data->{email} );
+        croak('Email not provided properly') unless ($address);
+        $data->{email} = $address->address;
+    }
+
+    if ( $self->is_dirty( 'passwd', $data ) ) {
         croak("Password supplied is not at least $min_passwd_length characters in length")
             unless ( length $data->{passwd} >= $min_passwd_length );
         $data->{passwd} = $self->bcrypt( $data->{passwd} );
     }
 
-    $data->{settings} = encode_json( $data->{settings} // {} );
+    $data->{settings} = encode_json( $data->{settings} );
+    undef $data->{settings} if ( $data->{settings} eq '{}' );
+
     return $data;
 }
 
 sub thaw ( $self, $data ) {
-    delete $data->{passwd};
     $data->{settings} = ( defined $data->{settings} ) ? decode_json( $data->{settings} ) : {};
     return $data;
 }

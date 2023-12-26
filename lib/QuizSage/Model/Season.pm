@@ -7,23 +7,24 @@ use YAML::XS 'LoadFile';
 
 with qw( Omniframe::Role::Model Omniframe::Role::Time );
 
-sub validate ( $self, $data ) {
-    $data->{start} = $self->time->parse( $data->{start} )->format('sqlite_min') if ( $data->{start} );
-
-    $data->{settings} = LoadFile(
+before 'create' => sub ( $self, $params ) {
+    $params->{settings} //= LoadFile(
         $self->conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/season.yaml'
-    ) unless ( defined $data->{settings} );
-
-    return $data;
+    );
 };
 
 sub freeze ( $self, $data ) {
-    $data->{settings} = encode_json( $data->{settings} ) if ( defined $data->{settings} );
+    $data->{start} = $self->time->parse( $data->{start} )->format('sqlite_min')
+        if ( $self->is_dirty( 'start', $data ) );
+
+    $data->{settings} = encode_json( $data->{settings} );
+    undef $data->{settings} if ( $data->{settings} eq '{}' );
+
     return $data;
 }
 
 sub thaw ( $self, $data ) {
-    $data->{settings} = decode_json( $data->{settings} ) if ( defined $data->{settings} );
+    $data->{settings} = ( defined $data->{settings} ) ? decode_json( $data->{settings} ) : {};
     return $data;
 }
 
@@ -34,7 +35,7 @@ sub active_seasons ($self) {
                 map {
                     $_->{start} = $self->time
                         ->parse( $_->{start} )
-                        ->format('%a, %b %e, %Y at %l:%M %p');
+                        ->format('%a, %b %e, %Y at %l:%M %p %Z');
                     $_;
                 }
                 $self->dq->get(

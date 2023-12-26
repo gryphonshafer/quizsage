@@ -8,7 +8,7 @@ brackets:
         source: roster # roster, "bracket name"
     type: score_sum # score_sum, positional
     weight: 1
-    material: Galatians (1) Ephesians (1) ESV KJV* NIV
+    material: Galatians (1) Ephesians (2) BSB* ESV NASB NIV
   - name: Auxiliary
     quizzes_per_team: 2
     rooms: 1
@@ -19,7 +19,7 @@ brackets:
         source: Preliminary # roster, "bracket name"
     type: score_sum # score_sum, positional
     weight: 0.5
-    material: Galatians (1) Ephesians (1) ESV KJV* NIV
+    material: Galatians (1) Ephesians (3) BSB* ESV NASB NIV
   - name: Top 9
     rooms: 3
     teams:
@@ -34,7 +34,7 @@ brackets:
       - name: J
         weight: 0
     weight: 1
-    material: Galatians (1) Ephesians (1) ESV KJV* NIV
+    material: Galatians (1) Ephesians (1) BSB* ESV NASB NIV
 roster:
     data: |
         TEAM 1
@@ -44,7 +44,7 @@ roster:
 
         TEAM 2
         Gulf Hotel
-        India Juliet NASB1995
+        India Juliet NASB
         Kilo Lima (Rookie)
 
         TEAM 3
@@ -67,7 +67,7 @@ roster:
         Gene Hackman (Rookie)
 
         TEAM 7
-        Indy Jest NASB1995
+        Indy Jest NASB
         Kick Luck
 
         TEAM 8
@@ -87,7 +87,7 @@ roster:
 
         TEAM 11
         Hotel Gulf
-        Juliet India NASB1995
+        Juliet India NASB
         Lima Kilo (Rookie)
 
         TEAM 12
@@ -103,3 +103,22 @@ roster:
         Xray Whiskey BSB
         Zulu Yankee
         Breakfast Awesome
+schedule:
+    blocks:
+      - start: Dec 1 2023 5:30 PM PST
+        stop: Dec 1 2023 9:00 PM PST
+      - start: Dec 2 2023 8:30 AM PST
+    duration: 30
+    overrides:
+      - bracket: Auxiliary
+        quiz: [ 1, 2, 4 ]
+        room: 4
+        duration: 20
+      - bracket: Auxiliary
+        quiz: 3
+        room: 3
+        duration: 20
+      - bracket: Auxiliary
+        quiz: 4
+        duration: 15
+        start: Dec 2 9:40 AM

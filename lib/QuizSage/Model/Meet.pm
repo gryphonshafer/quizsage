@@ -11,33 +11,32 @@ with qw( Omniframe::Role::Bcrypt Omniframe::Role::Model Omniframe::Role::Time );
 
 my $min_passwd_length = 8;
 
-sub validate ( $self, $data ) {
-    $data->{start} = $self->time->parse( $data->{start} )->format('sqlite_min') if ( $data->{start} );
+before 'create' => sub ( $self, $params ) {
+    $params->{settings} //= LoadFile(
+        $self->conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/meet.yaml'
+    );
+};
 
-    if ( $data->{passwd} ) {
+sub freeze ( $self, $data ) {
+    $data->{start} = $self->time->parse( $data->{start} )->format('sqlite_min')
+        if ( $self->is_dirty( 'start', $data ) );
+
+    if ( $self->is_dirty( 'passwd', $data ) ) {
         croak("Password supplied is not at least $min_passwd_length characters in length")
             unless ( length $data->{passwd} >= $min_passwd_length );
         $data->{passwd} = $self->bcrypt( $data->{passwd} );
     }
 
-    $data->{settings} = LoadFile(
-        $self->conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/meet.yaml'
-    ) unless ( defined $data->{settings} );
-
-    return $data;
-};
-
-sub freeze ( $self, $data ) {
     for ( qw( settings build ) ) {
-        $data->{$_} = encode_json( $data->{$_} ) if ( defined $data->{$_} );
+        $data->{$_} = encode_json( $data->{$_} );
+        undef $data->{$_} if ( $data->{$_} eq '{}' );
     }
+
     return $data;
 }
 
 sub thaw ( $self, $data ) {
-    for ( qw( settings build ) ) {
-        $data->{$_} = decode_json( $data->{$_} ) if ( defined $data->{$_} );
-    }
+    $data->{$_} = ( defined $data->{$_} ) ? decode_json( $data->{$_} ) : {} for ( qw( settings build ) );
     return $data;
 }
 
@@ -46,6 +45,7 @@ sub build ( $self, $user_id = undef ) {
     $self->_parse_and_structure_roster_text( \$build_settings->{roster} );
     $self->_create_material_json( $build_settings, $user_id );
     $self->_build_bracket_data($build_settings);
+    $self->_schedule_integration($build_settings);
     $self->_add_distributions($build_settings);
     $self->_build_settings_cleanup($build_settings);
     $self->save({ build => $build_settings });
@@ -63,8 +63,12 @@ sub _merge_meet_and_season_settings ($self) {
         delete $meet_settings->{brackets}, delete $season_settings->{brackets}, [];
 
     for my $set ( $season_settings, $meet_settings ) {
-        ( $build_settings->{roster}{$_} ) = delete $set->{roster}{$_} for ( keys %{ $set->{roster} } );
+        for ( keys %{ $set->{roster} } ) {
+            ( $build_settings->{roster}{$_} ) = delete $set->{roster}{$_}
+                if ( $set->{roster}{$_} );
+        }
         delete $set->{roster};
+        $build_settings->{schedule} = delete $set->{schedule} if ( $set->{schedule} );
         $build_settings->{per_quiz}->{$_} = delete $set->{$_} for ( keys %$set );
     }
 
@@ -144,6 +148,10 @@ sub _create_material_json ( $self, $build_settings, $user_id = undef ) {
 }
 
 sub _build_bracket_data ( $self, $build_settings ) {
+    my $bracket_names;
+    $bracket_names->{ $_->{name} }++ for ( $build_settings->{brackets}->@* );
+    croak('Duplicate bracket names') if ( grep { $_ > 1 } values %$bracket_names );
+
     for my $bracket ( $build_settings->{brackets}->@* ) {
         my $teams = ( $bracket->{teams}{source} eq 'roster' )
             ? $build_settings->{roster}
@@ -255,6 +263,102 @@ sub _build_bracket_data ( $self, $build_settings ) {
             $push_set->();
 
             $bracket->{rankings} = $template->{rankings};
+        }
+
+        my $quiz_names;
+        $quiz_names->{ $_->{name} }++ for ( map { $_->{rooms}->@* } $bracket->{sets}->@* );
+        croak('Duplicate quiz names') if ( grep { $_ > 1 } values %$quiz_names );
+    }
+
+    return;
+}
+
+sub _schedule_integration( $self, $build_settings ) {
+    my $schedule          = delete $build_settings->{schedule} // {};
+    my $schedule_duration = $schedule->{duration} // $self->conf->get('default_quiz_duration');
+
+    # blocks setup
+    my $blocks;
+    unless ( $schedule->{blocks} and $schedule->{blocks}->@* ) {
+        $blocks = [ {
+            start    => $self->time->parse( $self->data->{start} )->datetime,
+            duration => $schedule_duration,
+        } ];
+    }
+    else {
+        $blocks = Load( Dump( $schedule->{blocks} ) );
+        for my $block (@$blocks) {
+            $block->{start} = $self->time->parse( $block->{start} )->datetime if ( $block->{start} );
+            $block->{stop}  = $self->time->parse( $block->{stop}  )->datetime if ( $block->{stop}  );
+
+            $block->{duration} //= $schedule_duration;
+        }
+    }
+
+    # data calculation
+    for my $bracket ( $build_settings->{brackets}->@* ) {
+        my ($source) = grep { $_->{name} eq $bracket->{teams}{source} } $build_settings->{brackets}->@*;
+        my $block_i  = 0;
+        my $pointer  = (
+            ($source)
+                ? $source->{sets}[-1]{rooms}[0]{schedule}{stop}
+                : $blocks->[$block_i]->{start}
+        )->clone;
+
+        for my $set ( $bracket->{sets}->@* ) {
+            my $set_duration = $blocks->[$block_i]->{duration} // $schedule_duration;
+            my $set_start    = $pointer->clone;
+            my $set_stop     = $pointer->add( minutes => $set_duration )->clone;
+
+            while (
+                $block_i < @$blocks and
+                $blocks->[$block_i]->{stop} and
+                $set_stop->epoch > $blocks->[$block_i]->{stop}->epoch
+            ) {
+                $block_i++;
+
+                $pointer   = $blocks->[$block_i]->{start}->clone;
+                $set_start = $pointer->clone;
+                $set_stop  = $pointer->add( minutes => $set_duration )->clone;
+            }
+
+            for my $quiz ( $set->{rooms}->@* ) {
+                my ( $start, $duration, $stop ) = ( $set_start, $set_duration, $set_stop );
+
+                for my $override (
+                    grep {
+                        (
+                            not $_->{bracket} or
+                            not ref $_->{bracket} and $bracket->{name} eq $_->{bracket} or
+                            ref $_->{bracket} and grep { $bracket->{name} eq $_ } $_->{bracket}->@*
+                        ) and
+                        (
+                            not $_->{quiz} or
+                            not ref $_->{quiz} and $quiz->{name} eq $_->{quiz} or
+                            ref $_->{quiz} and grep { $quiz->{name} eq $_ } $_->{quiz}->@*
+                        )
+                    } $schedule->{overrides}->@*
+                ) {
+                    $start    = $self->time->parse( $override->{start} )->datetime if ( $override->{start} );
+                    $duration = ( $override->{duration} ) ? $override->{duration} : $set_duration;
+                    $stop     = $start->clone->add( minutes => $duration );
+
+                    $quiz->{room} = $override->{room} if ( $override->{room} );
+                }
+
+                @{ $quiz->{schedule} }{ qw( start duration stop ) } = ( $start, $duration, $stop );
+            }
+        }
+    }
+
+    # data formatting cleanup
+    for my $bracket ( $build_settings->{brackets}->@* ) {
+        for my $set ( $bracket->{sets}->@* ) {
+            for my $quiz ( $set->{rooms}->@* ) {
+                $quiz->{schedule}{date} = $quiz->{schedule}{start}->strftime('%a, %b %e');
+                $quiz->{schedule}{$_}   = $quiz->{schedule}{$_}->strftime('%l:%M %p')
+                    for ( qw( start stop ) );
+            }
         }
     }
 
@@ -464,47 +568,47 @@ sub _build_settings_cleanup( $self, $build_settings ) {
     return;
 }
 
-sub quizzes ($self) {
-    my $build = Load( Dump( $self->data->{build} ) );
+# sub quizzes ($self) {
+#     my $build = Load( Dump( $self->data->{build} ) );
 
-    my $quizzes;
-    for my $bracket ( $build->{brackets}->@* ) {
-        for my $set ( $bracket->{sets}->@* ) {
-            for my $quiz ( $set->{rooms}->@* ) {
-                push( @$quizzes, _merge_data_into_quiz( $quiz, $set, $bracket, $build ) );
-            }
-        }
-    }
+#     my $quizzes;
+#     for my $bracket ( $build->{brackets}->@* ) {
+#         for my $set ( $bracket->{sets}->@* ) {
+#             for my $quiz ( $set->{rooms}->@* ) {
+#                 push( @$quizzes, _merge_data_into_quiz( $quiz, $set, $bracket, $build ) );
+#             }
+#         }
+#     }
 
-    return $quizzes;
-}
+#     return $quizzes;
+# }
 
-sub quiz ( $self, $bracket_name, $quiz_name ) {
-    my $build = Load( Dump( $self->data->{build} ) );
+# sub quiz ( $self, $bracket_name, $quiz_name ) {
+#     my $build = Load( Dump( $self->data->{build} ) );
 
-    my ($bracket) = grep { $_->{name} eq $bracket_name } $build->{brackets}->@*;
-    return unless $bracket;
+#     my ($bracket) = grep { $_->{name} eq $bracket_name } $build->{brackets}->@*;
+#     return unless $bracket;
 
-    my $find_pointers = sub {
-        for my $set ( $bracket->{sets}->@* ) {
-            for my $quiz ( $set->{rooms}->@* ) {
-                return $quiz, $set, $bracket if ( $quiz->{name} eq $quiz_name );
-            }
-        }
-    };
-    my ( $quiz, $set );
-    ( $quiz, $set, $bracket ) = $find_pointers->();
+#     my $find_pointers = sub {
+#         for my $set ( $bracket->{sets}->@* ) {
+#             for my $quiz ( $set->{rooms}->@* ) {
+#                 return $quiz, $set, $bracket if ( $quiz->{name} eq $quiz_name );
+#             }
+#         }
+#     };
+#     my ( $quiz, $set );
+#     ( $quiz, $set, $bracket ) = $find_pointers->();
 
-    return unless $quiz;
-    return _merge_data_into_quiz( $quiz, $set, $bracket, $build );
-}
+#     return unless $quiz;
+#     return _merge_data_into_quiz( $quiz, $set, $bracket, $build );
+# }
 
-sub _merge_data_into_quiz ( $quiz, $set, $bracket, $build ) {
-    $quiz->{$_} //= $set->{$_} // $bracket->{$_} // $build->{per_quiz}{$_}
-        for ( qw( application importmap material settings ) );
-    $quiz->{bracket} = $bracket->{name};
-    return $quiz;
-}
+# sub _merge_data_into_quiz ( $quiz, $set, $bracket, $build ) {
+#     $quiz->{$_} //= $set->{$_} // $bracket->{$_} // $build->{per_quiz}{$_}
+#         for ( qw( application importmap material settings ) );
+#     $quiz->{bracket} = $bracket->{name};
+#     return $quiz;
+# }
 
 1;
 

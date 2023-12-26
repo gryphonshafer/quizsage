@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS meet (
     location      TEXT,
     start         TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M-08:00', 'NOW', 'LOCALTIME' ) ),
     days          INTEGER NOT NULL DEFAULT 1,
-    passwd        TEXT    NULL CHECK( passwd IS NULL OR LENGTH(passwd) > 8 ),
+    passwd        TEXT    NULL CHECK( passwd IS NULL OR LENGTH(passwd) >= 8 ),
     settings      TEXT,
     build         TEXT,
     last_modified TEXT    NOT NULL DEFAULT ( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) ),
