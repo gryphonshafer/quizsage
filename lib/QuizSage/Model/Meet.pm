@@ -295,6 +295,13 @@ sub _schedule_integration( $self, $build_settings ) {
         }
     }
 
+    # events setup
+    my $events = $schedule->{events} // {};
+    for my $event (@$events) {
+        $event->{start} = $self->time->parse( $event->{start} )->datetime if ( $event->{start} );
+        $event->{duration} //= $schedule_duration;
+    }
+
     # data calculation
     for my $bracket ( $build_settings->{brackets}->@* ) {
         my ($source) = grep { $_->{name} eq $bracket->{teams}{source} } $build_settings->{brackets}->@*;
@@ -305,11 +312,57 @@ sub _schedule_integration( $self, $build_settings ) {
                 : $blocks->[$block_i]->{start}
         )->clone;
 
+        # events able to have start and stop determined without set times get those determined
+        for my $event ( grep { not $_->{before} and not $_->{after} and not $_->{stop} } @$events ) {
+            $event->{start} = $pointer->clone if ( not $event->{start} );
+            $event->{stop}  = $event->{start}->clone->add( minutes => $event->{duration} );
+        }
+
         for my $set ( $bracket->{sets}->@* ) {
+            my $determine_event_start_and_stop = sub ($type) {
+                for my $event ( grep {
+                    $_->{$type} and not $_->{stop} and (
+                        ref $_->{$type} and $_->{$type}[0] eq $bracket->{name} or
+                        $type eq 'before' and not ref $_->{$type} and $_->{$type} eq $bracket->{name}
+                    )
+                } @$events ) {
+                    next if (
+                        ref $event->{$type} and
+                        not grep { $event->{$type}[1] eq $_->{name} } $set->{rooms}->@*
+                    );
+                    $event->{start} = $pointer->clone if ( not $event->{start} );
+                    $event->{stop}  = $event->{start}->clone->add( minutes => $event->{duration} );
+                }
+            };
+
+            # if an event is before this set, determine event's start/stop
+            $determine_event_start_and_stop->('before');
+
             my $set_duration = $blocks->[$block_i]->{duration} // $schedule_duration;
             my $set_start    = $pointer->clone;
             my $set_stop     = $pointer->add( minutes => $set_duration )->clone;
 
+            # push down set start/stop if an event conflicts
+            if (
+                my ($latest_stop) =
+                    map { $_->[0] }
+                    sort { $b->[1] <=> $a->[1] }
+                    map { [ $_->{stop}, $_->{stop}->epoch ] }
+                    grep {
+                        $_->{start} and $_->{stop} and
+                        not (
+                            $_->{stop}->epoch <= $set_start->epoch or
+                            $set_stop->epoch <= $_->{start}->epoch
+                        )
+                    }
+                    @$events
+            ) {
+                $set_start = $latest_stop->clone;
+                $set_stop  = $latest_stop->clone->add( minutes => $set_duration );
+                $pointer   = $set_stop->clone;
+            }
+
+            # handle time block boundaries
             while (
                 $block_i < @$blocks and
                 $blocks->[$block_i]->{stop} and
@@ -322,9 +375,13 @@ sub _schedule_integration( $self, $build_settings ) {
                 $set_stop  = $pointer->add( minutes => $set_duration )->clone;
             }
 
+            # if an event is after this set, determine event's start/stop
+            $determine_event_start_and_stop->('after');
+
             for my $quiz ( $set->{rooms}->@* ) {
                 my ( $start, $duration, $stop ) = ( $set_start, $set_duration, $set_stop );
 
+                # handle explicit overrides
                 for my $override (
                     grep {
                         (
@@ -349,17 +406,42 @@ sub _schedule_integration( $self, $build_settings ) {
                 @{ $quiz->{schedule} }{ qw( start duration stop ) } = ( $start, $duration, $stop );
             }
         }
+
+        for my $event ( grep {
+            $_->{after} and not $_->{stop} and
+            not ref $_->{after} and $_->{after} eq $bracket->{name}
+        } @$events ) {
+            $event->{start} = $pointer->clone if ( not $event->{start} );
+            $event->{stop}  = $event->{start}->clone->add( minutes => $event->{duration} );
+        }
     }
 
-    # data formatting cleanup
+    # data formatting
     for my $bracket ( $build_settings->{brackets}->@* ) {
         for my $set ( $bracket->{sets}->@* ) {
             for my $quiz ( $set->{rooms}->@* ) {
                 $quiz->{schedule}{date} = $quiz->{schedule}{start}->strftime('%a, %b %e');
-                $quiz->{schedule}{$_}   = $quiz->{schedule}{$_}->strftime('%l:%M %p')
-                    for ( qw( start stop ) );
+                for ( qw( start stop ) ) {
+                    $quiz->{schedule}{ $_ . '_time' } = $quiz->{schedule}{$_}->strftime('%l:%M %p');
+                    $quiz->{schedule}{$_} = $quiz->{schedule}{$_}->epoch;
+                }
             }
         }
+    }
+    if ( $events->@* ) {
+        for my $event ( $events->@* ) {
+            $event->{date} = ( $event->{start} // $event->{stop} )->strftime('%a, %b %e')
+                if ( $event->{start} or $event->{stop} );
+            if ( $event->{start} ) {
+                $event->{start_time} = $event->{start}->strftime('%l:%M %p');
+                $event->{start}      = $event->{start}->epoch;
+            }
+            if ( $event->{stop} ) {
+                $event->{stop_time} = $event->{stop}->strftime('%l:%M %p');
+                $event->{stop}      = $event->{stop}->epoch;
+            }
+        }
+        $build_settings->{events} = $events;
     }
 
     return;

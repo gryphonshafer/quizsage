@@ -6,17 +6,47 @@
 
 <p><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/distribution') %]">Distribution</a></p>
 
+[% BLOCK event %]
+    [% FOR event IN events %]
+        [% IF
+            type == 'pre'  && event.stop  == row.start ||
+            type == 'post' && event.start == row.stop
+        %]
+            <div style="
+                background: white;
+                border    : solid 1px silver;
+                margin    : 1rem 0;
+                padding   : 0 0.25rem;
+            ">
+                <b>[% event.name %]</b>
+                [% event.date %]
+                from [% event.start_time %]
+                to [% event.stop_time %]
+                ([% event.duration %] minutes)
+            </div>
+        [% END %]
+    [% END %]
+[% END %]
+
 [% FOR bracket IN build.brackets %]
     <h2>Bracket: [% bracket.name %]</h2>
 
     [% FOR set IN bracket.sets %]
+        [% PROCESS event
+            type   = 'pre',
+            events = build.events,
+            row    = set.rooms.0.schedule
+        %]
+
         <div>
-            <div class="quiz_summary_box" style="width: 6rem">
-                [% set.rooms.0.schedule.date %]<br>
-                [% set.rooms.0.schedule.start %]<br>
-                [% set.rooms.0.schedule.stop %]<br>
-                [% set.rooms.0.schedule.duration %] minutes
-            </div>
+            [% IF set.rooms.0.schedule %]
+                <div class="quiz_summary_box" style="width: 6rem">
+                    [% set.rooms.0.schedule.date %]<br>
+                    [% set.rooms.0.schedule.start_time %]<br>
+                    [% set.rooms.0.schedule.stop_time %]<br>
+                    [% set.rooms.0.schedule.duration %] minutes
+                </div>
+            [% END %]
 
             [% FOR quiz IN set.rooms %]
                 <div class="quiz_summary_box">
@@ -65,4 +95,10 @@
             [% END %]
         </div>
     [% END %]
+
+    [% PROCESS event
+        type   = 'post',
+        events = build.events,
+        row    = set.rooms.0.schedule
+    %]
 [% END %]

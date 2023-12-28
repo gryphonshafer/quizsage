@@ -109,6 +109,20 @@ schedule:
         stop: Dec 1 2023 9:00 PM PST
       - start: Dec 2 2023 8:30 AM PST
     duration: 30
+    events:
+      - name: Instructions and Announcements
+      - name: Evening Snack
+        duration: 15
+        before: [ 'Preliminary', 10 ]
+      - name: Host Home Assignments
+        duration: 15
+        after: Preliminary
+      - name: Late Morning Snack
+        duration: 15
+        start: Dec 2 9:15 AM
+      - name: Awards and Closing
+        duration: 15
+        after: Top 9
     overrides:
       - bracket: Auxiliary
         quiz: [ 1, 2, 4 ]
