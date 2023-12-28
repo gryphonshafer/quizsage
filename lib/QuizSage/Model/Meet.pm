@@ -342,25 +342,28 @@ sub _schedule_integration( $self, $build_settings ) {
             my $set_start    = $pointer->clone;
             my $set_stop     = $pointer->add( minutes => $set_duration )->clone;
 
-            # push down set start/stop if an event conflicts
-            if (
-                my ($latest_stop) =
-                    map { $_->[0] }
-                    sort { $b->[1] <=> $a->[1] }
-                    map { [ $_->{stop}, $_->{stop}->epoch ] }
-                    grep {
-                        $_->{start} and $_->{stop} and
-                        not (
-                            $_->{stop}->epoch <= $set_start->epoch or
-                            $set_stop->epoch <= $_->{start}->epoch
-                        )
-                    }
-                    @$events
-            ) {
-                $set_start = $latest_stop->clone;
-                $set_stop  = $latest_stop->clone->add( minutes => $set_duration );
-                $pointer   = $set_stop->clone;
-            }
+            my $push_down_set_start_stop_if_an_event_conflicts = sub {
+                while (
+                    my ($latest_stop) =
+                        map { $_->[0] }
+                        sort { $b->[1] <=> $a->[1] }
+                        map { [ $_->{stop}, $_->{stop}->epoch ] }
+                        grep {
+                            $_->{start} and $_->{stop} and
+                            not (
+                                $_->{stop}->epoch <= $set_start->epoch or
+                                $set_stop->epoch <= $_->{start}->epoch
+                            )
+                        }
+                        @$events
+                ) {
+                    $set_start = $latest_stop->clone;
+                    $set_stop  = $latest_stop->clone->add( minutes => $set_duration );
+                    $pointer   = $set_stop->clone;
+                }
+            };
+
+            $push_down_set_start_stop_if_an_event_conflicts->();
 
             # handle time block boundaries
             while (
@@ -369,17 +372,20 @@ sub _schedule_integration( $self, $build_settings ) {
                 $set_stop->epoch > $blocks->[$block_i]->{stop}->epoch
             ) {
                 $block_i++;
-
-                $pointer   = $blocks->[$block_i]->{start}->clone;
-                $set_start = $pointer->clone;
-                $set_stop  = $pointer->add( minutes => $set_duration )->clone;
+                if ( $blocks->[$block_i]->{start}->epoch > $pointer->epoch ) {
+                    $pointer   = $blocks->[$block_i]->{start}->clone;
+                    $set_start = $pointer->clone;
+                    $set_stop  = $pointer->add( minutes => $set_duration )->clone;
+                }
             }
+
+            $push_down_set_start_stop_if_an_event_conflicts->();
 
             # if an event is after this set, determine event's start/stop
             $determine_event_start_and_stop->('after');
 
             for my $quiz ( $set->{rooms}->@* ) {
-                my ( $start, $duration, $stop ) = ( $set_start, $set_duration, $set_stop );
+                my ( $start, $duration, $stop ) = ( $set_start->clone, $set_duration, $set_stop->clone );
 
                 # handle explicit overrides
                 for my $override (
