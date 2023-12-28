@@ -9,7 +9,16 @@
 [% FOR bracket IN build.brackets %]
     <h2>Bracket: [% bracket.name %]</h2>
 
-    [% IF bracket.material %]<p>Material: [% bracket.material.label %]</p>[% END %]
+    [% IF bracket.material %]
+        <div style="
+            background: white;
+            border    : solid 1px silver;
+            margin    : 1rem 0;
+            padding   : 0 0.25rem;
+        ">
+            Material: <b>[% bracket.material.label %]</b>
+        </div>
+    [% END %]
 
     [% FOR set IN bracket.sets %]
         <div>

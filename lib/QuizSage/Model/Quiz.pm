@@ -6,7 +6,7 @@ use Mojo::JSON qw( encode_json decode_json );
 with 'Omniframe::Role::Model';
 
 sub freeze ( $self, $data ) {
-    for ( qw( application settings state ) ) {
+    for ( qw( settings state ) ) {
         $data->{$_} = encode_json( $data->{$_} );
         undef $data->{$_} if ( $data->{$_} eq '{}' );
     }
@@ -16,7 +16,7 @@ sub freeze ( $self, $data ) {
 
 sub thaw ( $self, $data ) {
     $data->{$_} = ( defined $data->{$_} ) ? decode_json( $data->{$_} ) : {}
-        for ( qw( application settings state ) );
+        for ( qw( settings state ) );
 
     return $data;
 }

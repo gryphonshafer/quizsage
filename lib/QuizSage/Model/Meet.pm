@@ -3,6 +3,8 @@ package QuizSage::Model::Meet;
 use exact -class;
 use Mojo::JSON qw( encode_json decode_json );
 use Omniframe::Class::Javascript;
+use Omniframe::Util::Text 'trim';
+use QuizSage::Model::Quiz;
 use QuizSage::Model::Season;
 use QuizSage::Util::Material 'material_json';
 use YAML::XS qw( LoadFile Load Dump );
@@ -426,9 +428,9 @@ sub _schedule_integration( $self, $build_settings ) {
     for my $bracket ( $build_settings->{brackets}->@* ) {
         for my $set ( $bracket->{sets}->@* ) {
             for my $quiz ( $set->{rooms}->@* ) {
-                $quiz->{schedule}{date} = $quiz->{schedule}{start}->strftime('%a, %b %e');
+                $quiz->{schedule}{date} = trim( $quiz->{schedule}{start}->strftime('%a, %b %e') );
                 for ( qw( start stop ) ) {
-                    $quiz->{schedule}{ $_ . '_time' } = $quiz->{schedule}{$_}->strftime('%l:%M %p');
+                    $quiz->{schedule}{ $_ . '_time' } = trim( $quiz->{schedule}{$_}->strftime('%l:%M %p') );
                     $quiz->{schedule}{$_} = $quiz->{schedule}{$_}->epoch;
                 }
             }
@@ -436,14 +438,14 @@ sub _schedule_integration( $self, $build_settings ) {
     }
     if ( $events->@* ) {
         for my $event ( $events->@* ) {
-            $event->{date} = ( $event->{start} // $event->{stop} )->strftime('%a, %b %e')
+            $event->{date} = ( $event->{start} // trim( $event->{stop} )->strftime('%a, %b %e') )
                 if ( $event->{start} or $event->{stop} );
             if ( $event->{start} ) {
-                $event->{start_time} = $event->{start}->strftime('%l:%M %p');
+                $event->{start_time} = trim( $event->{start}->strftime('%l:%M %p') );
                 $event->{start}      = $event->{start}->epoch;
             }
             if ( $event->{stop} ) {
-                $event->{stop_time} = $event->{stop}->strftime('%l:%M %p');
+                $event->{stop_time} = trim( $event->{stop}->strftime('%l:%M %p') );
                 $event->{stop}      = $event->{stop}->epoch;
             }
         }
@@ -656,47 +658,48 @@ sub _build_settings_cleanup( $self, $build_settings ) {
     return;
 }
 
-# sub quizzes ($self) {
-#     my $build = Load( Dump( $self->data->{build} ) );
+sub state ($self) {
+    my $state        = $self->data->{build};
+    my $quizzes_data = QuizSage::Model::Quiz->new->every_data({ meet_id => $self->id });
 
-#     my $quizzes;
-#     for my $bracket ( $build->{brackets}->@* ) {
-#         for my $set ( $bracket->{sets}->@* ) {
-#             for my $quiz ( $set->{rooms}->@* ) {
-#                 push( @$quizzes, _merge_data_into_quiz( $quiz, $set, $bracket, $build ) );
-#             }
-#         }
-#     }
+    for my $quiz ( $quizzes_data->@* ) {
+        my ($state_bracket) = grep { $_->{name} eq $quiz->{bracket} } $state->{brackets}->@*;
+        my ($state_quiz)    =
+            grep { $_->{name} eq $quiz->{name} }
+            map { $_->{rooms}->@* }
+            $state_bracket->{sets}->@*;
 
-#     return $quizzes;
-# }
+        $state_quiz->{id} = $quiz->{quiz_id};
+    }
 
-# sub quiz ( $self, $bracket_name, $quiz_name ) {
-#     my $build = Load( Dump( $self->data->{build} ) );
+    return $state;
+}
 
-#     my ($bracket) = grep { $_->{name} eq $bracket_name } $build->{brackets}->@*;
-#     return unless $bracket;
+sub quiz_settings ( $self, $bracket_name, $quiz_name ) {
+    my $build = Load( Dump( $self->data->{build} ) );
 
-#     my $find_pointers = sub {
-#         for my $set ( $bracket->{sets}->@* ) {
-#             for my $quiz ( $set->{rooms}->@* ) {
-#                 return $quiz, $set, $bracket if ( $quiz->{name} eq $quiz_name );
-#             }
-#         }
-#     };
-#     my ( $quiz, $set );
-#     ( $quiz, $set, $bracket ) = $find_pointers->();
+    my ($bracket) = grep { $_->{name} eq $bracket_name } $build->{brackets}->@*;
+    return unless $bracket;
 
-#     return unless $quiz;
-#     return _merge_data_into_quiz( $quiz, $set, $bracket, $build );
-# }
+    my $find_pointers = sub {
+        for my $set ( $bracket->{sets}->@* ) {
+            for my $quiz ( $set->{rooms}->@* ) {
+                return $quiz, $set, $bracket if ( $quiz->{name} eq $quiz_name );
+            }
+        }
+    };
+    my ( $quiz, $set );
+    ( $quiz, $set, $bracket ) = $find_pointers->();
 
-# sub _merge_data_into_quiz ( $quiz, $set, $bracket, $build ) {
-#     $quiz->{$_} //= $set->{$_} // $bracket->{$_} // $build->{per_quiz}{$_}
-#         for ( qw( application importmap material settings ) );
-#     $quiz->{bracket} = $bracket->{name};
-#     return $quiz;
-# }
+    return unless $quiz;
+
+    $quiz->{$_} //= $set->{$_} // $bracket->{$_} // $build->{per_quiz}{$_}
+        for ( qw( application importmap material settings ) );
+
+    delete $quiz->{name};
+
+    return $quiz;
+}
 
 1;
 

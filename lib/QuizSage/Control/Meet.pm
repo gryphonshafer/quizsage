@@ -5,27 +5,6 @@ use QuizSage::Model::Meet;
 
 with 'Omniframe::Role::Bcrypt';
 
-sub _load_meet ($self) {
-    my $meet;
-    try {
-        $meet = QuizSage::Model::Meet->new->load( $self->param('meet_id') );
-    }
-    catch ($e) {
-        $self->notice(
-            'User ' . $self->stash('user')->id . ' requested missing meet ID ' . $self->param('meet_id')
-        );
-    }
-    return $meet;
-}
-
-sub schedule ($self) {
-    my $meet = $self->_load_meet or return $self->redirect_to('/');
-    $self->stash(
-        build   => $meet->data->{build},
-        qm_auth => $self->stash('user')->qm_auth($meet),
-    );
-}
-
 sub passwd ($self) {
     if ( my $meet_passwd = $self->param('meet_passwd') ) {
         $self->stash('user')->data->{settings}{meet_passwd} = $self->bcrypt($meet_passwd);
@@ -34,14 +13,24 @@ sub passwd ($self) {
     }
 }
 
+sub state ($self) {
+    my $meet = QuizSage::Model::Meet->new->load( $self->param('meet_id') );
+    $self->stash(
+        state   => $meet->state,
+        qm_auth => $self->stash('user')->qm_auth($meet),
+    );
+}
+
 sub roster ($self) {
-    my $meet = $self->_load_meet or return $self->redirect_to('/');
-    $self->stash( roster => $meet->data->{build}{roster} );
+    $self->stash(
+        roster => QuizSage::Model::Meet->new->load( $self->param('meet_id') )->data->{build}{roster},
+    );
 }
 
 sub distribution ($self) {
-    my $meet = $self->_load_meet or return $self->redirect_to('/');
-    $self->stash( build => $meet->data->{build} );
+    $self->stash(
+        build => QuizSage::Model::Meet->new->load( $self->param('meet_id') )->data->{build},
+    );
 }
 
 1;

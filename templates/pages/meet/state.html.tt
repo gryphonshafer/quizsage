@@ -28,32 +28,41 @@
     [% END %]
 [% END %]
 
-[% FOR bracket IN build.brackets %]
+[% FOR bracket IN state.brackets %]
     <h2>Bracket: [% bracket.name %]</h2>
 
     [% FOR set IN bracket.sets %]
+        [% schedule = set.rooms.0.schedule %]
+
         [% PROCESS event
             type   = 'pre',
-            events = build.events,
-            row    = set.rooms.0.schedule
+            events = state.events,
+            row    = schedule
         %]
 
         <div>
-            [% IF set.rooms.0.schedule %]
+            [% IF schedule %]
                 <div class="quiz_summary_box" style="width: 6rem">
-                    [% set.rooms.0.schedule.date %]<br>
-                    [% set.rooms.0.schedule.start_time %]<br>
-                    [% set.rooms.0.schedule.stop_time %]<br>
-                    [% set.rooms.0.schedule.duration %] minutes
+                    [% schedule.date %]<br>
+                    [% schedule.start_time %]<br>
+                    [% schedule.stop_time %]<br>
+                    [% schedule.duration %] minutes
                 </div>
             [% END %]
 
             [% FOR quiz IN set.rooms %]
                 <div class="quiz_summary_box">
                     [%
+                        resolved_teams = 0;
+                        FOR team IN quiz.roster;
+                            resolved_teams = resolved_teams + 1 IF team.team;
+                        END;
+                        teams_resolved = ( resolved_teams == quiz.roster.size ) ? 1 : 0;
+
                         href =
-                            ( quiz.id ) ? c.url_for( '/quiz/' _ quiz.id ) :
-                            ( qm_auth ) ? c.url_for('/quiz/build').query(
+                            ( quiz.id            ) ? c.url_for( '/quiz/' _ quiz.id ) :
+                            ( NOT teams_resolved ) ? undef                           :
+                            ( qm_auth            ) ? c.url_for('/quiz/build').query(
                                 meet    => c.param('meet_id'),
                                 bracket => bracket.name,
                                 quiz    => quiz.name,
@@ -98,7 +107,7 @@
 
     [% PROCESS event
         type   = 'post',
-        events = build.events,
-        row    = set.rooms.0.schedule
+        events = state.events,
+        row    = schedule
     %]
 [% END %]

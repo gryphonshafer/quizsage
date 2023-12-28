@@ -4,9 +4,8 @@ use exact 'Mojolicious::Controller';
 use QuizSage::Model::Season;
 
 sub home ($self) {
-    if ( $self->stash('user') ) {
-        $self->stash( active_seasons => QuizSage::Model::Season->new->active_seasons );
-    }
+    $self->stash( active_seasons => QuizSage::Model::Season->new->active_seasons )
+        if ( $self->stash('user') );
 }
 
 1;
