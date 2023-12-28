@@ -719,13 +719,13 @@ This class is the model for meet objects.
 
 =head1 OBJECT METHODS
 
-=head2 validate, freeze, thaw
+=head2 freeze, thaw
 
 =head2 build
 
-=head2 quizzes
+=head2 state
 
-=head2 quiz
+=head2 quiz_settings
 
 =head1 WITH ROLE
 

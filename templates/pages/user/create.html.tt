@@ -1,6 +1,6 @@
 [% page.title = 'Create New User' %]
 
-<h1>[% page.title %]</h1>
+<h1>QuizSage: [% page.title %]</h1>
 
 <form method="post">
     <fieldset>

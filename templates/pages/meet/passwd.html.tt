@@ -1,4 +1,6 @@
-<h1>QuizSage: Set Meet Officials' Password</h1>
+[% page.title = "Set Meet Officials' Password" %]
+
+<h1>QuizSage: [% page.title %]</h1>
 
 <p><a href="[% c.url_for('/') %]">Main Page</a></p>
 

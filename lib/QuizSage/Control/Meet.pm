@@ -46,9 +46,9 @@ for "Meet" actions.
 
 =head1 METHODS
 
-=head2 schedule
-
 =head2 passwd
+
+=head2 state
 
 =head2 roster
 

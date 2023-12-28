@@ -57,27 +57,9 @@ for "Main" actions.
 
 =head1 METHODS
 
-=head2 quiz_password
-
-Handler quiz password. Redirects.
+=head2 build
 
 =head2 quiz
-
-Handler for the quiz page.
-
-=head2 quiz_settings
-
-Handler for the quiz settings page.
-
-=head2 quiz_data
-
-Handler for quiz data.
-
-=head2 save_quiz_data
-
-Handler for saving quiz data.
-
-=head2 settings
 
 =head1 INHERITANCE
 
