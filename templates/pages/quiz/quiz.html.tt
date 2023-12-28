@@ -1,0 +1,28 @@
+[%
+    page.title     = 'Quiz',
+    page.vue       = 1;
+    page.demi      = 1;
+    page.pinia     = 1;
+    page.js.import = quiz.data.settings.importmap;
+    # page.js.module = quiz.data.settings.application;
+%]
+
+<h1>QuizSage: [% page.title %]</h1>
+
+<!-- <div id="complete" v-cloak></div> -->
+
+<script type="module">
+    import Material from 'classes/material';
+
+    const url = new URL( window.location.href );
+    fetch( new URL( url.pathname + '.json', url ) )
+        .then( reply => reply.json() )
+        .then( data => {
+            console.log(data);
+
+            window.material = new Material( {
+                material_id : data.settings.material.material_id,
+                ...data.settings.settings.material,
+            } );
+        } );
+</script>

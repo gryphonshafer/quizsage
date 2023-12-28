@@ -37,11 +37,12 @@ sub build ($self) {
 }
 
 sub quiz ($self) {
-    my $quiz     = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
-    my $data     = $quiz->data;
-    my $settings = delete $data->{settings};
-
-    $self->render( 'json' => { settings => $settings, data => $data } );
+    if ( ( $self->stash('format') // '' ) eq 'json' ) {
+        $self->render( json => QuizSage::Model::Quiz->new->load( $self->param('quiz_id') )->data );
+    }
+    else {
+        $self->stash( quiz => QuizSage::Model::Quiz->new->load( $self->param('quiz_id') ) );
+    }
 }
 
 1;

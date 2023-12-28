@@ -37,7 +37,7 @@ sub startup ($self) {
     $users->any('/meet/:meet_id')->to('meet#state');
 
     $users->any('/quiz/build')->to('quiz#build');
-    $users->any('/quiz/:quiz_id')->to('quiz#quiz');
+    $users->any( '/quiz/:quiz_id' => [ format => ['json'] ] )->to( 'quiz#quiz', format => undef );
 
     $all->any('/')->to('main#home');
     $all->any("/user/$_")->to("user#$_") for ( qw( create forgot_password login ) );

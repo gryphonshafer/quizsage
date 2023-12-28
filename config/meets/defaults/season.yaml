@@ -1,6 +1,7 @@
 ---
 application: vue/apps/quiz
 importmap:
+    classes/base: classes/base
     classes/material: classes/material
     classes/queries: classes/queries
     classes/quiz: classes/quiz
