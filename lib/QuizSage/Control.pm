@@ -39,14 +39,6 @@ sub startup ($self) {
     $users->any('/quiz/build')->to('quiz#build');
     $users->any('/quiz/:quiz_id')->to('quiz#quiz');
 
-    # $users->any('/quiz/password')->to('quiz#quiz_password');
-    # $users->any('/quiz/settings/:quiz_id')->to('quiz#quiz_settings');
-    # $users->any('/quiz/settings')->to('quiz#quiz_settings');
-    # $users->any( '/quiz/data/:quiz_id' => [ format => ['json'] ] )->to('quiz#quiz_data');
-    # $users->any('/quiz/save_data/:quiz_id')->to('quiz#save_quiz_data');
-
-    # $users->any('/quiz')->to('quiz#quiz');
-
     $all->any('/')->to('main#home');
     $all->any("/user/$_")->to("user#$_") for ( qw( create forgot_password login ) );
     $all->any("/user/$_/:user_id/:user_hash")->to("user#$_") for ( qw( verify reset_password ) );
