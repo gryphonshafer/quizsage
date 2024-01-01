@@ -1,7 +1,7 @@
 import Material from 'classes/material';
 
 export default class Queries {
-    static settings = {
+    static default_settings = {
         phrase_minimum_prompt_length           : 7,
         phrase_minimum_reply_length            : 1,
         chapter_reference_minimum_prompt_length: { key: 3, additional: 4 },
@@ -12,30 +12,36 @@ export default class Queries {
         // cross_reference_minimum_references     : 2,
     };
 
-    constructor ( input = {} ) {
-        Object.keys( this.constructor.settings ).forEach( key =>
-            this[key] = ( input[key] !== undefined ) ? input[key] : this.constructor.settings[key]
+    constructor ( inputs = { queries : {} } ) {
+        Object.keys( this.constructor.default_settings ).forEach( key =>
+            this[key] = ( inputs.queries[key] !== undefined )
+                ? inputs.queries[key]
+                : this.constructor.default_settings[key]
         );
 
-        this.references_selected = input.references_selected || [];
-        this.prompts_selected    = input.prompts_selected    || [];
-        this.material            = new Material(input);
+        this.references_selected = inputs.queries.references_selected || [];
+        this.prompts_selected    = inputs.queries.prompts_selected    || [];
 
-        this.ready = this.material.ready.then( () => this );
-    }
-
-    data() {
-        return {
-            ...Object.fromEntries( Object.keys( this.constructor.settings ).map( key => [ key, this[key] ] ) ),
-            ...this.material.data(),
-            references_selected: this.references_selected,
-            prompts_selected   : this.prompts_selected,
-        };
+        this.material = new Material(inputs);
+        this.ready    = this.material.ready;
     }
 
     reset() {
         this.references_selected = [];
         this.prompts_selected    = [];
+    }
+
+    save() {
+        const data = {
+            references_selected: this.references_selected,
+            prompts_selected   : this.prompts_selected,
+        };
+
+        Object.keys(data).forEach( key => {
+            if ( ! data[key].length ) delete data[key];
+        } );
+
+        return data;
     }
 
     static types = {

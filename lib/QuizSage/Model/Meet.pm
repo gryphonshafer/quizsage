@@ -110,7 +110,7 @@ sub _parse_and_structure_roster_text ( $self, $roster_ref ) {
             my ( $team_bible, $team_tags ) = $parse_out_bibles_and_tags->( \$team_name );
 
             +{
-                team     => $team_name,
+                name     => $team_name,
                 quizzers => [
                     map {
                         my $quizzer = $_;
@@ -612,8 +612,7 @@ sub _build_score_sum_draw (
 sub _add_distributions ( $self, $build_settings ) {
     my ( $material_json_bibles, $importmap_js );
 
-    my $root_dir    = $self->conf->get( qw( config_app root_dir ) );
-    my $js_basepath = $root_dir . '/static/js';
+    my $root_dir = $self->conf->get( qw( config_app root_dir ) );
 
     for my $bracket ( $build_settings->{brackets}->@* ) {
         for my $quiz ( map { $_->{rooms}->@* } $bracket->{sets}->@* ) {
@@ -630,7 +629,7 @@ sub _add_distributions ( $self, $build_settings ) {
             my $importmap_yaml = Dump($importmap);
 
             $importmap_js->{$importmap_yaml} //= Omniframe::Class::Javascript->new(
-                basepath  => $js_basepath,
+                basepath  => $root_dir . '/static/js',
                 importmap => $importmap,
             );
 
@@ -694,9 +693,10 @@ sub quiz_settings ( $self, $bracket_name, $quiz_name ) {
     return unless $quiz;
 
     $quiz->{$_} //= $set->{$_} // $bracket->{$_} // $build->{per_quiz}{$_}
-        for ( qw( application importmap material settings ) );
+        for ( qw( application importmap material inputs ) );
 
     delete $quiz->{name};
+    $quiz->{teams} = delete $quiz->{roster};
 
     return $quiz;
 }

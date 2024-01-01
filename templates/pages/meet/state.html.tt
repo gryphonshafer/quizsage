@@ -57,7 +57,7 @@
                     [%
                         resolved_teams = 0;
                         FOR team IN quiz.roster;
-                            resolved_teams = resolved_teams + 1 IF team.team;
+                            resolved_teams = resolved_teams + 1 IF team.name;
                         END;
                         teams_resolved = ( resolved_teams == quiz.roster.size ) ? 1 : 0;
 
@@ -80,8 +80,8 @@
                     <ul>
                         [% FOR team IN quiz.roster %]
                             <li>[%
-                                IF team.team;
-                                    team.team;
+                                IF team.name;
+                                    team.name;
                                 ELSE;
                                     IF team.position == 1;
                                         '1st';

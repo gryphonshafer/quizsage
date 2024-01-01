@@ -1,7 +1,7 @@
 const not_set = 1000000;
 
 export default class Scoring {
-    static settings = {
+    static default_settings = {
         open_book           : 1,
         synonymous          : 2,
         verbatim            : 4,
@@ -14,16 +14,12 @@ export default class Scoring {
         nth_quizzer_bonus   : 1,
     };
 
-    constructor ( input = {} ) {
-        Object.keys( this.constructor.settings ).forEach( key =>
-            this[key] = ( input[key] !== undefined ) ? input[key] : this.constructor.settings[key]
+    constructor ( inputs = { scoring : {} } ) {
+        Object.keys( this.constructor.default_settings ).forEach( key =>
+            this[key] = ( inputs.scoring[key] !== undefined )
+                ? inputs.scoring[key]
+                : this.constructor.default_settings[key]
         );
-    }
-
-    data() {
-        return {
-            ...Object.fromEntries( Object.keys( this.constructor.settings ).map( key => [ key, this[key] ] ) ),
-        };
     }
 
     score(quiz) {

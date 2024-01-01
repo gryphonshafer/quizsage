@@ -1,60 +1,48 @@
-const json_material_path = '../../json/material';
-
 export default class Material {
-    static settings = {
-        material_id   : undefined,
+    static default_settings = {
         minimum_verity: 3,
         ignored_types : [ 'pron.', 'article', 'prep.' ],
     };
 
-    constructor ( input = {} ) {
-        Object.keys( this.constructor.settings ).forEach( key =>
-            this[key] = ( input[key] !== undefined ) ? input[key] : this.constructor.settings[key]
+    constructor ( inputs = { material: {} } ) {
+        Object.keys( this.constructor.default_settings ).forEach( key =>
+            this[key] = ( inputs.material[key] !== undefined )
+                ? inputs.material[key]
+                : this.constructor.default_settings[key]
         );
 
-        if ( ! this.material_id ) throw 'Material JSON hash not defined';
+        if ( ! inputs.material.data ) throw 'Material data not defined';
+        this.data = inputs.material.data;
 
-        this.ready = fetch( new URL(
-            json_material_path + '/' + this.material_id + '.json',
-            import.meta.url,
-        ) )
-            .then( reply => reply.json() )
-            .then( loaded_data => {
-                this.loaded_data = loaded_data;
+        this.ready = new Promise( resolve => resolve(this) );
+        this.ready.then( () => {
+            Object.keys( this.data.bibles ).forEach( bible =>
+                Object.keys( this.data.bibles[bible].content ).forEach( reference => {
+                    const ref_parts = reference.match(/^(.+)\s+(\d+):(\d+)$/);
+                    const verse     = this.data.bibles[bible].content[reference];
 
-                Object.keys( this.loaded_data.bibles ).forEach( bible =>
-                    Object.keys( this.loaded_data.bibles[bible].content ).forEach( reference => {
-                        const ref_parts = reference.match(/^(.+)\s+(\d+):(\d+)$/);
-                        const verse     = this.loaded_data.bibles[bible].content[reference];
+                    verse.bible     = bible;
+                    verse.reference = reference;
+                    verse.book      = ref_parts[1];
+                    verse.chapter   = parseInt( ref_parts[2] );
+                    verse.verse     = parseInt( ref_parts[3] );
+                    verse.string    = this.text2string( verse.text );
 
-                        verse.bible     = bible;
-                        verse.reference = reference;
-                        verse.book      = ref_parts[1];
-                        verse.chapter   = parseInt( ref_parts[2] );
-                        verse.verse     = parseInt( ref_parts[3] );
-                        verse.string    = this.text2string( verse.text );
+                    [ verse.words, verse.breaks ] = this.text2words( verse.text );
+                } )
+            );
 
-                        [ verse.words, verse.breaks ] = this.text2words( verse.text );
-                    } )
-                );
+            this.primary_bibles = Object.keys( this.data.bibles )
+                .filter( bible => this.data.bibles[bible].type == 'primary' );
 
-                this.primary_bibles = Object.keys( this.loaded_data.bibles )
-                    .filter( bible => this.loaded_data.bibles[bible].type == 'primary' );
+            this.all_verses = Object.values( this.data.bibles )
+                .flatMap( bible => Object.values( bible.content ) );
 
-                this.all_verses = Object.values( this.loaded_data.bibles )
-                    .flatMap( bible => Object.values( bible.content ) );
+            this.verses_by_bible = Object.fromEntries( Object.keys( this.data.bibles )
+                .map( bible => [ bible, Object.values( this.data.bibles[bible].content ) ] ) );
 
-                this.verses_by_bible = Object.fromEntries( Object.keys( this.loaded_data.bibles )
-                    .map( bible => [ bible, Object.values( this.loaded_data.bibles[bible].content ) ] ) );
-
-                return this;
-            } );
-    }
-
-    data() {
-        return {
-            ...Object.fromEntries( Object.keys( this.constructor.settings ).map( key => [ key, this[key] ] ) ),
-        };
+            return this;
+        } );
     }
 
     text2string( text, include_sentence_breaks = false ) {
@@ -118,21 +106,21 @@ export default class Material {
     // verses from a random-by-weight range given a bible (or the next bible in sequence)
     verses( bible = this.next_bible() ) {
         bible = bible.toUpperCase();
-        if ( this.loaded_data.bibles[bible] === undefined ) throw '"' + bible + '" is not a valid Bible';
+        if ( this.data.bibles[bible] === undefined ) throw '"' + bible + '" is not a valid Bible';
 
-        const weights = this.loaded_data.ranges
+        const weights = this.data.ranges
             .map( ( range, index ) => Array( range.weight ).fill(index) )
             .flatMap( value => value );
 
-        return this.loaded_data.ranges[
+        return this.data.ranges[
             weights[ Math.floor( Math.random() * weights.length ) ]
-        ].verses.map( reference => this.loaded_data.bibles[bible].content[reference] );
+        ].verses.map( reference => this.data.bibles[bible].content[reference] );
     }
 
     // verse(s) given a bible, book, chapter (and optionally verse number)
     lookup( bible, book, chapter, verse_number = undefined ) {
         return (verse_number)
-            ? [ this.loaded_data.bibles[bible].content[ book + ' ' + chapter + ':' + verse_number ] ]
+            ? [ this.data.bibles[bible].content[ book + ' ' + chapter + ':' + verse_number ] ]
             : this.verses_by_bible[bible].filter( this_verse =>
                 book    == this_verse.book    &&
                 chapter == this_verse.chapter
@@ -182,13 +170,13 @@ export default class Material {
     // given a word, return the synonyms at or above a given verity
     synonyms_of_word(word) {
         word = word.toLowerCase();
-        let key = Object.keys( this.loaded_data.thesaurus ).find( key => key.toLowerCase() == word );
+        let key = Object.keys( this.data.thesaurus ).find( key => key.toLowerCase() == word );
         if ( ! key ) return;
 
-        let entry = structuredClone( this.loaded_data.thesaurus[key] );
+        let entry = structuredClone( this.data.thesaurus[key] );
         if ( typeof entry === 'string' ) {
             key   = entry;
-            entry = this.loaded_data.thesaurus[key];
+            entry = this.data.thesaurus[key];
         }
 
         entry
@@ -218,7 +206,7 @@ export default class Material {
     // given a verse object, return a multi-bible set of verses
     multibible_verses(verse_object) {
         let other_verses   = [];
-        const other_bibles = Object.keys( this.loaded_data.bibles )
+        const other_bibles = Object.keys( this.data.bibles )
             .filter( bible => bible != verse_object.bible );
 
         if (other_bibles) {
