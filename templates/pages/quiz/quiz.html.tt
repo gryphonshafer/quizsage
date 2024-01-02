@@ -3,19 +3,7 @@
     page.vue       = 1;
     page.demi      = 1;
     page.pinia     = 1;
-
-    # page.js.import = quiz.data.settings.importmap;
-    page.js.import = {
-        'classes/material'     => 'classes/material',
-        'classes/queries'      => 'classes/queries',
-        'classes/quiz'         => 'classes/quiz',
-        'classes/scoring'      => 'classes/scoring',
-        'modules/distribution' => 'modules/distribution',
-        'modules/template'     => 'modules/template',
-        'vue/components/quiz'  => 'vue/components/quiz',
-        'vue/stores/quiz'      => 'vue/stores/quiz',
-    };
-
+    page.js.import = quiz.data.settings.importmap;
     page.js.module = quiz.data.settings.application;
 %]
 

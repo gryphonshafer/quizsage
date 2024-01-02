@@ -6,6 +6,9 @@ importmap:
     classes/quiz: classes/quiz
     classes/scoring: classes/scoring
     modules/distribution: modules/distribution
+    modules/template: modules/template
+    vue/components/timer: vue/components/timer
+    vue/stores/quiz: vue/stores/quiz
 roster:
     default_bible: NIV
     tags:
@@ -31,6 +34,7 @@ inputs:
         maximum_declined_appeals_per_team: 2
         quizzer_response_duration: 40
         timeout_duration: 40
+        appeal_duration: 180
         timeouts_per_team: 1
     scoring:
         add_verse_synonymous: 1

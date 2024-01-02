@@ -6,6 +6,7 @@ export default class Quiz {
     static default_settings = {
         quizzer_response_duration        : 40,
         timeout_duration                 : 40,
+        appeal_duration                  : 180,
         timeouts_per_team                : 1,
         maximum_declined_appeals_per_team: 2,
     };

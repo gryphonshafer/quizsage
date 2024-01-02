@@ -1,10 +1,10 @@
-import quiz     from 'vue/components/quiz';
+import timer    from 'vue/components/timer';
 import template from 'modules/template';
 
 Vue
     .createApp({
         components: {
-            quiz,
+            timer,
         },
         template: await template( import.meta.url ),
     })

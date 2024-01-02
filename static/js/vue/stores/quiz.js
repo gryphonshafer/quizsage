@@ -30,8 +30,7 @@ const quiz = await Promise.all( [ quiz_promise, material_promise ] )
             material: quiz_data.settings.material,
         };
 
-        const quiz = new Quiz(inputs);
-        return quiz;
+        return new Quiz(inputs);
     } );
 
 export default Pinia.defineStore( 'quiz', {
