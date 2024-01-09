@@ -12,7 +12,7 @@ export default {
     },
 
     computed: {
-        ...Pinia.mapState( quiz, [ 'selected', 'material' ] ),
+        ...Pinia.mapState( quiz, [ 'material', 'selected' ] ),
     },
 
     created() {

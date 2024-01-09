@@ -219,8 +219,8 @@ export default class Material {
             verse  : ref_obj.verse,
         } ];
 
-        if ( String( ref_obj.verse ).indexOf('-') != -1 ) {
-            const dash_split = ref_obj.verse.split('-');
+        if ( String( ref_obj.verse ).indexOf('+') != -1 ) {
+            const dash_split = ref_obj.verse.split('+');
             ref_objs.push( { ...ref_objs[0] } );
             ref_objs[0].verse = dash_split[0];
 

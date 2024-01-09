@@ -3,13 +3,15 @@ import quiz     from 'vue/stores/quiz';
 
 export default {
     computed: {
-        ...Pinia.mapState( quiz, [ 'current', 'selected', 'teams', 'board' ] ),
+        ...Pinia.mapState( quiz, [ 'board', 'current', 'selected', 'teams' ] ),
     },
 
     methods: {
-        ...Pinia.mapActions( quiz, [ 'view_query', 'delete_last_action', 'exit_quiz' ] ),
+        ...Pinia.mapActions( quiz, [ 'delete_last_action', 'exit_quiz', 'is_quiz_done', 'view_query' ] ),
 
         select_quizzer( quizzer_id, team_id ) {
+            if ( this.is_quiz_done() ) return;
+
             this.selected.quizzer_id = quizzer_id;
             this.selected.team_id    = team_id;
 

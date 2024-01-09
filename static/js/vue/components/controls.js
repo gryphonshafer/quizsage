@@ -3,13 +3,15 @@ import quiz     from 'vue/stores/quiz';
 
 export default {
     computed: {
-        ...Pinia.mapState( quiz, [ 'current', 'selected' ] ),
+        ...Pinia.mapState( quiz, [ 'board', 'current', 'selected' ] ),
     },
 
     methods: {
-        ...Pinia.mapActions( quiz, [ 'alter_query', 'action' ] ),
+        ...Pinia.mapActions( quiz, [ 'action', 'alter_query', 'is_quiz_done', 'view_query' ] ),
 
         select_type(type) {
+            if ( this.is_quiz_done() ) return;
+
             if ( type == 'synonymous' || type == 'verbatim' || type == 'open_book' ) {
                 this.selected.type.synonymous_verbatim_open_book = type;
 
@@ -72,12 +74,23 @@ export default {
                     event_type == 'timeout'         ||
                     event_type == 'appeal_accepted' ||
                     event_type == 'appeal_declined'
-                ) && ! this.selected.quizzer_id
+                ) && ! this.selected.quizzer_id ||
+                event_type != 'reset' && this.is_quiz_done()
             ) return;
 
             if ( this.$root.$refs.timer ) this.$root.$refs.timer.reset();
 
-            if ( event_type != 'reset' ) {
+            if ( event_type == 'reset' ) {
+                const last_event = this.board.findLast( event => event.query );
+                if ( this.current.event.id != last_event.id ) {
+                    this.view_query(last_event);
+                }
+                else {
+                    if ( this.selected.type.with_reference ) this.select_type('with_reference');
+                    if ( this.selected.type.add_verse      ) this.select_type('add_verse');
+                }
+            }
+            else {
                 this.action(
                     event_type,
                     this.selected.team_id,
@@ -87,10 +100,6 @@ export default {
 
                 if ( this.selected.type.with_reference ) this.selected.type.with_reference = false;
                 if ( this.selected.type.add_verse      ) this.selected.type.add_verse      = false;
-            }
-            else {
-                if ( this.selected.type.with_reference ) this.select_type('with_reference');
-                if ( this.selected.type.add_verse      ) this.select_type('add_verse');
             }
 
             this.selected.type.synonymous_verbatim_open_book = '';

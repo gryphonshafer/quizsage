@@ -49,7 +49,7 @@ function get_current(id) {
 
 export default Pinia.defineStore( 'quiz', {
     state() {
-        const current = get_current();
+        const current = get_current() || get_current( quiz.state.board.at(-1).id );
 
         return {
             durations: {
@@ -65,7 +65,9 @@ export default Pinia.defineStore( 'quiz', {
                 bible: (current)
                     ? current.event.query.bible
                     : quiz.queries.material.bibles.find( (bible) => bible.type == 'primary' ).name,
-                type: {},
+                type: {
+                    synonymous_verbatim_open_book: '',
+                },
             },
         };
     },
@@ -116,6 +118,10 @@ export default Pinia.defineStore( 'quiz', {
                     body  : JSON.stringify( quiz.state ),
                 },
             );
+        },
+
+        is_quiz_done() {
+            return ( get_current_event() ) ? false : true;
         },
 
         exit_quiz() {
