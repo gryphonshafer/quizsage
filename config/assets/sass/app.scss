@@ -110,6 +110,11 @@ div#quiz {
         }
     }
 
+    div.select_type,
+    div.results {
+        min-width: 45em;
+    }
+
     table.board {
         border: none;
 

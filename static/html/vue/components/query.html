@@ -1,8 +1,14 @@
 <div class="query">
     <p class="announcement">
         Query <span>{{ current.event.id }}</span>
-        for <span>{{ eligible_teams }}</span>
-        is a<br>
+        <template v-if="! last_event_if_not_viewed() && ! is_quiz_done()">
+            for <span>{{ eligible_teams }}</span>
+            is
+        </template>
+        <template v-else>
+            was
+        </template>
+        a<br>
         <span>{{ current.query.type_name }}</span>
         from the <span>{{ current.event.bible }}</span>.
         Ready. Begin.

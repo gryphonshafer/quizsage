@@ -47,6 +47,26 @@ function get_current(id) {
         : undefined;
 }
 
+function get_eligible_teams(teams) {
+    let trigger_eligible_teams = teams.filter( team => team.trigger_eligible );
+
+    if ( trigger_eligible_teams.length == teams.length ) {
+        if ( teams.length > 2 ) {
+            return `all ${ teams.length } teams`;
+        }
+        else {
+            return 'both teams';
+        }
+    }
+
+    if ( trigger_eligible_teams.length == 1 )
+        return trigger_eligible_teams[0].name;
+
+    const last_trigger_eligible_team = trigger_eligible_teams.pop();
+    return trigger_eligible_teams.map( team => team.name ).join(', ')
+        + ' and ' + last_trigger_eligible_team.name;
+}
+
 export default Pinia.defineStore( 'quiz', {
     state() {
         const current = get_current() || get_current( quiz.state.board.at(-1).id );
@@ -69,6 +89,7 @@ export default Pinia.defineStore( 'quiz', {
                     synonymous_verbatim_open_book: '',
                 },
             },
+            eligible_teams: get_eligible_teams( quiz.state.teams ),
         };
     },
 
@@ -79,8 +100,9 @@ export default Pinia.defineStore( 'quiz', {
 
         _update_data(id) {
             this._update_current(id);
-            this.teams = quiz.state.teams;
-            this.board = quiz.state.board;
+            this.teams          = quiz.state.teams;
+            this.board          = quiz.state.board;
+            this.eligible_teams = get_eligible_teams( quiz.state.teams );
         },
 
         replace_query() {
@@ -118,6 +140,11 @@ export default Pinia.defineStore( 'quiz', {
                     body  : JSON.stringify( quiz.state ),
                 },
             );
+        },
+
+        last_event_if_not_viewed() {
+            const last_event = this.board.findLast( event => event.query );
+            return ( this.current.event.id != last_event.id ) ? last_event : undefined;
         },
 
         is_quiz_done() {

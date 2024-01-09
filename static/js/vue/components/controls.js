@@ -3,11 +3,13 @@ import quiz     from 'vue/stores/quiz';
 
 export default {
     computed: {
-        ...Pinia.mapState( quiz, [ 'board', 'current', 'selected' ] ),
+        ...Pinia.mapState( quiz, [ 'current', 'selected' ] ),
     },
 
     methods: {
-        ...Pinia.mapActions( quiz, [ 'action', 'alter_query', 'is_quiz_done', 'view_query' ] ),
+        ...Pinia.mapActions( quiz, [
+            'action', 'alter_query', 'last_event_if_not_viewed', 'is_quiz_done', 'view_query',
+        ] ),
 
         select_type(type) {
             if ( this.is_quiz_done() ) return;
@@ -81,8 +83,8 @@ export default {
             if ( this.$root.$refs.timer ) this.$root.$refs.timer.reset();
 
             if ( event_type == 'reset' ) {
-                const last_event = this.board.findLast( event => event.query );
-                if ( this.current.event.id != last_event.id ) {
+                const last_event = this.last_event_if_not_viewed();
+                if (last_event) {
                     this.view_query(last_event);
                 }
                 else {
