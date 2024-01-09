@@ -3,20 +3,21 @@ import quiz     from 'vue/stores/quiz';
 
 export default {
     data() {
-        const store = quiz();
-
         return {
-            value     : store.quiz.quizzer_response_duration,
+            value     : undefined,
             state     : 'Start',
             timeout_id: undefined,
-            durations : {
-                quizzer_response: store.quiz.quizzer_response_duration,
-                timeout         : store.quiz.timeout_duration,
-                appeal          : store.quiz.appeal_duration,
-            },
         };
     },
-    template: await template( import.meta.url ),
+
+    computed: {
+        ...Pinia.mapState( quiz, ['durations'] ),
+    },
+
+    created() {
+        this.value = this.durations.quizzer_response;
+    },
+
     methods: {
         toggle() {
             const callback = () => {
@@ -50,4 +51,6 @@ export default {
             this.value      = this.durations[time] || time;
         },
     },
+
+    template: await template( import.meta.url ),
 };

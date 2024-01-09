@@ -1,0 +1,21 @@
+<div class="query">
+    <p class="announcement">
+        Query <span>{{ current.event.id }}</span>
+        for <span>{{ eligible_teams }}</span>
+        is a<br>
+        <span>{{ current.query.type_name }}</span>
+        from the <span>{{ current.event.bible }}</span>.
+        Ready. Begin.
+    </p>
+
+    <p class="prompt">{{ current.query.prompt }}</p>
+
+    <p class="reply">
+        <template v-if="current.event.type != 'X'">
+            {{ current.query.reply }}
+        </template>
+        <template v-else>
+            <span v-for="reference in current.query.references">{{ reference }}</span>
+        </template>
+    </p>
+</div>

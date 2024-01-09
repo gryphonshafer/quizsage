@@ -1,0 +1,80 @@
+<table class="board">
+    <thead>
+        <tr>
+            <td colspan="3" rowspan="5" class="top_left_corner">
+                <button @click="delete_last_action">Delete Last</button><br>
+                <button @click="exit_quiz">Exit Quiz</button>
+            </td>
+            <template v-for="team in teams">
+                <td :colspan="team.quizzers.length">{{ team.name }}</td>
+                <td class="center">
+                    {{ ( team.score.position == 0 ) ? '' : team.score.position }}<sup>{{
+                        ( team.score.position == 0 ) ? '' :
+                        ( team.score.position == 1 ) ? 'st' :
+                        ( team.score.position == 2 ) ? 'nd' :
+                        ( team.score.position == 3 ) ? 'rd' : 'th'
+                    }}</sup>
+                </td>
+            </template>
+        </tr>
+        <tr>
+            <template v-for="team in teams">
+                <td class="center" v-for="quizzer in team.quizzers">
+                    {{ quizzer.score.points }} ({{ quizzer.score.team_points }})
+                </td>
+                <td class="center">{{ team.score.points }}</td>
+            </template>
+        </tr>
+        <tr class="vertical">
+            <template v-for="team in teams">
+                <td v-for="quizzer in team.quizzers"
+                    @click="select_quizzer( quizzer.id, team.id )"
+                    :class="{
+                        selected : selected.quizzer_id == quizzer.id,
+                        clickable: true,
+                    }"
+                >{{ quizzer.name }}</td>
+
+                <td rowspan="3">
+                    TOs: {{ team.timeouts_remaining }}
+                    &nbsp;&nbsp;
+                    ADs: {{ team.appeals_declined }}
+                </td>
+            </template>
+        </tr>
+        <tr>
+            <template v-for="team in teams">
+                <td class="center" v-for="quizzer in team.quizzers">{{ quizzer.bible }}</td>
+            </template>
+        </tr>
+        <tr>
+            <template v-for="team in teams">
+                <td class="center" v-for="quizzer in team.quizzers">
+                    {{ quizzer.score.correct }} ({{ quizzer.score.open_book }})
+                </td>
+            </template>
+        </tr>
+    </thead>
+    <tbody>
+        <tr
+            v-for="record in board"
+            :class="{ selected: record.current }"
+        >
+            <td
+                @click="view_query(record)"
+                :class="{
+                    clickable: record.query,
+                    selected : record.id == current.event.id,
+                }"
+            >{{ record.id || '_' }}</td>
+            <td>{{ record.type }}</td>
+            <td>{{ record.bible }}</td>
+            <template v-for="team in teams">
+                <td class="center" v-for="quizzer in team.quizzers">{{
+                    ( quizzer.id == record.quizzer_id ) ? record.quizzer_label : ''
+                }}</td>
+                <td class="center">{{ ( team.id == record.team_id ) ? record.team_label : '' }}</td>
+            </template>
+        </tr>
+    </tbody>
+</table>

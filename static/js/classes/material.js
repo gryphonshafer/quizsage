@@ -35,6 +35,13 @@ export default class Material {
             this.primary_bibles = Object.keys( this.data.bibles )
                 .filter( bible => this.data.bibles[bible].type == 'primary' );
 
+            this.bibles = Object.keys( this.data.bibles ).map( bible => {
+                return {
+                    name: bible,
+                    type: this.data.bibles[bible].type,
+                };
+            } );
+
             this.all_verses = Object.values( this.data.bibles )
                 .flatMap( bible => Object.values( bible.content ) );
 
@@ -203,39 +210,57 @@ export default class Material {
         ) ].map( word => this.synonyms_of_word(word) ).filter( set => set );
     }
 
-    // given a verse object, return a multi-bible set of verses
-    multibible_verses(verse_object) {
-        let other_verses   = [];
-        const other_bibles = Object.keys( this.data.bibles )
-            .filter( bible => bible != verse_object.bible );
+    // return multi-bible set of data given an object with book chapter, verse
+    // (verse can be "5", "5-6", or "5-2:1")
+    materials(ref_obj) {
+        const ref_objs = [ {
+            book   : ref_obj.book,
+            chapter: ref_obj.chapter,
+            verse  : ref_obj.verse,
+        } ];
 
-        if (other_bibles) {
-            other_verses = other_bibles.map( other_bible => {
-                const other_verse = this.lookup(
-                    other_bible,
-                    verse_object.book,
-                    verse_object.chapter,
-                    verse_object.verse,
-                )[0];
+        if ( String( ref_obj.verse ).indexOf('-') != -1 ) {
+            const dash_split = ref_obj.verse.split('-');
+            ref_objs.push( { ...ref_objs[0] } );
+            ref_objs[0].verse = dash_split[0];
 
-                return {
-                    bible: other_bible,
-                    text : other_verse.text,
-                    words: other_verse.words,
-                };
-            } );
+            if ( String( ref_obj.verse ).indexOf(':') == -1 ) {
+                ref_objs[1].verse = dash_split[1];
+            }
+            else {
+                const colon_split   = dash_split[1].split(':');
+                ref_objs[1].chapter = colon_split[0];
+                ref_objs[1].verse   = colon_split[1];
+            }
         }
 
-        return [
-            {
-                bible: verse_object.bible,
-                text : verse_object.text,
-                words: verse_object.words,
-            },
-            ...other_verses,
-        ]
-            .map( value => ( { value, sort: value.bible } ) )
-            .sort( ( a, b ) => a.sort > b.sort )
-            .map( ( {value} ) => value );
+        return Object.keys( this.data.bibles ).map( bible => {
+            const verses_data = ref_objs.map( this_ref_obj => {
+                const verse = this.data.bibles[bible].content[
+                    this_ref_obj.book + ' ' + this_ref_obj.chapter + ':' + this_ref_obj.verse
+                ];
+
+                return {
+                    text     : verse.text,
+                    words    : verse.words,
+                    thesaurus: this.synonyms_of_verse(
+                        verse.book,
+                        verse.chapter,
+                        verse.verse,
+                        verse.bible,
+                    ),
+                };
+            } );
+
+            return {
+                text     : verses_data.map( item => item.text      ).join(' '),
+                words    : verses_data.map( item => item.words     ).flat(),
+                thesaurus: verses_data.map( item => item.thesaurus ).flat(),
+                bible    : {
+                    name: bible,
+                    type: this.data.bibles[bible].type,
+                },
+            };
+        } );
     }
 }

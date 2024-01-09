@@ -327,17 +327,6 @@ export default class Queries {
         if ( type != 'X' ) {
             this.references_selected.push( block.verse.reference );
 
-            const material = this.material.multibible_verses( block.verse );
-
-            material.forEach( verse =>
-                verse.thesaurus = this.material.synonyms_of_verse(
-                    block.verse.book,
-                    block.verse.chapter,
-                    block.verse.verse,
-                    verse.bible,
-                )
-            );
-
             return_data = {
                 ...return_data,
                 reply     : block.reply,
@@ -346,7 +335,6 @@ export default class Queries {
                 book      : block.verse.book,
                 chapter   : block.verse.chapter,
                 verse     : block.verse.verse,
-                material  : material,
             };
         }
         else {
@@ -382,23 +370,11 @@ export default class Queries {
             `Quote ${query.book}, chapter ${query.chapter}, verses ${query.verse} and ${next_verse.verse}.`;
 
         query.reply = query.full_reply + ' ' + next_verse.text;
-        query.verse += '-' + next_verse.verse;
-
-        const added_material = this.material.multibible_verses(next_verse);
-
-        added_material.forEach( verse =>
-            verse.thesaurus = this.material.synonyms_of_verse(
-                next_verse.book,
-                next_verse.chapter,
-                next_verse.verse,
-                next_verse.bible,
-            )
-        );
-
-        for ( let index = 0; index < query.material.length; ++index ) {
-            query.material[index].text += ' ' + added_material[index].text;
-            query.material[index].thesaurus.push( ...added_material[index].thesaurus );
-        }
+        query.verse += '-' + (
+            ( query.chapter == next_verse.chapter )
+                ? next_verse.verse
+                : next_verse.chapter + ':' + next_verse.verse
+            );
 
         return query;
     }

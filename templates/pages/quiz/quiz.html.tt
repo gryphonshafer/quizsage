@@ -7,6 +7,4 @@
     page.js.module = quiz.data.settings.application;
 %]
 
-<h1>QuizSage: [% page.title %]</h1>
-
 <div id="quiz" v-cloak></div>

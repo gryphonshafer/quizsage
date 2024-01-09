@@ -45,6 +45,27 @@ sub quiz ($self) {
     }
 }
 
+sub save ($self) {
+    my $success = 0;
+    my $quiz    = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
+
+    unless (
+        not $quiz->data->{meet_id} and $quiz->data->{meet_id} ne $self->stash('user')->id or
+        not $self->stash('user')->qm_auth( QuizSage::Model::Meet->new->load( $quiz->data->{meet_id} ) )
+    ) {
+        $quiz->save({ state => $self->req->json });
+        $success = 1;
+    }
+
+    $self->info(
+        'Save quiz data ' .
+        ( ($success) ? 'success' : 'failure' ) .
+        ' for quiz ID: ' . $self->stash('quiz_id')
+    );
+
+    $self->render( json => { quiz_data_saved => $success } );
+}
+
 1;
 
 =head1 NAME

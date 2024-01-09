@@ -1,0 +1,47 @@
+<div class="material" v-if="current.query.type != 'X'">
+    <button
+        v-for="set in current.materials"
+        :class="{ selected: selected.bible == set.bible.name }"
+        @click="selected.bible = set.bible.name"
+    >{{ set.bible.name + ( ( set.bible.type == 'auxiliary' ) ? '*' : '' ) }}</button>
+
+    <span class="reference">{{
+        current.query.book    + ' ' +
+        current.query.chapter + ':' +
+        current.query.verse
+    }}</span>
+
+    <button @click="replace_query">Replace</button>
+
+    <p class="content">{{ material.text }}</p>
+
+    <div class="thesaurus">
+        <ul class="thesaurus">
+            <li v-for="set in material.thesaurus">
+                <span class="word"><a :name="set.word">{{ set.word }}</a></span>
+                <ul>
+                    <li v-for="meaning in set.meanings">
+                        <i>
+                            {{ meaning.type }}
+                            <template v-if="! meaning.ignored">
+                                <b>{{ meaning.word }}</b>
+                            </template>
+                            <template v-else>
+                                ignored ({{ meaning.word }})
+                            </template>
+                        </i>
+
+                        <ul v-if="! meaning.ignored">
+                            <li v-for="
+                                set in meaning.synonyms
+                                    .sort( ( a, b ) => b.verity - a.verity )
+                            ">
+                                {{ set.verity }}: {{ set.words.join(', ') }}
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>
