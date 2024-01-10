@@ -57,3 +57,7 @@ for "Meet" actions.
 =head1 INHERITANCE
 
 L<Mojolicious::Controller>.
+
+=head1 WITH ROLE
+
+L<Omniframe::Role::Bcrypt>.

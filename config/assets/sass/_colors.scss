@@ -1,12 +1,12 @@
-$dark_text        : #18191f   !default;
-$light_text       : #3f434b   !default;
-$background       : AliceBlue     !default;
-$lines            : silver !default;
+$dark_text : #18191f   !default;
+$light_text: #3f434b   !default;
+$background: AliceBlue !default;
+$lines     : silver    !default;
 
-$a_link   : blue !default;
+$a_link   : blue     !default;
 $a_visited: darkblue !default;
-$a_hover  : blue !default;
-$a_active : darkred !default;
+$a_hover  : blue     !default;
+$a_active : darkred  !default;
 
 body {
     background-color: $background;

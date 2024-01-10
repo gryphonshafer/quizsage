@@ -44,7 +44,7 @@ sub thaw ( $self, $data ) {
 
 sub build ( $self, $user_id = undef ) {
     my $build_settings = $self->_merge_meet_and_season_settings;
-    $self->_parse_and_structure_roster_text( \$build_settings->{roster} );
+    $self->parse_and_structure_roster_text( \$build_settings->{roster} );
     $self->_create_material_json( $build_settings, $user_id );
     $self->_build_bracket_data($build_settings);
     $self->_schedule_integration($build_settings);
@@ -77,7 +77,7 @@ sub _merge_meet_and_season_settings ($self) {
     return $build_settings;
 }
 
-sub _parse_and_structure_roster_text ( $self, $roster_ref ) {
+sub parse_and_structure_roster_text ( $self, $roster_ref ) {
     my $default_bible = delete $$roster_ref->{default_bible} // $self->conf->get('default_bible');
     my $bibles_re     = '\b(?:' . join( '|', $self->dq('material')->get(
         'bible',
@@ -119,7 +119,7 @@ sub _parse_and_structure_roster_text ( $self, $roster_ref ) {
                         $quizzer_tags //= $team_tags // $tags->{default} // [];
                         $quizzer_tags = [@$quizzer_tags];
                         push( @$quizzer_tags, $tags->{append}->@* );
-                        my %quizzer_tags = map { $_ => 1 } @$quizzer_tags;
+                        my %quizzer_tags = map { $_ => 1 } grep { defined } @$quizzer_tags;
                         $quizzer_tags = [ sort keys %quizzer_tags ];
 
                         +{
@@ -723,10 +723,12 @@ This class is the model for meet objects.
 
 =head2 build
 
+=head2 parse_and_structure_roster_text
+
 =head2 state
 
 =head2 quiz_settings
 
-=head1 WITH ROLE
+=head1 WITH ROLES
 
 L<Omniframe::Role::Bcrypt>, L<Omniframe::Role::Model>, L<Omniframe::Role::Time>.

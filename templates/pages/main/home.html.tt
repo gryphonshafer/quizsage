@@ -22,14 +22,15 @@
 
     <p><a href="[% c.url_for('/user/forgot_password') %]">Forgot Password</a></p>
 [% ELSE %]
-    <p>You're logged in, [% user.data.first_name %].
+    <p>You're logged in, [% user.data.first_name %]. (<a href="[% c.url_for('/user/logout') %]">Logout</a>)</p>
 
-    <p><a href="[% c.url_for('/user/logout') %]">Logout</a></p>
-
-    <p><a href="[% c.url_for('/meet/passwd') %]">Set Meet Officials' Password</a></p>
+    <p><a href="[% c.url_for('/quiz/pickup') %]">Pick-Up Quiz</a></p>
 
     <h2>Active Seasons</h2>
+
     [% IF active_seasons.size > 0 %]
+        <p><a href="[% c.url_for('/meet/passwd') %]">Set Meet Officials' Password</a></p>
+
         [% FOR season IN active_seasons %]
             <h3>[% IF season.location %][% season.location %]: [% END %][% season.name %]</h3>
 

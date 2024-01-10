@@ -86,6 +86,6 @@ This class is the model for season objects.
 
 =head2 active_seasons
 
-=head1 WITH ROLE
+=head1 WITH ROLES
 
 L<Omniframe::Role::Model>, L<Omniframe::Role::Time>.

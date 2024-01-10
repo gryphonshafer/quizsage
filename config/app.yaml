@@ -28,6 +28,7 @@ default:
         json: static/json/material
     default_bible: NIV
     default_quiz_duration: 30
+    default_material: 'Galatians; Ephesians; Philippians; Colossians NASB1995 NIV'
 www:
     logging:
         filter: ~

@@ -2,6 +2,9 @@ package QuizSage::Model::Quiz;
 
 use exact -class;
 use Mojo::JSON qw( encode_json decode_json );
+use QuizSage::Model::Meet;
+use QuizSage::Util::Material 'material_json';
+use YAML::XS 'LoadFile';
 
 with 'Omniframe::Role::Model';
 
@@ -19,6 +22,32 @@ sub thaw ( $self, $data ) {
         for ( qw( settings state ) );
 
     return $data;
+}
+
+sub pickup ( $self, $pickup_settings, $user_id ) {
+    my $root_dir      = $self->conf->get( qw( config_app root_dir ) );
+    my $season        = LoadFile( $root_dir . '/config/meets/defaults/season.yaml' );
+    my $meet          = LoadFile( $root_dir . '/config/meets/defaults/meet.yaml'   );
+    my $quiz_settings = { map { $_ => $meet->{$_} // $season->{$_} } qw( application importmap inputs ) };
+
+    my $roster = {
+        default_bible => delete $pickup_settings->{default_bible},
+        data          => delete $pickup_settings->{roster_data},
+    };
+    QuizSage::Model::Meet->parse_and_structure_roster_text( \$roster );
+    $quiz_settings->{teams} = $roster;
+
+    my $material = material_json( label => $pickup_settings->{material} );
+    $quiz_settings->{material} = {
+        label       => $pickup_settings->{material},
+        description => $material->{description},
+        material_id => $material->{material_id},
+    };
+
+    return $self->create({
+        settings => $quiz_settings,
+        user_id  => $user_id,
+    });
 }
 
 1;
@@ -40,6 +69,8 @@ This class is the model for quiz objects.
 =head1 OBJECT METHODS
 
 =head2 freeze, thaw
+
+=head2 pickup
 
 =head1 WITH ROLE
 

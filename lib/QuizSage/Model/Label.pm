@@ -572,7 +572,7 @@ L<QuizSage::Util::Material> calls to generated material JSON.
 Return a canonically formatted string given the input of a data structure you
 might get from calling C<parse> on a string coming out of C<descriptionize>.
 
-=head1 WITH ROLES
+=head1 WITH ROLE
 
 L<Omniframe::Role::Model>.
 
