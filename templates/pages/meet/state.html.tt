@@ -62,14 +62,18 @@
                         teams_resolved = ( resolved_teams == quiz.roster.size ) ? 1 : 0;
 
                         href =
-                            ( quiz.id            ) ? c.url_for( '/quiz/' _ quiz.id ) :
-                            ( NOT teams_resolved ) ? undef                           :
-                            ( qm_auth            ) ? c.url_for('/quiz/build').query(
+                            ( quiz.id ) ? c.url_for( '/quiz/' _ quiz.id ) :
+                            ( qm_auth AND NOT teams_resolved ) ? c.url_for('/quiz/teams').query(
                                 meet    => c.param('meet_id'),
                                 bracket => bracket.name,
                                 quiz    => quiz.name,
                             ) :
-                            undef
+                            ( qm_auth ) ? c.url_for('/quiz/build').query(
+                                meet    => c.param('meet_id'),
+                                bracket => bracket.name,
+                                quiz    => quiz.name,
+                            ) :
+                            undef;
                     %]
                     [% IF href %]<a href="[% href %]">[% END %]<b>Quiz: [%
                         quiz.name

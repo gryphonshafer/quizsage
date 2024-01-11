@@ -44,8 +44,8 @@
 
     <fieldset style="
         vertical-align: top;
-        text-align: left;
-        max-width: 1vw;
+        text-align    : left;
+        max-width     : 1vw;
     ">
         <legend>Material Label/Description</legend>
         <textarea

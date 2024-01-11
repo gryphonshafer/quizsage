@@ -45,6 +45,58 @@ sub pickup ($self) {
     }
 }
 
+sub teams ($self) {
+    my $meet = QuizSage::Model::Meet->new->load( $self->param('meet') );
+    return $self->redirect_to( '/meet/' . $self->param('meet') )
+        unless ( $self->stash('user')->qm_auth($meet) );
+
+    my $state  = $meet->state;
+    my $teams  = [ map { $_->{name} } $state->{roster}->@* ];
+    my ($quiz) =
+        grep { $_->{name} eq $self->param('quiz') }
+        map { map { $_->{rooms}->@* } $_->{sets}->@* }
+        grep { $_->{name} eq $self->param('bracket') }
+        $state->{brackets}->@*;
+
+    unless ( $self->param('teams') ) {
+        $self->stash(
+            teams => $teams,
+            quiz  => $quiz,
+        );
+    }
+    else {
+        my $roster = [
+            map {
+                my $name = $_;
+                grep { $name eq $_->{name} } $state->{roster}->@*;
+            }
+            grep { /\S/ } map { s/(^\s+|\s+$)//gr }
+            split( /\r?\n/, $self->param('teams') )
+        ];
+
+        if ( @$roster != $quiz->{roster}->@* ) {
+            $self->info( 'Failed to parse teams: ' . $self->param('teams') );
+            $self->flash( message => 'Teams seemingly not entered correctly. Try again.' );
+            return $self->redirect_to(
+                $self
+                    ->url_for('/quiz/teams')
+                    ->query( map { $_ => $self->param($_) } qw( bracket meet quiz ) )
+            );
+        }
+
+        for ( my $i = 0; $i < @$roster; $i++ ) {
+            $quiz->{roster}[$i] = { $quiz->{roster}[$i]->%*, $roster->[$i]->%* };
+        }
+        $meet->save;
+
+        return $self->redirect_to(
+            $self
+                ->url_for('/quiz/build')
+                ->query( map { $_ => $self->param($_) } qw( bracket meet quiz ) )
+        );
+    }
+}
+
 sub build ($self) {
     my $meet = QuizSage::Model::Meet->new->load( $self->param('meet') );
 

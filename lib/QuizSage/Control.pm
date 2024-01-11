@@ -37,6 +37,7 @@ sub startup ($self) {
     $users->any('/meet/:meet_id')->to('meet#state');
 
     $users->any('/quiz/pickup')->to('quiz#pickup');
+    $users->any('/quiz/teams')->to('quiz#teams');
     $users->any('/quiz/build')->to('quiz#build');
     $users->any( '/quiz/:quiz_id' => [ format => ['json'] ] )->to( 'quiz#quiz', format => undef );
     $users->post('/quiz/save/:quiz_id')->to('quiz#save');
