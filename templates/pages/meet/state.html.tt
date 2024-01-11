@@ -53,7 +53,8 @@
             [% END %]
 
             [% FOR quiz IN set.rooms %]
-                <div class="quiz_summary_box">
+                <div class="quiz_summary_box"
+                style="position: relative">
                     [%
                         resolved_teams = 0;
                         FOR team IN quiz.roster;
@@ -106,6 +107,26 @@
                             %]</li>
                         [% END %]
                     </ul>
+
+                    [% IF qm_auth AND quiz.id %]
+                        <a
+                            style="
+                                font-style     : italic;
+                                position       : absolute;
+                                bottom         : 0.25em;
+                                right          : 0.25em;
+                                text-decoration: none;
+                            "
+                            onclick="
+                                return confirm(
+                                    'Are you absolutely sure you want to do this?\n' +
+                                    'This will delete all data for this quiz.\n' +
+                                    'There is no undo...'
+                                );
+                            "
+                            href="[% c.url_for('/quiz/delete/' _ quiz.id ) %]"
+                        >Delete Data</a>
+                    [% END %]
                 </div>
             [% END %]
         </div>

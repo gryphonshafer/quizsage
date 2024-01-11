@@ -41,6 +41,7 @@ sub startup ($self) {
     $users->any('/quiz/build')->to('quiz#build');
     $users->any( '/quiz/:quiz_id' => [ format => ['json'] ] )->to( 'quiz#quiz', format => undef );
     $users->post('/quiz/save/:quiz_id')->to('quiz#save');
+    $users->any('/quiz/delete/:quiz_id')->to('quiz#delete');
 
     $all->any('/')->to('main#home');
     $all->any("/user/$_")->to("user#$_") for ( qw( create forgot_password login ) );
