@@ -436,6 +436,7 @@ sub format( $self, $data ) {
                 : do {
                     my @sets = map { $_->{range}->@* } $data->{ranges}->@*;
                     join( '; ',
+                        grep { $_ }
                         $simplify_refs->( join( '; ', grep { not ref $_ } @sets ) ),
                         map { $$_ } grep { ref $_ } @sets,
                     );
