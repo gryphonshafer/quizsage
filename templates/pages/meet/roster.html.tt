@@ -7,14 +7,16 @@
 <p><a href="[% c.url_for( '/meet/' _ c.param('meet_id') ) %]">Meet Page</a></p>
 
 [% FOR team IN roster %]
-    <div class="quiz_summary_box" style="min-height: 18rem">
+    <div class="quiz_summary_box" style="min-height: 16rem">
         <b>[% team.name %]</b>
         <ul>
             [% FOR quizzer IN team.quizzers %]
                 <li>
                     <b>[% quizzer.name %]</b><br>
-                    [% quizzer.bible %]<br>
-                    [% quizzer.tags.join(', ') %]
+                    [% quizzer.bible %]
+                    [% IF quizzer.tags AND quizzer.tags.size > 0 %]
+                        <i>([% quizzer.tags.join(', ') %])</i>
+                    [%END %]
                 </li>
             [% END %]
         </ul>
