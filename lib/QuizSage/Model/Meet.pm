@@ -438,7 +438,7 @@ sub _schedule_integration( $self, $build_settings ) {
     }
     if ( $events->@* ) {
         for my $event ( $events->@* ) {
-            $event->{date} = ( $event->{start} // trim( $event->{stop} )->strftime('%a, %b %e') )
+            $event->{date} = trim( ( $event->{start} // $event->{stop} )->strftime('%a, %b %e') )
                 if ( $event->{start} or $event->{stop} );
             if ( $event->{start} ) {
                 $event->{start_time} = trim( $event->{start}->strftime('%l:%M %p') );
