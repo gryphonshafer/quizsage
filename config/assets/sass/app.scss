@@ -58,7 +58,7 @@ div#quiz {
     div.timer {
         float       : left;
         margin-right: 1em;
-        position: relative;
+        position    : relative;
 
         div.timer_display {
             font-size       : 300%;
@@ -68,7 +68,7 @@ div#quiz {
             display         : inline-block;
             padding         : 0.25em 0.125em;
             margin-bottom   : 0.25em;
-            width           : 1.35em;
+            width           : 1.6em;
             text-align      : center;
         }
 
@@ -108,6 +108,11 @@ div#quiz {
         & > ul > li:not(:first-child) {
             margin-top: 1em;
         }
+    }
+
+    div.select_type,
+    div.results {
+        min-width: 45em;
     }
 
     table.board {
@@ -197,12 +202,12 @@ div#quiz {
         width: 30em;
 
         p.prompt {
-            height: 3em;
+            height : 3em;
             padding: 0.2em 0.5em;
         }
 
         p.reply {
-            height: 10em;
+            height : 10em;
             padding: 0.2em 0.5em;
         }
     }
@@ -216,14 +221,14 @@ div#quiz {
         }
 
         p.content {
-            height: 14em;
+            height : 14em;
             padding: 0.2em 0.5em;
         }
     }
 
     div.reading, div.operation {
-        display: inline-block;
+        display       : inline-block;
         vertical-align: top;
-        margin-right: 1em;
+        margin-right  : 1em;
     }
 }

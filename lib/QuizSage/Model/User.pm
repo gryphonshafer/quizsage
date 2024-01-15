@@ -4,8 +4,9 @@ use exact -class;
 use Email::Address;
 use Mojo::JSON qw( encode_json decode_json );
 use Omniframe::Class::Email;
+use QuizSage::Model::Meet;
 
-with qw( Omniframe::Role::Model Omniframe::Role::Bcrypt );
+with qw( Omniframe::Role::Bcrypt Omniframe::Role::Model );
 
 class_has active => 1;
 
@@ -16,28 +17,27 @@ before 'create' => sub ( $self, $params ) {
     $params->{active} //= 0;
 };
 
-sub validate ($self) {
-    my ($address) = Email::Address->parse( $self->data->{email} );
-    croak('Email not provided properly') unless ($address);
-    $self->data->{email} = $address->address;
-
-    $self->data->{settings} //= {};
-};
-
 sub freeze ( $self, $data ) {
-    if ( $data->{passwd} ) {
+    if ( $self->is_dirty( 'email', $data ) or not exists $data->{email} ) {
+        my ($address) = Email::Address->parse( $data->{email} );
+        croak('Email not provided properly') unless ($address);
+        $data->{email} = $address->address;
+    }
+
+    if ( $self->is_dirty( 'passwd', $data ) ) {
         croak("Password supplied is not at least $min_passwd_length characters in length")
             unless ( length $data->{passwd} >= $min_passwd_length );
         $data->{passwd} = $self->bcrypt( $data->{passwd} );
     }
 
-    $data->{settings} = encode_json( $data->{settings} ) if ( defined $data->{settings} );
+    $data->{settings} = encode_json( $data->{settings} );
+    undef $data->{settings} if ( $data->{settings} eq '{}' );
 
     return $data;
 }
 
 sub thaw ( $self, $data ) {
-    $data->{settings} = decode_json( $data->{settings} ) if ( defined $data->{settings} );
+    $data->{settings} = ( defined $data->{settings} ) ? decode_json( $data->{settings} ) : {};
     return $data;
 }
 
@@ -87,9 +87,23 @@ sub login ( $self, $email, $passwd ) {
         active => 1,
     });
 
-    $self->save({ last_login => \q/( STRFTIME( '%Y-%m-%d %H:%M:%S:%s', 'NOW', 'LOCALTIME' ) )/ });
+    $self->save({ last_login => \q/( STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) )/ });
 
     return $self;
+}
+
+sub qm_auth ( $self, $meet ) {
+    try {
+        $meet = QuizSage::Model::Meet->new->load($meet) unless ( $meet isa QuizSage::Model::Meet );
+        return (
+            $meet->data->{passwd} and
+            $self->data->{settings}{meet_passwd} and
+            $meet->data->{passwd} eq $self->data->{settings}{meet_passwd}
+        ) ? 1 : 0;
+    }
+    catch ($e) {
+        return undef;
+    }
 }
 
 1;
@@ -174,6 +188,8 @@ password, and the new password to set.
 This method requires a username and password string inputs. It will then attempt
 to find and login the user. If successful, it will return a loaded user object.
 
+=head2 qm_auth
+
 =head1 WITH ROLES
 
-L<Omniframe::Role::Model>, L<Omniframe::Role::Bcrypt>.
+L<Omniframe::Role::Bcrypt>, L<Omniframe::Role::Model>.

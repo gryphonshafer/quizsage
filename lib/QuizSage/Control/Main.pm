@@ -1,13 +1,11 @@
 package QuizSage::Control::Main;
 
 use exact 'Mojolicious::Controller';
-use QuizSage::Model::Quiz;
+use QuizSage::Model::Season;
 
 sub home ($self) {
-    if ( $self->stash('user') ) {
-        # $self->stash( active_quizzes => QuizSage::Model::Quiz->new->active_quizzes );
-        $self->redirect_to('/quiz/settings');
-    }
+    $self->stash( active_seasons => QuizSage::Model::Season->new->active_seasons )
+        if ( $self->stash('user') );
 }
 
 1;

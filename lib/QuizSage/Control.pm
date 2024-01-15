@@ -1,6 +1,6 @@
 package QuizSage::Control;
 
-use exact -conf, 'Omniframe::Control';
+use exact 'Omniframe::Control';
 use QuizSage::Model::User;
 
 sub startup ($self) {
@@ -31,12 +31,17 @@ sub startup ($self) {
 
     $users->any('/user/logout')->to('user#logout');
 
-    # $users->any('/quiz/password')->to('quiz#quiz_password');
-    # $users->any('/quiz/settings/:quiz_id')->to('quiz#quiz_settings');
-    $users->any('/quiz/settings')->to('quiz#quiz_settings');
-    $users->any( '/quiz/data/:quiz_id' => [ format => ['json'] ] )->to('quiz#quiz_data');
-    $users->any('/quiz/save_data/:quiz_id')->to('quiz#save_quiz_data');
-    $users->any('/quiz')->to('quiz#quiz');
+    $users->any('/meet/passwd')->to('meet#passwd');
+    $users->any('/meet/:meet_id/roster')->to('meet#roster');
+    $users->any('/meet/:meet_id/distribution')->to('meet#distribution');
+    $users->any('/meet/:meet_id')->to('meet#state');
+
+    $users->any('/quiz/pickup')->to('quiz#pickup');
+    $users->any('/quiz/teams')->to('quiz#teams');
+    $users->any('/quiz/build')->to('quiz#build');
+    $users->any( '/quiz/:quiz_id' => [ format => ['json'] ] )->to( 'quiz#quiz', format => undef );
+    $users->post('/quiz/save/:quiz_id')->to('quiz#save');
+    $users->any('/quiz/delete/:quiz_id')->to('quiz#delete');
 
     $all->any('/')->to('main#home');
     $all->any("/user/$_")->to("user#$_") for ( qw( create forgot_password login ) );

@@ -1,0 +1,33 @@
+<div class="select_type">
+    <button
+        @click="select_type('open_book')"
+        :class="{ selected: selected.type.synonymous_verbatim_open_book == 'open_book' }"
+    >Open Book</button>
+    <button
+        @click="select_type('synonymous')"
+        :class="{ selected: selected.type.synonymous_verbatim_open_book == 'synonymous' }"
+    >Synonymous</button>
+    <button
+        @click="select_type('verbatim')"
+        :class="{ selected: selected.type.synonymous_verbatim_open_book == 'verbatim' }"
+    >Verbatim</button>
+    <button
+        @click="select_type('with_reference')"
+        :class="{ selected: selected.type.with_reference }"
+    >With Reference</button>
+    <button
+        @click="select_type('add_verse')"
+        :class="{ selected: selected.type.add_verse }"
+    >Add Verse</button>
+</div>
+
+<div class="results">
+    <button @click="trigger_event('no_trigger'     )">No Trigger</button>
+    <button @click="trigger_event('correct'        )">Correct</button>
+    <button @click="trigger_event('incorrect'      )">Incorrect</button>
+    <button @click="trigger_event('reset'          )">Reset</button>
+    <button @click="trigger_event('foul'           )">Foul</button>
+    <button @click="trigger_event('timeout'        )">Timeout</button>
+    <button @click="trigger_event('appeal_accepted')">Appeal +</button>
+    <button @click="trigger_event('appeal_declined')">Appeal -</button>
+</div>

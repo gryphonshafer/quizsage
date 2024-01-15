@@ -1,0 +1,138 @@
+---
+brackets:
+  - name: Preliminary
+    quizzes_per_team: 5
+    rooms: 4
+    teams:
+        slotting: random # random, striped, snaked, sequential
+        source: roster # roster, "bracket name"
+    type: score_sum # score_sum, positional
+    weight: 1
+    material: Galatians (1) Ephesians (2) BSB* ESV NASB NIV
+  - name: Auxiliary
+    quizzes_per_team: 2
+    rooms: 1
+    teams:
+        places:
+            min: 10
+        slotting: striped # random, striped, snaked, sequential
+        source: Preliminary # roster, "bracket name"
+    type: score_sum # score_sum, positional
+    weight: 0.5
+    material: Galatians (1) Ephesians (3) BSB* ESV NASB NIV
+  - name: Top 9
+    rooms: 3
+    teams:
+        places:
+            max: 9
+            min: 1
+        slotting: snaked # random, striped, snaked, sequential
+        source: Preliminary # roster, "bracket name"
+    template: double_elimination
+    type: positional # score_sum, positional
+    quizzes:
+      - name: J
+        weight: 0
+    weight: 1
+    material: Galatians (1) Ephesians (1) BSB* ESV NASB NIV
+roster:
+    data: |
+        TEAM 1
+        Alpha Bravo ESV
+        Charlie Delta (Rookie)
+        Echo Foxtrox
+
+        TEAM 2
+        Gulf Hotel
+        India Juliet NASB
+        Kilo Lima (Rookie)
+
+        TEAM 3
+        Mike November
+        Oscar Papa
+
+        TEAM 4 (Rookie)
+        Quebec Romeo
+        Sierra Tango
+        Uniform Victor
+
+        TEAM 5 ESV
+        Whiskey Xray BSB
+        Yankee Zulu
+        Awesome Breakfast
+
+        TEAM 6
+        Count Dracula
+        Elliot Fractal ESV
+        Gene Hackman (Rookie)
+
+        TEAM 7
+        Indy Jest NASB
+        Kick Luck
+
+        TEAM 8
+        Mark Nevada
+        Oregon Pacific
+        Qatar Rome
+
+        TEAM 9
+        Sea Turtle
+        Ultra Violet
+        Wax Xenon
+
+        TEAM 10
+        Bravo Alpha ESV
+        Delta Charlie (Rookie)
+        Foxtrox Echo
+
+        TEAM 11
+        Hotel Gulf
+        Juliet India NASB
+        Lima Kilo (Rookie)
+
+        TEAM 12
+        November Mike
+        Papa Oscar
+
+        TEAM 13 (Rookie)
+        Romeo Quebec
+        Tango Sierra
+        Victor Uniform
+
+        TEAM 14 ESV
+        Xray Whiskey BSB
+        Zulu Yankee
+        Breakfast Awesome
+schedule:
+    blocks:
+      - start: Dec 1 2023 5:30 PM PST
+        stop: Dec 1 2023 9:00 PM PST
+      - start: Dec 2 2023 8:30 AM PST
+    duration: 30
+    events:
+      - name: Instructions and Announcements
+      - name: Evening Snack
+        duration: 15
+        before: [ 'Preliminary', 10 ]
+      - name: Host Home Assignments
+        duration: 15
+        after: Preliminary
+      - name: Late Morning Snack
+        duration: 15
+        start: Dec 2 9:15 AM
+      - name: Awards and Closing
+        duration: 15
+        after: Top 9
+    overrides:
+      - bracket: Auxiliary
+        quiz: [ 1, 2, 4 ]
+        room: 4
+        duration: 20
+      - bracket: Auxiliary
+        quiz: 3
+        room: 3
+        duration: 20
+      - bracket: Auxiliary
+        quiz: 4
+        duration: 15
+        start: Dec 2 10:35 AM

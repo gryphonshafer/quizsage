@@ -1,0 +1,19 @@
+[% page.title = "Set Meet Officials' Password" %]
+
+<h1>QuizSage: [% page.title %]</h1>
+
+<p><a href="[% c.url_for('/') %]">Main Page</a></p>
+
+<form method="post" action="[% c.url_for('/meet/passwd') %]">
+    <fieldset>
+        <legend>Set Meet Officials' Password</legend>
+
+        <label>
+            Password:
+            <input type="password" name="meet_passwd" value="" placeholder="Meet Officials' Password"
+                autocomplete="one-time-code">
+        </label>
+
+        <input type="submit" value="Submit Quiz Password">
+    </fieldset>
+</form>

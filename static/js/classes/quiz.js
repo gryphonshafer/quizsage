@@ -3,21 +3,24 @@ import Scoring from 'classes/scoring';
 import distribution from 'modules/distribution';
 
 export default class Quiz {
-    static settings = {
+    static default_settings = {
         quizzer_response_duration        : 40,
         timeout_duration                 : 40,
+        appeal_duration                  : 180,
         timeouts_per_team                : 1,
         maximum_declined_appeals_per_team: 2,
     };
 
-    constructor (input) {
-        Object.keys( this.constructor.settings ).forEach( key =>
-            this[key] = ( input[key] !== undefined ) ? input[key] : this.constructor.settings[key]
+    constructor ( inputs = { quiz : {} } ) {
+        Object.keys( this.constructor.default_settings ).forEach( key =>
+            this[key] = ( inputs.quiz[key] !== undefined )
+                ? inputs.quiz[key]
+                : this.constructor.default_settings[key]
         );
 
-        this.state = input.state || {};
+        this.state = inputs.quiz.state || {};
 
-        this.teams = input.teams || [
+        this.teams = this.state.teams || inputs.quiz.teams || [
             [ 'Team 1', [ [ 'Alpha Bravo',   'NIV' ], [ 'Charlie Delta', 'NIV' ], [ 'Echo Foxtrot', 'NIV' ] ] ],
             [ 'Team 2', [ [ 'Gulf Hotel',    'ESV' ], [ 'India Juliet',  'ESV' ], [ 'Kilo Lima',    'ESV' ] ] ],
             [ 'Team 3', [ [ 'Mike November', 'NIV' ], [ 'Oscar Papa',    'NIV' ], [ 'Quebec Romeo', 'NIV' ] ] ],
@@ -47,11 +50,14 @@ export default class Quiz {
             teams[i] = team;
         } );
 
-        this.scoring = new Scoring(input);
-        this.queries = new Queries(input);
+        this.scoring = new Scoring(inputs);
 
-        this.ready = this.queries.ready.then( () => {
-            this.distribution = input.distribution || distribution(
+        inputs.queries = { ...inputs.queries, ...this.state.queries };
+        this.queries   = new Queries(inputs);
+        this.ready     = this.queries.ready;
+
+        this.ready.then( () => {
+            this.distribution = this.state.distribution || inputs.quiz.distribution || distribution(
                 Object.keys( this.queries.constructor.types ).map( type => type.toUpperCase() ),
                 this.queries.material.primary_bibles,
                 this.teams.length,
@@ -64,15 +70,16 @@ export default class Quiz {
         } );
     }
 
-    data() {
-        return {
-            ...Object.fromEntries( Object.keys( this.constructor.settings ).map( key => [ key, this[key] ] ) ),
-            ...this.scoring.data(),
-            ...this.queries.data(),
-            state       : this.state,
-            teams       : this.teams,
-            distribution: this.distribution,
+    save() {
+        const data = {
+            ...this.state,
+            distribution : this.distribution,
+            queries      : this.queries.save(),
         };
+
+        if ( ! Object.keys( data.queries ).length ) delete data.queries;
+
+        return data;
     }
 
     #build_board() {

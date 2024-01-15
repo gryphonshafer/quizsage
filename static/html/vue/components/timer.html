@@ -1,0 +1,8 @@
+<div class="timer">
+    <div class="timer_display">{{ value }}</div>
+    <div class="button_group">
+        <button @click="toggle">{{ state }}</button><br>
+        <button @click="reset()">{{ durations.quizzer_response }}s</button><br>
+        <button @click="reset('appeal')">{{ durations.appeal }}s</button>
+    </div>
+</div>

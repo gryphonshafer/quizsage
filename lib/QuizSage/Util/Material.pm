@@ -50,7 +50,7 @@ fun material_json (
 
     my $return = {
         description => $description,
-        json_file   => $json_file->to_string,
+        json_file   => $json_file,
         material_id => $material_id,
     };
 
@@ -79,7 +79,7 @@ fun material_json (
 
     my $dq_material = $model_label->dq('material');
 
-    # # add verse content
+    # add verse content
     my @bibles = sort keys $data->{bibles}->%*;
     my %words;
     for my $range ( $data->{ranges}->@* ) {
@@ -250,23 +250,3 @@ from the string.
     my @words = text2words(
         q{Jesus asked, "What's (the meaning of) this: 'I and my Father are one.'"};
     )->@*;
-
-=head2 aliases
-
-Subroutine C<aliases>.
-
-=head2 parse_label
-
-Subroutine C<parse_label>.
-
-=head2 canonicalize_label
-
-Subroutine C<canonicalize_label>.
-
-=head2 descriptionize_label
-
-Subroutine C<descriptionize_label>.
-
-=head2 data_structure
-
-Subroutine C<data_structure>.

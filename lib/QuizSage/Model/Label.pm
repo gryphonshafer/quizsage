@@ -436,6 +436,7 @@ sub format( $self, $data ) {
                 : do {
                     my @sets = map { $_->{range}->@* } $data->{ranges}->@*;
                     join( '; ',
+                        grep { $_ }
                         $simplify_refs->( join( '; ', grep { not ref $_ } @sets ) ),
                         map { $$_ } grep { ref $_ } @sets,
                     );
@@ -572,7 +573,7 @@ L<QuizSage::Util::Material> calls to generated material JSON.
 Return a canonically formatted string given the input of a data structure you
 might get from calling C<parse> on a string coming out of C<descriptionize>.
 
-=head1 WITH ROLES
+=head1 WITH ROLE
 
 L<Omniframe::Role::Model>.
 
