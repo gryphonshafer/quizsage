@@ -203,11 +203,15 @@ for "Main" actions.
 
 =head2 pickup
 
+=head2 teams
+
 =head2 build
 
 =head2 quiz
 
 =head2 save
+
+=head2 delete
 
 =head1 INHERITANCE
 
