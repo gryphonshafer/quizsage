@@ -1,5 +1,8 @@
 # QuizSage
 
+[![test](https://github.com/gryphonshafer/quizsage/workflows/test/badge.svg)](https://github.com/gryphonshafer/quizsage/actions?query=workflow%3Atest)
+[![codecov](https://codecov.io/gh/gryphonshafer/quizsage/graph/badge.svg)](https://codecov.io/gh/gryphonshafer/quizsage)
+
 This is the software, data, and content behind the
 [QuizSage](https://quizsage.org) web site.
 

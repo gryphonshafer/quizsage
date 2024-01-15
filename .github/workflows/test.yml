@@ -1,0 +1,35 @@
+name: test
+on: [ push, pull_request, workflow_dispatch ]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        perl-version: [ 38, 36, 34, 32, 30, 28, 26, 24, 22 ]
+    container:
+      image: perldocker/perl-tester:5.${{ matrix.perl-version }}
+    steps:
+      - run: git clone https://github.com/gryphonshafer/omniframe.git $GITHUB_WORKSPACE/../omniframe
+      - uses: actions/checkout@v2
+      - run: |-
+          curl -s -L -o - $(
+            curl -s https://api.github.com/repos/sass/dart-sass/releases/latest | \
+            grep browser_download_url | grep linux-x64 | perl -ne '/:\s+"([^"]+)"/; print "$1\n"'
+          ) | tar -xvpz --strip-components=1
+      - uses: perl-actions/install-with-cpanm@v1
+        env:
+          PERL_CPANM_OPT: --from https://cpan.metacpan.org/ --notest --force --skip-satisfied
+        with:
+          sudo: false
+          args: --with-develop --with-all-features --installdeps ../omniframe/.
+      - run: dest init
+      - run: dest update
+      - run: |-
+          PATH="$PATH:." \
+          HARNESS_PERL_SWITCHES=-MDevel::Cover \
+          prove --recurse --lib --failures --jobs 4 --timer t
+      - run: cover -report codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        if: env.CODECOV_TOKEN != null && matrix.perl-version >= 26
