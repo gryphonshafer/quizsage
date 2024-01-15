@@ -11,7 +11,7 @@ jobs:
       image: perldocker/perl-tester:5.${{ matrix.perl-version }}
     steps:
       - run: git clone https://github.com/gryphonshafer/omniframe.git $GITHUB_WORKSPACE/../omniframe
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: |-
           curl -s -L -o - $(
             curl -s https://api.github.com/repos/sass/dart-sass/releases/latest | \
