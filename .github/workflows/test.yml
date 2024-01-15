@@ -26,6 +26,7 @@ jobs:
       - run: cpanm --with-develop --with-all-features --installdeps .
         env:
           PERL_CPANM_OPT: --from https://cpan.metacpan.org/ --notest --force --skip-satisfied
+      - run: ../omniframe/tools/install_externals.pl
       - run: dest init
       - run: dest update
       - run: |-
