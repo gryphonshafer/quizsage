@@ -118,15 +118,13 @@ sub build ($self) {
         return $self->redirect_to( '/meet/' . $self->param('meet') );
     }
 
-    my $quiz = QuizSage::Model::Quiz->new->create({
+    return $self->redirect_to( '/quiz/' . QuizSage::Model::Quiz->new->create({
         meet_id  => $meet->id,
         user_id  => $self->stash('user')->id,
         bracket  => $self->param('bracket'),
         name     => $self->param('quiz'),
         settings => $settings,
-    });
-
-    return $self->redirect_to( '/quiz/' . $quiz->id );
+    })->id );
 }
 
 sub quiz ($self) {
@@ -142,9 +140,10 @@ sub save ($self) {
     my $success = 0;
     my $quiz    = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
 
-    unless (
-        not $quiz->data->{meet_id} and $quiz->data->{meet_id} ne $self->stash('user')->id or
-        not $self->stash('user')->qm_auth( QuizSage::Model::Meet->new->load( $quiz->data->{meet_id} ) )
+    if (
+        $quiz->data->{user_id} and $quiz->data->{user_id} eq $self->stash('user')->id or
+        $quiz->data->{meet_id} and
+        $self->stash('user')->qm_auth( QuizSage::Model::Meet->new->load( $quiz->data->{meet_id} ) )
     ) {
         $quiz->save({ state => $self->req->json });
         $success = 1;

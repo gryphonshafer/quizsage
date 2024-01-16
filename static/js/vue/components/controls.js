@@ -80,7 +80,14 @@ export default {
                 event_type != 'reset' && this.is_quiz_done()
             ) return;
 
-            if ( this.$root.$refs.timer ) this.$root.$refs.timer.reset();
+            if ( this.$root.$refs.timer ) {
+                if ( event_type != 'timeout' ) {
+                    this.$root.$refs.timer.reset();
+                }
+                else {
+                    this.$root.$refs.timer.start('timeout');
+                }
+            }
 
             if ( event_type == 'reset' ) {
                 const last_event = this.last_event_if_not_viewed();

@@ -50,6 +50,12 @@ export default {
             this.state      = 'Start';
             this.value      = this.durations[time] || time;
         },
+
+        start( duration_name = undefined ) {
+            this.reset();
+            if (duration_name) this.value = this.durations[duration_name];
+            this.toggle();
+        },
     },
 
     template: await template( import.meta.url ),
