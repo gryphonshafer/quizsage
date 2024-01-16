@@ -142,9 +142,10 @@ sub save ($self) {
     my $success = 0;
     my $quiz    = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
 
-    unless (
-        not $quiz->data->{meet_id} and $quiz->data->{meet_id} ne $self->stash('user')->id or
-        not $self->stash('user')->qm_auth( QuizSage::Model::Meet->new->load( $quiz->data->{meet_id} ) )
+    if (
+        $quiz->data->{user_id} and $quiz->data->{user_id} eq $self->stash('user')->id or
+        $quiz->data->{meet_id} and
+        $self->stash('user')->qm_auth( QuizSage::Model::Meet->new->load( $quiz->data->{meet_id} ) )
     ) {
         $quiz->save({ state => $self->req->json });
         $success = 1;
