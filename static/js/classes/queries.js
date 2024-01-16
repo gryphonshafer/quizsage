@@ -92,10 +92,18 @@ export default class Queries {
 
     create_finish(bible) {
         let verse = { words : [] };
-        while (
-            verse.words.length <
-            this.finish_prompt_length + this.finish_minimum_reply_length
-        ) verse = this.#select_verse(bible);
+        while (true) {
+            while (
+                verse.words.length <
+                this.finish_prompt_length + this.finish_minimum_reply_length
+            ) verse = this.#select_verse(bible);
+
+            const check_prompt = verse.words.slice( 0, this.finish_prompt_length ).join(' ');
+
+            if ( ! this.material.verses(bible).find( check_verse =>
+                check_verse.words.slice( 0, this.finish_prompt_length ).join(' ') == check_prompt
+            ) ) break;
+        }
 
         const [ prompt, reply, full_reply, prompt_words ] =
             this.#prompt_reply_text( verse, 0, this.finish_prompt_length );
