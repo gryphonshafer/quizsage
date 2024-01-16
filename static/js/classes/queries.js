@@ -82,10 +82,11 @@ export default class Queries {
         const verse = this.#select_verse(bible);
 
         return this.#prep_return_data({
-            type  : 'Q',
-            prompt: `Quote ${verse.book}, chapter ${verse.chapter}, verse ${verse.verse}.`,
-            reply : verse.text,
-            verse : verse,
+            type      : 'Q',
+            prompt    : `Quote ${verse.book}, chapter ${verse.chapter}, verse ${verse.verse}.`,
+            reply     : verse.text,
+            full_reply: verse.text,
+            verse     : verse,
         });
     }
 
