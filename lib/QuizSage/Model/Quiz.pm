@@ -45,16 +45,14 @@ sub pickup ( $self, $pickup_settings, $user_id ) {
         material_id => $material->{material_id},
     };
 
-    my $bibles         = decode_json( $material->{json_file}->slurp )->{bibles};
-    my $primary_bibles = [ grep { $bibles->{$_}{type} eq 'primary' } keys %$bibles ];
-
+    my $bibles = decode_json( $material->{json_file}->slurp )->{bibles};
     $quiz_settings->{distribution} = Omniframe::Class::Javascript->new(
         basepath  => $root_dir . '/static/js',
         importmap => $quiz_settings->{importmap},
     )->run(
         $root_dir . '/ocjs/lib/Model/Meet/distribution.js',
         {
-            bibles      => $primary_bibles,
+            bibles      => [ grep { $bibles->{$_}{type} eq 'primary' } keys %$bibles ],
             teams_count => scalar( $quiz_settings->{teams}->@* ),
         },
     )->[0][0];

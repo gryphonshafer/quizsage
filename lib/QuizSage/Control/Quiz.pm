@@ -118,15 +118,13 @@ sub build ($self) {
         return $self->redirect_to( '/meet/' . $self->param('meet') );
     }
 
-    my $quiz = QuizSage::Model::Quiz->new->create({
+    return $self->redirect_to( '/quiz/' . QuizSage::Model::Quiz->new->create({
         meet_id  => $meet->id,
         user_id  => $self->stash('user')->id,
         bracket  => $self->param('bracket'),
         name     => $self->param('quiz'),
         settings => $settings,
-    });
-
-    return $self->redirect_to( '/quiz/' . $quiz->id );
+    })->id );
 }
 
 sub quiz ($self) {
