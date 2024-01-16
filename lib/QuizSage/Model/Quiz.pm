@@ -2,6 +2,7 @@ package QuizSage::Model::Quiz;
 
 use exact -class;
 use Mojo::JSON qw( encode_json decode_json );
+use Omniframe::Class::Javascript;
 use QuizSage::Model::Meet;
 use QuizSage::Util::Material 'material_json';
 use YAML::XS 'LoadFile';
@@ -43,6 +44,20 @@ sub pickup ( $self, $pickup_settings, $user_id ) {
         description => $material->{description},
         material_id => $material->{material_id},
     };
+
+    my $bibles         = decode_json( $material->{json_file}->slurp )->{bibles};
+    my $primary_bibles = [ grep { $bibles->{$_}{type} eq 'primary' } keys %$bibles ];
+
+    $quiz_settings->{distribution} = Omniframe::Class::Javascript->new(
+        basepath  => $root_dir . '/static/js',
+        importmap => $quiz_settings->{importmap},
+    )->run(
+        $root_dir . '/ocjs/lib/Model/Meet/distribution.js',
+        {
+            bibles      => $primary_bibles,
+            teams_count => scalar( $quiz_settings->{teams}->@* ),
+        },
+    )->[0][0];
 
     return $self->create({
         settings => $quiz_settings,
