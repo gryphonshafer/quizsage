@@ -53,11 +53,22 @@
             style="width: 50vw"
             name="material">[% material %]</textarea>
 
-        [% IF label_aliases.size > 0 %]
+        [% IF label_aliases AND label_aliases.size > 0 %]
+            <h2>Available Labels</h2>
             <dl>
                 [% FOR alias IN label_aliases %]
                     <dt>[% alias.name %]</dt>
                     <dd>[% alias.label %]</dd>
+                [% END %]
+            </dl>
+        [% END %]
+
+        [% IF bibles AND bibles.size > 0 %]
+            <h2>Supported Bibles</h2>
+            <dl>
+                [% FOR bible IN bibles %]
+                    <dt>[% bible.acronym %]</dt>
+                    <dd>[% bible.name %] ([% bible.year %])</dd>
                 [% END %]
             </dl>
         [% END %]

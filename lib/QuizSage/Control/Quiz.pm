@@ -25,6 +25,10 @@ sub pickup ($self) {
         );
 
         $self->stash(
+            bibles => $label
+                ->dq('material')
+                ->get( 'bible', undef, undef, { order_by => 'acronym' } )
+                ->run->all({}),
             label_aliases => $label->aliases,
             %$settings,
         );

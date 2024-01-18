@@ -1,0 +1,3 @@
+ALTER TABLE bible DROP COLUMN label;
+ALTER TABLE bible DROP COLUMN name;
+ALTER TABLE bible DROP COLUMN year;
