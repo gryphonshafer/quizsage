@@ -186,22 +186,48 @@ export default class Quiz {
         }
     }
 
+    board_row( id = undefined ) {
+        return this.state.board.find( row => (id) ? id == row.id : row.current );
+    }
+
     static #actions = [
         'no_trigger', 'correct', 'incorrect',
         'foul', 'timeout', 'appeal_accepted', 'appeal_declined',
     ];
 
-    action( action, team_id = undefined, quizzer_id = undefined, qsstypes = undefined ) {
+    action(
+        action,
+        team_id    = undefined,
+        quizzer_id = undefined,
+        qsstypes   = undefined,
+        event_id   = undefined,
+    ) {
         action = Quiz.#actions.find(
             canonical_action => canonical_action == action.toLowerCase()
         );
         if ( ! action ) throw '"' + action + '" is not a valid action';
 
-        const event = { action: action };
+        const event = (event_id)
+            ? this.state.events[ this.state.board.findIndex( row => event_id == row.id ) ]
+            : {};
 
-        if (team_id)    event.team_id    = team_id;
-        if (quizzer_id) event.quizzer_id = quizzer_id;
-        if (qsstypes) {
+        event.action = action;
+
+        if ( event.action != 'no_trigger' && team_id ) {
+            event.team_id = team_id;
+        }
+        else {
+            delete event.team_id;
+        }
+
+        if ( event.action != 'no_trigger' && quizzer_id ) {
+            event.quizzer_id = quizzer_id;
+        }
+        else {
+            delete event.quizzer_id;
+        }
+
+        if ( event.action != 'no_trigger' && qsstypes ) {
             qsstypes       = qsstypes.toUpperCase();
             event.qsstypes = '';
 
@@ -218,8 +244,11 @@ export default class Quiz {
             if ( qsstypes.indexOf('R') != -1 ) event.qsstypes += 'R';
             if ( qsstypes.indexOf('A') != -1 ) event.qsstypes += 'A';
         }
+        else {
+            delete event.qsstypes;
+        }
 
-        this.state.events.push(event);
+        if ( ! event_id ) this.state.events.push(event);
         this.#build_board();
     }
 

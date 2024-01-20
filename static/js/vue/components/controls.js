@@ -105,6 +105,7 @@ export default {
                     this.selected.team_id,
                     this.selected.quizzer_id,
                     this.current.event.type.substr(1),
+                    ( this.current.event.current ) ? undefined : this.current.event.id,
                 );
 
                 if ( this.selected.type.with_reference ) this.selected.type.with_reference = false;
