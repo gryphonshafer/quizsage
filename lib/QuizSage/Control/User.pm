@@ -17,6 +17,7 @@ sub create ($self) {
                 if ( $user and $user->data ) {
                     $user->send_email( 'verify_email', $self->url_for('/user/verify') );
 
+                    $self->info( 'User create success: ' . $user->id );
                     $self->flash(
                         message => {
                             type => 'success',
@@ -36,7 +37,7 @@ sub create ($self) {
             $e = "Value in $1 field is already registered under an existing user account."
                 if ( $e =~ /UNIQUE constraint failed/ );
 
-            $self->info("User CRUD failure: $e");
+            $self->info("User create failure: $e");
             $self->stash( message => $e, %params );
         }
     }
@@ -44,6 +45,7 @@ sub create ($self) {
 
 sub verify ($self) {
     if ( QuizSage::Model::User->new->verify( $self->stash('user_id'), $self->stash('user_hash') ) ) {
+        $self->info( 'User verified: ' . $self->stash('user_id') );
         $self->flash(
             message => {
                 type => 'success',
@@ -90,6 +92,7 @@ sub reset_password ($self) {
                     $passwd,
                 )
             ) {
+                $self->info( 'Password reset for: ' . $self->stash('user_id') );
                 $self->flash(
                     message => {
                         type => 'success',

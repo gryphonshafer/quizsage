@@ -43,9 +43,9 @@ sub pickup ($self) {
         $user->data->{settings}{pickup_quiz} = $settings;
         $user->save;
 
-        return $self->redirect_to(
-            '/quiz/' . QuizSage::Model::Quiz->new->pickup( $settings, $user->id )->id
-        );
+        my $quiz_id = QuizSage::Model::Quiz->new->pickup( $settings, $user->id )->id;
+        $self->info('Pickup quiz generated: ' . $quiz_id );
+        return $self->redirect_to( '/quiz/' . $quiz_id );
     }
 }
 
@@ -118,17 +118,21 @@ sub build ($self) {
 
     my $settings = $meet->quiz_settings( $self->param('bracket'), $self->param('quiz') );
     unless ($settings) {
+        $self->notice('Quiz build failed');
         $self->flash( message => 'Quiz settings creation failed' );
         return $self->redirect_to( '/meet/' . $self->param('meet') );
     }
 
-    return $self->redirect_to( '/quiz/' . QuizSage::Model::Quiz->new->create({
+    my $quiz_id = QuizSage::Model::Quiz->new->create({
         meet_id  => $meet->id,
         user_id  => $self->stash('user')->id,
         bracket  => $self->param('bracket'),
         name     => $self->param('quiz'),
         settings => $settings,
-    })->id );
+    })->id;
+
+    $self->info( 'Quiz build: ' . $quiz_id );
+    return $self->redirect_to( '/quiz/' . $quiz_id );
 }
 
 sub quiz ($self) {
@@ -185,6 +189,7 @@ sub delete ($self) {
         }
 
         $meet->save;
+        $self->info( 'Quiz delete: ' . $quiz->id );
         $quiz->delete;
     }
 
