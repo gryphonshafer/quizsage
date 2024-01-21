@@ -168,32 +168,13 @@ sub save ($self) {
 
 sub delete ($self) {
     my $quiz = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
-    my $meet = QuizSage::Model::Meet->new->load( $quiz->data->{meet_id} );
 
-    if ( $self->stash('user')->qm_auth($meet) ) {
-        my ($quiz_node) =
-            grep { $_->{name} eq $quiz->data->{name} }
-            map { map { $_->{rooms}->@* } $_->{sets}->@* }
-            grep { $_->{name} eq $quiz->data->{bracket} }
-            $meet->data->{build}{brackets}->@*;
-
-        delete $quiz_node->{id} if ( $quiz_node->{id} );
-        for my $team_node ( $quiz_node->{roster}->@* ) {
-            if (
-                $team_node->{name} and $team_node->{quizzers} and
-                $team_node->{position} and ( $team_node->{bracket} or $team_node->{quiz} )
-            ) {
-                delete $team_node->{name};
-                delete $team_node->{quizzers};
-            }
-        }
-
-        $meet->save;
+    if ( $self->stash('user')->qm_auth( $quiz->data->{meet_id} ) ) {
         $self->info( 'Quiz delete: ' . $quiz->id );
         $quiz->delete;
     }
 
-    return $self->redirect_to( '/meet/' . $meet->id );
+    return $self->redirect_to( '/meet/' . $quiz->data->{meet_id} );
 }
 
 1;

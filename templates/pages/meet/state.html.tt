@@ -64,12 +64,7 @@
 
                         href =
                             ( quiz.id ) ? c.url_for( '/quiz/' _ quiz.id ) :
-                            ( qm_auth AND NOT teams_resolved ) ? c.url_for('/quiz/teams').query(
-                                meet    => c.param('meet_id'),
-                                bracket => bracket.name,
-                                quiz    => quiz.name,
-                            ) :
-                            ( qm_auth ) ? c.url_for('/quiz/build').query(
+                            ( qm_auth AND teams_resolved ) ? c.url_for('/quiz/build').query(
                                 meet    => c.param('meet_id'),
                                 bracket => bracket.name,
                                 quiz    => quiz.name,
@@ -88,6 +83,8 @@
                                 IF team.name;
                                     team.name;
                                 ELSE;
+                                    '<i>';
+
                                     IF team.position == 1;
                                         '1st';
                                     ELSIF team.position == 2;
@@ -103,29 +100,57 @@
                                     ELSE;
                                         ' of ' _ team.bracket;
                                     END;
+
+                                    '</i>';
                                 END;
                             %]</li>
                         [% END %]
                     </ul>
 
-                    [% IF qm_auth AND quiz.id %]
-                        <a
-                            style="
-                                font-style     : italic;
-                                position       : absolute;
-                                bottom         : 0.25em;
-                                right          : 0.25em;
-                                text-decoration: none;
-                            "
-                            onclick="
-                                return confirm(
-                                    'Are you absolutely sure you want to do this?\n' +
-                                    'This will delete all data for this quiz.\n' +
-                                    'There is no undo...'
-                                );
-                            "
-                            href="[% c.url_for('/quiz/delete/' _ quiz.id ) %]"
-                        >Delete Data</a>
+                    [% IF qm_auth %]
+                        [% IF quiz.id %]
+                            <a
+                                style="
+                                    font-style     : italic;
+                                    position       : absolute;
+                                    bottom         : 0.25em;
+                                    right          : 0.25em;
+                                    text-decoration: none;
+                                "
+                                onclick="
+                                    return confirm(
+                                        'Are you absolutely sure you want to do this?\n' +
+                                        'This will delete all data for this quiz.\n' +
+                                        'There is no undo...'
+                                    );
+                                "
+                                href="[% c.url_for('/quiz/delete/' _ quiz.id ) %]"
+                            >Delete Data</a>
+                        [% ELSIF NOT teams_resolved %]
+                            <a
+                                style="
+                                    font-style     : italic;
+                                    position       : absolute;
+                                    bottom         : 0.25em;
+                                    right          : 0.25em;
+                                    text-decoration: none;
+                                "
+                                onclick="
+                                    return confirm(
+                                        'Are you absolutely sure you want to do this?\n' +
+                                        'This is likely not needed. Teams should\n' +
+                                        'automatically populate.'
+                                    );
+                                "
+                                href="[%
+                                    c.url_for('/quiz/teams').query(
+                                        meet    => c.param('meet_id'),
+                                        bracket => bracket.name,
+                                        quiz    => quiz.name,
+                                    )
+                                %]"
+                            >Set Teams</a>
+                        [% END %]
                     [% END %]
                 </div>
             [% END %]

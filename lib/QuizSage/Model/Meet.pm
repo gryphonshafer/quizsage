@@ -669,6 +669,95 @@ sub state ($self) {
             $state_bracket->{sets}->@*;
 
         $state_quiz->{id} = $quiz->{quiz_id};
+
+        for ( my $i = 0; $i < $state_quiz->{roster}->@*; $i++ ) {
+            $state_quiz->{roster}[$i]{$_} //= $quiz->{settings}{teams}[$i]{$_}
+                for ( keys $quiz->{settings}{teams}[$i]->%* );
+        }
+    }
+
+    my $quizzes_done = [ grep { not grep { $_->{current} } $_->{state}{board}->@* } @$quizzes_data ];
+    my $brackets_done;
+
+    my $find_team_done = sub ( $bracket, $team ) {
+        my $team_done = undef;
+
+        if ( $team->{position} and $team->{quiz} ) {
+            my ($quiz_done) = grep {
+                $_->{bracket} eq $bracket->{name} and
+                $_->{name} eq $team->{quiz}
+            } @$quizzes_done;
+
+            ($team_done) =
+                map {
+                    my $team_name = $_->{name};
+                    my ($team) = grep { $_->{name} eq $team_name } $state->{roster}->@*;
+                    $team;
+                }
+                grep { $_->{score}{position} == $team->{position} }
+                $quiz_done->{state}{teams}->@*
+                if $quiz_done;
+        }
+        elsif ( $team->{position} and $team->{bracket} ) {
+            my $bracket_done = $brackets_done->{ $team->{bracket} };
+
+            ($team_done) =
+                grep {
+                    $bracket_done->[ $team->{position} - 1 ] and
+                    $_->{name} eq $bracket_done->[ $team->{position} - 1 ]
+                }
+                $state->{roster}->@*
+                if $bracket_done;
+        }
+
+        return $team_done;
+    };
+
+    for my $bracket ( $state->{brackets}->@* ) {
+        my @state_quizzes = map { $_->{rooms}->@* } $bracket->{sets}->@*;
+
+        if ( $bracket->{rankings} ) {
+            $brackets_done->{ $bracket->{name} } = [ (undef) x $bracket->{rankings}->@* ];
+
+            for ( my $i = 0; $i < $bracket->{rankings}->@*; $i++ ) {
+                my $team_done = $find_team_done->( $bracket, $bracket->{rankings}[$i] );
+                $brackets_done->{ $bracket->{name} }[$i] = $team_done->{name} if $team_done;
+            }
+
+            next;
+        }
+
+        # next unless all the quizzes in this bracket done
+        next unless (
+            @state_quizzes ==
+            grep {
+                my $name = $_->{name};
+                grep { $_->{bracket} eq $bracket->{name} and $_->{name} eq $name } @$quizzes_done;
+            } @state_quizzes
+        );
+
+        # determine score sum ranking
+        my $teams_points;
+        $teams_points->{ $_->{name} } += $_->{score}{points} for (
+            map { $_->{state}{teams}->@* }
+            grep { $_->{bracket} eq $bracket->{name} } @$quizzes_done
+        );
+        $brackets_done->{ $bracket->{name} } = [
+            map { $_->[0] }
+            sort { $b->[1] <=> $a->[1] }
+            map { [ $_, $teams_points->{$_} // 0 ] }
+            keys %$teams_points
+        ];
+    }
+
+    for my $bracket ( $state->{brackets}->@* ) {
+        for my $quiz ( map { $_->{rooms}->@* } $bracket->{sets}->@* ) {
+            for my $team ( $quiz->{roster}->@* ) {
+                next if ( $team->{name} );
+                my $team_done = $find_team_done->( $bracket, $team );
+                $team->{$_} //= $team_done->{$_} for ( keys %$team_done );
+            }
+        }
     }
 
     return $state;
