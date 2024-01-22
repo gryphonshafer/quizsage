@@ -72,7 +72,7 @@ sub teams ($self) {
         my $roster = [
             map {
                 my $name = $_;
-                grep { $name eq $_->{name} } $state->{roster}->@*;
+                grep { $name eq $_ } map { $_->{name} } $state->{roster}->@*;
             }
             grep { /\S/ } map { s/(^\s+|\s+$)//gr }
             split( /\r?\n/, $self->param('teams') )
@@ -88,15 +88,13 @@ sub teams ($self) {
             );
         }
 
-        for ( my $i = 0; $i < @$roster; $i++ ) {
-            $quiz->{roster}[$i] = { $quiz->{roster}[$i]->%*, $roster->[$i]->%* };
-        }
-        $meet->save;
-
         return $self->redirect_to(
             $self
                 ->url_for('/quiz/build')
-                ->query( map { $_ => $self->param($_) } qw( bracket meet quiz ) )
+                ->query(
+                    ( map { $_ => $self->param($_) } qw( bracket meet quiz ) ),
+                    ( map { ( team => $_ ) } @$roster ),
+                )
         );
     }
 }
@@ -122,6 +120,13 @@ sub build ($self) {
         $self->flash( message => 'Quiz settings creation failed' );
         return $self->redirect_to( '/meet/' . $self->param('meet') );
     }
+
+    $settings->{teams} = [
+        map {
+            my $team_name = $_;
+            grep { $_->{name} eq $team_name } $meet->data->{build}{roster}->@*
+        } $self->every_param('team')->@*
+    ];
 
     my $quiz_id = QuizSage::Model::Quiz->new->create({
         meet_id  => $meet->id,

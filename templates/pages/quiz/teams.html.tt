@@ -45,29 +45,9 @@
         Start: <b>[% quiz.schedule.start_time %]</b>
     </p>
 
-    <p>Teams should be from:</p>
+    <p>Teams should be:</p>
 
-    <ul>
-        [% FOR team IN quiz.roster %]
-            <li>[%
-                IF team.position == 1;
-                    '1st';
-                ELSIF team.position == 2;
-                    '2nd';
-                ELSIF team.position == 3;
-                    '3rd';
-                ELSE;
-                    team.position _ 'th';
-                END;
-
-                IF team.quiz;
-                    ' in ' _ team.quiz;
-                ELSE;
-                    ' of ' _ team.bracket;
-                END;
-            %]</li>
-        [% END %]
-    </ul>
+    [% PROCESS quiz_teams_list.html.tt roster = quiz.roster %]
 </div>
 
 <div style="

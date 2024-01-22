@@ -57,8 +57,10 @@
                 style="position: relative">
                     [%
                         resolved_teams = 0;
+                        teams_names    = [];
                         FOR team IN quiz.roster;
                             resolved_teams = resolved_teams + 1 IF team.name;
+                            teams_names.push( team.name );
                         END;
                         teams_resolved = ( resolved_teams == quiz.roster.size ) ? 1 : 0;
 
@@ -68,6 +70,7 @@
                                 meet    => c.param('meet_id'),
                                 bracket => bracket.name,
                                 quiz    => quiz.name,
+                                team    => teams_names,
                             ) :
                             undef;
                     %]
@@ -77,35 +80,7 @@
 
                     Room: [% quiz.room %]
 
-                    <ul>
-                        [% FOR team IN quiz.roster %]
-                            <li>[%
-                                IF team.name;
-                                    team.name;
-                                ELSE;
-                                    '<i>';
-
-                                    IF team.position == 1;
-                                        '1st';
-                                    ELSIF team.position == 2;
-                                        '2nd';
-                                    ELSIF team.position == 3;
-                                        '3rd';
-                                    ELSE;
-                                        team.position _ 'th';
-                                    END;
-
-                                    IF team.quiz;
-                                        ' in ' _ team.quiz;
-                                    ELSE;
-                                        ' of ' _ team.bracket;
-                                    END;
-
-                                    '</i>';
-                                END;
-                            %]</li>
-                        [% END %]
-                    </ul>
+                    [% PROCESS quiz_teams_list.html.tt roster = quiz.roster %]
 
                     [% IF qm_auth %]
                         [% IF quiz.id %]
