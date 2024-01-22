@@ -2,9 +2,10 @@
 
 <h1>QuizSage: [% page.title %]</h1>
 
-<p><a href="[% c.url_for('/') %]">Main Page</a></p>
-
-<p><a href="[% c.url_for( '/meet/' _ c.param('meet_id') ) %]">Meet Page</a></p>
+<ul>
+    <li><a href="[% c.url_for('/') %]">Main Page</a></li>
+    <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') ) %]">Meet Page</a></li>
+</ul>
 
 [% FOR team IN roster %]
     <div class="quiz_summary_box" style="min-height: 16rem">

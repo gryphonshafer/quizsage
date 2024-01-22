@@ -2,7 +2,7 @@
 
 <h1>QuizSage: [% page.title %]</h1>
 
-<p><a href="[% c.url_for('/') %]">Main Page</a></p>
+<ul><li><a href="[% c.url_for('/') %]">Main Page</a></li></ul>
 
 <form method="post" action="[% c.url_for('/meet/passwd') %]">
     <fieldset>
