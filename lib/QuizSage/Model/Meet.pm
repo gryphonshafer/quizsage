@@ -220,11 +220,8 @@ sub stats ($self) {
                 my ( $quizzes, $points_sum, $points_avg ) = ( $stats->{$type}{$_}, 0, 0 );
                 $quizzes_max = @$quizzes if ( @$quizzes > $quizzes_max );
 
-                for (@$quizzes) {
-                    $points_sum += $_->{points};
-                    $points_avg += $_->{points} * $_->{weight};
-                }
-                $points_avg /= scalar grep { $_->{weight} } @$quizzes;
+                $points_sum += $_->{points} * $_->{weight} for (@$quizzes);
+                $points_avg = $points_sum / scalar grep { $_->{weight} } @$quizzes;
 
                 +{
                     name       => $_,

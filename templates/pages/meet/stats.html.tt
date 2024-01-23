@@ -3,101 +3,66 @@
 <h1>QuizSage: [% page.title %]</h1>
 
 <ul>
-    <li><a href="[% c.url_for('/') %]">Main Page</a></li>
+    <li><a href="[% c.url_for('/')                             %]">Main Page</a></li>
     <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') ) %]">Meet Page</a></li>
 </ul>
 
-<h2>Teams</h2>
+[% BLOCK by_points_average %]
+    <h2>[% type.ucfirst %] by Points Average</h2>
 
-<table>
-    <thead>
-        <tr>
-            <th>Position</th>
-            <th>Name</th>
-            <th>Points Avg.</th>
-            <th>Points Sum</th>
-            [% FOR i IN [ 1 .. stats.meta.teams.quizzes_max ] %]
-                <th>Quiz [% i %]</th>
-            [% END %]
-        </tr>
-    </thead>
-    <tbody>
-        [% FOR team IN stats.teams %]
+    <table>
+        <thead>
             <tr>
-                <td class="right">[% team.position %]</td>
-                <td>[% team.name %]</td>
-                <td class="right">[% team.points_avg | format('%0.2f') %]</td>
-                <td class="right">[% team.points_sum %]</td>
-                [% FOR quiz IN team.quizzes %]
-                    <td>
-                        [%
-                            ( quiz.bracket.length > 6 ) ? quiz.bracket.substr( 0, 6 ) _ '.' : quiz.bracket
-                        %] [% quiz.name %]<br>
-
-                        [%
-                            IF quiz.position == 1;
-                                '1st';
-                            ELSIF quiz.position == 2;
-                                '2nd';
-                            ELSIF quiz.position == 3;
-                                '3rd';
-                            ELSE;
-                                quiz.position _ 'th';
-                            END;
-                        %] Place<br>
-                        [% quiz.points %] Points<br>
-                        <i>(Weight [% quiz.weight %])</i>
-                    </td>
-                [% END %]
-                [%
-                    empty_columns = stats.meta.teams.quizzes_max - team.quizzes.size;
-                    FOR [ 1 .. empty_columns ];
-                %]
-                    <td></td>
+                <th>Position</th>
+                <th>Name</th>
+                <th>Points Avg.</th>
+                <th>Points Sum</th>
+                [% FOR i IN [ 1 .. stats.meta.$type.quizzes_max ] %]
+                    <th>Quiz [% i %]</th>
                 [% END %]
             </tr>
-        [% END %]
-    </tbody>
-<table>
-
-<h2>Quizzers</h2>
-
-<table>
-    <thead>
-        <tr>
-            <th>Position</th>
-            <th>Name</th>
-            <th>Points Avg.</th>
-            <th>Points Sum</th>
-            [% FOR i IN [ 1 .. stats.meta.quizzers.quizzes_max ] %]
-                <th>Quiz [% i %]</th>
+        </thead>
+        <tbody>
+            [% FOR item IN stats.$type %]
+                <tr>
+                    <td class="right">[% item.position %]</td>
+                    <td>[% item.name %]</td>
+                    <td class="right">[% item.points_avg | format('%0.2f') %]</td>
+                    <td class="right">[% item.points_sum | format('%0.1f') %]</td>
+                    [% FOR quiz IN item.quizzes %]
+                        <td>
+                            [% quiz.points %] pts. <i>(at [% quiz.weight %])</i>
+                            <br>
+                            [% IF quiz.position %]
+                                [%
+                                    IF quiz.position == 1;
+                                        '1st';
+                                    ELSIF quiz.position == 2;
+                                        '2nd';
+                                    ELSIF quiz.position == 3;
+                                        '3rd';
+                                    ELSE;
+                                        quiz.position _ 'th';
+                                    END;
+                                %]
+                            [% END %]
+                            [%
+                                ( quiz.bracket.length > 6 ) ? quiz.bracket.substr( 0, 6 ) _ '.' : quiz.bracket
+                            %] [% quiz.name %]
+                        </td>
+                    [% END %]
+                    [%
+                        empty_columns = stats.meta.$type.quizzes_max - item.quizzes.size;
+                        FOR [ 1 .. empty_columns ];
+                    %]
+                        <td style="background-color: #f0f0f0"></td>
+                    [% END %]
+                </tr>
             [% END %]
-        </tr>
-    </thead>
-    <tbody>
-        [% FOR quizzer IN stats.quizzers %]
-            <tr>
-                <td class="right">[% quizzer.position %]</td>
-                <td>[% quizzer.name %]</td>
-                <td class="right">[% quizzer.points_avg | format('%0.2f') %]</td>
-                <td class="right">[% quizzer.points_sum %]</td>
-                [% FOR quiz IN quizzer.quizzes %]
-                    <td>
-                        [%
-                            ( quiz.bracket.length > 6 ) ? quiz.bracket.substr( 0, 6 ) _ '.' : quiz.bracket
-                        %] [% quiz.name %]<br>
+        </tbody>
+    <table>
+[% END %]
 
-                        [% quiz.points %] Points<br>
-                        <i>(Weight [% quiz.weight %])</i>
-                    </td>
-                [% END %]
-                [%
-                    empty_columns = stats.meta.quizzers.quizzes_max - quizzer.quizzes.size;
-                    FOR [ 1 .. empty_columns ];
-                %]
-                    <td></td>
-                [% END %]
-            </tr>
-        [% END %]
-    </tbody>
-<table>
+
+[% PROCESS by_points_average type = 'teams' %]
+[% PROCESS by_points_average type = 'quizzers' %]

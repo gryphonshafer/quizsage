@@ -3,10 +3,10 @@
 <h1>QuizSage: [% page.title %]</h1>
 
 <ul>
-    <li><a href="[% c.url_for('/') %]">Main Page</a></li>
-    <li><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/roster') %]">Roster</a></li>
+    <li><a href="[% c.url_for('/')                                             %]">Main Page</a></li>
+    <li><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/roster')       %]">Roster</a></li>
     <li><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/distribution') %]">Distribution</a></li>
-    <li><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/stats') %]">Statistics</a></li>
+    <li><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/stats')        %]">Statistics</a></li>
 </ul>
 
 [% BLOCK event %]

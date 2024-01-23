@@ -3,8 +3,8 @@
 <h1>QuizSage: [% page.title %]</h1>
 
 <ul>
-    <li><a href="[% c.url_for('/') %]">Main Page</a></li>
-    <li><a href="[% c.url_for( '/meet/' _ c.param('meet') ) %]">Meet Page</a></li>
+    <li><a href="[% c.url_for('/')                                    %]">Main Page</a></li>
+    <li><a href="[% c.url_for( '/meet/' _ c.param('meet') )           %]">Meet Page</a></li>
     <li><a href="[% c.url_for('/meet/' _ c.param('meet') _ '/roster') %]">Roster</a></li>
 </ul>
 
