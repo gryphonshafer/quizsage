@@ -34,6 +34,7 @@ sub startup ($self) {
     $users->any('/meet/passwd')->to('meet#passwd');
     $users->any('/meet/:meet_id/roster')->to('meet#roster');
     $users->any('/meet/:meet_id/distribution')->to('meet#distribution');
+    $users->any('/meet/:meet_id/stats')->to('meet#stats');
     $users->any('/meet/:meet_id')->to('meet#state');
 
     $users->any('/quiz/pickup')->to('quiz#pickup');

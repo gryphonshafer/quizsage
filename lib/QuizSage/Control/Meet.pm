@@ -33,6 +33,12 @@ sub distribution ($self) {
     );
 }
 
+sub stats ($self) {
+    $self->stash(
+        stats => QuizSage::Model::Meet->new->load( $self->param('meet_id') )->stats,
+    );
+}
+
 1;
 
 =head1 NAME
@@ -53,6 +59,8 @@ for "Meet" actions.
 =head2 roster
 
 =head2 distribution
+
+=head2 stats
 
 =head1 INHERITANCE
 

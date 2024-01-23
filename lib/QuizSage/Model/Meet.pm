@@ -171,6 +171,78 @@ sub quiz_settings ( $self, $bracket_name, $quiz_name ) {
     return $quiz;
 }
 
+sub stats ($self) {
+    my $build        = $self->data->{build};
+    my $quizzes_data = QuizSage::Model::Quiz->new->every_data({ meet_id => $self->id });
+
+    my $stats;
+
+    for my $bracket ( $build->{brackets}->@* ) {
+        for my $quiz ( map { $_->{rooms}->@* } $bracket->{sets}->@* ) {
+            my ($quiz_data) = grep {
+                $_->{bracket} eq $bracket->{name} and
+                $_->{name} eq $quiz->{name}
+            } @$quizzes_data;
+
+            if ( $quiz_data and $quiz_data->{state} ) {
+                for my $team ( $quiz_data->{state}{teams}->@* ) {
+                    push( @{ $stats->{teams}{ $team->{name} } }, {
+                        bracket  => $bracket->{name},
+                        name     => $quiz->{name},
+                        weight   => $quiz->{weight} // $bracket->{weight} // 1,
+                        points   => $team->{score}{points},
+                        position => $team->{score}{position},
+                    } );
+
+                    for my $quizzer ( $team->{quizzers}->@* ) {
+                        push( @{ $stats->{quizzers}{ $quizzer->{name} } }, {
+                            bracket  => $bracket->{name},
+                            name     => $quiz->{name},
+                            weight   => $quiz->{weight} // $bracket->{weight} // 1,
+                            points   => $quizzer->{score}{points},
+                        } );
+                    }
+                }
+            }
+        }
+    }
+
+    for my $type ( qw( teams quizzers ) ) {
+        my ( $position, $quizzes_max ) = ( 0, 0 );
+
+        $stats->{$type} = [
+            map {
+                $_->{position} = ++$position;
+                $_;
+            }
+            sort { $b->{points_avg} <=> $a->{points_avg} }
+            map {
+                my ( $quizzes, $points_sum, $points_avg ) = ( $stats->{$type}{$_}, 0, 0 );
+                $quizzes_max = @$quizzes if ( @$quizzes > $quizzes_max );
+
+                for (@$quizzes) {
+                    $points_sum += $_->{points};
+                    $points_avg += $_->{points} * $_->{weight};
+                }
+                $points_avg /= scalar grep { $_->{weight} } @$quizzes;
+
+                +{
+                    name       => $_,
+                    quizzes    => $quizzes,
+                    points_sum => $points_sum,
+                    points_avg => $points_avg,
+                };
+            } keys $stats->{$type}->%*,
+        ];
+
+        $stats->{meta}{$type} = {
+            quizzes_max => $quizzes_max,
+        };
+    };
+
+    return $stats;
+}
+
 1;
 
 =head1 NAME
@@ -194,6 +266,8 @@ This class is the model for meet objects.
 =head2 state
 
 =head2 quiz_settings
+
+=head2 stats
 
 =head1 WITH ROLES
 
