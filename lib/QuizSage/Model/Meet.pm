@@ -230,11 +230,11 @@ sub stats ($self) {
         my ( $position, $quizzes_max ) = ( 0, 0 );
 
         $stats->{$type} = [
-            map {
-                $_->{position} = ++$position;
-                $_;
+            sort {
+                $b->{points_avg} <=> $a->{points_avg} or
+                $b->{points_sum} <=> $a->{points_sum} or
+                $a->{name} cmp $b->{name}
             }
-            sort { $b->{points_avg} <=> $a->{points_avg} }
             map {
                 my ( $quizzes, $points_sum, $points_avg ) = ( $stats->{$type}{$_}, 0, 0 );
                 $quizzes_max = @$quizzes if ( @$quizzes > $quizzes_max );

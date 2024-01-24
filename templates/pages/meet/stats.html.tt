@@ -64,9 +64,25 @@
             </tr>
         </thead>
         <tbody>
+            [%
+                position  = 0;
+                last_item = undef;
+            %]
             [% FOR item IN stats.$type %]
+                [%
+                    IF NOT last_item OR (
+                        last_item.points_avg > item.points_avg OR
+                        last_item.points_sum > item.points_sum
+                    );
+                        position      = position + 1;
+                        this_position = position;
+                    ELSE;
+                        this_position = '';
+                    END;
+                    last_item = item;
+                %]
                 <tr>
-                    <td class="right">[% item.position %]</td>
+                    <td class="right">[% this_position %]</td>
                     <td>
                         [% item.name %]
                         [% IF item.team_name %]
