@@ -7,6 +7,47 @@
     <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') ) %]">Meet Page</a></li>
 </ul>
 
+[% FOR bracket IN stats.rankings %]
+    <h2>[% bracket.bracket %] Rankings</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Position</th>
+                <th>Name</th>
+                <th>Based On</th>
+            </tr>
+        </thead>
+        <tbody>
+            [% position = 0 %]
+            [% FOR rank IN bracket.positions %]
+                [% position = position + 1 %]
+                <tr>
+                    <td class="right">[% position %]</td>
+                    [% IF rank.team %]
+                        <td>[% rank.team %]</td>
+                    [% ELSE %]
+                        <td style="background-color: #f0f0f0"></td>
+                    [% END %]
+                    <td>
+                        [%
+                            IF rank.position == 1;
+                                '1st';
+                            ELSIF rank.position == 2;
+                                '2nd';
+                            ELSIF rank.position == 3;
+                                '3rd';
+                            ELSE;
+                                rank.position _ 'th';
+                            END;
+                        %] in [% rank.quiz %]
+                    </td>
+                </tr>
+            [% END %]
+        </tbody>
+    </table>
+[% END %]
+
 [% BLOCK by_points_average %]
     <h2>[% type.ucfirst %] by Points Average</h2>
 
@@ -26,7 +67,16 @@
             [% FOR item IN stats.$type %]
                 <tr>
                     <td class="right">[% item.position %]</td>
-                    <td>[% item.name %]</td>
+                    <td>
+                        [% item.name %]
+                        [% IF item.team_name %]
+                            <br>
+                            [% item.team_name %]
+                        [% END %]
+                        [% IF item.tags AND item.tags.grep('^Rookie$').size %]
+                            <i>Rookie</i>
+                        [% END %]
+                    </td>
                     <td class="right">[% item.points_avg | format('%0.2f') %]</td>
                     <td class="right">[% item.points_sum | format('%0.1f') %]</td>
                     [% FOR quiz IN item.quizzes %]
@@ -63,6 +113,5 @@
     <table>
 [% END %]
 
-
-[% PROCESS by_points_average type = 'teams' %]
 [% PROCESS by_points_average type = 'quizzers' %]
+[% PROCESS by_points_average type = 'teams'    %]

@@ -178,6 +178,25 @@ sub stats ($self) {
     my $stats;
 
     for my $bracket ( $build->{brackets}->@* ) {
+        push( @{ $stats->{rankings} }, {
+            bracket   => $bracket->{name},
+            positions => [ map {
+                my $rank = $_;
+
+                my ($quiz) = grep {
+                    $bracket->{name} eq $_->{bracket} and
+                    $rank->{quiz} eq $_->{name}
+                } @$quizzes_data;
+
+                if ($quiz) {
+                    my ($team) = grep { $rank->{position} == $_->{score}{position} } $quiz->{state}{teams}->@*;
+                    $rank->{team} = $team->{name} if ($team);
+                }
+
+                $rank;
+            } $bracket->{rankings}->@* ],
+        } ) if ( $bracket->{rankings} );
+
         for my $quiz ( map { $_->{rooms}->@* } $bracket->{sets}->@* ) {
             my ($quiz_data) = grep {
                 $_->{bracket} eq $bracket->{name} and
@@ -223,12 +242,24 @@ sub stats ($self) {
                 $points_sum += $_->{points} * $_->{weight} for (@$quizzes);
                 $points_avg = $points_sum / scalar grep { $_->{weight} } @$quizzes;
 
-                +{
+                my $stat = {
                     name       => $_,
                     quizzes    => $quizzes,
                     points_sum => $points_sum,
                     points_avg => $points_avg,
                 };
+
+                if ( $type eq 'quizzers' ) {
+                    my $name = $_;
+                    my ($team) = grep {
+                        my ($quizzer) = grep { $_->{name} eq $name } $_->{quizzers}->@*;
+                        $stat->{tags} //= $quizzer->{tags};
+                        $quizzer;
+                    } $build->{roster}->@*;
+                    $stat->{team_name} = $team->{name};
+                }
+
+                $stat;
             } keys $stats->{$type}->%*,
         ];
 
