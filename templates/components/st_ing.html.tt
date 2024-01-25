@@ -1,0 +1,11 @@
+[%
+    IF position == 1;
+        '1st';
+    ELSIF position == 2;
+        '2nd';
+    ELSIF position == 3;
+        '3rd';
+    ELSE;
+        position _ 'th';
+    END;
+%]

@@ -32,17 +32,13 @@ const [ quiz, miscellaneous ] = await Promise.all( [ quiz_promise, material_prom
         ];
     } );
 
-function get_current_event(id) {
-    return quiz.state.board.find( event => (id) ? id == event.id : event.current );
-}
-
-function get_current(id) {
-    const event = get_current_event(id);
-    return (event)
+function get_current( id = undefined ) {
+    const row = quiz.board_row(id);
+    return (row)
         ? {
-            event    : event,
-            query    : event.query,
-            materials: quiz.queries.material.materials( event.query ),
+            event    : row,
+            query    : row.query,
+            materials: quiz.queries.material.materials( row.query ),
         }
         : undefined;
 }
@@ -65,6 +61,18 @@ function get_eligible_teams(teams) {
     const last_trigger_eligible_team = trigger_eligible_teams.pop();
     return trigger_eligible_teams.map( team => team.name ).join(', ')
         + ' and ' + last_trigger_eligible_team.name;
+}
+
+function update_current( store, id = undefined ) {
+    store.current = get_current(id) || store.current;
+}
+
+function update_data(store) {
+    update_current(store);
+
+    store.teams          = quiz.state.teams;
+    store.board          = quiz.state.board;
+    store.eligible_teams = get_eligible_teams( quiz.state.teams );
 }
 
 export default Pinia.defineStore( 'quiz', {
@@ -94,41 +102,53 @@ export default Pinia.defineStore( 'quiz', {
     },
 
     actions: {
-        _update_current(id) {
-            this.current = get_current(id) || this.current;
-        },
-
-        _update_data(id) {
-            this._update_current(id);
-            this.teams          = quiz.state.teams;
-            this.board          = quiz.state.board;
-            this.eligible_teams = get_eligible_teams( quiz.state.teams );
-        },
-
         replace_query() {
             quiz.replace_query();
-            this._update_data();
+            update_data(this);
         },
 
-        action( action, team_id = undefined, quizzer_id = undefined, qsstypes = undefined ) {
-            quiz.action( action, team_id, quizzer_id, qsstypes );
-            this._update_data();
+        action(
+            action,
+            team_id    = undefined,
+            quizzer_id = undefined,
+            qsstypes   = undefined,
+            event_id   = undefined,
+        ) {
+            quiz.action( action, team_id, quizzer_id, qsstypes, event_id );
+            update_data(this);
             this.save_quiz_data();
         },
 
         alter_query(action) {
-            quiz.queries[action]( get_current_event().query );
-            this._update_current();
+            quiz.queries[action]( quiz.board_row( this.current.event.id ).query );
+            update_current( this, this.current.event.id );
         },
 
         view_query(record) {
             this.selected.bible = record.bible;
-            this._update_current( record.id );
+            update_current( this, record.id );
+
+            this.selected.type.with_reference                = false;
+            this.selected.type.add_verse                     = false;
+            this.selected.type.synonymous_verbatim_open_book = '';
+
+            if ( this.current.event.qsstypes ) {
+                const qsstypes = this.current.event.qsstypes;
+                this.selected.type.synonymous_verbatim_open_book =
+                    ( qsstypes.indexOf('O') != -1 ) ? 'open_book'  :
+                    ( qsstypes.indexOf('S') != -1 ) ? 'synonymous' :
+                    ( qsstypes.indexOf('V') != -1 ) ? 'verbatim'   : '';
+                if ( qsstypes.indexOf('R') != -1 ) this.selected.type.with_reference = true;
+                if ( qsstypes.indexOf('A') != -1 ) this.selected.type.add_verse      = true;
+            }
+
+            this.selected.team_id    = this.current.event.team_id;
+            this.selected.quizzer_id = this.current.event.quizzer_id;
         },
 
         delete_last_action() {
             quiz.delete_last_action();
-            this._update_data();
+            update_data(this);
             this.save_quiz_data();
         },
 
@@ -148,12 +168,12 @@ export default Pinia.defineStore( 'quiz', {
         },
 
         is_quiz_done() {
-            return ( get_current_event() ) ? false : true;
+            return ( quiz.board_row() ) ? false : true;
         },
 
         exit_quiz() {
             document.location.href = new URL(
-                ( miscellaneous.meet_id ) ? '/meet/' + miscellaneous.meet_id : '/',
+                ( miscellaneous.meet_id ) ? '/meet/' + miscellaneous.meet_id : '/quiz/pickup',
                 url,
             );
         },

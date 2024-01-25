@@ -12,7 +12,7 @@ with 'Omniframe::Role::Model';
 sub freeze ( $self, $data ) {
     for ( qw( settings state ) ) {
         $data->{$_} = encode_json( $data->{$_} );
-        undef $data->{$_} if ( $data->{$_} eq '{}' );
+        undef $data->{$_} if ( $data->{$_} eq '{}' or $data->{$_} eq 'null' );
     }
 
     return $data;

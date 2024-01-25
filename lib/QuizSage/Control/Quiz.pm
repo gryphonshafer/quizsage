@@ -43,9 +43,9 @@ sub pickup ($self) {
         $user->data->{settings}{pickup_quiz} = $settings;
         $user->save;
 
-        return $self->redirect_to(
-            '/quiz/' . QuizSage::Model::Quiz->new->pickup( $settings, $user->id )->id
-        );
+        my $quiz_id = QuizSage::Model::Quiz->new->pickup( $settings, $user->id )->id;
+        $self->info('Pickup quiz generated: ' . $quiz_id );
+        return $self->redirect_to( '/quiz/' . $quiz_id );
     }
 }
 
@@ -72,7 +72,7 @@ sub teams ($self) {
         my $roster = [
             map {
                 my $name = $_;
-                grep { $name eq $_->{name} } $state->{roster}->@*;
+                grep { $name eq $_ } map { $_->{name} } $state->{roster}->@*;
             }
             grep { /\S/ } map { s/(^\s+|\s+$)//gr }
             split( /\r?\n/, $self->param('teams') )
@@ -88,15 +88,13 @@ sub teams ($self) {
             );
         }
 
-        for ( my $i = 0; $i < @$roster; $i++ ) {
-            $quiz->{roster}[$i] = { $quiz->{roster}[$i]->%*, $roster->[$i]->%* };
-        }
-        $meet->save;
-
         return $self->redirect_to(
             $self
                 ->url_for('/quiz/build')
-                ->query( map { $_ => $self->param($_) } qw( bracket meet quiz ) )
+                ->query(
+                    ( map { $_ => $self->param($_) } qw( bracket meet quiz ) ),
+                    ( map { ( team => $_ ) } @$roster ),
+                )
         );
     }
 }
@@ -118,17 +116,28 @@ sub build ($self) {
 
     my $settings = $meet->quiz_settings( $self->param('bracket'), $self->param('quiz') );
     unless ($settings) {
+        $self->notice('Quiz build failed');
         $self->flash( message => 'Quiz settings creation failed' );
         return $self->redirect_to( '/meet/' . $self->param('meet') );
     }
 
-    return $self->redirect_to( '/quiz/' . QuizSage::Model::Quiz->new->create({
+    $settings->{teams} = [
+        map {
+            my $team_name = $_;
+            grep { $_->{name} eq $team_name } $meet->data->{build}{roster}->@*
+        } $self->every_param('team')->@*
+    ];
+
+    my $quiz_id = QuizSage::Model::Quiz->new->create({
         meet_id  => $meet->id,
         user_id  => $self->stash('user')->id,
         bracket  => $self->param('bracket'),
         name     => $self->param('quiz'),
         settings => $settings,
-    })->id );
+    })->id;
+
+    $self->info( 'Quiz build: ' . $quiz_id );
+    return $self->redirect_to( '/quiz/' . $quiz_id );
 }
 
 sub quiz ($self) {
@@ -164,31 +173,13 @@ sub save ($self) {
 
 sub delete ($self) {
     my $quiz = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
-    my $meet = QuizSage::Model::Meet->new->load( $quiz->data->{meet_id} );
 
-    if ( $self->stash('user')->qm_auth($meet) ) {
-        my ($quiz_node) =
-            grep { $_->{name} eq $quiz->data->{name} }
-            map { map { $_->{rooms}->@* } $_->{sets}->@* }
-            grep { $_->{name} eq $quiz->data->{bracket} }
-            $meet->data->{build}{brackets}->@*;
-
-        delete $quiz_node->{id} if ( $quiz_node->{id} );
-        for my $team_node ( $quiz_node->{roster}->@* ) {
-            if (
-                $team_node->{name} and $team_node->{quizzers} and
-                $team_node->{position} and ( $team_node->{bracket} or $team_node->{quiz} )
-            ) {
-                delete $team_node->{name};
-                delete $team_node->{quizzers};
-            }
-        }
-
-        $meet->save;
+    if ( $self->stash('user')->qm_auth( $quiz->data->{meet_id} ) ) {
+        $self->info( 'Quiz delete: ' . $quiz->id );
         $quiz->delete;
     }
 
-    return $self->redirect_to( '/meet/' . $meet->id );
+    return $self->redirect_to( '/meet/' . $quiz->data->{meet_id} );
 }
 
 1;

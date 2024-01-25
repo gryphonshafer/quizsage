@@ -1,0 +1,21 @@
+<ul>
+    [% FOR team IN roster %]
+        <li>[%
+            IF team.name;
+                team.name;
+            ELSE;
+                '<i>';
+
+                PROCESS st_ing.html.tt position = team.position;
+
+                IF team.quiz;
+                    ' in ' _ team.quiz;
+                ELSE;
+                    ' of ' _ team.bracket;
+                END;
+
+                '</i>';
+            END;
+        %]</li>
+    [% END %]
+</ul>

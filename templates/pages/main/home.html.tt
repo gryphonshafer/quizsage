@@ -1,7 +1,7 @@
 <h1>QuizSage</h1>
 
 [% UNLESS user %]
-    <p><a href="[% c.url_for('/user/create') %]">Create New User</a></p>
+    <ul><li><a href="[% c.url_for('/user/create') %]">Create New User</a></li></ul>
 
     <form method="post" action="[% c.url_for('/user/login') %]">
         <fieldset>
@@ -20,16 +20,16 @@
         </fieldset>
     </form>
 
-    <p><a href="[% c.url_for('/user/forgot_password') %]">Forgot Password</a></p>
+    <ul><li><a href="[% c.url_for('/user/forgot_password') %]">Forgot Password</a></li></ul>
 [% ELSE %]
     <p>You're logged in, [% user.data.first_name %]. (<a href="[% c.url_for('/user/logout') %]">Logout</a>)</p>
 
-    <p><a href="[% c.url_for('/quiz/pickup') %]">Pick-Up Quiz</a></p>
+    <ul><li><a href="[% c.url_for('/quiz/pickup') %]">Pick-Up Quiz</a></li></ul>
 
     <h2>Active Seasons</h2>
 
     [% IF active_seasons.size > 0 %]
-        <p><a href="[% c.url_for('/meet/passwd') %]">Set Meet Officials' Password</a></p>
+        <ul><li><a href="[% c.url_for('/meet/passwd') %]">Set Meet Officials' Password</a></li></ul>
 
         [% FOR season IN active_seasons %]
             <h3>[% IF season.location %][% season.location %]: [% END %][% season.name %]</h3>

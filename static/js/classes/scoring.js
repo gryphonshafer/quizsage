@@ -30,6 +30,7 @@ export default class Scoring {
                 position     : 0,
                 first_correct: not_set,
                 first_trigger: not_set,
+                bonuses      : 0,
             };
             team.quizzers.forEach( quizzer => quizzer.score = {
                 points     : 0,

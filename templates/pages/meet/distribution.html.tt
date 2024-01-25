@@ -2,9 +2,10 @@
 
 <h1>QuizSage: [% page.title %]</h1>
 
-<p><a href="[% c.url_for('/') %]">Main Page</a></p>
-
-<p><a href="[% c.url_for( '/meet/' _ c.param('meet_id') ) %]">Meet Page</a></p>
+<ul>
+    <li><a href="[% c.url_for('/')                             %]">Main Page</a></li>
+    <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') ) %]">Meet Page</a></li>
+</ul>
 
 [% IF per_quiz.material %]<p>Material: [% per_quiz.material.label %]</p>[% END %]
 
@@ -18,7 +19,7 @@
             margin    : 1rem 0;
             padding   : 0 0.25rem;
         ">
-            Material: <b>[% bracket.material.label %]</b>
+            <b>Material:</b> [% bracket.material.label %]
         </div>
     [% END %]
 
