@@ -103,8 +103,25 @@ export default Pinia.defineStore( 'quiz', {
 
     actions: {
         replace_query() {
-            quiz.replace_query();
-            update_data(this);
+            try {
+                quiz.replace_query();
+                update_data(this);
+            }
+            catch (e) {
+                console.log(e);
+                if (
+                    e == 'Unable to select a verse from which to construct query' ||
+                    e == 'Unable to find phrase block from which to construct query'
+                ) {
+                    alert(
+                        'Unable to replace query, likely due to insufficient size of material.\n' +
+                        'Try exiting the quiz and expanding the material.'
+                    );
+                }
+                else {
+                    alert( 'Unexpected error occurred: ' + e + '.' );
+                }
+            }
         },
 
         action(
@@ -114,9 +131,27 @@ export default Pinia.defineStore( 'quiz', {
             qsstypes   = undefined,
             event_id   = undefined,
         ) {
-            quiz.action( action, team_id, quizzer_id, qsstypes, event_id );
-            update_data(this);
-            this.save_quiz_data();
+            try {
+                quiz.action( action, team_id, quizzer_id, qsstypes, event_id );
+                update_data(this);
+                this.save_quiz_data();
+            }
+            catch (e) {
+                console.log(e);
+                if (
+                    e == 'Unable to select a verse from which to construct query' ||
+                    e == 'Unable to find phrase block from which to construct query'
+                ) {
+                    alert(
+                        'Unable to create a query, likely due to insufficient size of material.\n' +
+                        'Try exiting the quiz and expanding the material.'
+                    );
+                    this.delete_last_action();
+                }
+                else {
+                    alert( 'Unexpected error occurred: ' + e + '.' );
+                }
+            }
         },
 
         alter_query(action) {

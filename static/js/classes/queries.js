@@ -129,19 +129,28 @@ export default class Queries {
     // }
 
     #select_verse( bible, type = 'not_xr', refs_filter = [] ) {
-        const verses = this.material.verses(bible).filter( verse =>
-            type != 'xr' &&
-            ! [ ...this.references_selected, ...refs_filter ].find(
-                reference => reference == verse.reference
-            ) ||
-            type == 'xr' &&
-            ! this.prompts_selected.find(
-                prompt => verse.string.match( '\\b' + prompt.join('\\W+') + '\\b' )
-            ) &&
-            ! refs_filter.find( reference => reference == verse.reference )
-        );
+        let verses;
+        let attempts = 0;
 
-        if ( verses.length == 0 ) throw 'Exhausted available verses';
+        while (true) {
+            attempts++;
+            if ( attempts > 2 ) throw 'Unable to select a verse from which to construct query';
+
+            verses = this.material.verses(bible).filter( verse =>
+                type != 'xr' &&
+                ! [ ...this.references_selected, ...refs_filter ].find(
+                    reference => reference == verse.reference
+                ) ||
+                type == 'xr' &&
+                ! this.prompts_selected.find(
+                    prompt => verse.string.match( '\\b' + prompt.join('\\W+') + '\\b' )
+                ) &&
+                ! refs_filter.find( reference => reference == verse.reference )
+            );
+
+            if ( verses.length > 0 ) break;
+            this.reset();
+        }
 
         return structuredClone( verses[ Math.floor( Math.random() * verses.length ) ] );
     }
@@ -177,24 +186,34 @@ export default class Queries {
             ? Object.values(min_prompt).reduce( ( a, b ) => a + b, 0 )
             : min_prompt;
 
+        let reset_count = 0;
+
         while (true) {
             let verse;
             let phrase_start;
 
             while ( ! verse ) {
                 let verse_candidate;
+
                 try {
                     verse_candidate = this.#select_verse( bible, type, refs_filter );
                 }
                 catch (e) {
                     // if #select_verse can't select a verse, then clear
                     // selected references, prompts, and filters and try again
+                    // but increment reset count so we'll stop after 3 resets
+
+                    reset_count++;
 
                     refs_filter = [];
                     this.reset();
 
                     verse_candidate = this.#select_verse( bible, type, refs_filter );
                 }
+
+                if ( reset_count >= 3 )
+                    throw 'Unable to find phrase block from which to construct query';
+
                 refs_filter.push( verse_candidate.reference );
 
                 let offset = 0;
