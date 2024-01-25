@@ -30,17 +30,8 @@
                         <td style="background-color: #f0f0f0"></td>
                     [% END %]
                     <td>
-                        [%
-                            IF rank.position == 1;
-                                '1st';
-                            ELSIF rank.position == 2;
-                                '2nd';
-                            ELSIF rank.position == 3;
-                                '3rd';
-                            ELSE;
-                                rank.position _ 'th';
-                            END;
-                        %] in [% rank.quiz %]
+                        [% PROCESS st_ing.html.tt position = rank.position %]
+                        in [% rank.quiz %]
                     </td>
                 </tr>
             [% END %]
@@ -100,17 +91,7 @@
                             [% quiz.points %] pts. <i>(at [% quiz.weight %])</i>
                             <br>
                             [% IF quiz.position %]
-                                [%
-                                    IF quiz.position == 1;
-                                        '1st';
-                                    ELSIF quiz.position == 2;
-                                        '2nd';
-                                    ELSIF quiz.position == 3;
-                                        '3rd';
-                                    ELSE;
-                                        quiz.position _ 'th';
-                                    END;
-                                %]
+                                [% PROCESS st_ing.html.tt position = quiz.position %]
                             [% END %]
                             [%
                                 ( quiz.bracket.length > 6 ) ? quiz.bracket.substr( 0, 6 ) _ '.' : quiz.bracket

@@ -6,15 +6,7 @@
             ELSE;
                 '<i>';
 
-                IF team.position == 1;
-                    '1st';
-                ELSIF team.position == 2;
-                    '2nd';
-                ELSIF team.position == 3;
-                    '3rd';
-                ELSE;
-                    team.position _ 'th';
-                END;
+                PROCESS st_ing.html.tt position = team.position;
 
                 IF team.quiz;
                     ' in ' _ team.quiz;

@@ -21,7 +21,7 @@ sub freeze ( $self, $data ) {
     if ( $self->is_dirty( 'email', $data ) or not exists $data->{email} ) {
         my ($address) = Email::Address->parse( $data->{email} );
         croak('Email not provided properly') unless ($address);
-        $data->{email} = $address->address;
+        $data->{email} = lc $address->address;
     }
 
     if ( $self->is_dirty( 'passwd', $data ) ) {
@@ -30,8 +30,13 @@ sub freeze ( $self, $data ) {
         $data->{passwd} = $self->bcrypt( $data->{passwd} );
     }
 
+    if ( $self->is_dirty( 'phone', $data ) ) {
+        $data->{phone} =~ s/\D+//g;
+        croak('Phone supplied is not at least 10 digits in length') unless ( length $data->{phone} >= 10 );
+    }
+
     $data->{settings} = encode_json( $data->{settings} );
-    undef $data->{settings} if ( $data->{settings} eq '{}' );
+    undef $data->{settings} if ( $data->{settings} eq '{}' or $data->{settings} eq 'null' );
 
     return $data;
 }
@@ -82,7 +87,7 @@ sub reset_password ( $self, $user_id, $user_hash, $new_password ) {
 
 sub login ( $self, $email, $passwd ) {
     $self->load({
-        email  => $email,
+        email  => lc($email),
         passwd => $self->bcrypt($passwd),
         active => 1,
     });

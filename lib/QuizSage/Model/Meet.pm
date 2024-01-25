@@ -27,7 +27,7 @@ sub freeze ( $self, $data ) {
 
     for ( qw( settings build ) ) {
         $data->{$_} = encode_json( $data->{$_} );
-        undef $data->{$_} if ( $data->{$_} eq '{}' );
+        undef $data->{$_} if ( $data->{$_} eq '{}' or $data->{$_} eq 'null' );
     }
 
     return $data;
@@ -215,10 +215,10 @@ sub stats ($self) {
 
                     for my $quizzer ( $team->{quizzers}->@* ) {
                         push( @{ $stats->{quizzers}{ $quizzer->{name} } }, {
-                            bracket  => $bracket->{name},
-                            name     => $quiz->{name},
-                            weight   => $quiz->{weight} // $bracket->{weight} // 1,
-                            points   => $quizzer->{score}{points},
+                            bracket => $bracket->{name},
+                            name    => $quiz->{name},
+                            weight  => $quiz->{weight} // $bracket->{weight} // 1,
+                            points  => $quizzer->{score}{points},
                         } );
                     }
                 }
@@ -251,11 +251,12 @@ sub stats ($self) {
 
                 if ( $type eq 'quizzers' ) {
                     my $name = $_;
+
                     my ($team) = grep {
                         my ($quizzer) = grep { $_->{name} eq $name } $_->{quizzers}->@*;
-                        $stat->{tags} //= $quizzer->{tags};
-                        $quizzer;
+                        $stat->{tags} //= $quizzer->{tags} if ($quizzer);
                     } $build->{roster}->@*;
+
                     $stat->{team_name} = $team->{name};
                 }
 

@@ -18,7 +18,7 @@ sub freeze ( $self, $data ) {
         if ( $self->is_dirty( 'start', $data ) );
 
     $data->{settings} = encode_json( $data->{settings} );
-    undef $data->{settings} if ( $data->{settings} eq '{}' );
+    undef $data->{settings} if ( $data->{settings} eq '{}' or $data->{settings} eq 'null' );
 
     return $data;
 }
