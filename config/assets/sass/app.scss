@@ -55,6 +55,71 @@ div#quiz {
         padding: 0.05em 0.3em;
     }
 
+    div.thesaurus {
+        ul {
+            margin: 0 0 0 1em;
+        }
+
+        li {
+            list-style : none;
+        }
+
+        & > ul {
+            margin: 0;
+        }
+
+        & > ul > li:not(:first-child) {
+            margin-top: 1em;
+        }
+
+        span {
+            &.word {
+                font-weight    : bold;
+                text-decoration: underline;
+            }
+
+            &.required {
+                color: blue;
+            }
+
+            &.ignored {
+                font-style: italic;
+                color     : green;
+            }
+
+            &.item {
+                position: relative;
+            }
+
+            &.item div.details {
+                font-style      : normal;
+                color           : black;
+                display         : none;
+                position        : absolute;
+                top             : 100%;
+                left            : 0;
+                z-index         : 1;
+                border          : 1px solid colors.$lines;
+                background-color: white;
+                padding         : 0 0.2em;
+                transform       : translate( 0.5em, 0 );
+                width           : 30em;
+                max-height      : 20em;
+                overflow-y      : auto;
+            }
+
+            @media ( max-width: 48em ) {
+                &.item div.details {
+                    width: 16em;
+                }
+            }
+
+            &.item:hover div.details {
+                display: block;
+            }
+        }
+    }
+
     div.timer {
         float       : left;
         margin-right: 1em;
@@ -76,37 +141,6 @@ div#quiz {
             position: absolute;
             top     : 4em;
             left    : 0;
-        }
-    }
-
-    div.thesaurus {
-        height       : 200px;
-        overflow-y   : scroll;
-        margin-bottom: 1em;
-
-        border          : 1px solid colors.$lines;
-        background-color: white;
-        padding         : 0.2em 0.4em;
-
-        span.word {
-            font-weight     : bold;
-            text-decoration : underline;
-        }
-
-        ul {
-            margin: 0 0 0 1em;
-        }
-
-        li {
-            list-style : none;
-        }
-
-        & > ul {
-            margin: 0;
-        }
-
-        & > ul > li:not(:first-child) {
-            margin-top: 1em;
         }
     }
 
@@ -185,8 +219,6 @@ div#quiz {
     }
 
     div.search {
-        margin-top: 1em;
-
         label {
             margin-left: 0.5em;
         }

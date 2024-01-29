@@ -200,8 +200,7 @@ export default class Material {
     // given a verse reference, return the synonyms at or above a given verity
     synonyms_of_verse( book, chapter, verse, bible = undefined ) {
         bible ||= this.current_bible();
-
-        return [ ...new Set(
+            return [ ...new Set(
             this.verses_by_bible[bible].find( this_verse =>
                 this_verse.book    == book    &&
                 this_verse.chapter == chapter &&
@@ -210,21 +209,58 @@ export default class Material {
         ) ].map( word => this.synonyms_of_word(word) ).filter( set => set );
     }
 
-    // return multi-bible set of data given an object with book chapter, verse
-    // (verse can be "5", "5-6", or "5-2:1")
-    materials(ref_obj) {
+    detailed_text(text) {
+        return text.split(/(\s+|\-{2,})/)
+            .flatMap( part => {
+                const match = part.match(/^(\W+)(.+?)(\W+)$|^(.+?)(\W+)$|^(\W+)(.+?)$/)
+                return (match)
+                    ? match.slice( 1, match.length ).filter( element => typeof element !== 'undefined' )
+                    : part;
+            } )
+            .map( string => {
+                const node = { text: string, types: [] };
+
+                if ( string.match(/^\w+/) ) {
+                    const synonyms = this.synonyms_of_word(string);
+
+                    if ( typeof synonyms !== 'undefined' ) {
+                        node.thesaurus = synonyms;
+
+                        if (
+                            synonyms.meanings.find(
+                                block => this.ignored_types.find( type => type == block.type )
+                            )
+                        ) node.types.push('ignored');
+                    }
+                    else {
+                        node.types.push('required');
+                    }
+                }
+
+                return node;
+            } );
+    }
+
+    // return multi-bible set of data given an object with book, chapter, and
+    // verse (where verse can be "5", "5-6", or "5-2:1") plus...
+    // generate the "detailed" data trees as follows:
+    //     this.text          => this.detailed_text
+    //     ref_obj.prompt     => ref_obj.detailed_prompt
+    //     ref_obj.reply      => ref_obj.detailed_reply
+    //     ref_obj.full_reply => ref_obj.detailed_full_reply
+    materials(query) {
         const ref_objs = [ {
-            book   : ref_obj.book,
-            chapter: ref_obj.chapter,
-            verse  : ref_obj.verse,
+            book   : query.book,
+            chapter: query.chapter,
+            verse  : query.verse,
         } ];
 
-        if ( String( ref_obj.verse ).indexOf('+') != -1 ) {
-            const dash_split = ref_obj.verse.split('+');
+        if ( String( query.verse ).indexOf('+') != -1 ) {
+            const dash_split = query.verse.split('+');
             ref_objs.push( { ...ref_objs[0] } );
             ref_objs[0].verse = dash_split[0];
 
-            if ( String( ref_obj.verse ).indexOf(':') == -1 ) {
+            if ( String( query.verse ).indexOf(':') == -1 ) {
                 ref_objs[1].verse = dash_split[1];
             }
             else {
@@ -234,16 +270,20 @@ export default class Material {
             }
         }
 
+        query.detailed_prompt     = this.detailed_text( query.prompt     );
+        query.detailed_reply      = this.detailed_text( query.reply      );
+        query.detailed_full_reply = this.detailed_text( query.full_reply );
+
         return Object.keys( this.data.bibles ).map( bible => {
-            const verses_data = ref_objs.map( this_ref_obj => {
+            const verses_data = ref_objs.map( this_query => {
                 const verse = this.data.bibles[bible].content[
-                    this_ref_obj.book + ' ' + this_ref_obj.chapter + ':' + this_ref_obj.verse
+                    this_query.book + ' ' + this_query.chapter + ':' + this_query.verse
                 ];
 
                 return {
-                    text     : verse.text,
-                    words    : verse.words,
-                    thesaurus: this.synonyms_of_verse(
+                    text          : verse.text,
+                    detailed_text : this.detailed_text( verse.text ),
+                    thesaurus     : this.synonyms_of_verse(
                         verse.book,
                         verse.chapter,
                         verse.verse,
@@ -252,11 +292,14 @@ export default class Material {
                 };
             } );
 
+            let detailed_text = verses_data.map( item => item.detailed_text );
+            if ( detailed_text.length > 1 ) detailed_text.splice( 1, 0, { text: ' ', types: [] } );
+
             return {
-                text     : verses_data.map( item => item.text      ).join(' '),
-                words    : verses_data.map( item => item.words     ).flat(),
-                thesaurus: verses_data.map( item => item.thesaurus ).flat(),
-                bible    : {
+                text         : verses_data.map( item => item.text ).join(' '),
+                detailed_text: detailed_text.flat(),
+                thesaurus    : verses_data.flatMap( item => item.thesaurus ),
+                bible        : {
                     name: bible,
                     type: this.data.bibles[bible].type,
                 },

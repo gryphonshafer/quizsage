@@ -12,6 +12,7 @@ importmap:
     vue/components/material: vue/components/material
     vue/components/query: vue/components/query
     vue/components/search: vue/components/search
+    vue/components/thesaurus: vue/components/thesaurus
     vue/components/timer: vue/components/timer
     vue/stores/quiz: vue/stores/quiz
 roster:

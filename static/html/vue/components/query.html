@@ -14,11 +14,13 @@
         Ready. Begin.
     </p>
 
-    <p class="prompt">{{ current.query.prompt }}</p>
+    <p class="prompt">
+        <thesaurus type="prompt"></thesaurus>
+    </p>
 
     <p class="reply">
         <template v-if="current.event.type != 'X'">
-            {{ current.query.reply }}
+            <thesaurus type="reply"></thesaurus>
         </template>
         <template v-else>
             <span v-for="reference in current.query.references">{{ reference }}</span>

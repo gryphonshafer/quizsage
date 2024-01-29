@@ -1,0 +1,28 @@
+<div class="thesaurus">
+    <span v-for="item in items" :class="[ ...item.types, 'item' ]"
+        >{{ item.text }}<div v-if="item.thesaurus" class="details">
+            <span class="word">{{ item.thesaurus.word }}</span>
+            <ul>
+                <li v-for="meaning in item.thesaurus.meanings">
+                    <i>
+                        {{ meaning.type }}
+                        <template v-if="! meaning.ignored">
+                            <b>{{ meaning.word }}</b>
+                        </template>
+                        <template v-else>
+                            ignored ({{ meaning.word }})
+                        </template>
+                    </i>
+
+                    <ul v-if="! meaning.ignored">
+                        <li v-for="
+                            set in meaning.synonyms
+                                .sort( ( a, b ) => b.verity - a.verity )
+                        ">
+                            {{ set.verity }}: {{ set.words.join(', ') }}
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div></span>
+</div>
