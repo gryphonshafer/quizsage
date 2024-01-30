@@ -1,21 +1,18 @@
 #!/usr/bin/env perl
 use exact -cli, -conf;
-use Mojo::JSON qw( encode_json decode_json );
+use Mojo::JSON 'encode_json';
 use Mojo::UserAgent;
+use Mojo::Util 'trim';
 use Omniframe;
 use QuizSage::Util::Material 'text2words';
 
 my $opt = options( qw{ sleep|s=i estimate|e } );
 $opt->{sleep} //= 4;
 
-my $dq        = Omniframe->with_roles('+Database')->new->dq('material');
-my $ua        = Mojo::UserAgent->new( max_redirects => 3 );
-my $relevance = {
-    'css-1kg1yv8 eh475bn0' => 1,
-    'css-1gyuw4i eh475bn0' => 2,
-    'css-1n6g4vv eh475bn0' => 3,
-};
+my $dq = Omniframe->with_roles('+Database')->new->dq('material');
+my $ua = Mojo::UserAgent->new( max_redirects => 3 );
 
+say 'Determining words to thesaurusize...';
 my %words     = map { map { $_ => 1 } @{ text2words($_) } } $dq->sql('SELECT text FROM verse')->run->column;
 my @words_pre = @{ $dq->sql('SELECT text FROM word')->run->column };
 my @words_to  = grep {
@@ -42,75 +39,84 @@ if ( $opt->{estimate} ) {
     exit;
 }
 
-my $insert_word    = $dq->prepare('INSERT INTO word (text) VALUES (?)');
-my $select_word_id = $dq->prepare('SELECT word_id FROM word WHERE text = ?');
+my $insert_text          = $dq->prepare_cached('INSERT INTO word (text) VALUES (?)');
+my $insert_text_meanings = $dq->prepare_cached('INSERT INTO word ( text, meanings ) VALUES ( ?, ? )');
+my $select_word_id       = $dq->prepare_cached('SELECT word_id FROM word WHERE text = ?');
+my $insert_id_text       = $dq->prepare_cached('INSERT INTO word ( redirect_id, text ) VALUES ( ?, ? )');
 
+say 'Beginning thesaurusization...';
 for ( my $i = 0; $i < @words_to; $i++ ) {
     my $word = $words_to[$i];
-    my $dom  = $ua->get( 'https://www.thesaurus.com/browse/' . $word )->result->dom;
+    ( my $term = $word ) =~ s/'s?$//;
 
-    $dq->begin_work;
+    my $dom;
+    my $try_dom = sub ($term) {
+        sleep $opt->{sleep};
+        my $_dom = $ua->get( 'https://www.thesaurus.com/browse/' . $term )->result->dom;
+        return undef if ( $_dom->at('h1')->text =~ /\b0 results\b/ );
+        return $dom = $_dom;
+    };
 
-    $insert_word->bind_param( 1, $word, 12 );
-    $insert_word->execute;
-    my $word_id = $insert_word->last_insert_id;
-
-    if ( $dom->at('div#headword') ) {
-        my $target_word = $dom->at('h1')->text;
-        if ( $word ne $target_word ) { # word results in a redirect
-            $select_word_id->bind_param( 1, $target_word, 12 );
-            $select_word_id->execute;
-            my ($target_word_id) = $select_word_id->fetchrow_array;
-
-            unless ($target_word_id) {
-                $insert_word->bind_param( 1, $target_word, 12 );
-                $insert_word->execute;
-                $target_word_id = $insert_word->last_insert_id;
-                @words_to = grep { $_ ne $target_word } @words_to;
+    $try_dom->($term);
+    if ( not $dom ) {
+        if ( $term =~ /e(?:d|s)$/ ) {
+            $term =~ s/(?:d|s)$//;
+            $try_dom->($term);
+            if ( not $dom ) {
+                $term =~ s/e$//;
+                $try_dom->($term);
             }
-
-            $dq->sql('UPDATE word SET redirect_id = ? WHERE word_id = ?')->run( $target_word_id, $word_id );
-            $word_id = $target_word_id;
         }
-
-        my $headwords = $dom->find('div#headword li a')->map( sub { +{
-            meaning => $_->at('strong')->text,
-            type    => $_->at('em')->text,
-        } } )->to_array;
-
-        my $meanings = $dom
-            ->find('div#meanings ul, div#meanings ~ ul')
-            ->head( scalar @$headwords )
-            ->map( sub {
-                my $meaning = shift @$headwords;
-                $meaning->{synonyms} = $_->find('a')->map( sub {
-                    ( my $word = $_->text ) =~ s/(^\s+|\s+$)//g;
-                    +{
-                        word      => $word,
-                        relevance => $relevance->{ $_->attr('class') },
-                    };
-                } )->to_array;
-                $meaning;
-            } )->to_array;
-
-        for (@$meanings) {
-            $_->{word} = delete $_->{meaning};
-
-            my $by_verity;
-            push( @{ $by_verity->{ $_->{relevance} } }, $_->{word} ) for ( @{ $_->{synonyms} } );
-
-            $_->{synonyms} = [
-                map { +{
-                    verity => $_,
-                    words  => $by_verity->{$_},
-                } } sort { $a <=> $b } keys %$by_verity
-            ];
+        elsif ( $term =~ s/ing$// or $term =~ s/ies$/y/ or $term =~ s/s$// ) {
+            $try_dom->($term);
+            if ( not $dom ) {
+                $term =~ s/ing$//;
+                $try_dom->($term);
+            }
         }
-
-        $dq->sql('UPDATE word SET meanings = ? WHERE word_id = ?')->run( encode_json($meanings), $word_id );
     }
 
-    $dq->commit;
+    if ( not $dom ) {
+        $insert_text->run($word);
+    }
+    else {
+        my $text = $dom->at('h1')->text;
+
+        my $meanings = $dom->find(
+            'section[data-type="synonym-antonym-module"] ' .
+            'div[data-type="synonym-and-antonym-card"]'
+        )->map( sub ($card) {
+            my $card_head = $card->at('p');
+            +{
+                word     => trim( $card_head->at('strong')->text ),
+                type     => trim( $card_head->text ),
+                synonyms => $card->find('div > div > div > p')->map( sub ($synonym) { +{
+                    words => [
+                        grep {
+                            my $match = lc $_;
+                            not grep { $_ eq $match } qw( hir sie ve ver vis xe xem xyr ze zie zir );
+                        }
+                        $synonym->parent->find('li a')->map('text')->to_array->@*
+                    ],
+                    verity =>
+                        ( $synonym->text =~ /Strongest/ ) ? 3 :
+                        ( $synonym->text =~ /Strong/    ) ? 2 :
+                        ( $synonym->text =~ /Weak/      ) ? 1 : 0,
+                } } )->to_array,
+            };
+        } )->to_array;
+
+        $dq->begin_work;
+
+        $insert_text_meanings->run( $text, encode_json $meanings );
+
+        if ( $word ne $text ) {
+            my $id = $select_word_id->run($text)->value;
+            $insert_id_text->run( $id, $word );
+        }
+
+        $dq->commit;
+    }
 
     my $items_completed   = $i + 1;
     my $seconds_remaining = int( ( time - $start ) / $items_completed * ( $total - $items_completed ) );
@@ -126,9 +132,7 @@ for ( my $i = 0; $i < @words_to; $i++ ) {
         $hours,
         $minutes,
         $seconds,
-        $word;
-
-    sleep $opt->{sleep};
+        $term;
 }
 
 =head1 NAME
