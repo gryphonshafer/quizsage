@@ -1,7 +1,8 @@
 export default class Material {
     static default_settings = {
         minimum_verity: 3,
-        ignored_types : [ 'pron.', 'article', 'prep.' ],
+        ignored_types : [ 'article', 'prep.' ],
+        special_types : ['pron.'],
     };
 
     constructor ( inputs = { material: {} } ) {
@@ -188,7 +189,11 @@ export default class Material {
 
         entry
             .filter( block => this.ignored_types.find( type => type == block.type ) )
-            .forEach( block => block.ignored  = true );
+            .forEach( block => block.ignored = true );
+
+        entry
+            .filter( block => this.special_types.find( type => type == block.type ) )
+            .forEach( block => block.special = true );
 
         entry.forEach( range =>
             range.synonyms = range.synonyms.filter( synonym => synonym.verity <= this.minimum_verity )
@@ -231,6 +236,12 @@ export default class Material {
                                 block => this.ignored_types.find( type => type == block.type )
                             )
                         ) node.types.push('ignored');
+
+                        if (
+                            synonyms.meanings.find(
+                                block => this.special_types.find( type => type == block.type )
+                            )
+                        ) node.types.push('special');
                     }
                     else {
                         node.types.push('required');

@@ -87,6 +87,10 @@ div#quiz {
                 color     : green;
             }
 
+            &.special {
+                color: red;
+            }
+
             &.item {
                 position: relative;
             }

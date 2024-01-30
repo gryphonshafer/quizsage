@@ -23,10 +23,11 @@ roster:
 inputs:
     material:
         ignored_types:
-            - pron.
             - article
             - prep.
         minimum_verity: 3
+        special_types:
+            - pron.
     queries:
         chapter_reference_minimum_prompt_length:
             additional: 4
