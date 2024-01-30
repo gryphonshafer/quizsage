@@ -281,7 +281,7 @@ export default class Material {
             }
         }
 
-        query.detailed_prompt     = this.detailed_text( query.prompt     );
+        if ( query.prompt ) query.detailed_prompt = this.detailed_text( query.prompt );
         query.detailed_reply      = this.detailed_text( query.reply      );
         query.detailed_full_reply = this.detailed_text( query.full_reply );
 

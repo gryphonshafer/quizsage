@@ -74,20 +74,20 @@ export default class Queries {
             this.chapter_reference_minimum_prompt_length,
             this.chapter_reference_minimum_reply_length,
         ) );
-        block.prompt = `From ${ block.book }, chapter ${ block.chapter }: ${ block.prompt }`;
+        block.pre_prompt = `From ${ block.book }, chapter ${ block.chapter }: `;
         return block;
     }
 
     create_quote(bible) {
         const verse = this.#select_verse(bible);
-
-        return this.#prep_return_data({
+        const block = this.#prep_return_data({
             type      : 'Q',
-            prompt    : `Quote ${verse.book}, chapter ${verse.chapter}, verse ${verse.verse}.`,
             reply     : verse.text,
             full_reply: verse.text,
             verse     : verse,
         });
+        block.pre_prompt = `Quote ${verse.book}, chapter ${verse.chapter}, verse ${verse.verse}.`;
+        return block;
     }
 
     create_finish(bible) {
