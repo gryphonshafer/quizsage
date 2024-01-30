@@ -13,12 +13,20 @@ my $dq = Omniframe->with_roles('+Database')->new->dq('material');
 my $ua = Mojo::UserAgent->new( max_redirects => 3 );
 
 say 'Determining words to thesaurusize...';
-my %words     = map { map { $_ => 1 } @{ text2words($_) } } $dq->sql('SELECT text FROM verse')->run->column;
+my %words =
+    map { map { $_ => length $_ } @{ text2words($_) } }
+    $dq->sql('SELECT text FROM verse')->run->column;
 my @words_pre = @{ $dq->sql('SELECT text FROM word')->run->column };
-my @words_to  = grep {
-    my $word = $_;
-    not grep { $word eq $_ } @words_pre;
-} keys %words;
+my @words_to  =
+    grep {
+        my $word = $_;
+        not grep { $word eq $_ } @words_pre;
+    }
+    sort {
+        $words{$a} <=> $words{$b} or
+        $a cmp $b
+    }
+    keys %words;
 
 my ( $start, $total ) = ( time, scalar(@words_to) );
 
@@ -51,28 +59,39 @@ for ( my $i = 0; $i < @words_to; $i++ ) {
 
     my $dom;
     my $try_dom = sub ($term) {
+        return unless $term;
         sleep $opt->{sleep};
-        my $_dom = $ua->get( 'https://www.thesaurus.com/browse/' . $term )->result->dom;
+
+        my ( $_dom, $attempts );
+        while ( not $_dom ) {
+            say "DOM attempt $attempts..." if ( ++$attempts > 1 );
+
+            try {
+                $_dom = $ua->get( 'https://www.thesaurus.com/browse/' . $term )->result->dom;
+            }
+            catch ($e) {
+                die $e unless ( $e =~ /Inactivity timeout/ );
+            }
+        }
+
+        die "Unable to find H1 for $word ($term)" unless ( $_dom->at('h1') );
         return undef if ( $_dom->at('h1')->text =~ /\b0 results\b/ );
         return $dom = $_dom;
     };
 
     $try_dom->($term);
     if ( not $dom ) {
-        if ( $term =~ /e(?:d|s)$/ ) {
-            $term =~ s/(?:d|s)$//;
+        if ( $term =~ s/ing$// or $term =~ s/ies$/y/ or $term =~ s/(?<!e)s$// ) {
             $try_dom->($term);
-            if ( not $dom ) {
-                $term =~ s/e$//;
-                $try_dom->($term);
-            }
+            $try_dom->($term) if ( not $dom and $term =~ s/ing$// );
         }
-        elsif ( $term =~ s/ing$// or $term =~ s/ies$/y/ or $term =~ s/s$// ) {
+        elsif ( $term =~ s/ed$// ) {
             $try_dom->($term);
-            if ( not $dom ) {
-                $term =~ s/ing$//;
-                $try_dom->($term);
-            }
+        }
+        elsif ( $term =~ /es$/ ) {
+            $term =~ s/s$//;
+            $try_dom->($term);
+            $try_dom->($term) if ( not $dom and $term =~ s/e$// );
         }
     }
 
@@ -108,7 +127,12 @@ for ( my $i = 0; $i < @words_to; $i++ ) {
 
         $dq->begin_work;
 
-        $insert_text_meanings->run( $text, encode_json $meanings );
+        try {
+            $insert_text_meanings->run( $text, encode_json $meanings );
+        }
+        catch ($e) {
+            die $e unless ( $e =~ /DBD::SQLite::st execute failed: UNIQUE constraint failed/ );
+        }
 
         if ( $word ne $text ) {
             my $id = $select_word_id->run($text)->value;
@@ -132,7 +156,7 @@ for ( my $i = 0; $i < @words_to; $i++ ) {
         $hours,
         $minutes,
         $seconds,
-        $term;
+        $word;
 }
 
 =head1 NAME
