@@ -85,13 +85,19 @@ for ( my $i = 0; $i < @words_to; $i++ ) {
             $try_dom->($term);
             $try_dom->($term) if ( not $dom and $term =~ s/ing$// );
         }
-        elsif ( $term =~ s/ed$// ) {
+        elsif ( $term =~ /ed$/ ) {
+            $term =~ s/d$//;
             $try_dom->($term);
+            $try_dom->($term) if ( not $dom and $term =~ s/e$// );
         }
         elsif ( $term =~ /es$/ ) {
             $term =~ s/s$//;
             $try_dom->($term);
             $try_dom->($term) if ( not $dom and $term =~ s/e$// );
+        }
+        elsif ( $term =~ s/ly$// ) {
+            $try_dom->($term);
+            $try_dom->($term) if ( not $dom and $term =~ s/(?:ed|ing)$// );
         }
     }
 
@@ -158,6 +164,20 @@ for ( my $i = 0; $i < @words_to; $i++ ) {
         $seconds,
         $word;
 }
+
+my $update_meanings = $dq->prepare_cached('UPDATE word SET meanings = ? WHERE text = ?');
+$dq->begin_work;
+$update_meanings->run( $_->[1], $_->[0] ) for (
+    [ 'what',     '[{"synonyms":[],"type":"pronoun","word":"interrogative pronoun"}]'               ],
+    [ 'whom',     '[{"synonyms":[],"type":"pronoun","word":"objective case of who"}]'               ],
+    [ 'whose',    '[{"synonyms":[],"type":"pronoun","word":"possessive case of who or which"}]'     ],
+    [ 'himself',  '[{"synonyms":[],"type":"pronoun","word":"emphatic appositive of him or he"}]'    ],
+    [ 'herself',  '[{"synonyms":[],"type":"pronoun","word":"emphatic appositive of her or she"}]'   ],
+    [ 'itself',   '[{"synonyms":[],"type":"pronoun","word":"reflexive form of it"}]'                ],
+    [ 'thyself',  '[{"synonyms":[],"type":"pronoun","word":"emphatic appositive to thou or thee"}]' ],
+    [ 'yourself', '[{"synonyms":[],"type":"pronoun","word":"emphatic appositive of you"}]'          ],
+);
+$dq->commit;
 
 =head1 NAME
 

@@ -24,10 +24,10 @@ inputs:
     material:
         ignored_types:
             - article
-            - prep.
+            - preposition
         minimum_verity: 3
         special_types:
-            - pron.
+            - pronoun
     queries:
         chapter_reference_minimum_prompt_length:
             additional: 4

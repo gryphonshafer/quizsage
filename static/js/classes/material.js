@@ -1,8 +1,8 @@
 export default class Material {
     static default_settings = {
         minimum_verity: 3,
-        ignored_types : [ 'article', 'prep.' ],
-        special_types : ['pron.'],
+        ignored_types : [ 'article', 'preposition' ],
+        special_types : ['pronoun'],
     };
 
     constructor ( inputs = { material: {} } ) {
