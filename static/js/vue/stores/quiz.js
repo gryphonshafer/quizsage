@@ -36,9 +36,9 @@ function get_current( id = undefined ) {
     const row = quiz.board_row(id);
     return (row)
         ? {
-            event    : row,
-            query    : row.query,
-            materials: quiz.queries.material.materials( row.query ),
+            event: row,
+            query: row.query,
+            ...quiz.queries.material.materials( row.query ),
         }
         : undefined;
 }

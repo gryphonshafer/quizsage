@@ -11,7 +11,7 @@ export default {
 
         items() {
             return ( this.type != 'text' )
-                ? this.current.query[ 'detailed_' + this.type ]
+                ? this.current.details[ this.type ]
                 : this.current.materials
                     .find( material => material.bible.name == this.selected.bible )
                     .detailed_text;

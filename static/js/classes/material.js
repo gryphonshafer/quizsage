@@ -281,40 +281,44 @@ export default class Material {
             }
         }
 
-        if ( query.prompt ) query.detailed_prompt = this.detailed_text( query.prompt );
-        query.detailed_reply      = this.detailed_text( query.reply      );
-        query.detailed_full_reply = this.detailed_text( query.full_reply );
+        const details = {};
+        if ( query.prompt ) details.prompt = this.detailed_text( query.prompt );
+        details.reply      = this.detailed_text( query.reply      );
+        details.full_reply = this.detailed_text( query.full_reply );
 
-        return Object.keys( this.data.bibles ).map( bible => {
-            const verses_data = ref_objs.map( this_query => {
-                const verse = this.data.bibles[bible].content[
-                    this_query.book + ' ' + this_query.chapter + ':' + this_query.verse
-                ];
+        return {
+            details  : details,
+            materials: Object.keys( this.data.bibles ).map( bible => {
+                const verses_data = ref_objs.map( this_query => {
+                    const verse = this.data.bibles[bible].content[
+                        this_query.book + ' ' + this_query.chapter + ':' + this_query.verse
+                    ];
+
+                    return {
+                        text          : verse.text,
+                        detailed_text : this.detailed_text( verse.text ),
+                        thesaurus     : this.synonyms_of_verse(
+                            verse.book,
+                            verse.chapter,
+                            verse.verse,
+                            verse.bible,
+                        ),
+                    };
+                } );
+
+                let detailed_text = verses_data.map( item => item.detailed_text );
+                if ( detailed_text.length > 1 ) detailed_text.splice( 1, 0, { text: ' ', types: [] } );
 
                 return {
-                    text          : verse.text,
-                    detailed_text : this.detailed_text( verse.text ),
-                    thesaurus     : this.synonyms_of_verse(
-                        verse.book,
-                        verse.chapter,
-                        verse.verse,
-                        verse.bible,
-                    ),
+                    text         : verses_data.map( item => item.text ).join(' '),
+                    detailed_text: detailed_text.flat(),
+                    thesaurus    : verses_data.flatMap( item => item.thesaurus ),
+                    bible        : {
+                        name: bible,
+                        type: this.data.bibles[bible].type,
+                    },
                 };
-            } );
-
-            let detailed_text = verses_data.map( item => item.detailed_text );
-            if ( detailed_text.length > 1 ) detailed_text.splice( 1, 0, { text: ' ', types: [] } );
-
-            return {
-                text         : verses_data.map( item => item.text ).join(' '),
-                detailed_text: detailed_text.flat(),
-                thesaurus    : verses_data.flatMap( item => item.thesaurus ),
-                bible        : {
-                    name: bible,
-                    type: this.data.bibles[bible].type,
-                },
-            };
-        } );
+            } ),
+        };
     }
 }
