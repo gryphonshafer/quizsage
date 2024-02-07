@@ -5,9 +5,8 @@ use Mojo::JSON qw( encode_json decode_json );
 use Omniframe::Class::Javascript;
 use QuizSage::Model::Meet;
 use QuizSage::Util::Material 'material_json';
-use YAML::XS 'LoadFile';
 
-with 'Omniframe::Role::Model';
+with qw( Omniframe::Role::Model QuizSage::Role::JSApp );
 
 sub freeze ( $self, $data ) {
     for ( qw( settings state ) ) {
@@ -26,14 +25,15 @@ sub thaw ( $self, $data ) {
 }
 
 sub pickup ( $self, $pickup_settings, $user_id ) {
-    my $root_dir      = $self->conf->get( qw( config_app root_dir ) );
-    my $season        = LoadFile( $root_dir . '/config/meets/defaults/season.yaml' );
-    my $meet          = LoadFile( $root_dir . '/config/meets/defaults/meet.yaml'   );
-    my $quiz_settings = { map { $_ => $meet->{$_} // $season->{$_} } qw( application importmap inputs ) };
+    my $quiz_settings = {};
+
+    my $quiz_defaults = $self->conf->get('quiz_defaults');
+    $pickup_settings->{$_} //= $quiz_defaults->{$_} for ( qw( material roster_data ) );
+    $pickup_settings->{default_bible} //= $quiz_defaults->{bible};
 
     my $roster = {
-        default_bible => delete $pickup_settings->{default_bible},
-        data          => delete $pickup_settings->{roster_data},
+        default_bible => $pickup_settings->{default_bible},
+        data          => $pickup_settings->{roster_data},
     };
     QuizSage::Model::Meet->parse_and_structure_roster_text( \$roster );
     $quiz_settings->{teams} = $roster;
@@ -45,10 +45,12 @@ sub pickup ( $self, $pickup_settings, $user_id ) {
         material_id => $material->{material_id},
     };
 
-    my $bibles = decode_json( $material->{json_file}->slurp )->{bibles};
+    my $root_dir = $self->conf->get( qw( config_app root_dir ) );
+    my $bibles   = decode_json( $material->{json_file}->slurp )->{bibles};
+
     $quiz_settings->{distribution} = Omniframe::Class::Javascript->new(
         basepath  => $root_dir . '/static/js',
-        importmap => $quiz_settings->{importmap},
+        importmap => $self->js_app_config( 'quiz', $pickup_settings->{js_apps_id} )->{importmap},
     )->run(
         $root_dir . '/ocjs/lib/Model/Meet/distribution.js',
         {
@@ -61,6 +63,16 @@ sub pickup ( $self, $pickup_settings, $user_id ) {
         settings => $quiz_settings,
         user_id  => $user_id,
     });
+}
+
+sub settings ($self) {
+    my $js_app_config = $self->js_app_config( 'quiz', $self->data->{js_apps_id} );
+
+    for ( qw( module defer importmap ) ) {
+        $js_app_config->{$_} = $self->data->{$_} if ( exists $self->data->{$_} );
+    }
+
+    return $js_app_config;
 }
 
 1;
@@ -85,6 +97,8 @@ This class is the model for quiz objects.
 
 =head2 pickup
 
-=head1 WITH ROLE
+=head2 settings
 
-L<Omniframe::Role::Model>.
+=head1 WITH ROLES
+
+L<Omniframe::Role::Model>, L<QuizSage::Role::JSApp>.

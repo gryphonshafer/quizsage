@@ -1,5 +1,5 @@
+import quiz     from 'vue/store';
 import template from 'modules/template';
-import quiz     from 'vue/stores/quiz';
 
 export default {
     props: {

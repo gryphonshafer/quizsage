@@ -1,6 +1,6 @@
-import Queries from 'classes/queries';
-import Scoring from 'classes/scoring';
 import distribution from 'modules/distribution';
+import Queries      from 'classes/queries';
+import Scoring      from 'classes/scoring';
 
 export default class Quiz {
     static default_settings = {
@@ -22,8 +22,8 @@ export default class Quiz {
 
         this.teams = this.state.teams || inputs.quiz.teams || [
             [ 'Team 1', [ [ 'Alpha Bravo',   'NIV' ], [ 'Charlie Delta', 'NIV' ], [ 'Echo Foxtrot', 'NIV' ] ] ],
-            [ 'Team 2', [ [ 'Gulf Hotel',    'ESV' ], [ 'India Juliet',  'ESV' ], [ 'Kilo Lima',    'ESV' ] ] ],
-            [ 'Team 3', [ [ 'Mike November', 'NIV' ], [ 'Oscar Papa',    'NIV' ], [ 'Quebec Romeo', 'NIV' ] ] ],
+            [ 'Team 2', [ [ 'Gulf Hotel',    'NIV' ], [ 'Juliet India',  'NIV' ], [ 'Kilo Lima',    'NIV' ] ] ],
+            [ 'Team 3', [ [ 'Mike November', 'NIV' ], [ 'Oscar Papa',    'NIV' ], [ 'Romeo Quebec', 'NIV' ] ] ],
         ];
         let id_counter = 0;
         this.teams.forEach( ( team, i, teams ) => {

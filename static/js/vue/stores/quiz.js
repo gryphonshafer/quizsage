@@ -16,9 +16,12 @@ const material_promise = quiz_promise
 
 const [ quiz, miscellaneous ] = await Promise.all( [ quiz_promise, material_promise ] )
     .then( ( [ quiz_data, material_data ] ) => {
-        const inputs = quiz_data.settings.inputs;
+        const inputs = quiz_data.settings.inputs || {};
 
-        inputs.material.data     = material_data;
+        inputs.material ||= {};
+        inputs.material.data = material_data;
+
+        inputs.quiz ||= {};
         inputs.quiz.state        = quiz_data.state;
         inputs.quiz.teams        = quiz_data.settings.teams;
         inputs.quiz.distribution = quiz_data.settings.distribution;

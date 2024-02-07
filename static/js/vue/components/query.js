@@ -1,5 +1,5 @@
+import quiz      from 'vue/store';
 import template  from 'modules/template';
-import quiz      from 'vue/stores/quiz';
 import thesaurus from 'vue/components/thesaurus';
 
 export default {

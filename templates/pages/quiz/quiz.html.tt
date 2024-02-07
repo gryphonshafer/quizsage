@@ -1,10 +1,11 @@
 [%
-    page.title     = 'Quiz',
-    page.vue       = 1;
-    page.demi      = 1;
-    page.pinia     = 1;
-    page.js.import = quiz.data.settings.importmap;
-    page.js.module = quiz.data.settings.application;
+    page.title        = 'Quiz',
+    page.vue          = 1;
+    page.demi         = 1;
+    page.pinia        = 1;
+    page.js.importmap = settings.importmap;
+    page.js.module    = page.js.module.merge( settings.module );
+    page.js.defer     = page.js.defer .merge( settings.defer  );
 %]
 
 <div id="quiz" v-cloak></div>

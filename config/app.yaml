@@ -1,14 +1,14 @@
 ---
 preinclude: ../omniframe/config/app.yaml
 default:
-    libs: ../omniframe/lib
-    omniframe: ../omniframe
+    libs        : ../omniframe/lib
+    omniframe   : ../omniframe
     mojo_app_lib: QuizSage::Control
-    database:
+    database    :
         shards:
             app:
                 default_shard: 1
-                file: local/db/app.sqlite
+                file         : local/db/app.sqlite
             material:
                 file: local/db/material.sqlite
     logging:
@@ -26,9 +26,25 @@ default:
     material:
         obml: local/obml
         json: static/json/material
-    default_bible: NIV
-    default_quiz_duration: 30
-    default_material: 'Galatians; Ephesians; Philippians; Colossians NASB1995 NIV'
+    quiz_defaults:
+        bible      : NIV
+        duration   : 30
+        material   : 'Galatians; Ephesians; Philippians; Colossians NASB5 NIV'
+        roster_data: |
+            Team 1
+            Alpha Bravo
+            Charlie Delta
+            Echo Foxtrox
+
+            Team 2
+            Gulf Hotel
+            Juliet India
+            Kilo Lima
+
+            Team 3
+            Mike November
+            Oscar Papa
+            Romeo Quebec
 www:
     logging:
         filter: ~

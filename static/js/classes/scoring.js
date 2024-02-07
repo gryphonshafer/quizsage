@@ -15,6 +15,7 @@ export default class Scoring {
     };
 
     constructor ( inputs = { scoring : {} } ) {
+        inputs.scoring ||= {};
         Object.keys( this.constructor.default_settings ).forEach( key =>
             this[key] = ( inputs.scoring[key] !== undefined )
                 ? inputs.scoring[key]

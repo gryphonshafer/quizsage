@@ -3,16 +3,19 @@ package QuizSage::Model::Meet;
 use exact -class;
 use Mojo::JSON qw( encode_json decode_json );
 use QuizSage::Model::Quiz;
-use YAML::XS qw( LoadFile Load Dump );
 
-with qw( Omniframe::Role::Bcrypt Omniframe::Role::Model Omniframe::Role::Time QuizSage::Role::Meet::Build );
+with qw(
+    Omniframe::Role::Bcrypt
+    Omniframe::Role::Model
+    Omniframe::Role::Time
+    QuizSage::Role::Meet::Build
+    QuizSage::Role::Data
+);
 
 my $min_passwd_length = 8;
 
 before 'create' => sub ( $self, $params ) {
-    $params->{settings} //= LoadFile(
-        $self->conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/meet.yaml'
-    );
+    $params->{settings} //= $self->dataload('config/meets/defaults/meet.yaml');
 };
 
 sub freeze ( $self, $data ) {
@@ -145,7 +148,7 @@ sub state ($self) {
 }
 
 sub quiz_settings ( $self, $bracket_name, $quiz_name ) {
-    my $build = Load( Dump( $self->data->{build} ) );
+    my $build = $self->deepcopy( $self->data->{build} );
 
     my ($bracket) = grep { $_->{name} eq $bracket_name } $build->{brackets}->@*;
     return unless $bracket;
@@ -162,8 +165,8 @@ sub quiz_settings ( $self, $bracket_name, $quiz_name ) {
 
     return unless $quiz;
 
-    $quiz->{$_} //= $set->{$_} // $bracket->{$_} // $build->{per_quiz}{$_}
-        for ( qw( application importmap material inputs ) );
+    $quiz->{$_} //= $set->{$_} // $bracket->{$_} // ( $build->{per_quiz} // {} )->{$_}
+        for ( qw( js_apps_id module defer importmap inputs material ) );
 
     delete $quiz->{name};
     $quiz->{teams} = delete $quiz->{roster};
@@ -301,4 +304,4 @@ This class is the model for meet objects.
 =head1 WITH ROLES
 
 L<Omniframe::Role::Bcrypt>, L<Omniframe::Role::Model>, L<Omniframe::Role::Time>,
-L<QuizSage::Role::Meet::Build>.
+L<QuizSage::Role::Meet::Build>, L<QuizSage::Role::Data>.

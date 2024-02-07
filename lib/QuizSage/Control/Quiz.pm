@@ -11,18 +11,16 @@ sub pickup ($self) {
 
     unless (
         $self->param('material') or
-        $self->param('default_bible') or
-        $self->param('roster_data')
+        $self->param('roster_data') or
+        $self->param('default_bible')
     ) {
-        my $settings = $user->data->{settings}{pickup_quiz} // {};
+        my $settings;
 
-        $settings->{material}      //= $label->conf->get('default_material'),
-        $settings->{default_bible} //= $label->conf->get('default_bible');
-        $settings->{roster_data}   //= join( "\n\n", map { join( "\n", @$_ ) }
-            [ 'Team 1', 'Alpha Bravo',   'Charlie Delta', 'Echo Foxtrox' ],
-            [ 'Team 2', 'Gulf Hotel',    'India Juliet',  'Kilo Lima'    ],
-            [ 'Team 3', 'Mike November', 'Oscar Papa',    'Romeo Quebec' ],
-        );
+        my $quiz_defaults = $label->conf->get('quiz_defaults');
+        my $user_defaults = $user->data->{settings}{pickup_quiz} // {};
+
+        $settings->{$_} = $user_defaults->{$_} // $quiz_defaults->{$_} for ( qw( material roster_data ) );
+        $settings->{default_bible} = $user_defaults->{default_bible} // $quiz_defaults->{bible};
 
         $self->stash(
             bibles => $label
@@ -35,9 +33,9 @@ sub pickup ($self) {
     }
     else {
         my $settings = {
-            material      => $label->canonicalize( $self->param('material') ),
-            default_bible => $self->param('default_bible') || $label->conf->get('default_bible'),
-            roster_data   => $self->param('roster_data'),
+            maybe material      => $label->canonicalize( $self->param('material') ),
+            maybe roster_data   => $self->param('roster_data'),
+            maybe default_bible => $self->param('default_bible'),
         };
 
         $user->data->{settings}{pickup_quiz} = $settings;
@@ -145,7 +143,7 @@ sub quiz ($self) {
         $self->render( json => QuizSage::Model::Quiz->new->load( $self->param('quiz_id') )->data );
     }
     else {
-        $self->stash( quiz => QuizSage::Model::Quiz->new->load( $self->param('quiz_id') ) );
+        $self->stash( settings => QuizSage::Model::Quiz->new->load( $self->param('quiz_id') )->settings );
     }
 }
 

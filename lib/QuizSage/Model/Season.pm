@@ -3,14 +3,11 @@ package QuizSage::Model::Season;
 use exact -class;
 use Mojo::JSON qw( encode_json decode_json );
 use QuizSage::Model::Meet;
-use YAML::XS 'LoadFile';
 
-with qw( Omniframe::Role::Model Omniframe::Role::Time );
+with qw( Omniframe::Role::Model Omniframe::Role::Time QuizSage::Role::Data );
 
 before 'create' => sub ( $self, $params ) {
-    $params->{settings} //= LoadFile(
-        $self->conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/season.yaml'
-    );
+    $params->{settings} //= $self->dataload('config/meets/defaults/season.yaml');
 };
 
 sub freeze ( $self, $data ) {
@@ -88,4 +85,4 @@ This class is the model for season objects.
 
 =head1 WITH ROLES
 
-L<Omniframe::Role::Model>, L<Omniframe::Role::Time>.
+L<Omniframe::Role::Model>, L<Omniframe::Role::Time>, L<QuizSage::Role::Data>.
