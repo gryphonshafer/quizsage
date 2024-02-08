@@ -1,4 +1,4 @@
-import quiz      from 'vue/store';
+import store     from 'vue/store';
 import template  from 'modules/template';
 import thesaurus from 'vue/components/thesaurus';
 
@@ -8,7 +8,7 @@ export default {
     },
 
     computed: {
-        ...Pinia.mapState( quiz, [ 'current', 'eligible_teams', 'is_quiz_done', 'last_event_if_not_viewed' ] ),
+        ...Pinia.mapState( store, [ 'current', 'eligible_teams', 'is_quiz_done', 'last_event_if_not_viewed' ] ),
     },
 
     template: await template( import.meta.url ),

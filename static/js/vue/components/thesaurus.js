@@ -1,4 +1,4 @@
-import quiz     from 'vue/store';
+import store    from 'vue/store';
 import template from 'modules/template';
 
 export default {
@@ -7,7 +7,7 @@ export default {
     },
 
     computed: {
-        ...Pinia.mapState( quiz, [ 'current', 'selected' ] ),
+        ...Pinia.mapState( store, [ 'current', 'selected' ] ),
 
         items() {
             return ( this.type != 'text' )

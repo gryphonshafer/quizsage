@@ -16,9 +16,9 @@ sub js_app_names ($self) {
     ];
 }
 
-sub js_app_config ( $self, $app, $id = 'default' ) {
+sub js_app_config ( $self, $app, $id = undef ) {
     my $apps_conf = $self->dataload('config/js_apps.yaml');
-    my $app_conf  = $apps_conf->{ $id // 'default' }{apps}{$app};
+    my $app_conf  = $apps_conf->{ $id // $self->data->{js_apps_id} // 'default' }{apps}{$app};
 
     while ( my $extends = delete $app_conf->{extends} ) {
         my $base = $apps_conf->{$extends}{apps}{$app};

@@ -78,7 +78,7 @@ function update_data(store) {
     store.eligible_teams = get_eligible_teams( quiz.state.teams );
 }
 
-export default Pinia.defineStore( 'quiz', {
+export default Pinia.defineStore( 'store', {
     state() {
         const current = get_current() || get_current( quiz.state.board.at(-1).id );
 

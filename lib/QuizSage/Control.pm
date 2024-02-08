@@ -32,6 +32,9 @@ sub startup ($self) {
     $users->any('/user/logout')->to('user#logout');
 
     $users->any('/meet/passwd')->to('meet#passwd');
+    $users
+        ->any( '/meet/:meet_id/board/:room_number' => [ format => ['json'] ] )
+        ->to( 'meet#board', format => undef );
     $users->any('/meet/:meet_id/roster')->to('meet#roster');
     $users->any('/meet/:meet_id/distribution')->to('meet#distribution');
     $users->any('/meet/:meet_id/stats')->to('meet#stats');

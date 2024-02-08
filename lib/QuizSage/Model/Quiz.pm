@@ -65,14 +65,17 @@ sub pickup ( $self, $pickup_settings, $user_id ) {
     });
 }
 
-sub settings ($self) {
-    my $js_app_config = $self->js_app_config( 'quiz', $self->data->{js_apps_id} );
+sub latest_quiz_in_meet_room ( $self, $meet_id, $room_number ) {
+    my $quiz_id = $self->dq->sql(q{
+        SELECT quiz_id
+        FROM quiz
+        WHERE meet_id = ? AND JSON_EXTRACT( settings, '$.room' ) = ?
+        ORDER BY last_modified DESC
+        LIMIT 1
+    })->run( $meet_id, $room_number )->value;
 
-    for ( qw( module defer importmap ) ) {
-        $js_app_config->{$_} = $self->data->{$_} if ( exists $self->data->{$_} );
-    }
-
-    return $js_app_config;
+    return unless ($quiz_id);
+    return $self->load($quiz_id);
 }
 
 1;
@@ -98,6 +101,8 @@ This class is the model for quiz objects.
 =head2 pickup
 
 =head2 settings
+
+=head2 latest_quiz_in_meet_room
 
 =head1 WITH ROLES
 

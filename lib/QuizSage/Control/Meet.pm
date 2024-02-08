@@ -2,6 +2,7 @@ package QuizSage::Control::Meet;
 
 use exact 'Mojolicious::Controller';
 use QuizSage::Model::Meet;
+use QuizSage::Model::Quiz;
 
 with 'Omniframe::Role::Bcrypt';
 
@@ -39,6 +40,19 @@ sub stats ($self) {
     );
 }
 
+sub board ($self) {
+    my $quiz = QuizSage::Model::Quiz->new->latest_quiz_in_meet_room(
+        $self->param('meet_id'),
+        $self->param('room_number'),
+    );
+    unless ( ( $self->stash('format') // '' ) eq 'json' ) {
+        $self->stash( quiz => $quiz );
+    }
+    else {
+        $self->render( json => $quiz->data );
+    }
+}
+
 1;
 
 =head1 NAME
@@ -61,6 +75,8 @@ for "Meet" actions.
 =head2 distribution
 
 =head2 stats
+
+=head2 board
 
 =head1 INHERITANCE
 

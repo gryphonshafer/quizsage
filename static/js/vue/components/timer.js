@@ -1,4 +1,4 @@
-import quiz     from 'vue/store';
+import store    from 'vue/store';
 import template from 'modules/template';
 
 export default {
@@ -11,7 +11,7 @@ export default {
     },
 
     computed: {
-        ...Pinia.mapState( quiz, ['durations'] ),
+        ...Pinia.mapState( store, ['durations'] ),
     },
 
     created() {

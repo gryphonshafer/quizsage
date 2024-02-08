@@ -1,13 +1,13 @@
-import quiz     from 'vue/store';
+import store    from 'vue/store';
 import template from 'modules/template';
 
 export default {
     computed: {
-        ...Pinia.mapState( quiz, [ 'board', 'current', 'selected', 'teams' ] ),
+        ...Pinia.mapState( store, [ 'board', 'current', 'selected', 'teams' ] ),
     },
 
     methods: {
-        ...Pinia.mapActions( quiz, [ 'delete_last_action', 'exit_quiz', 'is_quiz_done', 'view_query' ] ),
+        ...Pinia.mapActions( store, [ 'delete_last_action', 'exit_quiz', 'is_quiz_done', 'view_query' ] ),
 
         select_quizzer( quizzer_id, team_id ) {
             if ( this.is_quiz_done() ) return;

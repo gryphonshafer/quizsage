@@ -139,11 +139,12 @@ sub build ($self) {
 }
 
 sub quiz ($self) {
-    if ( ( $self->stash('format') // '' ) eq 'json' ) {
-        $self->render( json => QuizSage::Model::Quiz->new->load( $self->param('quiz_id') )->data );
+    my $quiz = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
+    unless ( ( $self->stash('format') // '' ) eq 'json' ) {
+        $self->stash( quiz => $quiz );
     }
     else {
-        $self->stash( settings => QuizSage::Model::Quiz->new->load( $self->param('quiz_id') )->settings );
+        $self->render( json => $quiz->data );
     }
 }
 

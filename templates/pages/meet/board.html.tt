@@ -1,14 +1,20 @@
 [%
-    page.title = 'Quiz',
+    page.title = 'Scoreboard Room ' _ room_number,
     page.vue   = 1;
     page.demi  = 1;
     page.pinia = 1;
 
-    js_app_config = quiz.js_app_config('quiz');
+    js_app_config = quiz.js_app_config('board');
 
     page.js.importmap = js_app_config.importmap;
     page.js.module    = page.js.module.merge( js_app_config.module );
     page.js.defer     = page.js.defer .merge( js_app_config.defer  );
 %]
 
-<div id="quiz" v-cloak></div>
+<h1>QuizSage: [% page.title %]</h1>
+
+[% UNLESS quiz %]
+    <p>No data right now...</p>
+[% ELSE %]
+    <div id="board" v-cloak></div>
+[% END %]

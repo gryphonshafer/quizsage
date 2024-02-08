@@ -20,3 +20,12 @@ default:
                 vue/components/thesaurus: vue/components/thesaurus
                 vue/components/timer    : vue/components/timer
                 vue/store               : vue/stores/quiz
+        board:
+            module:
+              - vue/apps/board
+            importmap:
+                modules/template    : modules/template
+                vue/components/board: vue/components/board
+                vue/store           : vue/stores/board
+            defer:
+              - util/websocket
