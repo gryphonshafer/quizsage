@@ -3,10 +3,26 @@ package QuizSage::Model::Quiz;
 use exact -class;
 use Mojo::JSON qw( encode_json decode_json );
 use Omniframe::Class::Javascript;
+use Omniframe::Mojo::Socket;
 use QuizSage::Model::Meet;
 use QuizSage::Util::Material 'material_json';
 
 with qw( Omniframe::Role::Model QuizSage::Role::JSApp );
+
+class_has socket => Omniframe::Mojo::Socket->new;
+
+after [ qw( create save delete ) ] => sub ( $self, @params ) {
+    return unless ( $self->data->{meet_id} and defined $self->data->{settings}{room} );
+
+    $self->socket->message(
+        encode_json( {
+            type => 'board',
+            meet => 0 + $self->data->{meet_id},
+            room => 0 + $self->data->{settings}{room},
+        } ),
+        $self->data->{ ( $self->data->{state} ) ? 'state' : 'settings' },
+    );
+};
 
 sub freeze ( $self, $data ) {
     for ( qw( settings state ) ) {

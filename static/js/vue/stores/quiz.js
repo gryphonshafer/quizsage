@@ -210,7 +210,7 @@ export default Pinia.defineStore( 'store', {
         },
 
         exit_quiz() {
-            document.location.href = new URL(
+            window.location.href = new URL(
                 ( miscellaneous.meet_id ) ? '/meet/' + miscellaneous.meet_id : '/quiz/pickup',
                 url,
             );

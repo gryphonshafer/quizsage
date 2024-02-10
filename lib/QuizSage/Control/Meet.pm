@@ -1,6 +1,7 @@
 package QuizSage::Control::Meet;
 
 use exact 'Mojolicious::Controller';
+use Mojo::JSON 'encode_json';
 use QuizSage::Model::Meet;
 use QuizSage::Model::Quiz;
 
@@ -45,11 +46,19 @@ sub board ($self) {
         $self->param('meet_id'),
         $self->param('room_number'),
     );
-    unless ( ( $self->stash('format') // '' ) eq 'json' ) {
-        $self->stash( quiz => $quiz );
+
+    if ( $self->tx->is_websocket ) {
+        $self->socket( setup => encode_json( {
+            type => 'board',
+            meet => 0 + $self->param('meet_id'),
+            room => 0 + $self->param('room_number'),
+        } ) );
+    }
+    elsif ( ( $self->stash('format') // '' ) eq 'json' ) {
+        $self->render( json => $quiz->data );
     }
     else {
-        $self->render( json => $quiz->data );
+        $self->stash( quiz => $quiz );
     }
 }
 

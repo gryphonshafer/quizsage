@@ -8,7 +8,6 @@
 
     page.js.importmap = js_app_config.importmap;
     page.js.module    = page.js.module.merge( js_app_config.module );
-    page.js.defer     = page.js.defer .merge( js_app_config.defer  );
 %]
 
 <div id="quiz" v-cloak></div>

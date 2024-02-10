@@ -1,20 +1,51 @@
 [%
-    page.title = 'Scoreboard Room ' _ room_number,
-    page.vue   = 1;
-    page.demi  = 1;
-    page.pinia = 1;
+    page.title = 'Scoreboard Room ' _ room_number;
+    page.js.defer.push('util/websocket');
 
-    js_app_config = quiz.js_app_config('board');
+    IF quiz;
+        page.vue   = 1;
+        page.demi  = 1;
+        page.pinia = 1;
 
-    page.js.importmap = js_app_config.importmap;
-    page.js.module    = page.js.module.merge( js_app_config.module );
-    page.js.defer     = page.js.defer .merge( js_app_config.defer  );
+        js_app_config = quiz.js_app_config('board');
+
+        page.js.importmap = js_app_config.importmap;
+        page.js.module    = page.js.module.merge( js_app_config.module );
+    END;
 %]
 
-<h1>QuizSage: [% page.title %]</h1>
-
 [% UNLESS quiz %]
-    <p>No data right now...</p>
+    <h1>QuizSage: [% page.title %]</h1>
+
+    <p>
+        There is currently no active quiz for room [% room_number %] for the
+        selected meet. This page will automatically reload when there's
+        scoreboard data to display.
+    </p>
+
+    [% inline_js = BLOCK %]
+        window.addEventListener( 'load', () => {
+            const url = new URL( window.location.href );
+            omniframe.websocket.start({
+                path      : url.pathname + url.search,
+                onmessage : () => window.location.reload(),
+            });
+        } );
+    [% END %]
+    [% page.js.inline.push(inline_js) %]
 [% ELSE %]
     <div id="board" v-cloak></div>
+
+    [% inline_js = BLOCK %]
+        function scale_board () {
+            let scale = window.innerWidth / 1000 * 1.5;
+            if ( scale < 0.95 ) scale = 0.95;
+            window.document.querySelector('div#board').style.transform = 'scale( ' + scale + ' )';
+        }
+
+        window.addEventListener( 'resize', scale_board );
+        window.addEventListener( 'load', scale_board );
+        window.addEventListener( 'load', () => window.document.querySelector('body').style.overflow = 'hidden' );
+    [% END %]
+    [% page.js.inline.push(inline_js) %]
 [% END %]

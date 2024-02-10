@@ -27,5 +27,3 @@ default:
                 modules/template    : modules/template
                 vue/components/board: vue/components/board
                 vue/store           : vue/stores/board
-            defer:
-              - util/websocket

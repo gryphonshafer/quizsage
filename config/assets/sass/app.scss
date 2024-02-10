@@ -155,75 +155,6 @@ div#quiz {
         min-width: 45em;
     }
 
-    table.board {
-        border: none;
-
-        thead td {
-            background-color: white;
-        }
-
-        td.top_left_corner {
-            background-color: transparent;
-            border-top      : none;
-            border-left     : none;
-
-            text-align    : right;
-            vertical-align: bottom;
-            padding-bottom: 0.5em;
-            padding-right : 0.5em;
-        }
-
-        td.clickable {
-            cursor: pointer;
-
-            &:hover {
-                background-color: $active_bg_cell;
-            }
-        }
-
-        tr.selected td {
-            background-color: $active_bg_cell;
-        }
-
-        td.selected {
-            background-color: lightgreen;
-
-            &:hover {
-                background-color: lightgreen;
-            }
-        }
-
-        tr.vertical td, td.vertical {
-            writing-mode  : vertical-rl;
-            padding       : 0.3em 0px 0.3em 0em;
-            width         : 2.5em;
-            vertical-align: middle;
-        }
-
-        @-moz-document url-prefix() {
-            tr.vertical td, td.vertical {
-                vertical-align: top;
-                padding       : 0.3em 0 0.3em 1em;
-            }
-        }
-
-        tr.center td, td.center {
-            text-align: center;
-        }
-
-        tr.right td, td.right {
-            text-align: right;
-        }
-
-        tbody tr td:nth-of-type(1) {
-            width: 2em;
-        }
-
-        tbody tr td:nth-of-type(2) {
-            width: 3em;
-        }
-    }
-
     div.search {
         label {
             margin-left: 0.5em;
@@ -268,5 +199,94 @@ div#quiz {
         display       : inline-block;
         vertical-align: top;
         margin-right  : 1em;
+    }
+}
+
+table.board {
+    border: none;
+
+    thead td {
+        background-color: white;
+    }
+
+    td.top_left_corner {
+        background-color: transparent;
+        border-top      : none;
+        border-left     : none;
+
+        text-align    : right;
+        vertical-align: bottom;
+        padding-bottom: 0.5em;
+        padding-right : 0.5em;
+    }
+
+    td.clickable {
+        cursor: pointer;
+
+        &:hover {
+            background-color: $active_bg_cell;
+        }
+    }
+
+    tr.selected td {
+        background-color: $active_bg_cell;
+    }
+
+    td.selected {
+        background-color: lightgreen;
+
+        &:hover {
+            background-color: lightgreen;
+        }
+    }
+
+    tr.vertical td, td.vertical {
+        writing-mode  : vertical-rl;
+        padding       : 0.3em 0px 0.3em 0em;
+        width         : 2.5em;
+        vertical-align: middle;
+    }
+
+    @-moz-document url-prefix() {
+        tr.vertical td, td.vertical {
+            vertical-align: top;
+            padding       : 0.3em 0 0.3em 1em;
+        }
+    }
+
+    tr.center td, td.center {
+        text-align: center;
+    }
+
+    tr.right td, td.right {
+        text-align: right;
+    }
+
+    tbody tr td:nth-of-type(1) {
+        width: 2em;
+    }
+
+    tbody tr td:nth-of-type(2) {
+        width: 3em;
+    }
+}
+
+div#board {
+    transform-origin: top;
+
+    table.board {
+        margin: 0 auto;
+
+        button {
+            display: none;
+        }
+
+        td.clickable {
+            cursor: default;
+
+            &:hover {
+                background-color: white;
+            }
+        }
     }
 }
