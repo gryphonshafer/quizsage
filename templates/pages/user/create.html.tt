@@ -1,10 +1,22 @@
-[% page.title = 'Create New User' %]
+[%
+    page.title         = 'Create New User';
+    recaptcha_site_key = c.app.conf.get( 'recaptcha', 'site_key' );
+%]
 
 <h1>QuizSage: [% page.title %]</h1>
 
 <ul><li><a href="[% c.url_for('/') %]">Main Page</a></li></ul>
 
-<form method="post">
+[% IF recaptcha_site_key %]
+    <script src="https://www.google.com/recaptcha/api.js"></script>
+    <script>
+        function g_recaptcha_cb(token) {
+            document.getElementById('create_new_user_form').submit();
+        }
+    </script>
+[% END %]
+
+<form method="post" id="create_new_user_form">
     <fieldset>
         <legend>Create New User</legend>
 
@@ -34,6 +46,13 @@
                 autocomplete="tel">
         </label>
 
-        <input type="submit" value="Create New User">
+        <input type="submit" value="Create New User"
+            [% IF recaptcha_site_key %]
+                class="g-recaptcha"
+                data-sitekey="[% recaptcha_site_key %]"
+                data-callback="g_recaptcha_cb"
+                data-action="create_new_user"
+            [% END %]
+        >
     </fieldset>
 </form>

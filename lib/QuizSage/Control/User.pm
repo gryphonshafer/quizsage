@@ -1,7 +1,10 @@
 package QuizSage::Control::User;
 
 use exact 'Mojolicious::Controller';
+use Mojo::UserAgent;
 use QuizSage::Model::User;
+
+my $ua = Mojo::UserAgent->new( max_redirects => 3 );
 
 sub create ($self) {
     if ( my %params = $self->req->params->to_hash->%* ) {
@@ -10,6 +13,8 @@ sub create ($self) {
         try {
             die 'Email, password, first and last name, and phone fields must be filled in'
                 if ( grep { length $params{$_} == 0 } @fields );
+
+            $self->_recaptcha;
 
             unless ( $self->stash('user') ) {
                 my $user = QuizSage::Model::User->new->create({ map { $_ => $params{$_} } @fields });
@@ -63,6 +68,8 @@ sub verify ($self) {
 sub forgot_password ($self) {
     if ( my $email = $self->param('email') ) {
         try {
+            $self->_recaptcha;
+
             QuizSage::Model::User->new->load({ email => $email })
                 ->send_email( 'reset_password', $self->url_for('/user/reset_password') );
 
@@ -118,6 +125,8 @@ sub reset_password ($self) {
 
 sub login ($self) {
     try {
+        $self->_recaptcha;
+
         my $user = QuizSage::Model::User->new->login( map { $self->param($_) } qw( email passwd ) );
 
         $self->info( 'Login success for: ' . $user->data->{email} );
@@ -149,6 +158,29 @@ sub logout ($self) {
     );
 
     $self->redirect_to('/');
+}
+
+sub _recaptcha ($self) {
+    if ( my $recaptcha_secret_key = $self->app->conf->get( qw( recaptcha secret_key ) ) ) {
+        my $site_verify = $self->ua->post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            form => {
+                secret   => $recaptcha_secret_key,
+                response => $self->param('g-recaptcha-response'),
+            },
+        )->result->json;
+
+        $self->info( 'Recaptcha site verify score: ' . ( $site_verify->{score} // '>>undef<<' ) );
+
+        die 'Human-verification score too low. Please wait for the page to fully low, then try again'
+            unless (
+                $site_verify and
+                $site_verify->{score} and
+                $site_verify->{score} > $self->app->conf->get( qw( recaptcha min_score ) ) // 0.5
+            );
+    }
+
+    return;
 }
 
 1;

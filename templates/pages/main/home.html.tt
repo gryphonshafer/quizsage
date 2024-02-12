@@ -1,9 +1,20 @@
+[% recaptcha_site_key = c.app.conf.get( 'recaptcha', 'site_key' ) %]
+
 <h1>QuizSage</h1>
 
 [% UNLESS user %]
     <ul><li><a href="[% c.url_for('/user/create') %]">Create New User</a></li></ul>
 
-    <form method="post" action="[% c.url_for('/user/login') %]">
+    [% IF recaptcha_site_key %]
+        <script src="https://www.google.com/recaptcha/api.js"></script>
+        <script>
+            function g_recaptcha_cb(token) {
+                document.getElementById('login_form').submit();
+            }
+        </script>
+    [% END %]
+
+    <form method="post" action="[% c.url_for('/user/login') %]" id="login_form">
         <fieldset>
             <legend>Login</legend>
 
@@ -16,7 +27,14 @@
                 <input type="password" name="passwd" value="[% passwd %]" placeholder="Password">
             </label>
 
-            <input type="submit" value="Login">
+            <input type="submit" value="Login"
+                [% IF recaptcha_site_key %]
+                    class="g-recaptcha"
+                    data-sitekey="[% recaptcha_site_key %]"
+                    data-callback="g_recaptcha_cb"
+                    data-action="login"
+                [% END %]
+            >
         </fieldset>
     </form>
 
