@@ -1,10 +1,7 @@
 package QuizSage::Control::User;
 
 use exact 'Mojolicious::Controller';
-use Mojo::UserAgent;
 use QuizSage::Model::User;
-
-my $ua = Mojo::UserAgent->new( max_redirects => 3 );
 
 sub create ($self) {
     if ( my %params = $self->req->params->to_hash->%* ) {
