@@ -13,14 +13,14 @@ default:
                 file: local/db/material.sqlite
     logging:
         alert_email:
-            - gryphon@quizsage.org
+            - example@example.org
     mojolicious:
         secrets:
             - 65.zH1eZb4m7Q19Jf1OUtzxeYg92Ngqy
         session:
             cookie_name: quizsage_session
     email:
-        from: QuizSage <gryphon@quizsage.org>
+        from: QuizSage <example@example.org>
     bcrypt:
         salt: 63MWT0N6PQlNU43R
     material:
@@ -29,7 +29,7 @@ default:
     quiz_defaults:
         bible      : NIV
         duration   : 30
-        material   : 'Galatians; Ephesians; Philippians; Colossians NASB5 NIV'
+        material   : Galatians; Ephesians; Philippians; Colossians NASB5 NIV
         roster_data: |
             Team 1
             Alpha Bravo
