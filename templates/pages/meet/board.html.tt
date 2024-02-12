@@ -38,14 +38,12 @@
 
     [% inline_js = BLOCK %]
         function scale_board () {
-            let scale = window.innerWidth / 1000 * 1.5;
-            if ( scale < 0.95 ) scale = 0.95;
-            window.document.querySelector('div#board').style.transform = 'scale( ' + scale + ' )';
+            const board     = window.document.querySelector('div#board');
+            board.scrollTop = board.scrollHeight;
         }
 
         window.addEventListener( 'resize', scale_board );
-        window.addEventListener( 'load', scale_board );
-        window.addEventListener( 'load', () => window.document.querySelector('body').style.overflow = 'hidden' );
+        window.addEventListener( 'load',   scale_board );
     [% END %]
     [% page.js.inline.push(inline_js) %]
 [% END %]

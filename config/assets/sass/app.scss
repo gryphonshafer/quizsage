@@ -210,9 +210,8 @@ table.board {
     }
 
     td.top_left_corner {
-        background-color: transparent;
-        border-top      : none;
-        border-left     : none;
+        background-color: colors.$background;
+        border-color    : colors.$background colors.$lines colors.$lines colors.$background;
 
         text-align    : right;
         vertical-align: bottom;
@@ -272,10 +271,14 @@ table.board {
 }
 
 div#board {
-    transform-origin: top;
+    width     : max-content;
+    margin    : 0 auto;
+    overflow-y: scroll;
+    max-height: calc( 100vh - 26px );
+    font-size : calc( ( 100vw - 200px ) / 50 );
 
     table.board {
-        margin: 0 auto;
+        margin: 0;
 
         button {
             display: none;
@@ -288,5 +291,29 @@ div#board {
                 background-color: white;
             }
         }
+
+        &:nth-of-type(1) {
+            position: fixed;
+        }
+
+        &:nth-of-type(1) tbody,
+        &:nth-of-type(2) thead {
+                visibility: hidden;
+        }
+
+        &:nth-of-type(1) tbody td,
+        &:nth-of-type(2) thead td {
+            border: 1px solid transparent;
+        }
     }
+}
+
+div#board::-webkit-scrollbar {
+    background: transparent;
+    width     : 0px;
+}
+
+div#board {
+    scrollbar-width   : none;
+    -ms-overflow-style: none;
 }
