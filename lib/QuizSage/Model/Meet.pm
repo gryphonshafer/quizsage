@@ -54,6 +54,15 @@ sub state ($self) {
 
         $state_quiz->{id} = $quiz->{quiz_id};
 
+        if ( $quiz->{state} and $quiz->{state}{board} ) {
+            my ($current) = grep { $_->{current} } $quiz->{state}{board}->@*;
+            $state_quiz->{current_query_id} = $current->{id} if ($current);
+            $state_quiz->{roster} = $quiz->{state}{teams} if ( $quiz->{state}{teams} );
+        }
+        else {
+            $state_quiz->{current_query_id} = '1A';
+        }
+
         for ( my $i = 0; $i < $state_quiz->{roster}->@*; $i++ ) {
             $state_quiz->{roster}[$i]{$_} //= $quiz->{settings}{teams}[$i]{$_}
                 for ( keys $quiz->{settings}{teams}[$i]->%* );

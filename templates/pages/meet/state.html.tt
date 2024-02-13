@@ -101,6 +101,16 @@
 
                     Room: [% quiz.room %]
 
+                    [% IF quiz.current_query_id %]
+                        <span style="
+                            position: absolute;
+                            top     : 0.5em;
+                            right   : 0.75em;
+                        ">
+                            Query: [% quiz.current_query_id %]
+                        </span>
+                    [% END %]
+
                     [% PROCESS quiz_teams_list.html.tt roster = quiz.roster %]
 
                     [% IF qm_auth %]
@@ -109,8 +119,8 @@
                                 style="
                                     font-style     : italic;
                                     position       : absolute;
-                                    bottom         : 0.25em;
-                                    right          : 0.25em;
+                                    bottom         : 0.5em;
+                                    right          : 0.75em;
                                     text-decoration: none;
                                 "
                                 onclick="
@@ -127,8 +137,8 @@
                                 style="
                                     font-style     : italic;
                                     position       : absolute;
-                                    bottom         : 0.25em;
-                                    right          : 0.25em;
+                                    bottom         : 0.5em;
+                                    right          : 0.75em;
                                     text-decoration: none;
                                 "
                                 onclick="
