@@ -27,10 +27,10 @@ default:
         obml: local/obml
         json: static/json/material
     quiz_defaults:
-        bible      : NIV
-        duration   : 30
-        material   : Galatians; Ephesians; Philippians; Colossians NASB5 NIV
-        roster_data: |
+        bible         : NIV
+        duration      : 30
+        material_label: Galatians; Ephesians; Philippians; Colossians NASB* NASB5 NIV
+        roster_data   : |
             Team 1
             Alpha Bravo
             Charlie Delta

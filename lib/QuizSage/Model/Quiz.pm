@@ -4,6 +4,7 @@ use exact -class;
 use Mojo::JSON qw( encode_json decode_json );
 use Omniframe::Class::Javascript;
 use Omniframe::Mojo::Socket;
+use QuizSage::Model::Label;
 use QuizSage::Model::Meet;
 use QuizSage::Util::Material 'material_json';
 
@@ -40,29 +41,58 @@ sub thaw ( $self, $data ) {
     return $data;
 }
 
-sub pickup ( $self, $pickup_settings, $user_id ) {
-    my $quiz_settings = {};
+sub pickup ( $self, $pickup_settings, $user ) {
+    my $quiz_settings    = {};
+    my $quiz_defaults    = $self->conf->get('quiz_defaults');
+    my $available_bibles = $self->dq('material')->get( 'bible', ['acronym'] )->run->column;
 
-    my $quiz_defaults = $self->conf->get('quiz_defaults');
-    $pickup_settings->{$_} //= $quiz_defaults->{$_} for ( qw( material roster_data ) );
-    $pickup_settings->{default_bible} //= $quiz_defaults->{bible};
+    # canonicalize default bible acronym
+
+    $pickup_settings->{bible} = uc ( $pickup_settings->{bible} // '' );
+    die 'Default bible is invalid or unavailable'
+        unless ( $pickup_settings->{bible} and grep { $_ eq $pickup_settings->{bible} } @$available_bibles );
+
+    # canonicalize roster and save in quiz settings
 
     my $roster = {
-        default_bible => $pickup_settings->{default_bible},
+        default_bible => $pickup_settings->{bible},
         data          => $pickup_settings->{roster_data},
     };
     QuizSage::Model::Meet->parse_and_structure_roster_text( \$roster );
     $quiz_settings->{teams} = $roster;
 
-    my $material = material_json( label => $pickup_settings->{material} );
+    # parse material label, append missing bibles, and build material JSON
+
+    my $roster_bibles = { map { $_->{bible} => 1 } map { $_->{quizzers}->@* } @$roster };
+    my $label         = QuizSage::Model::Label->new( user_id => $user->id );
+    my $label_data    = $label->parse( $pickup_settings->{material_label} );
+
+    $label_data->{bibles}          //= {};
+    $label_data->{bibles}{primary} //= [ $pickup_settings->{bible} ];
+
+    my $label_bibles = [ map {@$_} (
+        $label_data->{bibles}{primary},
+        $label_data->{bibles}{auxiliary} // [],
+    ) ];
+
+    push( @{ $label_data->{bibles}{primary} }, $_ ) for (
+        grep {
+            my $roster_bible = $_;
+            not grep { $_ eq $roster_bible } @$label_bibles;
+        } keys %$roster_bibles
+    );
+
+    my $canonical_label        = $label->format($label_data);
+    my $material               = material_json( label => $canonical_label );
     $quiz_settings->{material} = {
-        label       => $pickup_settings->{material},
+        label       => $canonical_label,
         description => $material->{description},
         material_id => $material->{material_id},
     };
 
+    # build distribution
+
     my $root_dir = $self->conf->get( qw( config_app root_dir ) );
-    my $bibles   = decode_json( $material->{json_file}->slurp )->{bibles};
 
     $quiz_settings->{distribution} = Omniframe::Class::Javascript->new(
         basepath  => $root_dir . '/static/js',
@@ -70,14 +100,32 @@ sub pickup ( $self, $pickup_settings, $user_id ) {
     )->run(
         $root_dir . '/ocjs/lib/Model/Meet/distribution.js',
         {
-            bibles      => [ grep { $bibles->{$_}{type} eq 'primary' } keys %$bibles ],
+            bibles      => $label_data->{bibles}{primary},
             teams_count => scalar( $quiz_settings->{teams}->@* ),
         },
     )->[0][0];
 
+    # cleanup roster data and save user pickup quiz settings
+
+    $pickup_settings->{roster_data} =~ s/[ ]{2,}/ /g;
+    $pickup_settings->{roster_data} =~ s/\t/ /g;
+    $pickup_settings->{roster_data} =~ s/\r?\n/\n/g;
+    $pickup_settings->{roster_data} =~ s/\n{3,}/\n\n/g;
+    $pickup_settings->{roster_data} =~ s/(?:^\s+|\s+$)//g;
+
+    $user->data->{settings}{pickup_quiz} = {
+        bible          => $pickup_settings->{bible},
+        material_label => $canonical_label,
+        roster_data    => $pickup_settings->{roster_data},
+    };
+
+    $user->save;
+
+    # create and return quiz
+
     return $self->create({
         settings => $quiz_settings,
-        user_id  => $user_id,
+        user_id  => $user->id,
     });
 }
 

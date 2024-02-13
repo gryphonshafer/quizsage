@@ -33,7 +33,7 @@
         <legend>Roster</legend>
         <label>
             Default Bible:
-            <input type="text" name="default_bible" value="[% default_bible %]"
+            <input type="text" name="bible" value="[% bible %]"
                 style="width: 5em">
         </label>
         <textarea
@@ -51,7 +51,7 @@
         <textarea
             rows="3"
             style="width: 50vw"
-            name="material">[% material %]</textarea>
+            name="material_label">[% material_label %]</textarea>
 
         [% IF label_aliases AND label_aliases.size > 0 %]
             <h2>Available Labels</h2>
@@ -66,9 +66,9 @@
         [% IF bibles AND bibles.size > 0 %]
             <h2>Supported Bibles</h2>
             <dl>
-                [% FOR bible IN bibles %]
-                    <dt>[% bible.acronym %]</dt>
-                    <dd>[% bible.name %] ([% bible.year %])</dd>
+                [% FOR item IN bibles %]
+                    <dt>[% item.acronym %]</dt>
+                    <dd>[% item.name %] ([% item.year %])</dd>
                 [% END %]
             </dl>
         [% END %]

@@ -9,41 +9,34 @@ sub pickup ($self) {
     my $user  = $self->stash('user');
     my $label = QuizSage::Model::Label->new( user_id => $user->id );
 
-    unless (
-        $self->param('material') or
-        $self->param('roster_data') or
-        $self->param('default_bible')
-    ) {
-        my $settings;
+    my $quiz_defaults = $label->conf->get('quiz_defaults');
+    my $user_settings = $user->data->{settings}{pickup_quiz} // {};
 
-        my $quiz_defaults = $label->conf->get('quiz_defaults');
-        my $user_defaults = $user->data->{settings}{pickup_quiz} // {};
+    my $settings;
+    $settings->{$_} = $self->param($_) // $user_settings->{$_} // $quiz_defaults->{$_}
+        for ( qw( bible roster_data material_label ) );
 
-        $settings->{$_} = $user_defaults->{$_} // $quiz_defaults->{$_} for ( qw( material roster_data ) );
-        $settings->{default_bible} = $user_defaults->{default_bible} // $quiz_defaults->{bible};
-
+    unless ( $self->param('material') or $self->param('roster_data') ) {
         $self->stash(
-            bibles => $label
+            label_aliases => $label->aliases,
+            bibles        => $label
                 ->dq('material')
                 ->get( 'bible', undef, undef, { order_by => 'acronym' } )
                 ->run->all({}),
-            label_aliases => $label->aliases,
             %$settings,
         );
     }
     else {
-        my $settings = {
-            maybe material      => $label->canonicalize( $self->param('material') ),
-            maybe roster_data   => $self->param('roster_data'),
-            maybe default_bible => $self->param('default_bible'),
-        };
-
-        $user->data->{settings}{pickup_quiz} = $settings;
-        $user->save;
-
-        my $quiz_id = QuizSage::Model::Quiz->new->pickup( $settings, $user->id )->id;
-        $self->info('Pickup quiz generated: ' . $quiz_id );
-        return $self->redirect_to( '/quiz/' . $quiz_id );
+        try {
+            my $quiz_id = QuizSage::Model::Quiz->new->pickup( $settings, $user )->id;
+            $self->info( 'Pickup quiz generated: ' . $quiz_id );
+            return $self->redirect_to( '/quiz/' . $quiz_id );
+        }
+        catch ($e) {
+            $self->info( 'Pickup quiz error: ' . $e );
+            $self->flash( message => 'Pickup quiz settings error: ' . $e );
+            return $self->redirect_to('/quiz/pickup');
+        }
     }
 }
 
@@ -78,7 +71,7 @@ sub teams ($self) {
 
         if ( @$roster != $quiz->{roster}->@* ) {
             $self->info( 'Failed to parse teams: ' . $self->param('teams') );
-            $self->flash( message => 'Teams seemingly not entered correctly. Try again.' );
+            $self->flash( message => 'Teams seemingly not entered correctly' );
             return $self->redirect_to(
                 $self
                     ->url_for('/quiz/teams')
