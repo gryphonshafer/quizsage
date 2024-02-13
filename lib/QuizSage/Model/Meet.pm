@@ -165,8 +165,10 @@ sub quiz_settings ( $self, $bracket_name, $quiz_name ) {
 
     return unless $quiz;
 
-    $quiz->{$_} //= $set->{$_} // $bracket->{$_} // ( $build->{per_quiz} // {} )->{$_}
-        for ( qw( js_apps_id module defer importmap inputs material ) );
+    for ( qw( js_apps_id module defer importmap inputs material ) ) {
+        $quiz->{$_} //= $set->{$_} // $bracket->{$_} // ( $build->{per_quiz} // {} )->{$_};
+        delete $quiz->{$_} unless ( defined $quiz->{$_} );
+    }
 
     delete $quiz->{name};
     $quiz->{teams} = delete $quiz->{roster};
