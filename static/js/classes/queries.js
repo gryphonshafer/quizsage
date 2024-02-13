@@ -397,7 +397,7 @@ export default class Queries {
         query.original = structuredClone(query);
 
         if ( query.type.substr( 0, 1 ).toUpperCase() == 'Q' )
-            query.prompt = `Quote ${query.book}, chapter ${query.chapter}, ` + (
+            query.pre_prompt = `Quote ${query.book}, chapter ${query.chapter}, ` + (
                 ( query.chapter == next_verse.chapter )
                     ? `verses ${query.verse} and ${next_verse.verse}.`
                     : `verse ${query.verse} and chapter ${next_verse.chapter}, verse ${next_verse.verse}.`
