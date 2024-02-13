@@ -150,8 +150,8 @@ export default class Material {
                     verse.string.indexOf(input) != -1
             )
             .sort( ( a, b ) =>
-                a.book    - b.book    ||
-                a.chapter - b.chapter ||
+                a.book.localeCompare( b.book ) ||
+                a.chapter - b.chapter          ||
                 a.verse   - b.verse
             );
     }
