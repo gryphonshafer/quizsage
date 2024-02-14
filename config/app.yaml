@@ -1,34 +1,50 @@
 ---
 preinclude: ../omniframe/config/app.yaml
 default:
-    libs: ../omniframe/lib
-    omniframe: ../omniframe
+    libs        : ../omniframe/lib
+    omniframe   : ../omniframe
     mojo_app_lib: QuizSage::Control
-    database:
+    database    :
         shards:
             app:
                 default_shard: 1
-                file: local/db/app.sqlite
+                file         : local/db/app.sqlite
             material:
                 file: local/db/material.sqlite
     logging:
         alert_email:
-            - gryphon@quizsage.org
+            - example@example.org
     mojolicious:
         secrets:
             - 65.zH1eZb4m7Q19Jf1OUtzxeYg92Ngqy
         session:
             cookie_name: quizsage_session
     email:
-        from: QuizSage <gryphon@quizsage.org>
+        from: QuizSage <example@example.org>
     bcrypt:
         salt: 63MWT0N6PQlNU43R
     material:
         obml: local/obml
         json: static/json/material
-    default_bible: NIV
-    default_quiz_duration: 30
-    default_material: 'Galatians; Ephesians; Philippians; Colossians NASB1995 NIV'
+    quiz_defaults:
+        bible         : NIV
+        duration      : 30
+        material_label: Galatians; Ephesians; Philippians; Colossians NASB* NASB5 NIV
+        roster_data   : |
+            Team 1
+            Alpha Bravo
+            Charlie Delta
+            Echo Foxtrox
+
+            Team 2
+            Gulf Hotel
+            Juliet India
+            Kilo Lima
+
+            Team 3
+            Mike November
+            Oscar Papa
+            Romeo Quebec
 www:
     logging:
         filter: ~

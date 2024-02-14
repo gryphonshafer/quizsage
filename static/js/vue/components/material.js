@@ -1,17 +1,23 @@
-import template from 'modules/template';
-import quiz     from 'vue/stores/quiz';
+import store     from 'vue/store';
+import template  from 'modules/template';
+import thesaurus from 'vue/components/thesaurus';
 
 export default {
-    computed: {
-        ...Pinia.mapState( quiz, [ 'current', 'selected' ] ),
+    components: {
+        thesaurus,
+    },
 
-        material() {
-            return this.current.materials.find( material => material.bible.name == this.selected.bible );
-        },
+    computed: {
+        ...Pinia.mapState( store, [ 'current', 'selected' ] ),
     },
 
     methods: {
-        ...Pinia.mapActions( quiz, ['replace_query'] ),
+        ...Pinia.mapActions( store, ['replace_query'] ),
+
+        reset_replace_query() {
+            if ( this.$root.$refs.controls ) this.$root.$refs.controls.trigger_event('reset');
+            this.replace_query();
+        },
     },
 
     template: await template( import.meta.url ),

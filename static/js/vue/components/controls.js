@@ -1,13 +1,13 @@
+import store    from 'vue/store';
 import template from 'modules/template';
-import quiz     from 'vue/stores/quiz';
 
 export default {
     computed: {
-        ...Pinia.mapState( quiz, [ 'current', 'selected' ] ),
+        ...Pinia.mapState( store, [ 'current', 'selected' ] ),
     },
 
     methods: {
-        ...Pinia.mapActions( quiz, [
+        ...Pinia.mapActions( store, [
             'action', 'alter_query', 'last_event_if_not_viewed', 'is_quiz_done', 'view_query',
         ] ),
 

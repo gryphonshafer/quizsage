@@ -1,0 +1,49 @@
+[%
+    page.title = 'Scoreboard Room ' _ room_number;
+    page.js.defer.push('util/websocket');
+
+    IF quiz;
+        page.vue   = 1;
+        page.demi  = 1;
+        page.pinia = 1;
+
+        js_app_config = quiz.js_app_config('board');
+
+        page.js.importmap = js_app_config.importmap;
+        page.js.module    = page.js.module.merge( js_app_config.module );
+    END;
+%]
+
+[% UNLESS quiz %]
+    <h1>QuizSage: [% page.title %]</h1>
+
+    <p>
+        There is currently no active quiz for room [% room_number %] for the
+        selected meet. This page will automatically reload when there's
+        scoreboard data to display.
+    </p>
+
+    [% inline_js = BLOCK %]
+        window.addEventListener( 'load', () => {
+            const url = new URL( window.location.href );
+            omniframe.websocket.start({
+                path      : url.pathname + url.search,
+                onmessage : () => window.location.reload(),
+            });
+        } );
+    [% END %]
+    [% page.js.inline.push(inline_js) %]
+[% ELSE %]
+    <div id="board" v-cloak></div>
+
+    [% inline_js = BLOCK %]
+        function scale_board () {
+            const board     = window.document.querySelector('div#board');
+            board.scrollTop = board.scrollHeight;
+        }
+
+        window.addEventListener( 'resize', scale_board );
+        window.addEventListener( 'load',   scale_board );
+    [% END %]
+    [% page.js.inline.push(inline_js) %]
+[% END %]

@@ -9,43 +9,34 @@ sub pickup ($self) {
     my $user  = $self->stash('user');
     my $label = QuizSage::Model::Label->new( user_id => $user->id );
 
-    unless (
-        $self->param('material') or
-        $self->param('default_bible') or
-        $self->param('roster_data')
-    ) {
-        my $settings = $user->data->{settings}{pickup_quiz} // {};
+    my $quiz_defaults = $label->conf->get('quiz_defaults');
+    my $user_settings = $user->data->{settings}{pickup_quiz} // {};
 
-        $settings->{material}      //= $label->conf->get('default_material'),
-        $settings->{default_bible} //= $label->conf->get('default_bible');
-        $settings->{roster_data}   //= join( "\n\n", map { join( "\n", @$_ ) }
-            [ 'Team 1', 'Alpha Bravo',   'Charlie Delta', 'Echo Foxtrox' ],
-            [ 'Team 2', 'Gulf Hotel',    'India Juliet',  'Kilo Lima'    ],
-            [ 'Team 3', 'Mike November', 'Oscar Papa',    'Romeo Quebec' ],
-        );
+    my $settings;
+    $settings->{$_} = $self->param($_) // $user_settings->{$_} // $quiz_defaults->{$_}
+        for ( qw( bible roster_data material_label ) );
 
+    unless ( $self->param('material') or $self->param('roster_data') ) {
         $self->stash(
-            bibles => $label
+            label_aliases => $label->aliases,
+            bibles        => $label
                 ->dq('material')
                 ->get( 'bible', undef, undef, { order_by => 'acronym' } )
                 ->run->all({}),
-            label_aliases => $label->aliases,
             %$settings,
         );
     }
     else {
-        my $settings = {
-            material      => $label->canonicalize( $self->param('material') ),
-            default_bible => $self->param('default_bible') || $label->conf->get('default_bible'),
-            roster_data   => $self->param('roster_data'),
-        };
-
-        $user->data->{settings}{pickup_quiz} = $settings;
-        $user->save;
-
-        my $quiz_id = QuizSage::Model::Quiz->new->pickup( $settings, $user->id )->id;
-        $self->info('Pickup quiz generated: ' . $quiz_id );
-        return $self->redirect_to( '/quiz/' . $quiz_id );
+        try {
+            my $quiz_id = QuizSage::Model::Quiz->new->pickup( $settings, $user )->id;
+            $self->info( 'Pickup quiz generated: ' . $quiz_id );
+            return $self->redirect_to( '/quiz/' . $quiz_id );
+        }
+        catch ($e) {
+            $self->info( 'Pickup quiz error: ' . $e );
+            $self->flash( message => 'Pickup quiz settings error: ' . $e );
+            return $self->redirect_to('/quiz/pickup');
+        }
     }
 }
 
@@ -80,7 +71,7 @@ sub teams ($self) {
 
         if ( @$roster != $quiz->{roster}->@* ) {
             $self->info( 'Failed to parse teams: ' . $self->param('teams') );
-            $self->flash( message => 'Teams seemingly not entered correctly. Try again.' );
+            $self->flash( message => 'Teams seemingly not entered correctly' );
             return $self->redirect_to(
                 $self
                     ->url_for('/quiz/teams')
@@ -141,11 +132,12 @@ sub build ($self) {
 }
 
 sub quiz ($self) {
-    if ( ( $self->stash('format') // '' ) eq 'json' ) {
-        $self->render( json => QuizSage::Model::Quiz->new->load( $self->param('quiz_id') )->data );
+    my $quiz = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
+    unless ( ( $self->stash('format') // '' ) eq 'json' ) {
+        $self->stash( quiz => $quiz );
     }
     else {
-        $self->stash( quiz => QuizSage::Model::Quiz->new->load( $self->param('quiz_id') ) );
+        $self->render( json => $quiz->data );
     }
 }
 

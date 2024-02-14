@@ -1,11 +1,11 @@
 [%
     IF position == 1;
-        '1st';
+        '1<sup>st</sup>';
     ELSIF position == 2;
-        '2nd';
+        '2<sup>nd</sup>';
     ELSIF position == 3;
-        '3rd';
+        '3<sup>rd</sup>';
     ELSE;
-        position _ 'th';
+        position _ '<sup>th</sup>';
     END;
 %]

@@ -1,7 +1,9 @@
 package QuizSage::Control::Meet;
 
 use exact 'Mojolicious::Controller';
+use Mojo::JSON 'encode_json';
 use QuizSage::Model::Meet;
+use QuizSage::Model::Quiz;
 
 with 'Omniframe::Role::Bcrypt';
 
@@ -39,6 +41,27 @@ sub stats ($self) {
     );
 }
 
+sub board ($self) {
+    my $quiz = QuizSage::Model::Quiz->new->latest_quiz_in_meet_room(
+        $self->param('meet_id'),
+        $self->param('room_number'),
+    );
+
+    if ( $self->tx->is_websocket ) {
+        $self->socket( setup => encode_json( {
+            type => 'board',
+            meet => 0 + $self->param('meet_id'),
+            room => 0 + $self->param('room_number'),
+        } ) );
+    }
+    elsif ( ( $self->stash('format') // '' ) eq 'json' ) {
+        $self->render( json => $quiz->data );
+    }
+    else {
+        $self->stash( quiz => $quiz );
+    }
+}
+
 1;
 
 =head1 NAME
@@ -61,6 +84,8 @@ for "Meet" actions.
 =head2 distribution
 
 =head2 stats
+
+=head2 board
 
 =head1 INHERITANCE
 

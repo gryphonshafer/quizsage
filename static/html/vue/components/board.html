@@ -1,4 +1,4 @@
-<table class="board">
+<table class="board" v-if="teams && board">
     <thead>
         <tr>
             <td colspan="3" rowspan="5" class="top_left_corner">
@@ -30,7 +30,7 @@
                 <td v-for="quizzer in team.quizzers"
                     @click="select_quizzer( quizzer.id, team.id )"
                     :class="{
-                        selected : selected.quizzer_id == quizzer.id,
+                        selected : selected.quizzer_id && quizzer.id && selected.quizzer_id == quizzer.id,
                         clickable: true,
                     }"
                 >{{ quizzer.name }}</td>

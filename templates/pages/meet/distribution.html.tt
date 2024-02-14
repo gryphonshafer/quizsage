@@ -7,7 +7,7 @@
     <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') ) %]">Meet Page</a></li>
 </ul>
 
-[% IF per_quiz.material %]<p>Material: [% per_quiz.material.label %]</p>[% END %]
+[% IF per_quiz AND per_quiz.material %]<p>Material: [% per_quiz.material.label %]</p>[% END %]
 
 [% FOR bracket IN build.brackets %]
     <h2>Bracket: [% bracket.name %]</h2>

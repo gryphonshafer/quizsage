@@ -3,6 +3,20 @@
         <li>[%
             IF team.name;
                 team.name;
+
+                IF team.score;
+                    ' -- <i>';
+
+                    team.score.points;
+                    ' pts.';
+
+                    IF team.score.position;
+                        ' ';
+                        PROCESS st_ing.html.tt position = team.score.position;
+                    END;
+
+                    '</i>';
+                END;
             ELSE;
                 '<i>';
 

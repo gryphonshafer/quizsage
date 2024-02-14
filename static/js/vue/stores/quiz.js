@@ -16,9 +16,12 @@ const material_promise = quiz_promise
 
 const [ quiz, miscellaneous ] = await Promise.all( [ quiz_promise, material_promise ] )
     .then( ( [ quiz_data, material_data ] ) => {
-        const inputs = quiz_data.settings.inputs;
+        const inputs = quiz_data.settings.inputs || {};
 
-        inputs.material.data     = material_data;
+        inputs.material ||= {};
+        inputs.material.data = material_data;
+
+        inputs.quiz ||= {};
         inputs.quiz.state        = quiz_data.state;
         inputs.quiz.teams        = quiz_data.settings.teams;
         inputs.quiz.distribution = quiz_data.settings.distribution;
@@ -36,9 +39,9 @@ function get_current( id = undefined ) {
     const row = quiz.board_row(id);
     return (row)
         ? {
-            event    : row,
-            query    : row.query,
-            materials: quiz.queries.material.materials( row.query ),
+            event: row,
+            query: row.query,
+            ...quiz.queries.material.materials( row.query ),
         }
         : undefined;
 }
@@ -75,7 +78,7 @@ function update_data(store) {
     store.eligible_teams = get_eligible_teams( quiz.state.teams );
 }
 
-export default Pinia.defineStore( 'quiz', {
+export default Pinia.defineStore( 'store', {
     state() {
         const current = get_current() || get_current( quiz.state.board.at(-1).id );
 
@@ -207,7 +210,7 @@ export default Pinia.defineStore( 'quiz', {
         },
 
         exit_quiz() {
-            document.location.href = new URL(
+            window.location.href = new URL(
                 ( miscellaneous.meet_id ) ? '/meet/' + miscellaneous.meet_id : '/quiz/pickup',
                 url,
             );

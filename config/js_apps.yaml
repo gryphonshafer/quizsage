@@ -1,0 +1,29 @@
+---
+default:
+    name: Christian Bible Quizzing (CBQ)
+    apps:
+        quiz:
+            module:
+              - vue/apps/quiz
+            importmap:
+                classes/material        : classes/material
+                classes/queries         : classes/queries
+                classes/quiz            : classes/quiz
+                classes/scoring         : classes/scoring
+                modules/distribution    : modules/distribution
+                modules/template        : modules/template
+                vue/components/board    : vue/components/board
+                vue/components/controls : vue/components/controls
+                vue/components/material : vue/components/material
+                vue/components/query    : vue/components/query
+                vue/components/search   : vue/components/search
+                vue/components/thesaurus: vue/components/thesaurus
+                vue/components/timer    : vue/components/timer
+                vue/store               : vue/stores/quiz
+        board:
+            module:
+              - vue/apps/board
+            importmap:
+                modules/template    : modules/template
+                vue/components/board: vue/components/board
+                vue/store           : vue/stores/board

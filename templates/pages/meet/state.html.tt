@@ -2,12 +2,32 @@
 
 <h1>QuizSage: [% page.title %]</h1>
 
-<ul>
+[%
+    FOR bracket IN state.brackets;
+        FOR set IN bracket.sets;
+            FOR quiz IN set.rooms;
+                room_numbers.${ quiz.room } = 1;
+            END;
+        END;
+    END;
+%]
+
+<ul style="display: inline-block; vertical-align: top">
     <li><a href="[% c.url_for('/')                                             %]">Main Page</a></li>
     <li><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/roster')       %]">Roster</a></li>
     <li><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/distribution') %]">Distribution</a></li>
     <li><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/stats')        %]">Statistics</a></li>
 </ul>
+
+<div style="display: inline-block; vertical-align: top">
+    <ul>
+        [% FOR room_number IN room_numbers.keys.sort %]
+            <li><a href="[%
+                c.url_for('/meet/' _ c.param('meet_id') _ '/board/' _ room_number )
+            %]">Scoreboard Room [% room_number %]</a></li>
+        [% END %]
+    </ul>
+</div>
 
 [% BLOCK event %]
     [% FOR event IN events %]
@@ -81,6 +101,16 @@
 
                     Room: [% quiz.room %]
 
+                    [% IF quiz.current_query_id %]
+                        <span style="
+                            position: absolute;
+                            top     : 0.5em;
+                            right   : 0.75em;
+                        ">
+                            Query: [% quiz.current_query_id %]
+                        </span>
+                    [% END %]
+
                     [% PROCESS quiz_teams_list.html.tt roster = quiz.roster %]
 
                     [% IF qm_auth %]
@@ -89,8 +119,8 @@
                                 style="
                                     font-style     : italic;
                                     position       : absolute;
-                                    bottom         : 0.25em;
-                                    right          : 0.25em;
+                                    bottom         : 0.5em;
+                                    right          : 0.75em;
                                     text-decoration: none;
                                 "
                                 onclick="
@@ -107,8 +137,8 @@
                                 style="
                                     font-style     : italic;
                                     position       : absolute;
-                                    bottom         : 0.25em;
-                                    right          : 0.25em;
+                                    bottom         : 0.5em;
+                                    right          : 0.75em;
                                     text-decoration: none;
                                 "
                                 onclick="

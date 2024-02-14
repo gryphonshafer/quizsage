@@ -6,9 +6,9 @@ use Omniframe::Class::Javascript;
 use Omniframe::Util::Text 'trim';
 use QuizSage::Model::Season;
 use QuizSage::Util::Material 'material_json';
-use YAML::XS qw( LoadFile Load Dump );
+use YAML::XS 'Dump';
 
-with 'Omniframe::Role::Time';
+with qw( Omniframe::Role::Time QuizSage::Role::Data QuizSage::Role::JSApp );
 
 sub build ( $self, $user_id = undef ) {
     my $build_settings = $self->_merge_meet_and_season_settings;
@@ -23,7 +23,7 @@ sub build ( $self, $user_id = undef ) {
 }
 
 sub _merge_meet_and_season_settings ($self) {
-    my $meet_settings   = Load( Dump( $self->data->{settings} // {} ) );
+    my $meet_settings   = $self->deepcopy( $self->data->{settings} // {} );
     my $season_settings =
         QuizSage::Model::Season->new->load( $self->data->{season_id} )->data->{settings} // {};
 
@@ -46,7 +46,7 @@ sub _merge_meet_and_season_settings ($self) {
 }
 
 sub parse_and_structure_roster_text ( $self, $roster_ref ) {
-    my $default_bible = delete $$roster_ref->{default_bible} // $self->conf->get('default_bible');
+    my $default_bible = delete $$roster_ref->{default_bible} // $self->conf->get( qw( quiz_defaults bible ) );
     my $bibles_re     = '\b(?:' . join( '|', $self->dq('material')->get(
         'bible',
         ['acronym'],
@@ -105,8 +105,11 @@ sub parse_and_structure_roster_text ( $self, $roster_ref ) {
 }
 
 sub _create_material_json ( $self, $build_settings, $user_id = undef ) {
-    for my $set ( $build_settings->{per_quiz}, $build_settings->{brackets}->@* ) {
-        next unless ( defined $set->{material} );
+    for my $set (
+        ( $build_settings->{per_quiz} // undef ),
+        $build_settings->{brackets}->@*,
+    ) {
+        next unless ( $set and defined $set->{material} );
 
         my $label = $set->{material};
         $set->{material} = material_json(
@@ -192,10 +195,7 @@ sub _build_bracket_data ( $self, $build_settings ) {
             ];
         }
         elsif ( $bracket->{type} eq 'positional' ) {
-            my $template = LoadFile(
-                $self->conf->get( qw( config_app root_dir ) ) .
-                    '/config/meets/brackets/' . $bracket->{template} . '.yaml'
-            );
+            my $template = $self->dataload( 'config/meets/brackets/' . $bracket->{template} . '.yaml' );
 
             for my $quiz_override ( $bracket->{quizzes}->@* ) {
                 my ($quiz_to_override) =
@@ -245,7 +245,7 @@ sub _build_bracket_data ( $self, $build_settings ) {
 
 sub _schedule_integration( $self, $build_settings ) {
     my $schedule          = delete $build_settings->{schedule} // {};
-    my $schedule_duration = $schedule->{duration} // $self->conf->get('default_quiz_duration');
+    my $schedule_duration = $schedule->{duration} // $self->conf->get( qw( quiz_defaults duration ) );
 
     # blocks setup
     my $blocks;
@@ -256,7 +256,7 @@ sub _schedule_integration( $self, $build_settings ) {
         } ];
     }
     else {
-        $blocks = Load( Dump( $schedule->{blocks} ) );
+        $blocks = $self->deepcopy( $schedule->{blocks} );
         for my $block (@$blocks) {
             $block->{start} = $self->time->parse( $block->{start} )->datetime if ( $block->{start} );
             $block->{stop}  = $self->time->parse( $block->{stop}  )->datetime if ( $block->{stop}  );
@@ -584,7 +584,10 @@ sub _add_distributions ( $self, $build_settings ) {
 
     for my $bracket ( $build_settings->{brackets}->@* ) {
         for my $quiz ( map { $_->{rooms}->@* } $bracket->{sets}->@* ) {
-            my $material = $quiz->{material} || $bracket->{material} || $build_settings->{per_quiz}{material};
+            my $material =
+                $quiz->{material} ||
+                $bracket->{material} ||
+                ( $build_settings->{per_quiz} // {} )->{material};
 
             $material_json_bibles->{ $material->{json_file}->to_string } //= do {
                 my $bibles = decode_json( $material->{json_file}->slurp )->{bibles};
@@ -592,7 +595,15 @@ sub _add_distributions ( $self, $build_settings ) {
             };
 
             my $importmap =
-                $quiz->{importmap} || $bracket->{importmap} || $build_settings->{per_quiz}{importmap};
+                $quiz->{importmap} ||
+                $bracket->{importmap} ||
+                ( $build_settings->{per_quiz} // {} )->{importmap} ||
+                $self->js_app_config(
+                    'quiz',
+                    $quiz->{js_apps_id} ||
+                    $bracket->{js_apps_id} ||
+                    ( $build_settings->{per_quiz} // {} )->{js_apps_id},
+                )->{importmap};
 
             my $importmap_yaml = Dump($importmap);
 
@@ -615,7 +626,8 @@ sub _add_distributions ( $self, $build_settings ) {
 }
 
 sub _build_settings_cleanup( $self, $build_settings ) {
-    delete $build_settings->{per_quiz}{material}{json_file} if ( $build_settings->{per_quiz}{material} );
+    delete $build_settings->{per_quiz}{material}{json_file}
+        if ( ( $build_settings->{per_quiz} // {} )->{material} );
     for my $bracket ( $build_settings->{brackets}->@* ) {
         delete $bracket->{$_} for ( qw( quizzes_per_team rooms teams template type quizzes ) );
         delete $bracket->{material}{json_file} if ( $bracket->{material} );
@@ -649,6 +661,6 @@ This role provides some Meet::Build methods.
 
 =head2 parse_and_structure_roster_text
 
-=head1 WITH ROLES
+=head1 WITH ROLE
 
-L<Omniframe::Role::Time>.
+L<Omniframe::Role::Time>, L<QuizSage::Role::Data>, L<QuizSage::Role::JSApp>.
