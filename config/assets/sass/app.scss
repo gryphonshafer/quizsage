@@ -164,6 +164,15 @@ div#quiz {
             tr td:nth-of-type(2) {
                 width: 6em;
             }
+
+            tr.is_current_query td {
+                background-color: $active_bg_cell;
+            }
+
+            span.match {
+                font-weight: bold;
+                color      : blue;
+            }
         }
     }
 

@@ -146,8 +146,7 @@ export default class Material {
         return ( ( ! bible ) ? this.all_verses : this.verses_by_bible[bible] )
             .filter( verse =>
                 ( type == 'exact'  ) ? verse.text.indexOf(input) != -1    :
-                ( type == 'prompt' ) ? verse.string.match(boundary_regex) :
-                    verse.string.indexOf(input) != -1
+                ( type == 'prompt' ) ? verse.string.match(boundary_regex) : verse.string.indexOf(input) != -1
             )
             .sort( ( a, b ) =>
                 a.book.localeCompare( b.book ) ||
