@@ -121,32 +121,36 @@
 
 <h2>Quizzers with VRAs</h2>
 
-<table>
-    <thead>
-        <tr>
-            <th>Position</th>
-            <th>Quizzer</th>
-            <th>Team</th>
-            <th>VRAs</th>
-        </tr>
-    </thead>
-    <tbody>
-        [% position = 0 %]
-        [% FOR quizzer IN stats.vra_quizzers %]
-            [% position = position + 1 %]
+[% IF stats.vra_quizzers.size > 0 %]
+    <table>
+        <thead>
             <tr>
-                <td class="right">[% position %]</td>
-                <td>[% quizzer.name %]</td>
-                <td>
-                    [% quizzer.team_name %]
-                    [% IF quizzer.tags AND quizzer.tags.grep('^Rookie$').size %]
-                        <i>Rookie</i>
-                    [% END %]
-                </td>
-                <td class="right">[% quizzer.vra_sum %]</td>
+                <th>Position</th>
+                <th>Quizzer</th>
+                <th>Team</th>
+                <th>VRAs</th>
             </tr>
-        [% END %]
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            [% position = 0 %]
+            [% FOR quizzer IN stats.vra_quizzers %]
+                [% position = position + 1 %]
+                <tr>
+                    <td class="right">[% position %]</td>
+                    <td>[% quizzer.name %]</td>
+                    <td>
+                        [% quizzer.team_name %]
+                        [% IF quizzer.tags AND quizzer.tags.grep('^Rookie$').size %]
+                            <i>Rookie</i>
+                        [% END %]
+                    </td>
+                    <td class="right">[% quizzer.vra_sum %]</td>
+                </tr>
+            [% END %]
+        </tbody>
+    </table>
+[% ELSE %]
+    <p>No statistics currently available.</p>
+[% END %]
 
 [% PROCESS by_points_average type = 'teams', filter_tag = undef %]
