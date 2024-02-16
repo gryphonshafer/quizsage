@@ -233,6 +233,14 @@ sub stats ($self) {
                             name    => $quiz->{name},
                             weight  => $quiz->{weight} // $bracket->{weight} // 1,
                             points  => $quizzer->{score}{points},
+                            vra     => scalar( grep {
+                                $_->{action}     eq 'correct'            and
+                                $_->{quizzer_id} eq $quizzer->{id}       and
+                                $_->{team_id}    eq $team->{id}          and
+                                index( uc( $_->{qsstypes} ), 'V' ) != -1 and
+                                index( uc( $_->{qsstypes} ), 'R' ) != -1 and
+                                index( uc( $_->{qsstypes} ), 'A' ) != -1
+                            } $quiz_data->{state}{events}->@* ),
                         } );
                     }
                 }
@@ -282,6 +290,17 @@ sub stats ($self) {
             quizzes_max => $quizzes_max,
         };
     };
+
+    $stats->{vra_quizzers} = [
+        sort { $b->{vra_sum} <=> $a->{vra_sum} or $b->{points_sum} <=> $a->{points_sum} }
+        grep { $_->{vra_sum} }
+        map {
+            my $quizzer = $_;
+            $quizzer->{vra_sum} = 0;
+            $quizzer->{vra_sum} += $_->{vra} for ( $quizzer->{quizzes}->@* );
+            $quizzer;
+        } $stats->{quizzers}->@*
+    ];
 
     return $stats;
 }

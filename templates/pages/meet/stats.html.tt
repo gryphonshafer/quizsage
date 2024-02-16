@@ -40,7 +40,7 @@
 [% END %]
 
 [% BLOCK by_points_average %]
-    <h2>[% type.ucfirst %] by Points Average</h2>
+    <h2>[% IF filter_tag %][% filter_tag %] [% END %][% type.ucfirst %] by Points Average</h2>
 
     [% IF stats.$type.size > 0 %]
         <table>
@@ -61,51 +61,53 @@
                     last_item = undef;
                 %]
                 [% FOR item IN stats.$type %]
-                    [%
-                        IF NOT last_item OR (
-                            last_item.points_avg > item.points_avg OR
-                            last_item.points_sum > item.points_sum
-                        );
-                            position      = position + 1;
-                            this_position = position;
-                        ELSE;
-                            this_position = '';
-                        END;
-                        last_item = item;
-                    %]
-                    <tr>
-                        <td class="right">[% this_position %]</td>
-                        <td>
-                            [% item.name %]
-                            [% IF item.team_name %]
-                                <br>
-                                [% item.team_name %]
-                            [% END %]
-                            [% IF item.tags AND item.tags.grep('^Rookie$').size %]
-                                <i>Rookie</i>
-                            [% END %]
-                        </td>
-                        <td class="right">[% item.points_avg | format('%0.2f') %]</td>
-                        <td class="right">[% item.points_sum | format('%0.1f') %]</td>
-                        [% FOR quiz IN item.quizzes %]
-                            <td>
-                                [% quiz.points %] pts. <i>(at [% quiz.weight %])</i>
-                                <br>
-                                [% IF quiz.position %]
-                                    [% PROCESS st_ing.html.tt position = quiz.position %]
-                                [% END %]
-                                [%
-                                    ( quiz.bracket.length > 6 ) ? quiz.bracket.substr( 0, 6 ) _ '.' : quiz.bracket
-                                %] [% quiz.name %]
-                            </td>
-                        [% END %]
+                    [% IF NOT filter_tag OR item.tags AND item.tags.grep( '^' _ filter_tag _ '$' ).size %]
                         [%
-                            empty_columns = stats.meta.$type.quizzes_max - item.quizzes.size;
-                            FOR [ 1 .. empty_columns ];
+                            IF NOT last_item OR (
+                                last_item.points_avg > item.points_avg OR
+                                last_item.points_sum > item.points_sum
+                            );
+                                position      = position + 1;
+                                this_position = position;
+                            ELSE;
+                                this_position = '';
+                            END;
+                            last_item = item;
                         %]
-                            <td style="background-color: #f0f0f0"></td>
-                        [% END %]
-                    </tr>
+                        <tr>
+                            <td class="right">[% this_position %]</td>
+                            <td>
+                                [% item.name %]
+                                [% IF item.team_name %]
+                                    <br>
+                                    [% item.team_name %]
+                                [% END %]
+                                [% IF NOT filter_tag AND item.tags AND item.tags.grep('^Rookie$').size %]
+                                    <i>Rookie</i>
+                                [% END %]
+                            </td>
+                            <td class="right">[% item.points_avg | format('%0.2f') %]</td>
+                            <td class="right">[% item.points_sum | format('%0.1f') %]</td>
+                            [% FOR quiz IN item.quizzes %]
+                                <td>
+                                    [% quiz.points %] pts. <i>(at [% quiz.weight %])</i>
+                                    <br>
+                                    [% IF quiz.position %]
+                                        [% PROCESS st_ing.html.tt position = quiz.position %]
+                                    [% END %]
+                                    [%
+                                        ( quiz.bracket.length > 6 ) ? quiz.bracket.substr( 0, 6 ) _ '.' : quiz.bracket
+                                    %] [% quiz.name %]
+                                </td>
+                            [% END %]
+                            [%
+                                empty_columns = stats.meta.$type.quizzes_max - item.quizzes.size;
+                                FOR [ 1 .. empty_columns ];
+                            %]
+                                <td style="background-color: #f0f0f0"></td>
+                            [% END %]
+                        </tr>
+                    [% END %]
                 [% END %]
             </tbody>
         <table>
@@ -114,5 +116,37 @@
     [% END %]
 [% END %]
 
-[% PROCESS by_points_average type = 'quizzers' %]
-[% PROCESS by_points_average type = 'teams'    %]
+[% PROCESS by_points_average type = 'quizzers', filter_tag = undef    %]
+[% PROCESS by_points_average type = 'quizzers', filter_tag = 'Rookie' %]
+
+<h2>Quizzers with VRAs</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Position</th>
+            <th>Quizzer</th>
+            <th>Team</th>
+            <th>VRAs</th>
+        </tr>
+    </thead>
+    <tbody>
+        [% position = 0 %]
+        [% FOR quizzer IN stats.vra_quizzers %]
+            [% position = position + 1 %]
+            <tr>
+                <td class="right">[% position %]</td>
+                <td>[% quizzer.name %]</td>
+                <td>
+                    [% quizzer.team_name %]
+                    [% IF quizzer.tags AND quizzer.tags.grep('^Rookie$').size %]
+                        <i>Rookie</i>
+                    [% END %]
+                </td>
+                <td class="right">[% quizzer.vra_sum %]</td>
+            </tr>
+        [% END %]
+    </tbody>
+</table>
+
+[% PROCESS by_points_average type = 'teams', filter_tag = undef %]
