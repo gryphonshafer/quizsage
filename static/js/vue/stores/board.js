@@ -2,7 +2,7 @@ const url = new URL( window.location.href );
 
 const quiz_data = await fetch( url.pathname + '.json' + url.search )
     .then( response => response.json() )
-    .then( data => {
+    .then( data     => {
         if ( data.state && data.state.teams ) return data.state;
 
         data.settings.teams.forEach( team => {
@@ -37,6 +37,14 @@ const state = {
     },
 };
 
+function set_board_scale(teams) {
+    const columns_count = 3 + teams.length + teams.flatMap( team => team.quizzers ).length;
+    window.document.querySelector('div#board').style.fontSize =
+        'calc( ( 100vw - 40px ) / ' + ( columns_count * 3.5 ) + ' )';
+}
+
+set_board_scale( quiz_data.teams );
+
 const store = Pinia.defineStore( 'store', {
     state() {
         return state;
@@ -50,13 +58,15 @@ const store = Pinia.defineStore( 'store', {
 } );
 
 omniframe.websocket.start({
-    path      : url.pathname + url.search,
-    onmessage : (fresh_quiz_data) => {
+    path     : url.pathname + url.search,
+    onmessage: (fresh_quiz_data) => {
         if (fresh_quiz_data) {
             store().$patch({
                 teams: fresh_quiz_data.teams,
                 board: fresh_quiz_data.board,
             });
+
+            set_board_scale( fresh_quiz_data.teams );
         }
         else {
             window.location.reload();

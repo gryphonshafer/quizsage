@@ -133,6 +133,7 @@ sub state ($self) {
         my $teams_points;
         $teams_points->{ $_->{name} } += $_->{score}{points} for (
             map { $_->{state}{teams}->@* }
+            grep { $_->{state}{teams} }
             grep { $_->{bracket} eq $bracket->{name} } @$quizzes_done
         );
         $brackets_done->{ $bracket->{name} } = [

@@ -37,13 +37,16 @@
     <div id="board" v-cloak></div>
 
     [% inline_js = BLOCK %]
-        function scale_board () {
-            const board     = window.document.querySelector('div#board');
-            board.scrollTop = board.scrollHeight;
-        }
+        let board;
 
-        window.addEventListener( 'resize', scale_board );
-        window.addEventListener( 'load',   scale_board );
+        window.addEventListener( 'load', () => {
+            board = window.document.querySelector('div#board');
+            setTimeout( () => window.dispatchEvent( new Event('resize') ), 500 );
+        } );
+
+        window.addEventListener( 'resize', () => {
+            board.scrollTop = board.scrollHeight;
+        } );
     [% END %]
     [% page.js.inline.push(inline_js) %]
 [% END %]
