@@ -44,16 +44,23 @@ sub create ($self) {
             }
         }
         catch ($e) {
-            $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
-            $e =~ s/^"([^""]+)"/ '"' . join( ' ', map { ucfirst($_) } split( '_', $1 ) ) . '"' /e;
-            $e =~ s/DBD::\w+::st execute failed:\s*//;
-            $e .= '. Please try again.';
+            if ( $e =~ /human\-verification/i ) {
+                $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
+                $self->info('reCaptcha score too low');
+                $self->stash( message => $e );
+            }
+            else {
+                $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
+                $e =~ s/^"([^""]+)"/ '"' . join( ' ', map { ucfirst($_) } split( '_', $1 ) ) . '"' /e;
+                $e =~ s/DBD::\w+::st execute failed:\s*//;
+                $e .= '. Please try again.';
 
-            $e = "Value in $1 field is already registered under an existing user account."
-                if ( $e =~ /UNIQUE constraint failed/ );
+                $e = "Value in $1 field is already registered under an existing user account."
+                    if ( $e =~ /UNIQUE constraint failed/ );
 
-            $self->info("User create failure: $e");
-            $self->stash( message => $e, %params );
+                $self->info("User create failure: $e");
+                $self->stash( message => $e, %params );
+            }
         }
     }
 }
@@ -111,8 +118,15 @@ sub forgot_password ($self) {
             $self->redirect_to('/');
         }
         catch ($e) {
-            $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
-            $self->stash( message => $e );
+            if ( $e =~ /human\-verification/i ) {
+                $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
+                $self->info('reCaptcha score too low');
+                $self->stash( message => $e );
+            }
+            else {
+                $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
+                $self->stash( message => $e );
+            }
         }
     }
 }
@@ -164,11 +178,18 @@ sub login ($self) {
         );
     }
     catch ($e) {
-        $self->info( 'Login failure for ' . $self->param('email') );
-        $self->flash( message =>
-            'Login failed. Please try again, or try the ' .
-            '<a href="' . $self->url_for('/user/reset_password') . '">Reset Password page</a>.'
-        );
+        if ( $e =~ /human\-verification/i ) {
+            $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
+            $self->info('reCaptcha score too low');
+            $self->flash( message => $e );
+        }
+        else {
+            $self->info( 'Login failure for ' . $self->param('email') );
+            $self->flash( message =>
+                'Login failed. Please try again, or try the ' .
+                '<a href="' . $self->url_for('/user/reset_password') . '">Reset Password page</a>.'
+            );
+        }
     }
 
     $self->redirect_to('/');
