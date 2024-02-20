@@ -19,11 +19,24 @@ sub create ($self) {
                 if ( $user and $user->data ) {
                     $user->send_email( 'verify_email', $self->url_for('/user/verify') );
 
+                    my $email = {
+                        to   => $user->data->{email},
+                        from => $user->conf->get( qw( email from ) ),
+                    };
+                    $email->{$_} =~ s/(<|>)/ ( $1 eq '<' ) ? '&lt;' : '&gt;' /eg for ( qw( to from ) );
+
                     $self->info( 'User create success: ' . $user->id );
                     $self->flash(
                         message => {
                             type => 'success',
-                            text => 'Successfully created user. Watch for the verification email.',
+                            text => join( ' ',
+                                'Successfully created user with email address: ' .
+                                    '<b>' . $email->{to} . '</b>.',
+                                'Check your email for reception of the verification email.',
+                                'If you don\'t see the verification email in a couple minutes, ' .
+                                    'check your spam folder.',
+                                'Contact <b>' . $email->{from} . '</b> if you need help.',
+                            ),
                         }
                     );
                     $self->redirect_to('/');

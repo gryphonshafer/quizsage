@@ -5,7 +5,6 @@
 <p>This email address was used to create a new QuizSage account.</p>
 
 <ul>
-    <li>Username: <b>[% user.username %]</b></li>
     <li>Real Name: <b>[% user.first_name %] [% user.last_name %]</b></li>
     <li>Email: <b>[% user.email %]</b></li>
 </ul>
