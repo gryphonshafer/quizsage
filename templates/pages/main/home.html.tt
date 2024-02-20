@@ -1,18 +1,20 @@
-[% recaptcha_site_key = c.app.conf.get( 'recaptcha', 'site_key' ) %]
+[% g_recaptcha_cb = BLOCK %]
+    function g_recaptcha_cb(token) {
+        document.getElementById('login_form').submit();
+    }
+[% END %]
+[%
+    recaptcha_site_key = c.app.conf.get( 'recaptcha', 'site_key' );
+    IF recaptcha_site_key;
+        page.js.defer.push('https://www.google.com/recaptcha/api.js');
+        page.js.inline.push(g_recaptcha_cb);
+    END;
+%]
 
 <h1>QuizSage</h1>
 
 [% UNLESS user %]
     <ul><li><a href="[% c.url_for('/user/create') %]">Create New User</a></li></ul>
-
-    [% IF recaptcha_site_key %]
-        <script src="https://www.google.com/recaptcha/api.js"></script>
-        <script>
-            function g_recaptcha_cb(token) {
-                document.getElementById('login_form').submit();
-            }
-        </script>
-    [% END %]
 
     <form method="post" action="[% c.url_for('/user/login') %]" id="login_form">
         <fieldset>

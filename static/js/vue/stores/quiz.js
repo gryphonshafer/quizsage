@@ -9,7 +9,7 @@ const quiz_promise = fetch( new URL( url.pathname + '.json', url ) )
 
 const material_promise = quiz_promise
     .then( data => fetch( new URL(
-        json_material_path + '/' + data.settings.material.material_id + '.json',
+        json_material_path + '/' + data.settings.material.id + '.json',
         url,
     ) ) )
     .then( reply => reply.json() );
@@ -210,6 +210,10 @@ export default Pinia.defineStore( 'store', {
         },
 
         exit_quiz() {
+            if ( ! this.is_quiz_done() && ! confirm(
+                'Are you sure you want to exit the quiz? The quiz is not finished.'
+            ) ) return;
+
             window.location.href = new URL(
                 ( miscellaneous.meet_id ) ? '/meet/' + miscellaneous.meet_id : '/quiz/pickup',
                 url,

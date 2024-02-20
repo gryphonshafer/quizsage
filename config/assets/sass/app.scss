@@ -277,6 +277,16 @@ table.board {
     tbody tr td:nth-of-type(2) {
         width: 3em;
     }
+
+    td.team_name,
+    td.team_score_position,
+    td.team_score_points {
+        font-weight: bold;
+    }
+
+    td.team_name {
+        padding-left: 0.7em;
+    }
 }
 
 div#board {
@@ -284,7 +294,6 @@ div#board {
     margin    : 0 auto;
     overflow-y: scroll;
     max-height: calc( 100vh - 26px );
-    font-size : calc( ( 100vw - 40px ) / 60 );
 
     table.board {
         margin: 0;
@@ -299,6 +308,10 @@ div#board {
             &:hover {
                 background-color: white;
             }
+        }
+
+        td.selected {
+            background-color: white;
         }
 
         &:nth-of-type(1) {
@@ -316,8 +329,8 @@ div#board {
         }
 
         td {
-            padding-top   : calc( ( 5vw - 15px ) / 8 );
-            padding-bottom: calc( ( 5vw - 15px ) / 8 );
+            padding-top   : calc( ( 5vw - 15px ) / 6 );
+            padding-bottom: calc( ( 5vw - 15px ) / 6 );
         }
     }
 }
@@ -330,4 +343,26 @@ div#board::-webkit-scrollbar {
 div#board {
     scrollbar-width   : none;
     -ms-overflow-style: none;
+}
+
+body.dark_mode {
+    color           : white;
+    background-color: black;
+
+    table.board {
+        td,
+        td.selected {
+            background-color: #1e1e1e !important;
+            border-color    : darkslategray;
+        }
+
+        td.top_left_corner {
+            background-color: black;
+            border-color    : black darkslategray darkslategray black;
+        }
+
+        tr.selected td {
+            background-color: #2a2d2e !important;
+        }
+    }
 }

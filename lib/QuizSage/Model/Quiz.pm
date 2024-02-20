@@ -87,7 +87,7 @@ sub pickup ( $self, $pickup_settings, $user ) {
     $quiz_settings->{material} = {
         label       => $canonical_label,
         description => $material->{description},
-        material_id => $material->{material_id},
+        id          => $material->{id},
     };
 
     # build distribution
@@ -142,6 +142,21 @@ sub latest_quiz_in_meet_room ( $self, $meet_id, $room_number ) {
     return $self->load($quiz_id);
 }
 
+sub ensure_material_json_exists ($self) {
+    return if ( -f join( '/',
+        $self->conf->get( qw( config_app root_dir ) ),
+        $self->conf->get( qw( material json ) ),
+        $self->data->{settings}{material}{id} . '.json',
+    ) );
+
+    my $material = material_json( description => $self->data->{settings}{material}{description} );
+
+    if ( $self->data->{settings}{material}{id} ne $material->{id} ) {
+        $self->data->{settings}{material}{id} = $material->{id};
+        $self->save;
+    }
+}
+
 1;
 
 =head1 NAME
@@ -167,6 +182,8 @@ This class is the model for quiz objects.
 =head2 settings
 
 =head2 latest_quiz_in_meet_room
+
+=head2 ensure_material_json_exists
 
 =head1 WITH ROLES
 

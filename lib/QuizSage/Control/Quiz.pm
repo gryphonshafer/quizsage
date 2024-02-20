@@ -133,6 +133,8 @@ sub build ($self) {
 
 sub quiz ($self) {
     my $quiz = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
+    $quiz->ensure_material_json_exists;
+
     unless ( ( $self->stash('format') // '' ) eq 'json' ) {
         $self->stash( quiz => $quiz );
     }

@@ -34,5 +34,13 @@ export default {
         },
     },
 
+    watch: {
+        board() {
+            this.$nextTick( () => {
+                window.dispatchEvent( new Event('resize') );
+            } );
+        },
+    },
+
     template: await template( import.meta.url ),
 };
