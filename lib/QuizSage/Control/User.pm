@@ -80,13 +80,31 @@ sub forgot_password ($self) {
         try {
             $self->_recaptcha;
 
-            QuizSage::Model::User->new->load({ email => $email })
-                ->send_email( 'reset_password', $self->url_for('/user/reset_password') );
+            my $user = QuizSage::Model::User->new->load( { email => $email }, 1 );
+            if ( $user->data->{active} ) {
+                $user->send_email( 'reset_password', $self->url_for('/user/reset_password') );
+            }
+            else {
+                $user->send_email( 'verify_email', $self->url_for('/user/verify') );
+            }
+
+            my $email = {
+                to   => $user->data->{email},
+                from => $user->conf->get( qw( email from ) ),
+            };
+            $email->{$_} =~ s/(<|>)/ ( $1 eq '<' ) ? '&lt;' : '&gt;' /eg for ( qw( to from ) );
 
             $self->flash(
                 message => {
                     type => 'success',
-                    text => 'Watch for the password reset email.',
+                    text => join( ' ',
+                        'Sent email to: ' .
+                            '<b>' . $email->{to} . '</b>.',
+                        'Check your email for reception of the email.',
+                        'If you don\'t see the email in a couple minutes, ' .
+                            'check your spam folder.',
+                        'Contact <b>' . $email->{from} . '</b> if you need help.',
+                    ),
                 }
             );
 
