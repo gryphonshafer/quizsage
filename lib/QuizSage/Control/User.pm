@@ -1,6 +1,6 @@
 package QuizSage::Control::User;
 
-use exact 'Mojolicious::Controller';
+use exact -conf, 'Mojolicious::Controller';
 use QuizSage::Model::User;
 
 sub create ($self) {
@@ -200,12 +200,19 @@ sub _recaptcha ($self) {
 
         $self->info( 'Recaptcha site verify score: ' . ( $site_verify->{score} // '>>undef<<' ) );
 
-        die 'Human-verification score too low. Please wait for the page to fully low, then try again'
-            unless (
-                $site_verify and
-                $site_verify->{score} and
-                $site_verify->{score} > $self->app->conf->get( qw( recaptcha min_score ) ) // 0.5
-            );
+        ( my $contact_email = conf->get( qw( email from ) ) )
+            =~ s/(<|>)/ ( $1 eq '<' ) ? '&lt;' : '&gt;' /eg;
+
+        die join( ' ',
+            'Human-verification score too low.',
+            'This may be due to a page load issue with your browser of choice.',
+            'Try reloading the page, waiting for a minute, then resubmitting the form.',
+            'If the problem persists, email <b>' . $contact_email . '</b> for help.',
+        ) unless (
+            $site_verify and
+            $site_verify->{score} and
+            $site_verify->{score} > $self->app->conf->get( qw( recaptcha min_score ) ) // 0.5
+        );
     }
 
     return;
