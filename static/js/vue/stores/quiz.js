@@ -210,6 +210,10 @@ export default Pinia.defineStore( 'store', {
         },
 
         exit_quiz() {
+            if ( ! this.is_quiz_done() && ! confirm(
+                'Are you sure you want to exit the quiz? The quiz is not finished.'
+            ) ) return;
+
             window.location.href = new URL(
                 ( miscellaneous.meet_id ) ? '/meet/' + miscellaneous.meet_id : '/quiz/pickup',
                 url,
