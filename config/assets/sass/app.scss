@@ -344,3 +344,25 @@ div#board {
     scrollbar-width   : none;
     -ms-overflow-style: none;
 }
+
+body.dark_mode {
+    color           : white;
+    background-color: black;
+
+    table.board {
+        td,
+        td.selected {
+            background-color: #1e1e1e !important;
+            border-color    : darkslategray;
+        }
+
+        td.top_left_corner {
+            background-color: black;
+            border-color    : black darkslategray darkslategray black;
+        }
+
+        tr.selected td {
+            background-color: #2a2d2e !important;
+        }
+    }
+}

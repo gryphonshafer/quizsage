@@ -14,6 +14,19 @@
     END;
 %]
 
+[% click_events = BLOCK %]
+    let body;
+
+    window.addEventListener( 'load', () => {
+        body = window.document.querySelector('body');
+    } );
+
+    window.addEventListener( 'click', () => {
+        body.classList.toggle('dark_mode');
+    } );
+[% END %]
+[% page.js.inline.push(click_events) %]
+
 [% UNLESS quiz %]
     <h1>QuizSage: [% page.title %]</h1>
 
@@ -23,7 +36,7 @@
         scoreboard data to display.
     </p>
 
-    [% inline_js = BLOCK %]
+    [% preboard_load = BLOCK %]
         window.addEventListener( 'load', () => {
             const url = new URL( window.location.href );
             omniframe.websocket.start({
@@ -32,11 +45,11 @@
             });
         } );
     [% END %]
-    [% page.js.inline.push(inline_js) %]
+    [% page.js.inline.push(preboard_load) %]
 [% ELSE %]
     <div id="board" v-cloak></div>
 
-    [% inline_js = BLOCK %]
+    [% board_events = BLOCK %]
         let board;
 
         window.addEventListener( 'load', () => {
@@ -48,5 +61,5 @@
             board.scrollTop = board.scrollHeight;
         } );
     [% END %]
-    [% page.js.inline.push(inline_js) %]
+    [% page.js.inline.push(board_events) %]
 [% END %]
