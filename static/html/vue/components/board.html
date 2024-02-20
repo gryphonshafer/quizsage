@@ -6,8 +6,8 @@
                 <button @click="exit_quiz">Exit Quiz</button>
             </td>
             <template v-for="team in teams">
-                <td :colspan="team.quizzers.length">{{ team.name }}</td>
-                <td class="center">
+                <td :colspan="team.quizzers.length" class="team_name">{{ team.name }}</td>
+                <td class="center team_score_position">
                     {{ ( team.score.position == 0 ) ? '' : team.score.position }}<sup>{{
                         ( team.score.position == 0 ) ? '' :
                         ( team.score.position == 1 ) ? 'st' :
@@ -22,7 +22,7 @@
                 <td class="center" v-for="quizzer in team.quizzers">
                     {{ quizzer.score.points }} ({{ quizzer.score.team_points }})
                 </td>
-                <td class="center">{{ team.score.points }}</td>
+                <td class="center team_score_points">{{ team.score.points }}</td>
             </template>
         </tr>
         <tr class="vertical">
