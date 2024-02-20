@@ -301,6 +301,10 @@ div#board {
             }
         }
 
+        td.selected {
+            background-color: white;
+        }
+
         &:nth-of-type(1) {
             position: fixed;
         }
