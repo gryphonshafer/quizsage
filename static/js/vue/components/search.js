@@ -60,6 +60,11 @@ export default {
                 }
             }
         },
+
+        reset() {
+            this.text  = '';
+            this.exact = false;
+        },
     },
 
     watch: {

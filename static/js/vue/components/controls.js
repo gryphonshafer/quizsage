@@ -118,6 +118,8 @@ export default {
             this.selected.quizzer_id = undefined;
             this.selected.bible      = this.current.query.bible;
             this.current.event.type  = this.current.event.type.substr( 0, 1 ).toUpperCase();
+
+            if ( this.$root.$refs.search ) this.$root.$refs.search.reset();
         },
     },
 

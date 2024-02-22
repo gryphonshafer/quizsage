@@ -156,11 +156,18 @@ div#quiz {
     }
 
     div.search {
+        position: relative;
+
         label {
             margin-left: 0.5em;
         }
 
         table {
+            position  : absolute;
+            width     : calc( 100vw - 2em );
+            box-shadow: 0px 0px 0.25em 0.25em colors.$background;
+            margin-top: 0.5em;
+
             tr td:nth-of-type(2) {
                 width: 6em;
             }
