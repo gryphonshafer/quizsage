@@ -82,13 +82,7 @@ sub pickup ( $self, $pickup_settings, $user ) {
         } keys %$roster_bibles
     );
 
-    my $canonical_label        = $label->format($label_data);
-    my $material               = material_json( label => $canonical_label );
-    $quiz_settings->{material} = {
-        label       => $canonical_label,
-        description => $material->{description},
-        id          => $material->{id},
-    };
+    $quiz_settings->{material} = $self->create_material_json_from_label( $label_data, $user );
 
     # build distribution
 
@@ -115,7 +109,7 @@ sub pickup ( $self, $pickup_settings, $user ) {
 
     $user->data->{settings}{pickup_quiz} = {
         bible          => $pickup_settings->{bible},
-        material_label => $canonical_label,
+        material_label => $quiz_settings->{material}{label},
         roster_data    => $pickup_settings->{roster_data},
     };
 
@@ -157,6 +151,18 @@ sub ensure_material_json_exists ($self) {
     }
 }
 
+sub create_material_json_from_label ( $self, $label, $user ) {
+    my $label_obj       = QuizSage::Model::Label->new( user_id => $user->id );
+    my $canonical_label = ( ref $label ) ? $label_obj->format($label) : $label_obj->canonicalize($label);
+    my $material        = material_json( label => $canonical_label );
+
+    return {
+        label       => $canonical_label,
+        description => $material->{description},
+        id          => $material->{id},
+    };
+}
+
 1;
 
 =head1 NAME
@@ -184,6 +190,8 @@ This class is the model for quiz objects.
 =head2 latest_quiz_in_meet_room
 
 =head2 ensure_material_json_exists
+
+=head2 create_material_json_from_label
 
 =head1 WITH ROLES
 

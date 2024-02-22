@@ -18,8 +18,9 @@ div.quiz_summary_box {
 $active_bg_btn : #e0ff00;
 $active_bg_cell: #e0ffd0;
 
-div#quiz {
-    p {
+div#quiz,
+div#queries {
+        p {
         margin-top   : 0.5em;
         margin-bottom: 0.5em;
     }
@@ -363,13 +364,24 @@ body.dark_mode {
             border-color    : darkslategray;
         }
 
-        td.top_left_corner {
-            background-color: black;
-            border-color    : black darkslategray darkslategray black;
-        }
-
         tr.selected td {
             background-color: #2a2d2e !important;
         }
+
+        td.top_left_corner {
+            background-color: black !important;
+            border-color    : black darkslategray darkslategray black;
+        }
+    }
+}
+
+div#queries div.query_type_buttons {
+    p {
+        margin: 0;
+    }
+
+    button {
+        display: block;
+        margin : 1em 0;
     }
 }

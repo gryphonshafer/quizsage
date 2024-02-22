@@ -40,10 +40,16 @@ sub startup ($self) {
     $users->any('/meet/:meet_id/stats')->to('meet#stats');
     $users->any('/meet/:meet_id')->to('meet#state');
 
-    $users->any('/quiz/pickup')->to('quiz#pickup');
+    $users->any(
+        '/:practice_type' => [ practice_type => [ qw( quiz/pickup queries/setup ) ] ]
+    )->to('quiz#practice');
+
     $users->any('/quiz/teams')->to('quiz#teams');
     $users->any('/quiz/build')->to('quiz#build');
-    $users->any( '/quiz/:quiz_id' => [ format => ['json'] ] )->to( 'quiz#quiz', format => undef );
+
+    $users->any( '/queries'       => [ format => ['json'] ] )->to( 'quiz#queries', format => undef );
+    $users->any( '/quiz/:quiz_id' => [ format => ['json'] ] )->to( 'quiz#quiz',    format => undef );
+
     $users->post('/quiz/save/:quiz_id')->to('quiz#save');
     $users->any('/quiz/delete/:quiz_id')->to('quiz#delete');
 

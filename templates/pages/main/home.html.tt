@@ -45,12 +45,20 @@
 [% ELSE %]
     <p>You're logged in, [% user.data.first_name %]. (<a href="[% c.url_for('/user/logout') %]">Logout</a>)</p>
 
-    <ul><li><a href="[% c.url_for('/quiz/pickup') %]">Pick-Up Quiz</a></li></ul>
+    <ul>
+        <li><a href="[% c.url_for('/queries/setup') %]">Queries Drill</a></li>
+        <li><a href="[% c.url_for('/quiz/pickup')   %]">Pick-Up Quiz</a></li>
+    </ul>
 
     <h2>Active Seasons</h2>
 
     [% IF active_seasons.size > 0 %]
-        <ul><li><a href="[% c.url_for('/meet/passwd') %]">Set Meet Officials' Password</a></li></ul>
+        <ul>
+            <li>
+                <a href="[% c.url_for('/meet/passwd') %]">Set Meet Officials' Password</a>
+                <i>(for user [% user.data.first_name %])</i>
+            </li>
+        </ul>
 
         [% FOR season IN active_seasons %]
             <h3>[% IF season.location %][% season.location %]: [% END %][% season.name %]</h3>
