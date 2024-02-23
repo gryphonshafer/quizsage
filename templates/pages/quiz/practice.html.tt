@@ -30,7 +30,21 @@
 </p>
 
 <form method="post">
-    <input type="submit" value="Run [% IF practice_type == 'quiz/pickup' %]Quiz[% ELSE %]Drill[% END %]"><br>
+    <input type="hidden" name="generate_queries" value="0">
+
+    <input type="submit"
+        value="Run [% IF practice_type == 'quiz/pickup' %]Pick-Up Quiz[% ELSE %]Queries Drill[% END %]"
+        onclick="
+            this.form.elements.namedItem('generate_queries').value = 0;
+        ">
+
+    [% IF practice_type == 'quiz/pickup' %]
+        <input type="submit" value="Generate Queries" onclick="
+            this.form.elements.namedItem('generate_queries').value = 1;
+        ">
+    [% END %]
+
+    <br>
 
     [% IF practice_type == 'quiz/pickup' %]
         <fieldset style="vertical-align: top">

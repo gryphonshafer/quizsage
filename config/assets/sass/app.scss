@@ -19,8 +19,9 @@ $active_bg_btn : #e0ff00;
 $active_bg_cell: #e0ffd0;
 
 div#quiz,
-div#queries {
-        p {
+div#queries,
+div#quiz_queries {
+    p {
         margin-top   : 0.5em;
         margin-bottom: 0.5em;
     }
@@ -383,5 +384,41 @@ div#queries div.query_type_buttons {
     button {
         display: block;
         margin : 1em 0;
+    }
+}
+
+div#quiz_queries {
+    div.intro {
+        padding-bottom: 1em;
+        border-bottom : 3px double colors.$lines;
+        margin-bottom : 1em;
+    }
+
+    div.query_id {
+        break-inside: avoid;
+    }
+
+    & > div.query_id ~ div.query_id {
+        margin-top : 1em;
+        border-top : 3px double colors.$lines;
+        padding-top: 1em;
+    }
+
+    div.query {
+        display       : inline-block;
+        vertical-align: top;
+        margin-right  : 1em;
+    }
+
+    p.announcement span {
+        border          : 1px solid colors.$lines;
+        background-color: white;
+        padding         : 0 0.2em;
+    }
+}
+
+@media print {
+    .no_print {
+        display: none;
     }
 }

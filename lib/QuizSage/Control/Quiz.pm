@@ -32,7 +32,7 @@ sub practice ($self) {
             %$settings,
         );
     }
-    elsif ( $self->param('practice_type') eq 'quiz/pickup' ) {
+    elsif ( $self->param('practice_type') eq 'quiz/pickup' and not $self->param('generate_queries') ) {
         try {
             my $quiz_id = QuizSage::Model::Quiz->new->pickup( $settings, $user )->id;
             $self->info( 'Pickup quiz generated: ' . $quiz_id );
@@ -46,11 +46,18 @@ sub practice ($self) {
     }
     else {
         my $parsed_label = $label->parse( $settings->{material_label} );
-        $settings->{material_label} .= ' ' . $quiz_defaults->{bible} unless ( $parsed_label->{bibles} );
+        $settings->{material_label} .= ' ' . $settings->{bible} unless ( $parsed_label->{bibles} );
+        $settings->{material_label} = $label->canonicalize( $settings->{material_label} );
 
-        $user->data->{settings}{queries_drill} = $settings;
+        $user->data->{settings}{
+            ( $self->param('generate_queries') ) ? 'pickup_quiz' : 'queries_drill'
+        } = $settings;
+
         $user->save;
-        return $self->redirect_to('/queries');
+
+        return $self->redirect_to(
+            ( $self->param('generate_queries') ) ? '/quiz/queries' : '/queries'
+        );
     }
 }
 
@@ -166,12 +173,37 @@ sub queries ($self) {
     else {
         my $quiz_defaults  = $quiz->conf->get('quiz_defaults');
         my $user_settings  = $self->stash('user')->data->{settings}{queries_drill} // {};
-        my $material_label =
-            $user_settings->{queries_drill}{material_label} // $quiz_defaults->{material_label};
+        my $material_label = $user_settings->{material_label} // $quiz_defaults->{material_label};
 
         $self->render( json => {
             settings => {
                 material => $quiz->create_material_json_from_label( $material_label, $self->stash('user') ),
+            },
+        } );
+    }
+}
+
+sub quiz_queries ($self) {
+    my $quiz = QuizSage::Model::Quiz->new;
+
+    unless ( ( $self->stash('format') // '' ) eq 'json' ) {
+        $self->stash( quiz => $quiz );
+    }
+    else {
+        my $quiz_defaults  = $quiz->conf->get('quiz_defaults');
+        my $user_settings  = $self->stash('user')->data->{settings}{pickup_quiz} // {};
+        my $material_label = $user_settings->{material_label} // $quiz_defaults->{material_label};
+        my $roster         = {
+            maybe default_bible => $user_settings->{bible},
+            data                => $user_settings->{roster_data},
+        };
+
+        QuizSage::Model::Meet->parse_and_structure_roster_text( \$roster );
+
+        $self->render( json => {
+            settings => {
+                material => $quiz->create_material_json_from_label( $material_label, $self->stash('user') ),
+                teams    => $roster,
             },
         } );
     }

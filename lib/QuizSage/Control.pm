@@ -47,8 +47,9 @@ sub startup ($self) {
     $users->any('/quiz/teams')->to('quiz#teams');
     $users->any('/quiz/build')->to('quiz#build');
 
-    $users->any( '/queries'       => [ format => ['json'] ] )->to( 'quiz#queries', format => undef );
-    $users->any( '/quiz/:quiz_id' => [ format => ['json'] ] )->to( 'quiz#quiz',    format => undef );
+    $users->any( '/queries'       => [ format => ['json'] ] )->to( 'quiz#queries',      format => undef );
+    $users->any( '/quiz/queries'  => [ format => ['json'] ] )->to( 'quiz#quiz_queries', format => undef );
+    $users->any( '/quiz/:quiz_id' => [ format => ['json'] ] )->to( 'quiz#quiz',         format => undef );
 
     $users->post('/quiz/save/:quiz_id')->to('quiz#save');
     $users->any('/quiz/delete/:quiz_id')->to('quiz#delete');

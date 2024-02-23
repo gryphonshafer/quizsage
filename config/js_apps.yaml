@@ -40,3 +40,13 @@ default:
                 vue/components/thesaurus       : vue/components/thesaurus
                 vue/components/queries_controls: vue/components/queries_controls
                 vue/store                      : vue/stores/queries
+        quiz_queries:
+            module:
+              - vue/apps/quiz_queries
+            importmap:
+                classes/material    : classes/material
+                classes/queries     : classes/queries
+                classes/quiz        : classes/quiz
+                classes/scoring     : classes/scoring
+                modules/distribution: modules/distribution
+                modules/template    : modules/template
