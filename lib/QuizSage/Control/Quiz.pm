@@ -265,6 +265,8 @@ for "Main" actions.
 
 =head2 queries
 
+=head2 quiz_queries
+
 =head2 save
 
 =head2 delete
