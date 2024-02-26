@@ -14,6 +14,16 @@
     <button @click="reset_replace_query">Replace</button>
 
     <p class="content">
+        <span class="buffer" v-if="buffer.previous"
+            >...{{
+                buffer.previous.text.split(/\s+/).slice(-7).join(' ')
+            }}</span>
+
         <thesaurus type="text"></thesaurus>
+
+        <span class="buffer" v-if="buffer.next"
+            >{{
+                buffer.next.text.split(/\s+/).slice( 0, 7 ).join(' ')
+            }}...</span>
     </p>
 </div>

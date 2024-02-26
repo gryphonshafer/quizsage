@@ -47,7 +47,16 @@ export default class Material {
                 .flatMap( bible => Object.values( bible.content ) );
 
             this.verses_by_bible = Object.fromEntries( Object.keys( this.data.bibles )
-                .map( bible => [ bible, Object.values( this.data.bibles[bible].content ) ] ) );
+                .map( bible => [
+                    bible,
+                    Object
+                        .values( this.data.bibles[bible].content )
+                        .sort( ( a, b ) =>
+                            a.book.localeCompare( b.book ) ||
+                            a.chapter - b.chapter          ||
+                            a.verse   - b.verse
+                        ),
+                ] ) );
 
             return this;
         } );
@@ -155,23 +164,19 @@ export default class Material {
             );
     }
 
-    // given a verse reference, return the "next verse"
-    next_verse( book, chapter, verse, bible = undefined ) {
+    // given a verse reference, return a "nearby" verse in the same book
+    next_verse( book, chapter, verse, bible = undefined, step = 1 ) {
         bible ||= this.current_bible();
 
-        let found_verse = this.verses_by_bible[bible].find( this_verse =>
-            this_verse.book    == book    &&
-            this_verse.chapter == chapter &&
-            this_verse.verse   == verse + 1
-        );
+        const candidate_verse = this.verses_by_bible[bible][
+            this.verses_by_bible[bible].findIndex( this_verse =>
+                this_verse.book    == book    &&
+                this_verse.chapter == chapter &&
+                this_verse.verse   == verse
+            ) + step
+        ];
 
-        if ( ! found_verse ) found_verse = this.verses_by_bible[bible].find( this_verse =>
-            this_verse.book    == book        &&
-            this_verse.chapter == chapter + 1 &&
-            this_verse.verse   == 1
-        );
-
-        return found_verse;
+        return ( candidate_verse.book == book ) ? candidate_verse : undefined;
     }
 
     // given a word, return the synonyms at or above a given verity
@@ -315,6 +320,22 @@ export default class Material {
                     bible        : {
                         name: bible,
                         type: this.data.bibles[bible].type,
+                    },
+                    buffer : {
+                        previous: this.next_verse(
+                            ref_objs.at(0).book,
+                            ref_objs.at(0).chapter,
+                            ref_objs.at(0).verse,
+                            bible,
+                            -1,
+                        ),
+                        next: this.next_verse(
+                            ref_objs.at(-1).book,
+                            ref_objs.at(-1).chapter,
+                            ref_objs.at(-1).verse,
+                            bible,
+                            1,
+                        ),
                     },
                 };
             } ),

@@ -57,6 +57,18 @@ div#quiz_queries {
         padding: 0.05em 0.3em;
     }
 
+    div.material span.buffer {
+        color     : #999;
+        font-style: italic;
+        display   : block;
+    }
+    div.material span.buffer:first-child {
+        padding-bottom: 0.5em;
+    }
+    div.material span.buffer:not(:first-child) {
+        padding-top: 0.5em;
+    }
+
     div.thesaurus {
         display: inline;
 
@@ -194,7 +206,7 @@ div#quiz_queries {
         }
 
         p.reply {
-            height : 10em;
+            height : 12em;
             padding: 0.2em 0.5em;
         }
     }
@@ -208,7 +220,7 @@ div#quiz_queries {
         }
 
         p.content {
-            height : 14em;
+            height : 16em;
             padding: 0.2em 0.5em;
         }
     }
