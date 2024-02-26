@@ -1,16 +1,3 @@
-[% g_recaptcha_cb = BLOCK %]
-    function g_recaptcha_cb(token) {
-        document.getElementById('login_form').submit();
-    }
-[% END %]
-[%
-    recaptcha_site_key = c.app.conf.get( 'recaptcha', 'site_key' );
-    IF recaptcha_site_key;
-        page.js.defer.push('https://www.google.com/recaptcha/api.js');
-        page.js.inline.push(g_recaptcha_cb);
-    END;
-%]
-
 <h1>QuizSage</h1>
 
 [% UNLESS user %]
@@ -28,6 +15,19 @@
                 Password:
                 <input type="password" name="passwd" value="[% passwd %]" placeholder="Password">
             </label>
+
+            [% g_recaptcha_cb = BLOCK %]
+                function g_recaptcha_cb(token) {
+                    document.getElementById('login_form').submit();
+                }
+            [% END %]
+            [%
+                recaptcha_site_key = c.app.conf.get( 'recaptcha', 'site_key' );
+                IF recaptcha_site_key;
+                    page.js.defer.push('https://www.google.com/recaptcha/api.js');
+                    page.js.inline.push(g_recaptcha_cb);
+                END;
+            %]
 
             <input type="submit" value="Login"
                 [% IF recaptcha_site_key %]
