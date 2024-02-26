@@ -1,0 +1,13 @@
+[%
+    page.title = 'Generated Queries',
+    page.vue   = 1;
+
+    js_app_config = quiz.js_app_config('quiz_queries');
+
+    page.js.importmap = js_app_config.importmap;
+    page.js.module    = page.js.module.merge( js_app_config.module );
+%]
+
+<h1 class="no_print">QuizSage: [% page.title %]</h1>
+
+<div id="quiz_queries" v-cloak></div>

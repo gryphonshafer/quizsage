@@ -1,13 +1,9 @@
 import Quiz from 'classes/quiz';
 
 const json_material_path = '../../json/material';
-
-const url = new URL( window.location.href );
-
-const quiz_promise = fetch( new URL( url.pathname + '.json', url ) )
-    .then( reply => reply.json() );
-
-const material_promise = quiz_promise
+const url                = new URL( window.location.href );
+const quiz_promise       = fetch( new URL( url.pathname + '.json', url ) ).then( reply => reply.json() );
+const material_promise   = quiz_promise
     .then( data => fetch( new URL(
         json_material_path + '/' + data.settings.material.id + '.json',
         url,
@@ -18,10 +14,10 @@ const [ quiz, miscellaneous ] = await Promise.all( [ quiz_promise, material_prom
     .then( ( [ quiz_data, material_data ] ) => {
         const inputs = quiz_data.settings.inputs || {};
 
-        inputs.material ||= {};
+        inputs.material    ||= {};
         inputs.material.data = material_data;
 
-        inputs.quiz ||= {};
+        inputs.quiz            ||= {};
         inputs.quiz.state        = quiz_data.state;
         inputs.quiz.teams        = quiz_data.settings.teams;
         inputs.quiz.distribution = quiz_data.settings.distribution;

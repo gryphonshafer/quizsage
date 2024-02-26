@@ -32,9 +32,7 @@ const state = {
     teams   : quiz_data.teams,
     board   : quiz_data.board,
     selected: {},
-    current : {
-        event: {},
-    },
+    current : { event: {} },
 };
 
 function set_board_scale(teams) {

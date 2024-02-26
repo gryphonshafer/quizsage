@@ -4,6 +4,25 @@
 @use 'fonts';
 @use 'forms';
 
+dialog {
+    margin : 0 auto;
+    padding: 1em;
+    border : 1px solid black;
+    box-shadow: 0px 0px 1em 0px colors.$lines;
+
+    form {
+        text-align: right;
+    }
+
+    &.error {
+        background-color: #fdd;
+    }
+
+    &.success {
+        background-color: #dfd;
+    }
+}
+
 div.quiz_summary_box {
     border          : 1px solid colors.$lines;
     background-color: white;
@@ -18,7 +37,9 @@ div.quiz_summary_box {
 $active_bg_btn : #e0ff00;
 $active_bg_cell: #e0ffd0;
 
-div#quiz {
+div#quiz,
+div#queries,
+div#quiz_queries {
     p {
         margin-top   : 0.5em;
         margin-bottom: 0.5em;
@@ -53,6 +74,18 @@ div#quiz {
 
     div.material span.reference {
         padding: 0.05em 0.3em;
+    }
+
+    div.material span.buffer {
+        color     : #999;
+        font-style: italic;
+        display   : block;
+    }
+    div.material span.buffer:first-child {
+        padding-bottom: 0.5em;
+    }
+    div.material span.buffer:not(:first-child) {
+        padding-top: 0.5em;
     }
 
     div.thesaurus {
@@ -156,11 +189,18 @@ div#quiz {
     }
 
     div.search {
+        position: relative;
+
         label {
             margin-left: 0.5em;
         }
 
         table {
+            position  : absolute;
+            width     : calc( 100vw - 2em );
+            box-shadow: 0px 0px 0.25em 0.25em colors.$background;
+            margin-top: 0.5em;
+
             tr td:nth-of-type(2) {
                 width: 6em;
             }
@@ -185,7 +225,7 @@ div#quiz {
         }
 
         p.reply {
-            height : 10em;
+            height : 12em;
             padding: 0.2em 0.5em;
         }
     }
@@ -199,7 +239,7 @@ div#quiz {
         }
 
         p.content {
-            height : 14em;
+            height : 16em;
             padding: 0.2em 0.5em;
         }
     }
@@ -356,13 +396,60 @@ body.dark_mode {
             border-color    : darkslategray;
         }
 
-        td.top_left_corner {
-            background-color: black;
-            border-color    : black darkslategray darkslategray black;
-        }
-
         tr.selected td {
             background-color: #2a2d2e !important;
         }
+
+        td.top_left_corner {
+            background-color: black !important;
+            border-color    : black darkslategray darkslategray black;
+        }
+    }
+}
+
+div#queries div.query_type_buttons {
+    p {
+        margin: 0;
+    }
+
+    button {
+        display: block;
+        margin : 1em 0;
+    }
+}
+
+div#quiz_queries {
+    div.intro {
+        padding-bottom: 1em;
+        border-bottom : 3px double colors.$lines;
+        margin-bottom : 1em;
+    }
+
+    div.query_id {
+        break-inside: avoid;
+    }
+
+    & > div.query_id ~ div.query_id {
+        margin-top : 1em;
+        border-top : 3px double colors.$lines;
+        padding-top: 1em;
+    }
+
+    div.query {
+        display       : inline-block;
+        vertical-align: top;
+        margin-right  : 1em;
+    }
+
+    p.announcement span {
+        border          : 1px solid colors.$lines;
+        background-color: white;
+        padding         : 0 0.2em;
+    }
+}
+
+@media print {
+    .no_print {
+        display: none;
     }
 }

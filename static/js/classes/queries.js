@@ -53,6 +53,7 @@ export default class Queries {
     };
 
     create( type, bible = undefined ) {
+        bible ||= this.material.next_bible();
         const target_type = this.constructor.types[ type.toLowerCase().substr( 0, 1 ) ];
         if ( ! target_type ) throw '"' + type + '" is not a valid query type';
         return this[ 'create_' + target_type.method ](bible);
@@ -91,9 +92,13 @@ export default class Queries {
     }
 
     create_finish(bible) {
-        let verse = { words : [] };
+        let verse;
+        let verse_find_attempts = 0;
 
         while (true) {
+            verse_find_attempts++;
+            verse = { words : [] };
+
             while (
                 verse.words.length <
                 this.finish_prompt_length + this.finish_minimum_reply_length
@@ -105,6 +110,7 @@ export default class Queries {
             );
 
             if ( check_matches.length == 1 ) break;
+            if ( verse_find_attempts > 100 ) this.reset();
         }
 
         const [ prompt, reply, full_reply, prompt_words ] =

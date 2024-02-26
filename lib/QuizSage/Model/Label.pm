@@ -492,7 +492,7 @@ QuizSage::Model::Label
     my $label_with_user_id = QuizSage::Model::Label->new( user_id => 42 );
 
     my $data        = $label->parse('Romans 12:1-5 (2) James 1:2-4 (1) NIV ESV*');
-    my $label       = $label->canonicalize('Romans 12:1-5; James 1:2-4');
+    my $label_text  = $label->canonicalize('Romans 12:1-5; James 1:2-4');
     my $description = $label->descriptionize('Romans 12:1-5; James 1:2-4');
 
 =head1 DESCRIPTION
@@ -554,8 +554,8 @@ Canonicalize a label, maintaining valid and accessible aliases if any, and
 unifying any intersections and/or filters. Accepts a string input or otherwise
 uses the C<label> data label if the object is model-data-loaded.
 
-    my $label    = $label->canonicalize('Romans 12:1-5; James 1:2-4');
-    my $label_42 = $label->load(42)->canonicalize;
+    my $label_text = $label->canonicalize('Romans 12:1-5; James 1:2-4');
+    my $label_42   = $label->load(42)->canonicalize;
 
 =head2 descriptionize
 

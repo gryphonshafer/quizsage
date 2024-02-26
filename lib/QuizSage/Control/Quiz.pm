@@ -5,18 +5,24 @@ use QuizSage::Model::Label;
 use QuizSage::Model::Meet;
 use QuizSage::Model::Quiz;
 
-sub pickup ($self) {
+sub practice ($self) {
     my $user  = $self->stash('user');
     my $label = QuizSage::Model::Label->new( user_id => $user->id );
 
     my $quiz_defaults = $label->conf->get('quiz_defaults');
-    my $user_settings = $user->data->{settings}{pickup_quiz} // {};
+    my $user_settings = $user->data->{settings}{
+        ( $self->param('practice_type') eq 'quiz/pickup' ) ? 'pickup_quiz' : 'queries_drill'
+    } // {};
 
     my $settings;
     $settings->{$_} = $self->param($_) // $user_settings->{$_} // $quiz_defaults->{$_}
-        for ( qw( bible roster_data material_label ) );
+        for (
+            ( $self->param('practice_type') eq 'quiz/pickup' )
+                ? ( qw( bible roster_data material_label ) )
+                : ('material_label')
+        );
 
-    unless ( $self->param('material') or $self->param('roster_data') ) {
+    unless ( $self->param('material_label') or $self->param('roster_data') ) {
         $self->stash(
             label_aliases => $label->aliases,
             bibles        => $label
@@ -26,7 +32,7 @@ sub pickup ($self) {
             %$settings,
         );
     }
-    else {
+    elsif ( $self->param('practice_type') eq 'quiz/pickup' and not $self->param('generate_queries') ) {
         try {
             my $quiz_id = QuizSage::Model::Quiz->new->pickup( $settings, $user )->id;
             $self->info( 'Pickup quiz generated: ' . $quiz_id );
@@ -37,6 +43,21 @@ sub pickup ($self) {
             $self->flash( message => 'Pickup quiz settings error: ' . $e );
             return $self->redirect_to('/quiz/pickup');
         }
+    }
+    else {
+        my $parsed_label = $label->parse( $settings->{material_label} );
+        $settings->{material_label} .= ' ' . $settings->{bible} unless ( $parsed_label->{bibles} );
+        $settings->{material_label} = $label->canonicalize( $settings->{material_label} );
+
+        $user->data->{settings}{
+            ( $self->param('generate_queries') ) ? 'pickup_quiz' : 'queries_drill'
+        } = $settings;
+
+        $user->save;
+
+        return $self->redirect_to(
+            ( $self->param('generate_queries') ) ? '/quiz/queries' : '/queries'
+        );
     }
 }
 
@@ -143,6 +164,51 @@ sub quiz ($self) {
     }
 }
 
+sub queries ($self) {
+    my $quiz = QuizSage::Model::Quiz->new;
+
+    unless ( ( $self->stash('format') // '' ) eq 'json' ) {
+        $self->stash( quiz => $quiz );
+    }
+    else {
+        my $quiz_defaults  = $quiz->conf->get('quiz_defaults');
+        my $user_settings  = $self->stash('user')->data->{settings}{queries_drill} // {};
+        my $material_label = $user_settings->{material_label} // $quiz_defaults->{material_label};
+
+        $self->render( json => {
+            settings => {
+                material => $quiz->create_material_json_from_label( $material_label, $self->stash('user') ),
+            },
+        } );
+    }
+}
+
+sub quiz_queries ($self) {
+    my $quiz = QuizSage::Model::Quiz->new;
+
+    unless ( ( $self->stash('format') // '' ) eq 'json' ) {
+        $self->stash( quiz => $quiz );
+    }
+    else {
+        my $quiz_defaults  = $quiz->conf->get('quiz_defaults');
+        my $user_settings  = $self->stash('user')->data->{settings}{pickup_quiz} // {};
+        my $material_label = $user_settings->{material_label} // $quiz_defaults->{material_label};
+        my $roster         = {
+            maybe default_bible => $user_settings->{bible},
+            data                => $user_settings->{roster_data},
+        };
+
+        QuizSage::Model::Meet->parse_and_structure_roster_text( \$roster );
+
+        $self->render( json => {
+            settings => {
+                material => $quiz->create_material_json_from_label( $material_label, $self->stash('user') ),
+                teams    => $roster,
+            },
+        } );
+    }
+}
+
 sub save ($self) {
     my $success = 0;
     my $quiz    = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
@@ -189,13 +255,17 @@ for "Main" actions.
 
 =head1 METHODS
 
-=head2 pickup
+=head2 practice
 
 =head2 teams
 
 =head2 build
 
 =head2 quiz
+
+=head2 queries
+
+=head2 quiz_queries
 
 =head2 save
 

@@ -29,26 +29,39 @@ sub startup ($self) {
         return 0;
     } );
 
+    $users->any('/user/profile')->to( 'user#account', account_action_type => 'profile' );
     $users->any('/user/logout')->to('user#logout');
 
     $users->any('/meet/passwd')->to('meet#passwd');
     $users
         ->any( '/meet/:meet_id/board/:room_number' => [ format => ['json'] ] )
         ->to( 'meet#board', format => undef );
-    $users->any('/meet/:meet_id/roster')->to('meet#roster');
-    $users->any('/meet/:meet_id/distribution')->to('meet#distribution');
-    $users->any('/meet/:meet_id/stats')->to('meet#stats');
-    $users->any('/meet/:meet_id')->to('meet#state');
+    $users->any( '/meet/:meet_id' . $_->[0] )->to( 'meet#' . $_->[1] ) for (
+        [ '/roster',       'roster'       ],
+        [ '/distribution', 'distribution' ],
+        [ '/stats',        'stats'        ],
+        [ '',              'state'        ],
+    );
 
-    $users->any('/quiz/pickup')->to('quiz#pickup');
-    $users->any('/quiz/teams')->to('quiz#teams');
-    $users->any('/quiz/build')->to('quiz#build');
-    $users->any( '/quiz/:quiz_id' => [ format => ['json'] ] )->to( 'quiz#quiz', format => undef );
-    $users->post('/quiz/save/:quiz_id')->to('quiz#save');
-    $users->any('/quiz/delete/:quiz_id')->to('quiz#delete');
+    $users->any(
+        '/:practice_type' => [ practice_type => [ qw( quiz/pickup queries/setup ) ] ]
+    )->to('quiz#practice');
+
+    $users->any("/quiz/$_")->to("quiz#$_") for ( qw( teams build ) );
+
+    $users->any( $_->[0] => [ format => ['json'] ] )->to( $_->[1], format => undef ) for (
+        [ '/queries',       'quiz#queries'      ],
+        [ '/quiz/queries',  'quiz#quiz_queries' ],
+        [ '/quiz/:quiz_id', 'quiz#quiz'         ],
+    );
+
+    $users->post('/quiz/save/:quiz_id'  )->to('quiz#save'  );
+    $users->any ('/quiz/delete/:quiz_id')->to('quiz#delete');
 
     $all->any('/')->to('main#home');
-    $all->any("/user/$_")->to("user#$_") for ( qw( create forgot_password login ) );
+
+    $all->any("/user/$_")->to("user#$_") for ( qw( forgot_password login ) );
+    $all->any('/user/create')->to( 'user#account', account_action_type => 'create' );
     $all->any("/user/$_/:user_id/:user_hash")->to("user#$_") for ( qw( verify reset_password ) );
 
     $all->any( '/docs/*name' => sub ($c) {

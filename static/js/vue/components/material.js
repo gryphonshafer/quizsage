@@ -9,6 +9,12 @@ export default {
 
     computed: {
         ...Pinia.mapState( store, [ 'current', 'selected' ] ),
+
+        buffer() {
+            return this.current.materials
+                .find( material => material.bible.name == this.selected.bible )
+                .buffer;
+        },
     },
 
     methods: {

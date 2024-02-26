@@ -1,0 +1,25 @@
+<div class="query_type_buttons">
+    <p><b>Generate Query:</b></p>
+
+    <button v-for="query_type in query_types"
+        @click="create_query( query_type.key )">{{ query_type.label }}</button>
+
+    <p><b>Toggle Query:</b></p>
+
+    <button
+        :class="{ selected: add_verse }"
+        @click="toggle_add_verse"
+    >Add Verse</button>
+
+    <p><b>Next Query's Bible:</b></p>
+
+    <button
+        v-for="bible in bibles"
+        :class="{ selected: next_query_bible == bible }"
+        @click="set_next_query_bible(bible)"
+    >{{ bible }}</button>
+
+    <p><b>Exit Queries Drill:</b></p>
+
+    <button @click="exit_drill">Exit Drill</button>
+</div>

@@ -27,3 +27,26 @@ default:
                 modules/template    : modules/template
                 vue/components/board: vue/components/board
                 vue/store           : vue/stores/board
+        queries:
+            module:
+              - vue/apps/queries
+            importmap:
+                classes/material               : classes/material
+                classes/queries                : classes/queries
+                modules/template               : modules/template
+                vue/components/material        : vue/components/material
+                vue/components/query           : vue/components/query
+                vue/components/search          : vue/components/search
+                vue/components/thesaurus       : vue/components/thesaurus
+                vue/components/queries_controls: vue/components/queries_controls
+                vue/store                      : vue/stores/queries
+        quiz_queries:
+            module:
+              - vue/apps/quiz_queries
+            importmap:
+                classes/material    : classes/material
+                classes/queries     : classes/queries
+                classes/quiz        : classes/quiz
+                classes/scoring     : classes/scoring
+                modules/distribution: modules/distribution
+                modules/template    : modules/template
