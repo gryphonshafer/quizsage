@@ -4,6 +4,25 @@
 @use 'fonts';
 @use 'forms';
 
+dialog {
+    margin : 0 auto;
+    padding: 1em;
+    border : 1px solid black;
+    box-shadow: 0px 0px 1em 0px colors.$lines;
+
+    form {
+        text-align: right;
+    }
+
+    &.error {
+        background-color: #fdd;
+    }
+
+    &.success {
+        background-color: #dfd;
+    }
+}
+
 div.quiz_summary_box {
     border          : 1px solid colors.$lines;
     background-color: white;

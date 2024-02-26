@@ -3,8 +3,10 @@ package QuizSage::Control::User;
 use exact -conf, 'Mojolicious::Controller';
 use QuizSage::Model::User;
 
-sub create ($self) {
-    if ( my %params = $self->req->params->to_hash->%* ) {
+sub account ($self) {
+    my %params = $self->req->params->to_hash->%*;
+
+    if ( $self->stash('account_action_type') eq 'create' and %params ) {
         my @fields = qw( email passwd first_name last_name phone );
 
         try {
@@ -61,6 +63,44 @@ sub create ($self) {
                 $self->info("User create failure: $e");
                 $self->stash( message => $e, %params );
             }
+        }
+    }
+
+    elsif ( $self->stash('account_action_type') eq 'profile' and not %params ) {
+        $self->stash( $_ => $self->stash('user')->data->{$_} ) for ( qw( first_name last_name email phone ) );
+    }
+
+    elsif ( $self->stash('account_action_type') eq 'profile' and %params ) {
+        my @fields = qw( email first_name last_name phone );
+
+        try {
+            die 'Email, first and last name, and phone fields must be filled in'
+                if ( grep { length $params{$_} == 0 } @fields );
+
+            $self->stash('user')->data->{$_} = $params{$_} for (@fields);
+            $self->stash('user')->data->{passwd} = $params{passwd} if ( $params{passwd} );
+            $self->stash('user')->save;
+
+            $self->info( 'User profile edit success: ' . $self->stash('user')->id );
+            $self->flash(
+                message => {
+                    type => 'success',
+                    text => 'Successfully edited user profile.',
+                }
+            );
+            $self->redirect_to('/');
+        }
+        catch ($e) {
+            $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
+            $e =~ s/^"([^""]+)"/ '"' . join( ' ', map { ucfirst($_) } split( '_', $1 ) ) . '"' /e;
+            $e =~ s/DBD::\w+::st execute failed:\s*//;
+            $e .= '. Please try again.';
+
+            $e = "Value in $1 field is already registered under an existing user account."
+                if ( $e =~ /UNIQUE constraint failed/ );
+
+            $self->info("User profile edit failure: $e");
+            $self->stash( message => $e, %params );
         }
     }
 }
@@ -252,9 +292,9 @@ for "user" actions.
 
 =head1 METHODS
 
-=head2 create
+=head2 account
 
-Handler for user create.
+Handler for user create and user profile edit.
 
 =head2 verify
 

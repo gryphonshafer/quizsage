@@ -43,7 +43,11 @@
     <ul><li><a href="[% c.url_for('/user/forgot_password')
         %]">Forgot Password (or Resend Verification Email)</a></li></ul>
 [% ELSE %]
-    <p>You're logged in, [% user.data.first_name %]. (<a href="[% c.url_for('/user/logout') %]">Logout</a>)</p>
+    <p>
+        Logged in as: <b>[% user.data.first_name %]</b>.
+        (<a href="[% c.url_for('/user/profile') %]">Edit Profile</a> or
+        <a href="[% c.url_for('/user/logout') %]">Logout</a>)
+    </p>
 
     <ul>
         <li><a href="[% c.url_for('/queries/setup') %]">Queries Drill</a></li>
