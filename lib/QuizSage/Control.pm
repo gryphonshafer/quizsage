@@ -49,11 +49,17 @@ sub startup ($self) {
 
     $users->any("/quiz/$_")->to("quiz#$_") for ( qw( teams build ) );
 
-    $users->any( $_->[0] => [ format => ['json'] ] )->to( $_->[1], format => undef ) for (
-        [ '/queries',       'quiz#queries'      ],
-        [ '/quiz/queries',  'quiz#quiz_queries' ],
-        [ '/quiz/:quiz_id', 'quiz#quiz'         ],
-    );
+    $users
+        ->any( $_->[0] => [ format => ['json'] ] )
+        ->to(
+            $_->[1],
+            format            => undef,
+            maybe action_type => $_->[2],
+        ) for (
+            [ '/queries',       'quiz#queries', 'queries'      ],
+            [ '/quiz/queries',  'quiz#queries', 'quiz_queries' ],
+            [ '/quiz/:quiz_id', 'quiz#quiz',    undef          ],
+        );
 
     $users->post('/quiz/save/:quiz_id'  )->to('quiz#save'  );
     $users->any ('/quiz/delete/:quiz_id')->to('quiz#delete');

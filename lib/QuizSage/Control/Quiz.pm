@@ -169,43 +169,32 @@ sub queries ($self) {
 
     unless ( ( $self->stash('format') // '' ) eq 'json' ) {
         $self->stash( quiz => $quiz );
+        $self->stash( template => 'quiz/quiz_queries' ) if ( $self->stash('action_type') eq 'quiz_queries' );
     }
     else {
-        my $quiz_defaults  = $quiz->conf->get('quiz_defaults');
-        my $user_settings  = $self->stash('user')->data->{settings}{queries_drill} // {};
+        my $quiz_defaults = $quiz->conf->get('quiz_defaults');
+        my $user_settings = $self->stash('user')->data->{settings}{
+            ( $self->stash('action_type') eq 'queries' ) ? 'queries_drill' : 'pickup_quiz'
+        } // {};
+
         my $material_label = $user_settings->{material_label} // $quiz_defaults->{material_label};
 
-        $self->render( json => {
-            settings => {
-                material => $quiz->create_material_json_from_label( $material_label, $self->stash('user') ),
-            },
-        } );
-    }
-}
-
-sub quiz_queries ($self) {
-    my $quiz = QuizSage::Model::Quiz->new;
-
-    unless ( ( $self->stash('format') // '' ) eq 'json' ) {
-        $self->stash( quiz => $quiz );
-    }
-    else {
-        my $quiz_defaults  = $quiz->conf->get('quiz_defaults');
-        my $user_settings  = $self->stash('user')->data->{settings}{pickup_quiz} // {};
-        my $material_label = $user_settings->{material_label} // $quiz_defaults->{material_label};
-        my $roster         = {
-            maybe default_bible => $user_settings->{bible},
-            data                => $user_settings->{roster_data},
+        my $settings = {
+            material => $quiz->create_material_json_from_label( $material_label, $self->stash('user') ),
         };
 
-        QuizSage::Model::Meet->parse_and_structure_roster_text( \$roster );
+        if ( $self->stash('action_type') eq 'quiz_queries' ) {
+            my $roster         = {
+                maybe default_bible => $user_settings->{bible},
+                data                => $user_settings->{roster_data},
+            };
 
-        $self->render( json => {
-            settings => {
-                material => $quiz->create_material_json_from_label( $material_label, $self->stash('user') ),
-                teams    => $roster,
-            },
-        } );
+            QuizSage::Model::Meet->parse_and_structure_roster_text( \$roster );
+
+            $settings->{teams} = $roster;
+        }
+
+        $self->render( json => { settings => $settings } );
     }
 }
 
