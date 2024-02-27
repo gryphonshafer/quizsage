@@ -53,10 +53,6 @@ const queries = await Promise.all( [ quiz_promise, material_promise ] )
                 if ( e != 'Unable to find next verse' ) throw e;
             }
 
-            // query.single = { ...query.single, ...quiz.queries.material.materials( query.single ) };
-            // if ( query.double )
-            //     query.double = { ...query.double, ...quiz.queries.material.materials( query.double ) };
-
             return query;
         } );
 
