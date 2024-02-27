@@ -25,9 +25,14 @@
     <button @click="trigger_event('no_trigger'     )">No Trigger</button>
     <button @click="trigger_event('correct'        )">Correct</button>
     <button @click="trigger_event('incorrect'      )">Incorrect</button>
-    <button @click="trigger_event('reset'          )">Reset</button>
     <button @click="trigger_event('foul'           )">Foul</button>
     <button @click="trigger_event('timeout'        )">Timeout</button>
     <button @click="trigger_event('appeal_accepted')">Appeal +</button>
     <button @click="trigger_event('appeal_declined')">Appeal -</button>
+</div>
+
+<div class="quiz_control">
+    <button @click="trigger_event('reset')">Reset</button>
+    <button @click="delete_last">Delete Last</button>
+    <button @click="exit_quiz">Exit Quiz</button>
 </div>

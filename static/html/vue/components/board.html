@@ -1,10 +1,7 @@
 <table class="board" v-if="teams && board">
     <thead>
         <tr>
-            <td colspan="3" rowspan="5" class="top_left_corner">
-                <button @click="delete_last_row">Delete Last</button><br>
-                <button @click="exit_quiz">Exit Quiz</button>
-            </td>
+            <td colspan="3" rowspan="5" class="top_left_corner"></td>
             <template v-for="team in teams">
                 <td :colspan="team.quizzers.length" class="team_name">{{ team.name }}</td>
                 <td class="center team_score_position">

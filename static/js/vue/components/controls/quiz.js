@@ -9,6 +9,7 @@ export default {
     methods: {
         ...Pinia.mapActions( store, [
             'action', 'alter_query', 'last_event_if_not_viewed', 'is_quiz_done', 'view_query',
+            'delete_last_action', 'exit_quiz',
         ] ),
 
         select_type(type) {
@@ -120,6 +121,11 @@ export default {
             this.current.event.type  = this.current.event.type.substr( 0, 1 ).toUpperCase();
 
             if ( this.$root.$refs.search ) this.$root.$refs.search.reset();
+        },
+
+        delete_last() {
+            if ( this.$root.$refs.controls ) this.$root.$refs.controls.trigger_event('reset');
+            this.delete_last_action();
         },
     },
 

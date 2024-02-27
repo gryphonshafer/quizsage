@@ -56,7 +56,7 @@ sub practice ($self) {
         $user->save;
 
         return $self->redirect_to(
-            ( $self->param('generate_queries') ) ? '/quiz/queries' : '/queries'
+            ( $self->param('generate_queries') ) ? '/queries' : '/drill'
         );
     }
 }
@@ -171,12 +171,12 @@ sub queries ($self) {
 
     unless ( ( $self->stash('format') // '' ) eq 'json' ) {
         $self->stash( quiz => $quiz );
-        $self->stash( template => 'quiz/quiz_queries' ) if ( $self->stash('action_type') eq 'quiz_queries' );
+        $self->stash( template => 'quiz/drill' ) if ( $self->stash('action_type') eq 'drill' );
     }
     else {
         my $quiz_defaults = $quiz->conf->get('quiz_defaults');
         my $user_settings = $self->stash('user')->data->{settings}{
-            ( $self->stash('action_type') eq 'queries' ) ? 'queries_drill' : 'pickup_quiz'
+            ( $self->stash('action_type') eq 'drill' ) ? 'queries_drill' : 'pickup_quiz'
         } // {};
 
         my $material_label = $user_settings->{material_label} // $quiz_defaults->{material_label};
@@ -185,7 +185,7 @@ sub queries ($self) {
             material => $quiz->create_material_json_from_label( $material_label, $self->stash('user') ),
         };
 
-        if ( $self->stash('action_type') eq 'quiz_queries' ) {
+        if ( $self->stash('action_type') eq 'queries' ) {
             my $roster         = {
                 maybe default_bible => $user_settings->{bible},
                 data                => $user_settings->{roster_data},

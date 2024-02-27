@@ -44,7 +44,7 @@ sub startup ($self) {
     );
 
     $users->any(
-        '/:practice_type' => [ practice_type => [ qw( quiz/pickup queries/setup ) ] ]
+        '/:practice_type' => [ practice_type => [ qw( quiz/pickup drill/setup ) ] ]
     )->to('quiz#practice');
 
     $users->any("/quiz/$_")->to("quiz#$_") for ( qw( teams build ) );
@@ -56,9 +56,9 @@ sub startup ($self) {
             format            => undef,
             maybe action_type => $_->[2],
         ) for (
-            [ '/queries',       'quiz#queries', 'queries'      ],
-            [ '/quiz/queries',  'quiz#queries', 'quiz_queries' ],
-            [ '/quiz/:quiz_id', 'quiz#quiz',    undef          ],
+            [ '/drill',         'quiz#queries', 'drill'   ],
+            [ '/queries',       'quiz#queries', 'queries' ],
+            [ '/quiz/:quiz_id', 'quiz#quiz',    undef     ],
         );
 
     $users->post('/quiz/save/:quiz_id'  )->to('quiz#save'  );

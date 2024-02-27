@@ -1,8 +1,6 @@
 [%
-    page.title = 'Queries Drill',
+    page.title = 'Generated Queries',
     page.vue   = 1;
-    page.demi  = 1;
-    page.pinia = 1;
 
     js_app_config = quiz.js_app_config('queries');
 
@@ -10,6 +8,6 @@
     page.js.module    = page.js.module.merge( js_app_config.module );
 %]
 
-<h1>QuizSage: [% page.title %]</h1>
+<h1 class="no_print">QuizSage: [% page.title %]</h1>
 
 <div id="queries" v-cloak></div>

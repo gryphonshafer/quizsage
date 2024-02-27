@@ -50,8 +50,8 @@
     </p>
 
     <ul>
-        <li><a href="[% c.url_for('/queries/setup') %]">Queries Drill</a></li>
-        <li><a href="[% c.url_for('/quiz/pickup')   %]">Pick-Up Quiz</a></li>
+        <li><a href="[% c.url_for('/drill/setup') %]">Queries Drill</a></li>
+        <li><a href="[% c.url_for('/quiz/pickup') %]">Pick-Up Quiz</a></li>
     </ul>
 
     <h2>Active Seasons</h2>

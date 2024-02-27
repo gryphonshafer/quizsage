@@ -7,7 +7,7 @@ export default {
     },
 
     methods: {
-        ...Pinia.mapActions( store, [ 'delete_last_action', 'exit_quiz', 'is_quiz_done', 'view_query' ] ),
+        ...Pinia.mapActions( store, [ 'is_quiz_done', 'view_query' ] ),
 
         select_quizzer( quizzer_id, team_id ) {
             if ( this.is_quiz_done() ) return;
@@ -26,11 +26,6 @@ export default {
 
             if ( this.$root.$refs.controls && ! this.selected.type.synonymous_verbatim_open_book )
                 this.$root.$refs.controls.select_type('synonymous');
-        },
-
-        delete_last_row() {
-            if ( this.$root.$refs.controls ) this.$root.$refs.controls.trigger_event('reset');
-            this.delete_last_action();
         },
     },
 

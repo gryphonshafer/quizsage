@@ -1,9 +1,4 @@
 <div class="query_type_buttons">
-    <p><b>Generate Query:</b></p>
-
-    <button v-for="query_type in query_types"
-        @click="create_query( query_type.key )">{{ query_type.label }}</button>
-
     <p><b>Toggle Query:</b></p>
 
     <button
@@ -18,6 +13,11 @@
         :class="{ selected: next_query_bible == bible }"
         @click="set_next_query_bible(bible)"
     >{{ bible }}</button>
+
+    <p><b>Generate Query:</b></p>
+
+    <button v-for="query_type in query_types"
+        @click="create_query( query_type.key )">{{ query_type.label }}</button>
 
     <p><b>Exit Queries Drill:</b></p>
 

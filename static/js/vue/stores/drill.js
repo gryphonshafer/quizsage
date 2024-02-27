@@ -86,7 +86,7 @@ export default Pinia.defineStore( 'store', {
         },
 
         exit_drill() {
-            window.location.href = new URL( '/queries/setup', url );
+            window.location.href = new URL( '/drill/setup', url );
         },
     },
 } );

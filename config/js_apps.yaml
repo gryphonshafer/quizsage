@@ -13,7 +13,7 @@ default:
                 modules/distribution    : modules/distribution
                 modules/template        : modules/template
                 vue/components/board    : vue/components/board
-                vue/components/controls : vue/components/controls
+                vue/components/controls : vue/components/controls/quiz
                 vue/components/material : vue/components/material
                 vue/components/query    : vue/components/query
                 vue/components/search   : vue/components/search
@@ -27,22 +27,22 @@ default:
                 modules/template    : modules/template
                 vue/components/board: vue/components/board
                 vue/store           : vue/stores/board
+        drill:
+            module:
+              - vue/apps/drill
+            importmap:
+                classes/material        : classes/material
+                classes/queries         : classes/queries
+                modules/template        : modules/template
+                vue/components/material : vue/components/material
+                vue/components/query    : vue/components/query
+                vue/components/search   : vue/components/search
+                vue/components/thesaurus: vue/components/thesaurus
+                vue/components/controls : vue/components/controls/drill
+                vue/store               : vue/stores/drill
         queries:
             module:
               - vue/apps/queries
-            importmap:
-                classes/material               : classes/material
-                classes/queries                : classes/queries
-                modules/template               : modules/template
-                vue/components/material        : vue/components/material
-                vue/components/query           : vue/components/query
-                vue/components/search          : vue/components/search
-                vue/components/thesaurus       : vue/components/thesaurus
-                vue/components/queries_controls: vue/components/queries_controls
-                vue/store                      : vue/stores/queries
-        quiz_queries:
-            module:
-              - vue/apps/quiz_queries
             importmap:
                 classes/material    : classes/material
                 classes/queries     : classes/queries

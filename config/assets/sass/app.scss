@@ -38,8 +38,8 @@ $active_bg_btn : #e0ff00;
 $active_bg_cell: #e0ffd0;
 
 div#quiz,
-div#queries,
-div#quiz_queries {
+div#drill,
+div#queries {
     p {
         margin-top   : 0.5em;
         margin-bottom: 0.5em;
@@ -338,10 +338,6 @@ div#board {
     table.board {
         margin: 0;
 
-        button {
-            display: none;
-        }
-
         td.clickable {
             cursor: default;
 
@@ -407,7 +403,7 @@ body.dark_mode {
     }
 }
 
-div#queries div.query_type_buttons {
+div#drill div.query_type_buttons {
     p {
         margin: 0;
     }
@@ -418,7 +414,7 @@ div#queries div.query_type_buttons {
     }
 }
 
-div#quiz_queries {
+div#queries {
     div.intro {
         padding-bottom: 1em;
         border-bottom : 3px double colors.$lines;
