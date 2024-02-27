@@ -176,7 +176,7 @@ export default class Material {
             ) + step
         ];
 
-        return ( candidate_verse.book == book ) ? candidate_verse : undefined;
+        return ( candidate_verse && candidate_verse.book == book ) ? candidate_verse : undefined;
     }
 
     // given a word, return the synonyms at or above a given verity
