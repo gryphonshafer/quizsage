@@ -139,7 +139,7 @@ sub latest_quiz_in_meet_room ( $self, $meet_id, $room_number ) {
 sub ensure_material_json_exists ($self) {
     return if ( -f join( '/',
         $self->conf->get( qw( config_app root_dir ) ),
-        $self->conf->get( qw( material json ) ),
+        $self->conf->get( qw( material json location ) ),
         $self->data->{settings}{material}{id} . '.json',
     ) );
 

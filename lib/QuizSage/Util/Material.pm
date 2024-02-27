@@ -33,6 +33,18 @@ fun material_json (
     :$user        = undef, # user ID from application database
     :$force       = 0,
 ) {
+    # remove any material JSON files that haven't been accessed in the last N
+    # days, where N is from config: material json atime_life
+    my $now        = time;
+    my $atime_life = conf->get( qw{ material json atime_life } );
+    my $json_path  = path( join( '/',
+        conf->get( qw{ config_app root_dir } ),
+        conf->get( qw{ material json location } ),
+    ) );
+    $json_path->list->grep( sub ($file) {
+        ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
+    } )->each('remove');
+
     croak('Must provide either label or description (and not both)')
         if ( not $description and not $label or $description and $label );
 
@@ -40,13 +52,7 @@ fun material_json (
     $description    = $model_label->descriptionize($label) if ($label);
     my $id          = substr( Digest->new('SHA-256')->add($description)->hexdigest, 0, 16 );
 
-    my $json_file = path(
-        join( '/',
-            conf->get( qw{ config_app root_dir } ),
-            conf->get( qw{ material json } ),
-            $id . '.json',
-        )
-    );
+    my $json_file = $json_path->child( $id . '.json' );
 
     my $return = {
         description => $description,

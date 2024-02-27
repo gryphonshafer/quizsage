@@ -25,7 +25,9 @@ default:
         salt: 63MWT0N6PQlNU43R
     material:
         obml: local/obml
-        json: static/json/material
+        json:
+            location  : static/json/material
+            atime_life: 274
     quiz_defaults:
         bible         : NIV
         duration      : 30
