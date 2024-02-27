@@ -27,6 +27,7 @@ default:
         obml: local/obml
         json:
             location  : static/json/material
+            path      : /json/material
             atime_life: 274
     quiz_defaults:
         bible         : NIV

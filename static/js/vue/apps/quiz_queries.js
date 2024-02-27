@@ -1,12 +1,11 @@
 import Quiz     from 'classes/quiz';
 import template from 'modules/template';
 
-const json_material_path = '../../json/material';
-const url                = new URL( window.location.href );
-const quiz_promise       = fetch( new URL( url.pathname + '.json', url ) ).then( reply => reply.json() );
-const material_promise   = quiz_promise
+const url              = new URL( window.location.href );
+const quiz_promise     = fetch( new URL( url.pathname + '.json', url ) ).then( reply => reply.json() );
+const material_promise = quiz_promise
     .then( data => fetch( new URL(
-        json_material_path + '/' + data.settings.material.id + '.json',
+        data.json_material_path + '/' + data.settings.material.id + '.json',
         url,
     ) ) )
     .then( reply => reply.json() );

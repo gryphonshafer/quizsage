@@ -160,7 +160,9 @@ sub quiz ($self) {
         $self->stash( quiz => $quiz );
     }
     else {
-        $self->render( json => $quiz->data );
+        my $data = $quiz->data;
+        $data->{json_material_path} = $self->url_for( $quiz->conf->get( qw( material json path ) ) );
+        $self->render( json => $data );
     }
 }
 
@@ -194,7 +196,10 @@ sub queries ($self) {
             $settings->{teams} = $roster;
         }
 
-        $self->render( json => { settings => $settings } );
+        $self->render( json => {
+            settings           => $settings,
+            json_material_path => $self->url_for( $quiz->conf->get( qw( material json path ) ) ),
+        } );
     }
 }
 
