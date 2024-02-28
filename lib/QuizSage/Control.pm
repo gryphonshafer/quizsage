@@ -101,15 +101,21 @@ QuizSage::Control
 
 This class is a subclass of L<Omniframe::Control> and provides an override to
 the C<startup> method such that L<MojoX::ConfigAppStart> (along with its
-required C<mojo_app_lib> configuration key) is sufficient to startup a basic
-(and mostly useless) web application.
+required C<mojo_app_lib> configuration key) is sufficient to startup the web
+application.
 
 =head1 METHODS
 
 =head2 startup
 
-This is a basic, thin startup method for L<Mojolicious>. This method calls
-C<setup> and sets a universal route that renders a basic text message.
+This is the startup method for L<Mojolicious>. This method calls
+L<Omniframe::Control>'s C<setup> and sets all routes for the web application.
+
+All routes are given the page wrapper C<page.html.tt>, which itself is wrapped
+by Omniframe's C<wrapper.html.tt>.
+
+When a user logs in, their browser is given a C<user_id>, which (if valid) is
+loaded into a C<user> object for all pages.
 
 =head1 INHERITANCE
 

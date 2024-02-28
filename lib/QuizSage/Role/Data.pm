@@ -36,13 +36,36 @@ QuizSage::Role::Data
 
 =head1 DESCRIPTION
 
-This role provides some Data methods.
+This role provides some "data" methods, that is to say, common methods for
+loading or handling data.
 
 =head1 METHODS
 
 =head2 deepcopy
 
+This method expects any number of data objects as input and will create "deep
+copies" of them, meaning any internal references will be replicated instead of
+maintained, allowing for alteration of said reference content without infecting
+the original data objects.
+
+    my $deep_copy = $obj->deepcopy($original_data);
+
+If multiple inputs are provided, the context of the call will cause either an
+array or arrayref to be returned.
+
+    my $deep_copies = $obj->deepcopy( $data_obj_0, $data_obj_1 );
+    my @deep_copies = $obj->deepcopy( $data_obj_0, $data_obj_1 );
+
 =head2 dataload
+
+This method will load a YAML or JSON file from within the project's directory
+tree based on the realtive path to the file from the projects's root directory.
+The method will return the data from the source file.
+
+    my $decoded_season_data =
+        $obj->dataload('config/meets/defaults/season.yaml');
+    my $decoded_material_data =
+        $obj->dataload('static/json/material/d8dc04b8c7ed6bc4.json');
 
 =head1 WITH ROLE
 

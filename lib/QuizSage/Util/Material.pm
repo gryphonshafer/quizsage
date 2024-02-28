@@ -65,7 +65,7 @@ fun material_json (
     # setup data structure
     my $data = $model_label->parse($description);
 
-    croak('Must supply at least 1 valid reference range') unless ( $data->{ranges}->@* );
+    croak('Must supply at least 1 valid reference range') unless ( $data->{ranges} and $data->{ranges}->@* );
     croak('Must have least 1 primary supported Bible translation by canonical acronym')
         unless ( $data->{bibles} and $data->{bibles}{primary} and $data->{bibles}{primary}->@* );
 
