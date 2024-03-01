@@ -136,6 +136,14 @@ QuizSage::Model::User
     $user->send_email( 'verify_email',    Mojo::URL->new );
     $user->send_email( 'forgot_password', Mojo::URL->new );
 
+    $user->verify( 42, 'a1b2c3d4' );
+    $user->reset_password( 42, 'a1b2c3d4', 'new_password' );
+
+    my $logged_in_user = QuizSage::Model::User->new->login( 'username', 'passwd' );
+
+    $user->qm_auth(42);
+    $user->qm_auth( QuizSage::Model::Meet->new->load(42) );
+
 =head1 DESCRIPTION
 
 This class is the model for user objects. A user is an individual person that
@@ -199,7 +207,7 @@ password, and the new password to set.
 This method requires a username and password string inputs. It will then attempt
 to find and login the user. If successful, it will return a loaded user object.
 
-    my $user = QuizSage::Model::User->new->login( 'username', 'passwd' );
+    my $logged_in_user = QuizSage::Model::User->new->login( 'username', 'passwd' );
 
 =head2 qm_auth
 

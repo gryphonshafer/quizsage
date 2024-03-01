@@ -72,16 +72,46 @@ QuizSage::Model::Season
     use QuizSage::Model::Season;
 
     my $quiz = QuizSage::Model::Season->new;
+    my $active_seasons = $quiz->active_seasons;
 
 =head1 DESCRIPTION
 
 This class is the model for season objects.
 
+=head1 EXTENDED METHOD
+
+=head2 create
+
+Extended from L<Omniframe::Role::Model>, this method will populate the
+C<settings> value from C<config/meets/defaults/season.yaml> if that value isn't
+explicitly provided.
+
 =head1 OBJECT METHODS
 
-=head2 validate, freeze, thaw
+=head2 freeze, thaw
+
+Likely not used directly, these method run data pre-save to and post-read from
+the database functions. C<freeze> will canonically format the C<start> datetime
+and encode C<settings> C<thaw> will decode C<settings>.
 
 =head2 active_seasons
+
+This method will return a data structure of the current active seasons as
+defined by if now is between the season's database values for C<start> and
+C<start> plus C<days> duration.
+
+    my $active_seasons = $quiz->active_seasons;
+
+The data structure will be:
+
+    - season_id: 1
+      name     : Season Name
+      location : Season Location
+      meets    :
+        - meet_id : 1,
+          name    : Meet Name
+          location: Meet Location
+          start   : Sat, Jan 13, 2024 at  8:00 AM PST
 
 =head1 WITH ROLES
 

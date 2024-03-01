@@ -8,6 +8,7 @@ ok( lives { $obj = QuizSage::Model::User->new }, 'new' ) or note $@;
 DOES_ok( $obj, "Omniframe::Role::$_" ) for ( qw( Bcrypt Model ) );
 can_ok( $obj, qw(
     active
+    create
     freeze thaw send_email verify reset_password login qm_auth
 ) );
 
