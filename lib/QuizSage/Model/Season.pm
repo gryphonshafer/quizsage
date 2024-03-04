@@ -104,6 +104,7 @@ C<start> plus C<days> duration.
 
 The data structure will be:
 
+    ---
     - season_id: 1
       name     : Season Name
       location : Season Location
