@@ -8,7 +8,12 @@ use QuizSage::Model::Season;
 use QuizSage::Util::Material 'material_json';
 use YAML::XS 'Dump';
 
-with qw( Omniframe::Role::Time QuizSage::Role::Data QuizSage::Role::JSApp );
+with qw(
+    Omniframe::Role::Database
+    Omniframe::Role::Time
+    QuizSage::Role::Data
+    QuizSage::Role::JSApp
+);
 
 sub build ( $self, $user_id = undef ) {
     my $build_settings = $self->_merge_meet_and_season_settings;
@@ -47,12 +52,15 @@ sub _merge_meet_and_season_settings ($self) {
 
 sub parse_and_structure_roster_text ( $self, $roster_ref ) {
     my $default_bible = delete $$roster_ref->{default_bible} // $self->conf->get( qw( quiz_defaults bible ) );
-    my $bibles_re     = '\b(?:' . join( '|', $self->dq('material')->get(
+
+    my @bible_acronyms = $self->dq('material')->get(
         'bible',
         ['acronym'],
         undef,
         { order_by => [ { -desc => { -length => 'acronym' } }, 'acronym' ] },
-    )->run->column ) . ')\b';
+    )->run->column;
+
+    my $bibles_re = '\b(?:' . join( '|', @bible_acronyms ) . ')\b';
 
     my $tags    = delete $$roster_ref->{tags} // {};
     $tags->{$_} = ( ref $tags->{$_} ) ? $tags->{$_} : [ $tags->{$_} ] for ( qw( append default ) );
@@ -61,7 +69,9 @@ sub parse_and_structure_roster_text ( $self, $roster_ref ) {
         $$text_ref =~ s/\s+/ /g;
 
         my $bible;
-        $bible //= $1 while ( $$text_ref =~ s/($bibles_re)//i );
+        if (@bible_acronyms) {
+            $bible //= $1 while ( $$text_ref =~ s/($bibles_re)//i );
+        }
 
         my @tags;
         push( @tags, split( /\s*[,;]+\s*/, $1 ) ) while ( $$text_ref =~ s/\(([^\)]*)\)//i );
@@ -653,13 +663,101 @@ QuizSage::Role::Meet::Build
 
 =head1 DESCRIPTION
 
-This role provides some Meet::Build methods.
+This role provides some meet build methods. In particular, it provides C<build>
+to build meets, which itself calls C<parse_and_structure_roster_text> as part of
+it's process to build a meet.
 
 =head1 METHODS
 
 =head2 build
 
+Thie method will build a meet, populating the C<build> JSON data of a meet
+database record. The method may optionally accept a user ID, which if provided,
+will be internally passed to L<QuizSage::Util::Material>'s C<material_json>
+when building any needed material JSON files for the meet.
+
+The C<build> method will internally conduct the following, in order:
+
+=over
+
+=item * Merge meet and season settings
+
+=item * Parse and structure roster text (via a call to
+C<parse_and_structure_roster_text>)
+
+=item * Create material JSON
+
+=item * Build bracket data
+
+=item * Schedule integration
+
+=item * Add distributions
+
+=item * Build settings cleanup
+
+=item * Save the build settings to the C<build> field of the meet's database row
+
+=back
+
 =head2 parse_and_structure_roster_text
+
+This method requires a reference to a hashref. (Yes, a reference to a
+reference.) The hashref itself must have a C<data> key, which is a string of
+text. The hashref may also have C<default_bible> and C<tags> keys/values.
+
+    my $roster_data = {
+        data          => '...',
+        default_bible => 'NIV',
+        tags          => {},
+    };
+    $obj->parse_and_structure_roster_text( \$roster_data );
+
+The C<tags> hashref may have keys of C<default> (to represent any default tags
+to apply to all quizzers) and/or C<append> (to contain any tags to append to all
+quizzers). For example:
+
+    ---
+    default:
+      - Veteran
+    append:
+      - Youth
+
+The required C<data> string is a single string with line breaks between teams,
+each team's name being the first item in a paragraph, and each quizzer being a
+line following a team's name. It's possible to optionally add a Bible
+translation after either a team or quizzer. Specific tags for quizzers can be
+appended in parentheses. For example:
+
+    Team 1
+    Alpha Bravo
+    Charlie Delta
+    Echo Foxtrox
+
+    Team 2 NASB5
+    Gulf Hotel
+    Juliet India NASB (Rookie)
+    Kilo Lima (Rookie)
+
+    Team 3
+    Mike November
+    Oscar Papa (Rookie)
+    Romeo Quebec
+
+The method will parse and structure the roster text, changing the reference from
+pointing to a hashref to pointing to an array with the following structure:
+
+    ---
+    - name: Team 2
+      quizzers:
+        - bible: NASB5
+          name:  Gulf Hotel
+          tags:  [ 'Veteran', 'Youth' ]
+        - bible: NASB
+          name:  uliet India
+          tags:  [ 'Rookie', 'Youth' ]
+        - bible: NASB5
+          name:  Kilo Lima
+          tags:  [ 'Rookie', 'Youth' ]
 
 =head1 WITH ROLE
 

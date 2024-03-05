@@ -63,9 +63,11 @@ sub state ($self) {
             $state_quiz->{current_query_id} = '1A';
         }
 
-        for ( my $i = 0; $i < $state_quiz->{roster}->@*; $i++ ) {
-            $state_quiz->{roster}[$i]{$_} //= $quiz->{settings}{teams}[$i]{$_}
-                for ( keys $quiz->{settings}{teams}[$i]->%* );
+        if ( $state_quiz->{roster} ) {
+            for ( my $i = 0; $i < $state_quiz->{roster}->@*; $i++ ) {
+                $state_quiz->{roster}[$i]{$_} //= $quiz->{settings}{teams}[$i]{$_}
+                    for ( keys $quiz->{settings}{teams}[$i]->%* );
+            }
         }
     }
 
@@ -316,21 +318,94 @@ QuizSage::Model::Meet
 
     use QuizSage::Model::Meet;
 
-    my $quiz = QuizSage::Model::Meet->new;
+    my $meet          = QuizSage::Model::Meet->new->load(1138);
+    my $state         = $meet->state;
+    my $quiz_settings = $meet->quiz_settings( 'Bracket Name', 'Quiz Name' );
+    my $stats         = $meet->stats;
 
 =head1 DESCRIPTION
 
 This class is the model for meet objects.
 
+=head1 EXTENDED METHOD
+
+=head2 create
+
+Extended from L<Omniframe::Role::Model>, this method will populate the
+C<settings> value from C<config/meets/defaults/meet.yaml> if that value isn't
+explicitly provided.
+
 =head1 OBJECT METHODS
 
 =head2 freeze, thaw
 
+Likely not used directly, these methods will cause L<Omniframe::Role::Model> to
+canonically format the C<start> datetime and JSON-encode/decode the C<settings>
+hashref and the C<build> hashref.
+
+Also, it will C<bcrypt> passwords before storing them in the database. It
+expects a hashref of values and will return a hashref of values with the
+C<passwd> crypted.
+
 =head2 state
+
+This method calculates the state of the meet. It does this by starting with the
+C<build> data of the meet. It will then load data for every quiz at least
+started/initialized for the meet, calculating team and quizzer points and
+positions. If a quiz or bracket is complete, any subsequent quiz or bracket that
+relies on the results is updated. (For example, if a quiz's teams consist of the
+first-place teams from 3 other quizzes.)
+
+    my $state = $meet->state;
+
+The method will return a hashref with a structure similar to the following:
+
+    ---
+    brackets:
+      - name: ...
+        weight: 1
+        material:
+          description: ...
+          id: ...
+          label: ...
+        sets:
+          - rooms:
+            - id: 1
+              name: 1
+              room: 1
+              roster:
+                - id: _0
+                  name: ...
+                  appeals_declined: 0
+                  timeouts_remaining: 1
+                  triggle_eligible: true
+                  quizzers:
+                    - bible: NIV
+                      id: _1
+                      name: ...
+                      score: {}
+                      tags:
+                        - Veteran
+                        - Youth
+                  score: {}
+              schedule: {}
+              distribution: [{}]
 
 =head2 quiz_settings
 
+This method requires a bracket name and quiz name as input; it will return a
+quiz settings data structure suitable for L<QuizSage::Model::Quiz> objects.
+
+    my $quiz_settings = $meet->quiz_settings( 'Bracket Name', 'Quiz Name' );
+
 =head2 stats
+
+This method returns a data structure containing meet statistics.
+
+    my $stats = $meet->stats;
+
+The statistics hashref returned will contain keys for at least but perhaps not
+limited to: C<quizzers>, C<teams>, C<rankings>, C<meta>.
 
 =head1 WITH ROLES
 
