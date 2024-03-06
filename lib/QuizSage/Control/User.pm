@@ -298,23 +298,32 @@ Handler for user create and user profile edit.
 
 =head2 verify
 
-Handler for verify.
+Handler for user verify, which is when a user clicks on a verification link sent
+to them via email. This method handles that event, conducting verification via
+L<QuizSage::Model::User>'s C<verify>.
 
 =head2 forgot_password
 
-Handler for forgot password.
+Handler for forgot password form and email send. Will initially display a forgot
+password form, and when submitted, will send a C<reset_password> email to the
+user via L<QuizSage::Model::User>'s C<send_email>.
 
 =head2 reset_password
 
-Handler for reset password.
+Handler for reset password, which is when a user clicks on a reset password link
+sent to them via email. This controller calls out to L<QuizSage::Model::User>'s
+C<reset_password> for the reset logic.
 
 =head2 login
 
-Handler for login.
+Handler for login. If logic is successful, the session will be updated with a
+C<user_id> field and a C<last_request_time> field, which L<QuizSage::Control>
+uses for login/user setup per request as needed.
 
 =head2 logout
 
-Handler for logout.
+Handler for logout. Deletes the session values: C<user_id>,
+C<last_request_time>, C<quiz_password>.
 
 =head1 INHERITANCE
 

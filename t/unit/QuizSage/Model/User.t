@@ -20,6 +20,9 @@ like(
     'create({})',
 );
 
+( my $username = lc( crypt( $$ . ( time + rand ), 'gs' ) ) ) =~ s/[^a-z0-9]+//g;
+my $email = $username . '@example.com';
+
 like(
     dies { $obj->create({ email => 'bad_email' }) },
     qr/Email not provided properly/,
@@ -28,7 +31,7 @@ like(
 
 like(
     dies { $obj->create({
-        email      => 'good_email@example.com',
+        email      => $email,
         passwd     => 'short',
         first_name => 'first_name',
         last_name  => 'last_name',
@@ -39,7 +42,7 @@ like(
 
 like(
     dies { $obj->create({
-        email      => 'good_email@example.com',
+        email      => $email,
         passwd     => 'terrible_but_long_password',
         first_name => 'first_name',
         last_name  => 'last_name',
@@ -51,7 +54,7 @@ like(
 
 ok(
     lives { $obj->create({
-        email      => 'good_email@example.com',
+        email      => $email,
         passwd     => 'terrible_but_long_password',
         first_name => 'first_name',
         last_name  => 'last_name',
@@ -86,13 +89,13 @@ ok(
 $obj->load( $obj->id );
 
 like(
-    dies { $obj->login( 'good_email@example.com', 'bad_password' ) },
+    dies { $obj->login( $email, 'bad_password' ) },
     qr/Failed to load user/,
     q/login(...) with bad password/,
 );
 
 ok(
-    $obj->login( 'good_email@example.com', 'new_password' ),
+    $obj->login( $email, 'new_password' ),
     q/login(...) with good password/,
 );
 

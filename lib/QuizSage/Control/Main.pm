@@ -23,7 +23,8 @@ for "Main" actions.
 
 =head2 home
 
-Handler for the home page.
+Handler for the home page. The home page has a not-logged-in view and a
+logged-in view that are substantially different.
 
 =head1 INHERITANCE
 
