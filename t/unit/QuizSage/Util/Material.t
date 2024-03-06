@@ -6,7 +6,7 @@ use QuizSage::Util::Material qw{ text2words material_json };
 
 my @spew;
 my $mock_mojo_file  = mock 'Mojo::File' => ( override => [ spew => sub { @spew = @_ } ] );
-my $mock_file_path  = mock 'File::Path' => ( override => [ make_path => sub {} ] );
+my $mock_file_path  = mock 'File::Path' => ( override => 'make_path' );
 my $model_label_obj = QuizSage::Model::Label->new;
 my $mock_label      = mock 'QuizSage::Model::Label' => (
     override => [

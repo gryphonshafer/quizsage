@@ -12,7 +12,8 @@ my $email  = stuff('email');
 my $passwd = 'terrible_but_long_enough_password';
 
 mojo->post_ok(
-        '/user/create' => form => {
+        '/user/create',
+        form => {
             email      => $email,
             passwd     => $passwd,
             first_name => 'First Name',
@@ -22,10 +23,11 @@ mojo->post_ok(
     )
     ->status_is(200)
     ->attr_is( 'dialog#message', 'class', 'error' )
-    ->content_like( qr|Phone supplied is not at least 10 digits in length| );
+    ->text_like( 'dialog#message', qr|Phone supplied is not at least 10 digits in length| );
 
 mojo->post_ok(
-        '/user/create' => form => {
+        '/user/create',
+        form => {
             email      => $email,
             passwd     => $passwd,
             first_name => 'First Name',
@@ -38,7 +40,7 @@ mojo->post_ok(
     ->get_ok('/')
     ->status_is(200)
     ->attr_is( 'dialog#message', 'class', 'success' )
-    ->content_like( qr|Successfully created user| );
+    ->text_like( 'dialog#message', qr|Successfully created user| );
 
 my $user = stuff('dq')
     ->get( 'user', [ qw( user_id passwd phone active ) ], { email => '?' } )
@@ -62,7 +64,7 @@ mojo->post_ok( '/user/verify/' . $user->{user_id} . '/a1b2c3' )
     ->get_ok('/')
     ->status_is(200)
     ->attr_is( 'dialog#message', 'class', 'error' )
-    ->content_like( qr|Unable to verify| );
+    ->text_like( 'dialog#message', qr|Unable to verify| );
 
 is(
     stuff('dq')->get( 'user', ['active'], { email => '?' } )->run($email)->value,
@@ -76,7 +78,7 @@ mojo->post_ok( '/user/verify/' . $user->{user_id} . '/' . substr( $user->{passwd
     ->get_ok('/')
     ->status_is(200)
     ->attr_is( 'dialog#message', 'class', 'success' )
-    ->content_like( qr|Successfully verified| );
+    ->text_like( 'dialog#message', qr|Successfully verified| );
 
 is(
     stuff('dq')->get( 'user', ['active'], { email => '?' } )->run($email)->value,

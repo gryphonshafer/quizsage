@@ -18,7 +18,8 @@ my $user = QuizSage::Model::User->new->create({
 $user->save({ active => 1 });
 
 mojo->post_ok(
-        '/user/login' => form => {
+        '/user/login',
+        form => {
             email  => $email,
             passwd => $passwd,
         },
@@ -33,7 +34,8 @@ mojo->get_ok('/user/profile')
     ->status_is(200);
 
 mojo->post_ok(
-        '/user/profile' => form => {
+        '/user/profile',
+        form => {
             email      => 'new_' . $email,
             passwd     => 'new_' . $passwd,
             first_name => 'New First Name',
@@ -46,7 +48,7 @@ mojo->post_ok(
     ->get_ok('/')
     ->status_is(200)
     ->attr_is( 'dialog#message', 'class', 'success' )
-    ->content_like( qr|Successfully edited user profile| );
+    ->text_like( 'dialog#message', qr|Successfully edited user profile| );
 
 is(
     stuff('dq')->get(

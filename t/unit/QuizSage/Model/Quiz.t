@@ -18,8 +18,10 @@ can_ok( $obj, qw(
 $obj->dq->begin_work;
 $obj->dq('material')->begin_work;
 
+( my $username = lc( crypt( $$ . ( time + rand ), 'gs' ) ) ) =~ s/[^a-z0-9]+//g;
+
 my $user = QuizSage::Model::User->new->create({
-    email      => crypt( $$ . ( time + rand ), 'gs' ) . '@example.com',
+    email      => $username . '@example.com',
     passwd     => 'password',
     first_name => 'First',
     last_name  => 'Last',

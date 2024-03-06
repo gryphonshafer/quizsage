@@ -27,7 +27,8 @@ mojo->get_ok('/')
     ->attr_is( 'form#login_form', 'action', url('/user/login') );
 
 mojo->post_ok(
-        '/user/login' => form => {
+        '/user/login',
+        form => {
             email  => $email,
             passwd => $passwd,
         },
@@ -46,7 +47,8 @@ mojo->get_ok('/user/logout')
     ->attr_is( 'form#login_form', 'method', 'post' );
 
 mojo->post_ok(
-        '/user/login' => form => {
+        '/user/login',
+        form => {
             email  => $email,
             passwd => 'incorrect_passwd',
         },
@@ -56,6 +58,6 @@ mojo->post_ok(
     ->get_ok('/')
     ->status_is(200)
     ->attr_is( 'dialog#message', 'class', 'error' )
-    ->content_like( qr|Login failed| );
+    ->text_like( 'dialog#message', qr|Login failed| );
 
 teardown;

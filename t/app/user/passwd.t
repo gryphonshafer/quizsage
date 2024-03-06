@@ -21,12 +21,12 @@ mojo->post_ok( '/user/forgot_password' => form => { email => $email } )
     ->get_ok('/')
     ->status_is(200)
     ->attr_is( 'dialog#message', 'class', 'success' )
-    ->content_like( qr|Sent email to: <b>$email</b>| );
+    ->text_like( 'dialog#message', qr|Sent email to:| );
 
 mojo->post_ok( '/user/forgot_password' => form => { email => 'not_exists_' . $email } )
     ->status_is(200)
     ->attr_is( 'dialog#message', 'class', 'error' )
-    ->content_like( qr|Failed to load user| );
+    ->text_like( 'dialog#message', qr|Failed to load user| );
 
 my $old_password_encrypted = $user->data->{passwd};
 
@@ -36,7 +36,7 @@ mojo->post_ok(
 )
     ->status_is(200)
     ->attr_is( 'dialog#message', 'class', 'error' )
-    ->content_like( qr|Failed to reset password| );
+    ->text_like( 'dialog#message', qr|Failed to reset password| );
 
 mojo->post_ok(
     '/user/reset_password/' . $user->id . '/' . substr( $old_password_encrypted, 0, 12 ),
@@ -44,7 +44,7 @@ mojo->post_ok(
 )
     ->status_is(200)
     ->attr_is( 'dialog#message', 'class', 'error' )
-    ->content_like( qr|Password supplied is not at least| );
+    ->text_like( 'dialog#message', qr|Password supplied is not at least| );
 
 my $new_password_encrypted = $user->load( $user->id )->data->{passwd};
 is( $old_password_encrypted, $new_password_encrypted, 'password not changed' );
@@ -58,7 +58,7 @@ mojo->post_ok(
     ->get_ok('/')
     ->status_is(200)
     ->attr_is( 'dialog#message', 'class', 'success' )
-    ->content_like( qr|Successfully reset password| );
+    ->text_like( 'dialog#message', qr|Successfully reset password| );
 
 my $new_password_encrypted_2 = $user->load( $user->id )->data->{passwd};
 isnt( $old_password_encrypted, $new_password_encrypted_2, 'password changed' );

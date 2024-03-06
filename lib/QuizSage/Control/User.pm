@@ -75,7 +75,7 @@ sub account ($self) {
 
         try {
             die 'Email, first and last name, and phone fields must be filled in'
-                if ( grep { length $params{$_} == 0 } @fields );
+                if ( grep { not $params{$_} or length $params{$_} == 0 } @fields );
 
             $self->stash('user')->data->{$_} = $params{$_} for (@fields);
             $self->stash('user')->data->{passwd} = $params{passwd} if ( $params{passwd} );
@@ -212,10 +212,7 @@ sub login ($self) {
         my $user = QuizSage::Model::User->new->login( map { $self->param($_) } qw( email passwd ) );
 
         $self->info( 'Login success for: ' . $user->data->{email} );
-        $self->session(
-            user_id           => $user->id,
-            last_request_time => time,
-        );
+        $self->session( user_id => $user->id );
     }
     catch ($e) {
         if ( $e =~ /human\-verification/i ) {
@@ -240,12 +237,7 @@ sub logout ($self) {
         'Logout requested from: ' .
         ( ( $self->stash('user') ) ? $self->stash('user')->data->{email} : '(Unlogged-in user)' )
     );
-    $self->session(
-        user_id           => undef,
-        last_request_time => undef,
-        quiz_password     => undef,
-    );
-
+    $self->session( user_id => undef );
     $self->redirect_to('/');
 }
 
@@ -322,8 +314,7 @@ uses for login/user setup per request as needed.
 
 =head2 logout
 
-Handler for logout. Deletes the session values: C<user_id>,
-C<last_request_time>, C<quiz_password>.
+Handler for logout. Deletes the session value C<user_id>.
 
 =head1 INHERITANCE
 
