@@ -46,7 +46,9 @@ sub practice ($self) {
     }
     else {
         my $parsed_label = $label->parse( $settings->{material_label} );
-        $settings->{material_label} .= ' ' . $settings->{bible} unless ( $parsed_label->{bibles} );
+
+        $settings->{material_label} .= ' ' . $settings->{bible}
+            if ( not $parsed_label->{bibles} and $settings->{bible} );
         $settings->{material_label} = $label->canonicalize( $settings->{material_label} );
 
         $user->data->{settings}{
@@ -245,25 +247,80 @@ QuizSage::Control::Quiz
 =head1 DESCRIPTION
 
 This class is a subclass of L<Mojolicious::Controller> and provides handlers
-for "Main" actions.
+for "Quiz" actions.
 
 =head1 METHODS
 
 =head2 practice
 
+This method handles setting up settings for pickup quizzes and query drills. In
+both cases, the method uses user C<settings> (saved under C<pickup_quiz> and
+C<queries_drill> respectively) and C<quiz_defaults> from the application
+configuration (in that order of preference) to build a pickup quiz or query
+drill.
+
+L<QuizSage::Model::Quiz>'s C<pickup> is called to generate pickup quizzes.
+
 =head2 teams
+
+This method handles situations where in a meet a quiz magistrate wants to
+manually set a quiz's teams prior to those teams being automatically assigned
+based on a meet's C<settings>/C<build> and the results of other quizzes. As
+such, it's unlikely a quiz magistrate should need to leverage this
+method/handler; it exists as a failsafe.
+
+The handler requires a user be "quiz magistrate authorized" as defined by
+L<QuizSage::Model::User>'s C<qm_auth>.
+
+The handler will render data for the quiz magistrate including a list of teams
+and quiz information. And upon form submit, the method will build the quiz with
+the teams submitted.
 
 =head2 build
 
+This handler will build a quiz for a meet, then it'll redirect to the quiz's
+display page. The handler requires a user be "quiz magistrate authorized"
+as defined by L<QuizSage::Model::User>'s C<qm_auth>.
+
 =head2 quiz
+
+This handler runs quizzes (both meet and pickup). It will ensure that the quiz's
+material JSON exists via a call to L<QuizSage::Model::Quiz>'s
+C<ensure_material_json_exists>. It will then, if not requesting JSON, load the
+quiz object into the C<quiz> stash value; and if requesting JSON, it will
+provide quiz data as JSON (along with an added C<json_material_path> key/value).
+
+The method requires a C<quiz_id> parameter to identify the quiz to provide.
 
 =head2 queries
 
-=head2 quiz_queries
+This method handles running query drills and displaying a quiz's worth of
+queries (potentially to print).
+
+If not requesting JSON, the handler will load the C<quiz> stash value with a
+blank quiz object. Otherwise, the handler return a JSON consisting of
+C<settings> and C<json_material_path> key/values, which is sufficient for the
+Javascript application to run as desired.
 
 =head2 save
 
+This method handles saving quiz C<state>, which should happen after every quiz
+event. The handler requires a user be "quiz magistrate authorized" as defined by
+L<QuizSage::Model::User>'s C<qm_auth>.
+
+The method requires a C<quiz_id> parameter to identify the quiz, and it expects
+JSON data to be POSTed.
+
 =head2 delete
+
+This method handles situations where in a meet a quiz magistrate wants to
+delete quiz. It's unlikely a quiz magistrate should need to leverage this
+method/handler; it exists as a failsafe.
+
+The method requires a C<quiz_id> parameter value to identify the quiz to delete.
+
+The handler requires a user be "quiz magistrate authorized" as defined by
+L<QuizSage::Model::User>'s C<qm_auth>.
 
 =head1 INHERITANCE
 

@@ -280,7 +280,7 @@ QuizSage::Control::User
 =head1 DESCRIPTION
 
 This class is a subclass of L<Mojolicious::Controller> and provides handlers
-for "user" actions.
+for "User" actions.
 
 =head1 METHODS
 
