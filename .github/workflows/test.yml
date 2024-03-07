@@ -31,7 +31,7 @@ jobs:
       - run: dest update
       - run: |-
           PATH="$PATH:." \
-          HARNESS_PERL_SWITCHES=-MDevel::Cover \
+          HARNESS_PERL_SWITCHES=-MDevel::Cover=+ignore,'/lib/Omniframe\\b' \
           prove --recurse --lib --failures --jobs 4 --timer t
       - run: cover -report codecov
         env:
