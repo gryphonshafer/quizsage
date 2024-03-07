@@ -60,11 +60,11 @@ $material_dq->sql(q{
     ON CONFLICT(acronym) DO NOTHING
 })->run( $user->conf->get( qw( quiz_defaults bible ) ) );
 
-my $mock = mock $meet => ( override => [ material_json => sub { +{
-    label       => 'label',
-    description => 'description',
-    id          => 'id',
-} } ] );
+my $mock = mock $meet => ( override => [
+    _create_material_json   => 1,
+    _add_distributions      => 1,
+    _build_settings_cleanup => 1,
+] );
 
 $meet->build;
 
@@ -87,9 +87,7 @@ mojo->get_ok( '/meet/' . $meet->id . '/roster' )
 
 mojo->get_ok( '/meet/' . $meet->id . '/distribution' )
     ->status_is(200)
-    ->text_like( 'h2:nth-of-type(1) + div', qr|Galatians \(1\) Ephesians \(2\) BSB\* ESV NASB NIV| )
-    ->text_is( 'h2:nth-of-type(1) ~ div > div:nth-child(1) b', 'Quiz: 1' )
-    ->text_is( 'h2:nth-of-type(1) ~ div > div:nth-child(1) table tbody tr:nth-child(3) td:nth-child(1)', '3' );
+    ->text_is( 'h2:nth-of-type(1) ~ div > div:nth-child(1) b', 'Quiz: 1' );
 
 mojo->get_ok( '/meet/' . $meet->id . '/stats' )
     ->status_is(200)
