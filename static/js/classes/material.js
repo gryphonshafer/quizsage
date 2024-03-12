@@ -287,8 +287,8 @@ export default class Material {
 
         const details = {};
         if ( query.prompt ) details.prompt = this.detailed_text( query.prompt );
-        details.reply      = this.detailed_text( query.reply      );
-        details.full_reply = this.detailed_text( query.full_reply );
+        details.reply = this.detailed_text( query.reply );
+        if ( query.full_reply ) details.full_reply = this.detailed_text( query.full_reply );
 
         return {
             details  : details,
