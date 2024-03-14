@@ -1,0 +1,108 @@
+$header_height : 2rem      !default;
+$footer_height : 0.5rem    !default;
+$border_width  : 1px       !default;
+$padding       : 1rem      !default;
+$non_main_text : #3f434b !default;
+$main_gradient : linear-gradient(
+    90deg,
+    rgba( 218, 236, 247, 1 ) 0%,
+    rgba( 236, 246, 254, 1 ) 33%,
+    rgba( 189, 216, 236, 1 ) 100%
+) !default;
+
+body {
+    margin: 0;
+}
+
+header {
+    height          : $header_height;
+    background-color: white;
+    border-bottom   : $border_width solid lightgray;
+    padding         : $padding;
+
+    img, h1 {
+        display: inline-block;
+        margin : 0;
+        margin: -0.25rem 0.25rem 0 0;
+    }
+
+    h1 {
+        color: $non_main_text;
+    }
+
+    div {
+        position: absolute;
+        top     : 1rem;
+        right   : 3rem;
+
+        a {
+            margin-right: 1rem;
+        }
+    }
+}
+
+a.toggle_menu {
+    position: absolute;
+    top     : 1rem;
+    right   : 1rem;
+}
+
+nav {
+    display: none;
+
+    &:target {
+        display: block;
+    }
+
+    position: fixed;
+    top     : 0;
+    left    : auto;
+    right   : 0;
+    height  : auto;
+
+    padding-top  : 3rem;
+    padding-right: 2em;
+
+    background-color: white;
+    border-left     : $border_width solid lightgray;
+    border-bottom   : $border_width solid lightgray;
+
+    & > ul {
+        border-top: $border_width solid lightgray;
+        padding-top: 1em;
+    }
+}
+
+main {
+    min-height: calc(
+        100vh -
+        ( $header_height + $footer_height + $border_width * 2 + $padding * 6 )
+    );
+
+    background: $main_gradient;
+    padding   : $padding;
+
+    p:first-child {
+        margin-top: 0;
+    }
+}
+
+footer {
+    height          : $footer_height;
+    background-color: white;
+    border-top      : $border_width solid lightgray;
+    color           : $non_main_text;
+    padding         :
+        calc( $padding / 2 )
+        $padding
+        calc( $padding / 2 * 3 )
+        $padding;
+
+    span {
+        color: lightgray;
+        padding: 0 0.5em;
+    }
+
+    overflow: hidden;
+    white-space: nowrap;
+}

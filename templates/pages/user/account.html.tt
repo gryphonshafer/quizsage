@@ -1,7 +1,5 @@
 [% page.title = ( account_action_type == 'create' ) ? 'Create New User' : 'Edit Current User' %]
 
-<h1>QuizSage: [% page.title %]</h1>
-
 <ul><li><a href="[% c.url_for('/') %]">Main Page</a></li></ul>
 
 <form method="post"[% IF account_action_type == 'create' %] id="create_new_user_form"[% END %]>

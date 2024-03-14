@@ -1,0 +1,46 @@
+@use 'base';
+@use 'vue' with (
+    $vue_spinner_speed    : 0.75s,
+    $vue_spinner_base     : 1.75rem groove lightgray,
+    $vue_spinner_highlight: 1.75rem groove green,
+    $vue_spinner_width    : 1.75rem,
+    $vue_spinner_height   : 1.75rem,
+);
+
+$font_size       : 12px       !default;
+$font_family     : sans-serif !default;
+$background_color: red  !default;
+
+@use 'theme';
+@use 'themes';
+
+:root {
+    font-size: $font_size;
+}
+
+body {
+    font-family     : $font_family;
+    background-color: $background_color;
+
+    @include theme.apply( themes.$themes ) {
+        background-color: theme.get('background_color');
+    }
+
+    table {
+        border-spacing : 0;
+        border-collapse: collapse;
+
+        th, td {
+            border : 1px solid silver;
+            padding: 0.125em 0.25em;
+        }
+
+        th {
+            background-color: lightgray;
+        }
+
+        td {
+            background-color: white;
+        }
+    }
+}

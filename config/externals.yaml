@@ -16,6 +16,12 @@ google_fonts:
             formats:
                 - woff2
                 - woff
+    icons:
+        types:
+            - 'Material Symbols Outlined'
+        formats:
+            - woff2
+            - woff
 vue:
     dest: static/js/vue/lib
     libs:

@@ -8,6 +8,4 @@
     page.js.module    = page.js.module.merge( js_app_config.module );
 %]
 
-<h1 class="no_print">QuizSage: [% page.title %]</h1>
-
 <div id="queries" v-cloak></div>

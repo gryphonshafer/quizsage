@@ -1,5 +1,3 @@
-<h1>QuizSage</h1>
-
 [% UNLESS user %]
     <ul><li><a href="[% c.url_for('/user/create') %]">Create New User</a></li></ul>
 

@@ -13,17 +13,17 @@
 %]
 
 <ul style="display: inline-block; vertical-align: top">
-    <li><a href="[% c.url_for('/')                                             %]">Main Page</a></li>
-    <li><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/roster')       %]">Roster</a></li>
-    <li><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/distribution') %]">Distribution</a></li>
-    <li><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/stats')        %]">Statistics</a></li>
+    <li><a href="[% c.url_for('/')                                               %]">Main Page</a></li>
+    <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') _ '/roster' )       %]">Roster</a></li>
+    <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') _ '/distribution' ) %]">Distribution</a></li>
+    <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') _ '/stats' )        %]">Statistics</a></li>
 </ul>
 
 <div style="display: inline-block; vertical-align: top">
     <ul>
         [% FOR room_number IN room_numbers.keys.sort %]
             <li><a href="[%
-                c.url_for('/meet/' _ c.param('meet_id') _ '/board/' _ room_number )
+                c.url_for( '/meet/' _ c.param('meet_id') _ '/board/' _ room_number )
             %]">Scoreboard Room [% room_number %]</a></li>
         [% END %]
     </ul>

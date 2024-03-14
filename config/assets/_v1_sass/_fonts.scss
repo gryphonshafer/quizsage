@@ -1,10 +1,7 @@
-$root_font_size: 12px !default;
-
 @use '../css/fonts/inter-tight';
-@use '../css/fonts/material-icons';
 
 :root {
-    font-size: $root_font_size;
+    font-size: 12px;
 }
 
 body {
