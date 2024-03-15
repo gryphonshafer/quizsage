@@ -1,7 +1,5 @@
 [% page.title = 'Statistics' %]
 
-<h1>QuizSage: [% page.title %]</h1>
-
 <ul>
     <li><a href="[% c.url_for('/')                             %]">Main Page</a></li>
     <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') ) %]">Meet Page</a></li>
@@ -110,7 +108,7 @@
                     [% END %]
                 [% END %]
             </tbody>
-        <table>
+        </table>
     [% ELSE %]
         <p>No statistics currently available.</p>
     [% END %]
