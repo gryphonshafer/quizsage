@@ -1,5 +1,8 @@
+$fieldset_color: ghostwhite !default;
+
 fieldset {
     text-align: right;
+    background-color: $fieldset_color;
 }
 
 button, input[type="submit"] {

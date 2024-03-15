@@ -63,7 +63,12 @@
     <h1>[% page.title %]</h1>
     <div>
         [%
-            IF user;
+            UNLESS user;
+                icon_link_data_set = [
+                    [ 'Create New User', '/user/create',          'person_add' ],
+                    [ 'Forgot Password', '/user/forgot_password', 'key'        ],
+                ];
+            ELSE;
                 UNLESS meet_id;
                     icon_link_data_set = [
                         [ 'Queries Drill', '/drill/setup',  'tools_power_drill' ],
@@ -79,15 +84,16 @@
                     ];
                 END;
 
-                icon_link_data_set.unshift( [ 'Home', '/', 'home' ] );
                 icon_link_data_set.push(
                     [ "Set Meet Officials' Password", '/user/profile', 'gavel'  ],
                     [ 'Logout',                       '/user/logout',  'logout' ],
                 );
+            END;
 
-                FOR icon_link_data IN icon_link_data_set;
-                    PROCESS icon_link, data = icon_link_data;
-                END;
+            icon_link_data_set.unshift( [ 'Home', '/', 'home' ] );
+
+            FOR icon_link_data IN icon_link_data_set;
+                PROCESS icon_link, data = icon_link_data;
             END;
         %]
     </div>

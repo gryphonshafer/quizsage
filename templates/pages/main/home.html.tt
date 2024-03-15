@@ -38,8 +38,10 @@
         </fieldset>
     </form>
 
-    <ul><li><a href="[% c.url_for('/user/forgot_password')
-        %]">Forgot Password (or Resend Verification Email)</a></li></ul>
+    <ul><li>
+        <a href="[% c.url_for('/user/forgot_password') %]">Forgot Password</a>
+        <i>(or Resend Verification Email)</i>
+    </li></ul>
 [% ELSE %]
     <p>
         Logged in as: <b>[% user.data.first_name %]</b>.
