@@ -9,6 +9,9 @@ $main_gradient : linear-gradient(
     rgba( 236, 246, 254, 1 ) 33%,
     rgba( 189, 216, 236, 1 ) 100%
 ) !default;
+$icon_link_color        : #4c4ccc !default;
+$icon_link_color_hover  : green   !default;
+$icon_link_color_current: red     !default;
 
 body {
     margin: 0;
@@ -38,6 +41,20 @@ header {
         a {
             margin-right: 1rem;
         }
+
+        z-index: 20;
+    }
+
+    a span.material-symbols-outlined {
+        color: $icon_link_color;
+
+        &:hover {
+            color: $icon_link_color_hover;
+        }
+    }
+
+    a.current span.material-symbols-outlined {
+        color: $icon_link_color_current;
     }
 }
 
@@ -61,16 +78,31 @@ nav {
     height  : auto;
 
     padding-top  : 3rem;
-    padding-right: 2em;
 
     background-color: white;
-    border-left     : $border_width solid lightgray;
-    border-bottom   : $border_width solid lightgray;
+
+    ul {
+        margin-left: 1em;
+    }
+
+    li {
+        list-style-type: none;
+        margin: 0.25em 0;
+    }
 
     & > ul {
-        border-top: $border_width solid lightgray;
-        padding-top: 1em;
+        border-left  : $border_width solid lightgray;
+        border-bottom: $border_width solid lightgray;
+
+        padding-top   : 0.25em;
+        padding-right : 1em;
+        margin-left   : 0em;
+        padding-left  : 1em;
+        margin-bottom : 0em;
+        padding-bottom: 0.75em;
     }
+
+    z-index: 10;
 }
 
 main {
