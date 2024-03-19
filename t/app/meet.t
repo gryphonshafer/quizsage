@@ -55,10 +55,12 @@ my $meet = QuizSage::Model::Meet->new->create({
 
 my $material_dq = stuff('obj')->dq('material');
 $material_dq->begin_work;
-$material_dq->sql(q{
+my $bible_insert = $material_dq->sql(q{
     INSERT INTO bible (acronym) VALUES (?)
     ON CONFLICT(acronym) DO NOTHING
-})->run( $user->conf->get( qw( quiz_defaults bible ) ) );
+});
+$bible_insert->run( $user->conf->get( qw( quiz_defaults bible ) ) );
+$bible_insert->run($_) for ( qw( BSB ESV NASB NIV ) );
 
 my $mock = mock $meet => ( override => [
     _create_material_json   => 1,

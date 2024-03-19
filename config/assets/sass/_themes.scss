@@ -35,6 +35,9 @@ $themes: (
         footer_a_hover   : lightblue,
         footer_a_active  : darkred,
         footer_separator : dimgray,
+
+        dialog_error_background  : #fdd,
+        dialog_success_background: #dfd,
     ),
     dark: (
         main_background: darkslategray,
@@ -92,6 +95,26 @@ $themes: (
         th_background: #333,
         td_text      : darkgray,
         td_background: #222,
+
+        dialog_error_background  : #fdd,
+        dialog_success_background: #dfd,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     ),
 ) !default;
 

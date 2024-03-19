@@ -45,7 +45,6 @@
                     page.js.inline.push(g_recaptcha_cb);
                 END;
             %]
-
             <input type="submit" value="Create New User"
                 [% IF recaptcha_site_key %]
                     class="g-recaptcha"
