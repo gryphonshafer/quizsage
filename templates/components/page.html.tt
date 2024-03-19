@@ -17,7 +17,35 @@
         meet_id      = c.param('meet_id');
         room_numbers = room_numbers.keys.sort;
     END;
+
+    page.html_classes.push(
+        'theme-' _ ( c.session.theme || 'light'   ),
+        'style-' _ ( c.session.style || 'rounded' ),
+    );
 %]
+
+[% set_theme_setup = BLOCK %]
+    window.addEventListener( 'load', () => {
+        const html_class_list = window.document.querySelector('html').classList;
+
+        window.document.querySelectorAll('a.set').forEach( node => {
+            node.onclick = () => {
+                const url  = new URL( node.href );
+                const type = url.pathname.split('/').at(-2);
+                const name = url.pathname.split('/').at(-1);
+
+                html_class_list.forEach( class_name => {
+                    if ( class_name.indexOf( type + '-' ) != -1 ) html_class_list.remove(class_name);
+                } );
+                html_class_list.add( type + '-' + name );
+
+                fetch(url);
+                return false;
+            };
+        } );
+    } );
+[% END %]
+[% page.js.inline.push(set_theme_setup) %]
 
 [% IF message OR c.session.flash.message %]
     [% fv = (message) ? message : c.session.flash.message %]
@@ -71,8 +99,8 @@
             ELSE;
                 UNLESS meet_id;
                     icon_link_data_set = [
-                        [ 'Queries Drill', '/drill/setup',  'tools_power_drill' ],
                         [ 'Pick-Up Quiz',  '/quiz/pickup',  'settings_b_roll'   ],
+                        [ 'Queries Drill', '/drill/setup',  'tools_power_drill' ],
                         [ 'Edit Profile',  '/user/profile', 'person_edit'       ],
                     ];
                 ELSE;
@@ -85,8 +113,8 @@
                 END;
 
                 icon_link_data_set.push(
-                    [ "Set Meet Officials' Password", '/user/profile', 'gavel'  ],
-                    [ 'Logout',                       '/user/logout',  'logout' ],
+                    [ "Set Meet Officials' Password", '/meet/passwd', 'gavel'  ],
+                    [ 'Logout',                       '/user/logout', 'logout' ],
                 );
             END;
 
@@ -101,7 +129,7 @@
 </header>
 
 <nav id="menu">
-    [% PROCESS icon_link, data = [ 'Navigation Menu', '#', 'menu', 'toggle_menu' ] %]
+    [% PROCESS icon_link, data = [ 'Navigation Menu', '#', 'menu', 'toggle_menu current' ] %]
     <ul>
         [% UNLESS user %]
             <li><a href="[% c.url_for('/')            %]">Main Page</a></li>
@@ -117,22 +145,24 @@
                 <li>
                     Meet
                     <ul>
-                        <li><a href="[%
-                            c.url_for( '/meet/' _ meet_id                   ) %]">State</a></li>
-                        <li><a href="[%
-                            c.url_for( '/meet/' _ meet_id _ '/distribution' ) %]">Distribution</a></li>
-                        <li><a href="[%
-                            c.url_for( '/meet/' _ meet_id _ '/roster'       ) %]">Roster</a></li>
-                        <li>
-                            Scoreboards
-                            <ul>
-                                [% FOR room_number IN room_numbers %]
-                                    <li><a href="[%
-                                        c.url_for( '/meet/' _ meet_id _ '/board/' _ room_number )
-                                    %]">Room [% room_number %]</a></li>
-                                [% END %]
-                            </ul>
-                        </li>
+                        <li><a href="[% c.url_for( '/meet/' _ meet_id)
+                            %]">State</a></li>
+                        <li><a href="[% c.url_for( '/meet/' _ meet_id _ '/distribution' )
+                            %]">Distribution</a></li>
+                        <li><a href="[% c.url_for( '/meet/' _ meet_id _ '/roster' )
+                            %]">Roster</a></li>
+                        [% IF room_numbers %]
+                            <li>
+                                Scoreboards
+                                <ul>
+                                    [% FOR room_number IN room_numbers %]
+                                        <li><a href="[%
+                                            c.url_for( '/meet/' _ meet_id _ '/board/' _ room_number )
+                                        %]">Room [% room_number %]</a></li>
+                                    [% END %]
+                                </ul>
+                            </li>
+                        [% END %]
                         <li><a href="[% c.url_for( '/meet/' _ meet_id _ '/stats' ) %]">Statistics</a></li>
                     </ul>
                 </li>
@@ -140,24 +170,26 @@
 
             <li><a href="[% c.url_for('/drill/setup') %]">Queries Drill</a></li>
             <li><a href="[% c.url_for('/quiz/pickup') %]">Pick-Up Quiz</a></li>
+        [% END %]
 
-            <!--
-                <li>
-                    Set Theme
-                    <ul>
-                        <li><a href="">Light</a></li>
-                        <li><a href="">Dark</a></li>
-                    </ul>
-                </li>
-                <li>
-                    Set Style
-                    <ul>
-                        <li><a href="">Rounded</a></li>
-                        <li><a href="">Square</a></li>
-                    </ul>
-                </li>
-            -->
+        [% FOR type IN [
+            [ 'theme', [ 'light', 'dark', 'desert', 'midnight' ] ],
+            [ 'style', [ 'rounded', 'square' ] ],
+        ] %]
+            <li>
+                Set [% type.0 | ucfirst %]
+                <ul>
+                    [% FOR item IN type.1 %]
+                        <li><a
+                            class="set"
+                            href="[% c.url_for( '/set/' _ type.0 _ '/' _ item ) %]"
+                        >[% item | ucfirst %]</a></li>
+                    [% END %]
+                </ul>
+            </li>
+        [% END %]
 
+        [% IF user %]
             <li><a href="[% c.url_for('/meet/passwd')  %]">Set Meet Officials' Password</a></li>
             <li><a href="[% c.url_for('/user/profile') %]">Edit Profile</a></li>
             <li><a href="[% c.url_for('/user/logout')  %]">Logout</a></li>

@@ -12,6 +12,17 @@ sub startup ($self) {
         if ( my $user_id = $c->session('user_id') ) {
             try {
                 $c->stash( 'user' => QuizSage::Model::User->new->load($user_id) );
+
+                if (
+                    $c->stash('user') and
+                    $c->stash('user')->data and
+                    $c->stash('user')->data->{settings}
+                ) {
+                    for my $type ( qw( theme style ) ) {
+                        $c->session( $type => $c->stash('user')->data->{settings}{$type} )
+                            if ( $c->stash('user')->data->{settings}{$type} );
+                    }
+                }
             }
             catch ($e) {
                 delete $c->session->{'user_id'};
@@ -65,6 +76,7 @@ sub startup ($self) {
     $users->any ('/quiz/delete/:quiz_id')->to('quiz#delete');
 
     $all->any('/')->to('main#home');
+    $all->any( '/set/:type/:name' => [ type => [ qw( theme style ) ] ] )->to('main#set');
 
     $all->any("/user/$_")->to("user#$_") for ( qw( forgot_password login ) );
     $all->any('/user/create')->to( 'user#account', account_action_type => 'create' );

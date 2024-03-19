@@ -1,0 +1,37 @@
+@use 'theme';
+@use 'themes';
+
+body {
+    @include theme.apply( themes.$themes ) {
+        color: theme.get('text');
+    }
+
+    a:link {
+        @include theme.apply( themes.$themes ) {
+            color: theme.get('a_link');
+        }
+    }
+
+    a:visited {
+        @include theme.apply( themes.$themes ) {
+            color: theme.get('a_visited');
+        }
+    }
+
+    a:hover {
+        @include theme.apply( themes.$themes ) {
+            color: theme.get('a_hover');
+        }
+    }
+
+    a:active {
+        @include theme.apply( themes.$themes ) {
+            color: theme.get('a_active');
+        }
+    }
+
+    li > ul {
+        margin-top   : 0;
+        margin-bottom: 0;
+    }
+}

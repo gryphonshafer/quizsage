@@ -1,10 +1,103 @@
-$fieldset_color: ghostwhite !default;
+@use 'theme';
+@use 'themes';
 
-fieldset {
-    text-align: right;
-    background-color: $fieldset_color;
+form {
+    fieldset {
+        text-align: right;
+
+        @include theme.apply( themes.$themes ) {
+            background  : theme.get('fieldset_background');
+            border-color: theme.get('lines');
+        }
+
+        @include theme.apply( themes.$styles, 'style' ) {
+            border-radius: theme.get('radius');
+        }
+
+        legend {
+            @include theme.apply( themes.$themes ) {
+                border-color: theme.get('lines');
+                background  : theme.get('legend_background');
+            }
+
+            @include theme.apply( themes.$styles, 'style' ) {
+                border-radius: theme.get('radius');
+            }
+        }
+    }
 }
 
-button, input[type="submit"] {
+select, textarea, button, input {
+    @include theme.apply( themes.$themes ) {
+        color       : theme.get('input_text_color');
+        background  : theme.get('input_background');
+        border-color: theme.get('lines');
+    }
+
+    @include theme.apply( themes.$styles, 'style' ) {
+        border-radius: theme.get('radius');
+    }
+}
+
+button, input[type='submit'], input[type='reset'] {
     margin-top: 1em;
+
+    @include theme.apply( themes.$themes ) {
+        color     : theme.get('button_text_color');
+        background: theme.get('button_background');
+    }
+}
+
+select:hover:not([disabled]),
+textarea:hover:not([disabled]),
+button:hover:not([disabled]),
+input:hover:not([disabled]) {
+    @include theme.apply( themes.$themes ) {
+        border-color: theme.get('form_hover_border_color');
+    }
+}
+
+select:focus, textarea:focus, button:focus, input:focus {
+    @include theme.apply( themes.$themes ) {
+        border-color: theme.get('form_focus_border_color');
+    }
+}
+
+select:focus, textarea:focus, button:focus, input:focus:not([type='radio']):not([type='checkbox']) {
+    @include theme.apply( themes.$themes ) {
+        background: theme.get('form_focus_background');
+    }
+}
+
+select:disabled, textarea:disabled, button:disabled, input:disabled {
+    @include theme.apply( themes.$themes ) {
+        color     : theme.get('form_disabled_color');
+        background: theme.get('form_disabled_background');
+    }
+}
+
+select:focus:active:enabled,
+textarea:focus:active:enabled,
+button:focus:active:enabled,
+input:focus:active:enabled {
+    @include theme.apply( themes.$themes ) {
+        color       : theme.get('form_active_color');
+        background  : theme.get('form_active_background');
+        border-color: theme.get('form_active_border_color');
+    }
+}
+
+input[type='radio'],
+input[type='checkbox'] {
+    @include theme.apply( themes.$themes ) {
+        background: theme.get('radiobox_background');
+    }
+}
+
+input[type='radio']:checked,
+input[type='checkbox']:checked {
+    @include theme.apply( themes.$themes ) {
+        box-shadow: inset 0 0 0 0.15em theme.get('radiobox_checked_color');
+        background: theme.get('radiobox_checked_background');
+    }
 }

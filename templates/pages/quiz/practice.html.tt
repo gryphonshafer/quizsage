@@ -73,25 +73,25 @@
             rows="3"
             style="width: 50vw"
             name="material_label">[% material_label %]</textarea>
-
-        [% IF label_aliases AND label_aliases.size > 0 %]
-            <h2>Available Labels</h2>
-            <dl>
-                [% FOR alias IN label_aliases %]
-                    <dt>[% alias.name %]</dt>
-                    <dd>[% alias.label %]</dd>
-                [% END %]
-            </dl>
-        [% END %]
-
-        [% IF bibles AND bibles.size > 0 %]
-            <h2>Supported Bibles</h2>
-            <dl>
-                [% FOR item IN bibles %]
-                    <dt>[% item.acronym %]</dt>
-                    <dd>[% item.name %] ([% item.year %])</dd>
-                [% END %]
-            </dl>
-        [% END %]
     </fieldset>
 </form>
+
+[% IF label_aliases AND label_aliases.size > 0 %]
+    <h2>Available Labels</h2>
+    <dl>
+        [% FOR alias IN label_aliases %]
+            <dt>[% alias.name %]</dt>
+            <dd>[% alias.label %]</dd>
+        [% END %]
+    </dl>
+[% END %]
+
+[% IF bibles AND bibles.size > 0 %]
+    <h2>Supported Bibles</h2>
+    <dl>
+        [% FOR item IN bibles %]
+            <dt>[% item.acronym %]</dt>
+            <dd>[% item.name %] ([% item.year %])</dd>
+        [% END %]
+    </dl>
+[% END %]

@@ -60,4 +60,11 @@ mojo->post_ok(
     ->attr_is( 'dialog#message', 'class', 'error' )
     ->text_like( 'dialog#message', qr|Login failed| );
 
+mojo->get_ok('/set/theme/theme_name')
+    ->status_is(302)
+    ->header_is( location => url('/set/theme/theme_name') )
+    ->get_ok('/')
+    ->status_is(200)
+    ->attr_like( 'html', 'class', qr/\btheme-theme_name\b/ );
+
 teardown;

@@ -1,0 +1,68 @@
+@use 'theme';
+@use 'themes';
+
+table {
+    border-collapse: separate;
+    border         : none;
+
+    @include theme.apply( themes.$styles, 'style' ) {
+        border-radius: theme.get('radius');
+    }
+
+    th, td {
+        @include theme.apply( themes.$themes ) {
+            border-color: theme.get('lines');
+        }
+    }
+
+    th {
+        @include theme.apply( themes.$themes ) {
+            background: theme.get('th_background');
+            color     : theme.get('th_text');
+        }
+    }
+
+    td {
+        @include theme.apply( themes.$themes ) {
+            background: theme.get('td_background');
+            color     : theme.get('td_text');
+        }
+    }
+
+    tr th:not(:last-of-type),
+    tr td:not(:last-of-type) {
+        border-right: none;
+    }
+
+    td {
+        border-top: none;
+    }
+
+    thead {
+        th:first-of-type {
+            @include theme.apply( themes.$styles, 'style' ) {
+                border-top-left-radius: theme.get('radius');
+            }
+        }
+
+        th:last-of-type {
+            @include theme.apply( themes.$styles, 'style' ) {
+                border-top-right-radius: theme.get('radius');
+            }
+        }
+    }
+
+    tbody tr:last-of-type {
+        td:first-of-type {
+            @include theme.apply( themes.$styles, 'style' ) {
+                border-bottom-left-radius: theme.get('radius');
+            }
+        }
+
+        td:last-of-type {
+            @include theme.apply( themes.$styles, 'style' ) {
+                border-bottom-right-radius: theme.get('radius');
+            }
+        }
+    }
+}

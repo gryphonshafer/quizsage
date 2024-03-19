@@ -82,7 +82,8 @@ mojo->get_ok( '/meet/' . $meet->id )
 mojo->get_ok( '/meet/' . $meet->id . '/roster' )
     ->status_is(200)
     ->text_is( 'div:nth-of-type(1) b', 'TEAM 1' )
-    ->text_is( 'div:nth-of-type(1) ul li:nth-of-type(1) b', 'Alpha Bravo ESV' )
+    ->text_is( 'div:nth-of-type(1) ul li:nth-of-type(1) b', 'Alpha Bravo' )
+    ->text_like( 'div:nth-of-type(1) ul li:nth-of-type(1)', qr/^\s*ESV\s*$/ )
     ->text_is( 'div:nth-of-type(1) ul li:nth-of-type(1) i', '(Veteran, Youth)' );
 
 mojo->get_ok( '/meet/' . $meet->id . '/distribution' )

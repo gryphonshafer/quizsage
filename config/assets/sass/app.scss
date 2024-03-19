@@ -1,14 +1,13 @@
 @use 'base';
-@use 'vue';
+@use 'vue' with (
+    $vue_spinner_speed    : 0.75s,
+    $vue_spinner_base     : 1.75rem groove lightgray,
+    $vue_spinner_highlight: 1.75rem groove green,
+    $vue_spinner_width    : 1.75rem,
+    $vue_spinner_height   : 1.75rem,
+);
 @use 'fonts';
 @use 'forms';
+@use 'tables';
+@use 'main';
 @use 'page';
-
-body {
-    background-color: red;
-}
-
-li > ul {
-    margin-top   : 0;
-    margin-bottom: 0;
-}

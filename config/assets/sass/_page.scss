@@ -1,140 +1,207 @@
-$header_height : 2rem      !default;
-$footer_height : 0.5rem    !default;
-$border_width  : 1px       !default;
-$padding       : 1rem      !default;
-$non_main_text : #3f434b !default;
-$main_gradient : linear-gradient(
-    90deg,
-    rgba( 218, 236, 247, 1 ) 0%,
-    rgba( 236, 246, 254, 1 ) 33%,
-    rgba( 189, 216, 236, 1 ) 100%
-) !default;
-$icon_link_color        : #4c4ccc !default;
-$icon_link_color_hover  : green   !default;
-$icon_link_color_current: red     !default;
+$header_height: 2rem   !default;
+$footer_height: 0.5rem !default;
+$border_width : 1px    !default;
+$padding      : 1rem   !default;
+
+@use 'theme';
+@use 'themes';
 
 body {
     margin: 0;
-}
 
-header {
-    height          : $header_height;
-    background-color: white;
-    border-bottom   : $border_width solid lightgray;
-    padding         : $padding;
+    header {
+        height          : $header_height;
+        border-bottom   : $border_width solid;
+        padding         : $padding;
 
-    img, h1 {
-        display: inline-block;
-        margin : 0;
-        margin: -0.25rem 0.25rem 0 0;
+        @include theme.apply( themes.$themes ) {
+            background         : theme.get('header_background');
+            border-bottom-color: theme.get('lines');
+        }
+
+        img, h1 {
+            display: inline-block;
+            margin : 0;
+            margin: -0.25rem 0.25rem 0 0;
+        }
+
+        h1 {
+            @include theme.apply( themes.$themes ) {
+                color: theme.get('header_text');
+            }
+        }
+
+        div {
+            position: absolute;
+            top     : 1rem;
+            right   : 3rem;
+            z-index : 20;
+
+            a {
+                margin-right: 1rem;
+            }
+        }
+
+        a span.material-symbols-outlined {
+            @include theme.apply( themes.$themes ) {
+                color: theme.get('nav_icon_color');
+            }
+
+            &:hover {
+                @include theme.apply( themes.$themes ) {
+                    color: theme.get('nav_icon_color_hover');
+                }
+            }
+
+            &:active {
+                @include theme.apply( themes.$themes ) {
+                    color: theme.get('nav_icon_color_active');
+                }
+            }
+        }
+
+        a.current span.material-symbols-outlined {
+            @include theme.apply( themes.$themes ) {
+                color: theme.get('nav_icon_color_current');
+            }
+        }
     }
 
-    h1 {
-        color: $non_main_text;
-    }
-
-    div {
+    a.toggle_menu {
         position: absolute;
         top     : 1rem;
-        right   : 3rem;
-
-        a {
-            margin-right: 1rem;
-        }
-
-        z-index: 20;
+        right   : 1rem;
     }
 
-    a span.material-symbols-outlined {
-        color: $icon_link_color;
-
-        &:hover {
-            color: $icon_link_color_hover;
+    a.toggle_menu.current {
+        @include theme.apply( themes.$themes ) {
+            color: theme.get('nav_icon_color_current');
         }
     }
 
-    a.current span.material-symbols-outlined {
-        color: $icon_link_color_current;
-    }
-}
-
-a.toggle_menu {
-    position: absolute;
-    top     : 1rem;
-    right   : 1rem;
-}
-
-nav {
-    display: none;
-
-    &:target {
-        display: block;
+    a.toggle_menu:hover {
+        @include theme.apply( themes.$themes ) {
+            color: theme.get('nav_icon_color_hover');
+        }
     }
 
-    position: fixed;
-    top     : 0;
-    left    : auto;
-    right   : 0;
-    height  : auto;
-
-    padding-top  : 3rem;
-
-    background-color: white;
-
-    ul {
-        margin-left: 1em;
+    a.toggle_menu:active {
+        @include theme.apply( themes.$themes ) {
+            color: theme.get('nav_icon_color_active');
+        }
     }
 
-    li {
-        list-style-type: none;
-        margin: 0.25em 0;
+    nav {
+        display    : none;
+        position   : fixed;
+        top        : 0;
+        left       : auto;
+        right      : 0;
+        height     : auto;
+        padding-top: 3rem;
+        z-index    : 10;
+
+        @include theme.apply( themes.$themes ) {
+            background: theme.get('header_background');
+        }
+
+        @include theme.apply( themes.$styles, 'style' ) {
+            border-bottom-left-radius: calc( theme.get('radius') * 2 );
+        }
+
+        &:target {
+            display: block;
+        }
+
+        ul {
+            margin-left: 1em;
+        }
+
+        li {
+            list-style-type: none;
+            margin         : 0.25em 0;
+        }
+
+        & > ul {
+            padding-top   : 0.25em;
+            padding-right : 1em;
+            margin-left   : 0em;
+            padding-left  : 1em;
+            margin-bottom : 0em;
+            padding-bottom: 0.75em;
+            border-left   : $border_width solid;
+            border-bottom : $border_width solid;
+
+            @include theme.apply( themes.$themes ) {
+                border-color: theme.get('lines');
+            }
+
+            @include theme.apply( themes.$styles, 'style' ) {
+                border-bottom-left-radius: calc( theme.get('radius') * 2 );
+            }
+        }
     }
 
-    & > ul {
-        border-left  : $border_width solid lightgray;
-        border-bottom: $border_width solid lightgray;
+    main {
+        padding   : $padding;
+        min-height: calc(
+            100vh -
+            ( $header_height + $footer_height + $border_width + $padding * 6 )
+        );
 
-        padding-top   : 0.25em;
-        padding-right : 1em;
-        margin-left   : 0em;
-        padding-left  : 1em;
-        margin-bottom : 0em;
-        padding-bottom: 0.75em;
+        @include theme.apply( themes.$themes ) {
+            background: theme.get('main_background');
+        }
+
+        p:first-child {
+            margin-top: 0;
+        }
     }
 
-    z-index: 10;
-}
+    footer {
+        overflow   : hidden;
+        white-space: nowrap;
+        height     : $footer_height;
+        padding    :
+            calc( $padding / 2 )
+            $padding
+            calc( $padding / 2 * 3 )
+            $padding;
 
-main {
-    min-height: calc(
-        100vh -
-        ( $header_height + $footer_height + $border_width * 2 + $padding * 6 )
-    );
+            @include theme.apply( themes.$themes ) {
+                color     : theme.get('footer_color');
+                background: theme.get('footer_background');
+            }
 
-    background: $main_gradient;
-    padding   : $padding;
+        span {
+            padding: 0 0.5em;
+            @include theme.apply( themes.$themes ) {
+                color: theme.get('footer_separator');
+            }
+        }
 
-    p:first-child {
-        margin-top: 0;
+        a:link {
+            @include theme.apply( themes.$themes ) {
+                color: theme.get('footer_a_link');
+            }
+        }
+
+        a:visited {
+            @include theme.apply( themes.$themes ) {
+                color: theme.get('footer_a_visited');
+            }
+        }
+
+        a:hover {
+            @include theme.apply( themes.$themes ) {
+                color: theme.get('footer_a_hover');
+            }
+        }
+
+        a:active {
+            @include theme.apply( themes.$themes ) {
+                color: theme.get('footer_a_active');
+            }
+        }
     }
-}
-
-footer {
-    height          : $footer_height;
-    background-color: white;
-    border-top      : $border_width solid lightgray;
-    color           : $non_main_text;
-    padding         :
-        calc( $padding / 2 )
-        $padding
-        calc( $padding / 2 * 3 )
-        $padding;
-
-    span {
-        color: lightgray;
-        padding: 0 0.5em;
-    }
-
-    overflow: hidden;
-    white-space: nowrap;
 }
