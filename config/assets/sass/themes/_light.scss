@@ -33,16 +33,16 @@ $theme: (
 
     form_hover_border_color    : lightgray,
     form_focus_background      : #fffff0,
-    form_focus_border_color    : white,
+    form_focus_border_color    : yellow,
     form_disabled_background   : white,
     form_disabled_color        : white,
     form_active_background     : white,
     form_active_color          : black,
     form_active_border_color   : silver,
 
-    radiobox_background        : green,
-    radiobox_checked_color     : red,
-    radiobox_checked_background: yellow,
+    radiobox_background        : white,
+    radiobox_checked_color     : white,
+    radiobox_checked_background: black,
 
     material_buffer_text       : #999,
     material_ignored_text      : green,
@@ -60,7 +60,7 @@ $theme: (
     blank_cell                   : #f0f0f0,
     td_selected_backbround       : lightgreen,
     td_selected_hover_background : green,
-    td_clickable_hover_backbround: lightgreen,
+    td_clickable_hover_backbround: darkgreen,
 
     footer_background: #0b0d17,
     footer_color     : lightgray,

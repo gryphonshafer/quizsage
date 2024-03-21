@@ -28,13 +28,21 @@ form {
     }
 }
 
-select, textarea, button, input {
+select,
+textarea,
+button,
+input {
     @include theme.apply( themes.$themes ) {
         color       : theme.get('input_text_color');
         background  : theme.get('form_elements_background');
         border-color: theme.get('lines');
     }
+}
 
+select,
+textarea,
+button,
+input:not([type='radio']):not([type='checkbox']) {
     @include theme.apply( themes.$styles, 'style' ) {
         border-radius: theme.get('radius');
     }
@@ -64,7 +72,10 @@ select:focus, textarea:focus, button:focus, input:focus {
     }
 }
 
-select:focus, textarea:focus, button:focus, input:focus:not([type='radio']):not([type='checkbox']) {
+select:focus,
+textarea:focus,
+button:focus,
+input:focus:not([type='radio']):not([type='checkbox']) {
     @include theme.apply( themes.$themes ) {
         background: theme.get('form_focus_background');
     }

@@ -201,11 +201,9 @@
             [% END %]
         </ul>
     </nav>
-[% END %]
 
-<main>[% content %]</main>
+    <main>[% content %]</main>
 
-[% UNLESS no_page_page %]
     <footer>
         <span class="hide_priority_3">
             &copy; <a href="https://cbqz.org">Christian Bible Quizzing</a> (CBQ)
@@ -235,4 +233,6 @@
             v[% version %]
         </span>
     </footer>
+[% ELSE %]
+    [% content %]
 [% END %]

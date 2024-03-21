@@ -4,20 +4,9 @@
 table.board {
     border: none;
 
-    thead td {
-        @include theme.apply( themes.$themes ) {
-            background: theme.get('td_background');
-        }
-    }
-
     td.top_left_corner {
-        text-align    : right;
-        vertical-align: bottom;
-        padding-bottom: 0.5em;
-        padding-right : 0.5em;
-
         @include theme.apply( themes.$themes ) {
-            background  : transparent;
+            background  : theme.get('main_background');
             border-color:
                 theme.get('td_background')
                 theme.get('lines')
@@ -154,9 +143,9 @@ table.board {
 
 div#board {
     width     : max-content;
-    margin    : 0 auto;
+    margin    : 1em auto;
     overflow-y: scroll;
-    max-height: calc( 100vh - 26px );
+    max-height: calc( 100vh - 2em );
 
     table.board {
         margin: 0;
@@ -179,22 +168,43 @@ div#board {
 
         &:nth-of-type(1) {
             position: fixed;
+
+            td.top_left_corner {
+                border-bottom: 1px solid;
+
+                @include theme.apply( themes.$themes ) {
+                    border-color: theme.get('lines');
+                }
+            }
+        }
+
+        &:nth-of-type(2) tr:first-of-type td:first-of-type {
+            border-radius: 0;
         }
 
         &:nth-of-type(1) tbody,
         &:nth-of-type(2) thead {
-                visibility: hidden;
+            visibility: hidden;
         }
 
-        &:nth-of-type(1) tbody td,
-        &:nth-of-type(2) thead td {
-            border: 1px solid transparent;
-        }
+        &:nth-of-type(1) thead {
+            @include theme.apply( themes.$themes ) {
+                background: theme.get('main_background');
+            }
 
-        td {
-            padding-top   : calc( ( 5vw - 15px ) / 6 );
-            padding-bottom: calc( ( 5vw - 15px ) / 6 );
+            tr:last-of-type td,
+            tr.vertical td[rowspan="3"] {
+                border-bottom: 1px solid;
+
+                @include theme.apply( themes.$themes ) {
+                    border-color: theme.get('lines');
+                }
+            }
         }
+    }
+
+    &.chrome table.board:nth-of-type(1) thead tr.vertical td[rowspan="3"] {
+        width: calc( 2.5em - 1px );
     }
 }
 

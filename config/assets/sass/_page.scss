@@ -14,6 +14,10 @@ body {
     margin   : 0;
     min-width: 375px;
 
+    @include theme.apply( themes.$themes ) {
+        background: theme.get('main_background');
+    }
+
     header {
         font-size    : 1em * $header_scale;
         line-height  : 1em;
