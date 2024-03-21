@@ -38,6 +38,8 @@ $themes: (
 
         dialog_error_background  : #fdd,
         dialog_success_background: #dfd,
+
+        blank_cell: #f0f0f0,
     ),
     dark: (
         main_background: darkslategray,
@@ -95,26 +97,10 @@ $themes: (
         th_background: #333,
         td_text      : darkgray,
         td_background: #222,
+        blank_cell   : #f0f0f0,
 
         dialog_error_background  : #fdd,
         dialog_success_background: #dfd,
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     ),
 ) !default;
 

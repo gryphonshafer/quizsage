@@ -3,7 +3,8 @@
 
 form {
     fieldset {
-        text-align: right;
+        text-align    : right;
+        vertical-align: top;
 
         @include theme.apply( themes.$themes ) {
             background  : theme.get('fieldset_background');

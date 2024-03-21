@@ -14,13 +14,10 @@
     </b>
 </p>
 
-<form method="post" style="display: inline-block; vertical-align: top">
-    <fieldset>
+<form method="post" class="column">
+    <fieldset class="teams">
         <legend>Team Names (In Order)</legend>
-        <textarea
-            rows="5"
-            cols="16"
-            name="teams"></textarea>
+        <textarea name="teams"></textarea>
     </fieldset>
 
     <br>
@@ -32,11 +29,7 @@
     <input type="hidden" name="quiz"    value="[% c.param('quiz')    %]">
 </form>
 
-<div style="
-    display       : inline-block;
-    vertical-align: top;
-    margin-left   : 3em;
-">
+<div class="teams_column">
     <p>
         Quiz: <b>[% quiz.name %]</b><br>
         Room: <b>[% quiz.room %]</b><br>
@@ -48,12 +41,8 @@
     [% PROCESS quiz_teams_list.html.tt roster = quiz.roster %]
 </div>
 
-<div style="
-    display       : inline-block;
-    vertical-align: top;
-    margin-left   : 3em;
-">
-    <p>Teams:</p>
+<div class="teams_column">
+    <p><b>Teams:</b></p>
     <ul>
         [% FOR team IN teams %]
             <li>[% team %]</li>

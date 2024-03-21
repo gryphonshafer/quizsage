@@ -102,6 +102,6 @@ mojo->get_ok( '/meet/' . $meet->id . '/stats' )
 
 mojo->get_ok( '/meet/' . $meet->id . '/board/1' )
     ->status_is(200)
-    ->text_is( 'h1', 'QuizSage: Scoreboard Room 1' );
+    ->text_is( 'h1', 'Scoreboard Room 1' );
 
 teardown;

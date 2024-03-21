@@ -1,14 +1,3 @@
-div.quiz_summary_box {
-    border          : 1px solid colors.$lines;
-    background-color: white;
-    display         : inline-block;
-    margin          : 0.5em;
-    padding         : 0.5em;
-    width           : 13em;
-    height          : 11em;
-    vertical-align  : top;
-}
-
 $active_bg_btn : #e0ff00;
 $active_bg_cell: #e0ffd0;
 
@@ -244,13 +233,3 @@ div.timer_display,
 input[type="checkbox"] {
     border-radius: calc( $table_border_radius / 2 );
 }
-
-// TODO:
-// templates/components/page.html.tt
-// templates/pages/quiz/teams.html.tt
-// templates/pages/quiz/practice.html.tt
-// templates/pages/meet/stats.html.tt
-// templates/pages/meet/distribution.html.tt
-// templates/pages/meet/state.html.tt
-// templates/pages/meet/roster.html.tt
-// static/html/vue/components/search.html

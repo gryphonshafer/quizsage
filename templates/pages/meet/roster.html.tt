@@ -6,7 +6,7 @@
 </ul>
 
 [% FOR team IN roster %]
-    <div class="quiz_summary_box" style="min-height: 16rem">
+    <div class="summary_box roster_box">
         <b>[% team.name %]</b>
         <ul>
             [% FOR quizzer IN team.quizzers %]

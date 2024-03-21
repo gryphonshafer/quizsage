@@ -1,7 +1,9 @@
 [%
     UNLESS page.title;
         page.title = 'QuizSage';
+        base_title = page.title;
     ELSE;
+        base_title = page.title;
         page.title = 'QuizSage: ' _ page.title;
     END;
 
@@ -88,7 +90,7 @@
 <header>
     <a href="[% c.url_for('/') %]"><img
         src="[% c.url_for('/logo/favicon-32x32.png') %]" alt="QuizSage" width="32" height="32"></a>
-    <h1>[% page.title %]</h1>
+    <h1><span class="hide_priority_1">QuizSage: </span>[% base_title %]</h1>
     <div>
         [%
             UNLESS user;
@@ -200,13 +202,31 @@
 <main>[% content %]</main>
 
 <footer>
-    &copy; <a href="https://cbqz.org">Christian Bible Quizzing</a> (CBQ)
-    <span>|</span>
+    <span class="hide_priority_3">
+        &copy; <a href="https://cbqz.org">Christian Bible Quizzing</a> (CBQ)
+    </span>
+    <span class="show_priority_3">
+        &copy; <a href="https://cbqz.org">CBQ</a>
+    </span>
+
+    <span class="separator">|</span>
     <a href="https://github.com/gryphonshafer/quizsage">GitHub Project</a>
-    <span>|</span>
-    <a href="https://github.com/gryphonshafer/quizsage/commits/master">Revision History</a>
-    <span>|</span>
-    <a href="https://github.com/gryphonshafer/quizsage/issues">Report an Issue</a>
-    <span>|</span>
-    Version [% version %] [% c.app.mode.ucfirst %]
+
+    <span class="hide_priority_1">
+        <span class="separator">|</span>
+        <a href="https://github.com/gryphonshafer/quizsage/commits/master">Revision History</a>
+    </span>
+
+    <span class="hide_priority_2">
+        <span class="separator">|</span>
+        <a href="https://github.com/gryphonshafer/quizsage/issues">Report an Issue</a>
+    </span>
+
+    <span class="separator">|</span>
+    <span class="hide_priority_4">
+        Version [% version %] [% c.app.mode.ucfirst %]
+    </span>
+    <span class="show_priority_4">
+        v[% version %]
+    </span>
 </footer>

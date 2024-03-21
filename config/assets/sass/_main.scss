@@ -34,37 +34,82 @@ body {
         margin-top   : 0;
         margin-bottom: 0;
     }
-}
 
-dialog {
-    margin   : 2em auto 0 auto;
-    padding  : 1em;
-    border   : 1px solid;
-    max-width: calc( 100vw - 6em );
-    z-index  : 100;
+    dialog {
+        margin   : 2em auto 0 auto;
+        padding  : 1em;
+        border   : 1px solid;
+        max-width: calc( 100vw - 6em );
+        z-index  : 100;
 
-    @include theme.apply( themes.$themes ) {
-        color       : theme.get('text');
-        border-color: theme.get('lines');
-    }
-
-    @include theme.apply( themes.$styles, 'style' ) {
-        border-radius: calc( theme.get('radius') * 2 );
-    }
-
-    form {
-        text-align: right;
-    }
-
-    &.error {
         @include theme.apply( themes.$themes ) {
-            background: theme.get('dialog_error_background');
+            color       : theme.get('text');
+            border-color: theme.get('lines');
+        }
+
+        @include theme.apply( themes.$styles, 'style' ) {
+            border-radius: calc( theme.get('radius') * 2 );
+        }
+
+        form {
+            text-align: right;
+        }
+
+        &.error {
+            @include theme.apply( themes.$themes ) {
+                background: theme.get('dialog_error_background');
+            }
+        }
+
+        &.success {
+            @include theme.apply( themes.$themes ) {
+                background: theme.get('dialog_success_background');
+            }
         }
     }
 
-    &.success {
+    details {
+        border : 1px solid;
+        padding: 0.25em 1em;
+        display: block;
+        width  : fit-content;
+
         @include theme.apply( themes.$themes ) {
-            background: theme.get('dialog_success_background');
+            border-color: theme.get('lines');
+            background  : theme.get('fieldset_background');
+        }
+
+        @include theme.apply( themes.$styles, 'style' ) {
+            border-radius: calc( theme.get('radius') * 2 );
+        }
+
+        & + details {
+            margin-top: 1em;
+        }
+
+        summary {
+            cursor     : pointer;
+            font-weight: bold;
+
+            @include theme.apply( themes.$themes ) {
+                color: theme.get('nav_icon_color');
+            }
+
+            &:hover {
+                @include theme.apply( themes.$themes ) {
+                    color: theme.get('nav_icon_color_hover');
+                }
+            }
+
+            &:active {
+                @include theme.apply( themes.$themes ) {
+                    color: theme.get('nav_icon_color_active');
+                }
+            }
+        }
+
+        &[open] {
+            padding: 0.25em 1em 0 1em;
         }
     }
 }

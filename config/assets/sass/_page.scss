@@ -1,7 +1,11 @@
-$header_height: 2rem   !default;
-$footer_height: 0.5rem !default;
-$border_width : 1px    !default;
-$padding      : 1rem   !default;
+$header_scale : 0.75  !default;
+$footer_scale : 0.875 !default;
+
+$header_height: 2rem * $header_scale !default;
+$footer_height: 1rem * $footer_scale !default;
+
+$border_width : 1px  !default;
+$padding      : 1rem !default;
 
 @use 'theme';
 @use 'themes';
@@ -10,9 +14,11 @@ body {
     margin: 0;
 
     header {
-        height          : $header_height;
-        border-bottom   : $border_width solid;
-        padding         : $padding;
+        font-size    : 1em * $header_scale;
+        line-height  : 1em;
+        height       : $header_height;
+        padding      : $padding * $header_scale;
+        border-bottom: $border_width solid;
 
         @include theme.apply( themes.$themes ) {
             background         : theme.get('header_background');
@@ -22,10 +28,17 @@ body {
         img, h1 {
             display: inline-block;
             margin : 0;
-            margin: -0.25rem 0.25rem 0 0;
+        }
+
+        img {
+            vertical-align: middle;
+            margin-right  : 0.25em;
         }
 
         h1 {
+            font-size  : 2em;
+            line-height: 1em;
+
             @include theme.apply( themes.$themes ) {
                 color: theme.get('header_text');
             }
@@ -33,12 +46,12 @@ body {
 
         div {
             position: absolute;
-            top     : 1rem;
-            right   : 3rem;
+            top     : 1em;
+            right   : 3em;
             z-index : 20;
 
             a {
-                margin-right: 1rem;
+                margin-right: 1em;
             }
         }
 
@@ -69,11 +82,13 @@ body {
 
     a.toggle_menu {
         position: absolute;
-        top     : 1rem;
-        right   : 1rem;
+        top     : 1em;
+        right   : 1em;
     }
 
     a.toggle_menu.current {
+        font-size: 1em * $header_scale;
+
         @include theme.apply( themes.$themes ) {
             color: theme.get('nav_icon_color_current');
         }
@@ -98,7 +113,7 @@ body {
         left       : auto;
         right      : 0;
         height     : auto;
-        padding-top: 3rem;
+        padding-top: 3em;
         z-index    : 10;
 
         @include theme.apply( themes.$themes ) {
@@ -123,14 +138,12 @@ body {
         }
 
         & > ul {
-            padding-top   : 0.25em;
-            padding-right : 1em;
-            margin-left   : 0em;
-            padding-left  : 1em;
-            margin-bottom : 0em;
-            padding-bottom: 0.75em;
-            border-left   : $border_width solid;
-            border-bottom : $border_width solid;
+            margin-top   : ( $header_scale - 1rem ) * 4 + 1rem;
+            margin-left  : 0em;
+            margin-bottom: 0em;
+            padding      : 0.25em 1em 0.75em 1em;
+            border-left  : $border_width solid;
+            border-bottom: $border_width solid;
 
             @include theme.apply( themes.$themes ) {
                 border-color: theme.get('lines');
@@ -146,7 +159,14 @@ body {
         padding   : $padding;
         min-height: calc(
             100vh -
-            ( $header_height + $footer_height + $border_width + $padding * 6 )
+            (
+                $header_height +
+                $footer_height +
+                $border_width +
+                $padding * 2 +
+                $padding * $header_scale * 2 +
+                $padding * $footer_scale / 1.5 * 2
+            )
         );
 
         @include theme.apply( themes.$themes ) {
@@ -159,21 +179,19 @@ body {
     }
 
     footer {
+        font-size  : calc( 1em * $footer_scale );
+        line-height: 1em;
         overflow   : hidden;
         white-space: nowrap;
         height     : $footer_height;
-        padding    :
-            calc( $padding / 2 )
-            $padding
-            calc( $padding / 2 * 3 )
-            $padding;
+        padding    : calc( $padding * $footer_scale / 1.5 );
 
-            @include theme.apply( themes.$themes ) {
-                color     : theme.get('footer_color');
-                background: theme.get('footer_background');
-            }
+        @include theme.apply( themes.$themes ) {
+            color     : theme.get('footer_color');
+            background: theme.get('footer_background');
+        }
 
-        span {
+        span.separator {
             padding: 0 0.5em;
             @include theme.apply( themes.$themes ) {
                 color: theme.get('footer_separator');
@@ -202,6 +220,63 @@ body {
             @include theme.apply( themes.$themes ) {
                 color: theme.get('footer_a_active');
             }
+        }
+
+        span.show_priority_3,
+        span.show_priority_4 {
+            display: none;
+        }
+
+        @media ( max-width: 810px ) {
+            span.hide_priority_1 {
+                display: none;
+            }
+        }
+
+        @media ( max-width: 690px ) {
+            span.hide_priority_2 {
+                display: none;
+            }
+        }
+
+        @media ( max-width: 570px ) {
+            span.hide_priority_3 {
+                display: none;
+            }
+
+            span.show_priority_3 {
+                display: inline;
+            }
+        }
+
+        @media ( max-width: 420px ) {
+            span.hide_priority_4 {
+                display: none;
+            }
+
+            span.show_priority_4 {
+                display: inline;
+            }
+        }
+    }
+
+    @media ( max-width: 700px ) {
+        header h1 {
+            position: absolute;
+            left    : $padding;
+            top     : $header_height + $padding * 2.5;
+
+            @include theme.apply( themes.$themes ) {
+                color: theme.get('text');
+            }
+
+            span.hide_priority_1 {
+                display: none;
+            }
+        }
+
+        main {
+            padding-top: calc( $padding + 2.5em );
         }
     }
 }
