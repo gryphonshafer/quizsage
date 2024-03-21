@@ -14,22 +14,7 @@
     END;
 %]
 
-[% click_events = BLOCK %]
-    let body;
-
-    window.addEventListener( 'load', () => {
-        body = window.document.querySelector('body');
-    } );
-
-    window.addEventListener( 'click', () => {
-        body.classList.toggle('dark_mode');
-    } );
-[% END %]
-[% page.js.inline.push(click_events) %]
-
 [% UNLESS quiz %]
-    <h1>QuizSage: [% page.title %]</h1>
-
     <p>
         There is currently no active quiz for room [% room_number %] for the
         selected meet. This page will automatically reload when there's
@@ -47,6 +32,8 @@
     [% END %]
     [% page.js.inline.push(preboard_load) %]
 [% ELSE %]
+    [% no_page_page = 1 %]
+
     <div id="board" v-cloak></div>
 
     [% board_events = BLOCK %]

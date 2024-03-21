@@ -1,0 +1,72 @@
+$theme: (
+    header_background: #222,
+    header_text      : darkgray,
+
+    nav_icon_color        : royalblue,
+    nav_icon_color_hover  : deepskyblue,
+    nav_icon_color_active : salmon,
+    nav_icon_color_current: red,
+
+    dialog_error_background  : #fdd,
+    dialog_success_background: #dfd,
+
+    main_background: black,
+
+    text : darkgray,
+    lines: darkslategray,
+
+    a_link   : royalblue,
+    a_visited: steelblue,
+    a_hover  : deepskyblue,
+    a_active : salmon,
+    a_current: red,
+
+    legend_background          : #333,
+    fieldset_background        : #222,
+    form_elements_background   : white,
+
+    input_text_color           : dimgray,
+
+    button_background          : lightgray,
+    button_text_color          : dimgray,
+    button_selected            : lightgreen,
+
+    form_hover_border_color    : lightgray,
+    form_focus_background      : dimgray,
+    form_focus_border_color    : white,
+    form_disabled_background   : white,
+    form_disabled_color        : white,
+    form_active_background     : black,
+    form_active_color          : black,
+    form_active_border_color   : black,
+
+    radiobox_background        : green,
+    radiobox_checked_color     : red,
+    radiobox_checked_background: yellow,
+
+    material_buffer_text       : #999,
+    material_ignored_text      : green,
+    material_special_text      : red,
+    material_details_text      : black,
+    material_details_background: white,
+
+    search_is_current_query: lightgreen,
+    search_match_text      : blue,
+
+    th_background                : #333,
+    th_text                      : darkgray,
+    td_background                : #222,
+    td_text                      : darkgray,
+    blank_cell                   : #f0f0f0,
+    td_selected_backbround       : lightgreen,
+    td_selected_hover_background : green,
+    td_clickable_hover_backbround: lightgreen,
+
+    footer_background: #222,
+    footer_color     : darkgray,
+    footer_a_link    : royalblue,
+    footer_a_visited : steelblue,
+    footer_a_hover   : deepskyblue,
+    footer_a_active  : salmon,
+    footer_separator : dimgray,
+) !default;

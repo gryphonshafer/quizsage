@@ -6,10 +6,10 @@
     $vue_spinner_width    : 1.5em,
     $vue_spinner_height   : 1.5em,
 );
-@use 'fonts';
-@use 'forms';
-@use 'tables';
+@use 'types';
 @use 'main';
 @use 'page';
-@use 'quiz_apps';
 @use 'specials';
+@use 'apps';
+@use 'board';
+@use 'print';

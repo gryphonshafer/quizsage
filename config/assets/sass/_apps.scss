@@ -1,21 +1,6 @@
 @use 'theme';
 @use 'themes';
 
-// @include theme.apply( themes.$themes ) {
-//     color       : theme.get('text');
-//     border-color: theme.get('lines');
-// }
-
-// @include theme.apply( themes.$styles, 'style' ) {
-//     border-radius: calc( theme.get('radius') * 2 );
-// }
-
-$lines              : red;
-$form_button_bgcolor: red;
-$active_bg_btn      : red;
-$active_bg_cell     : red;
-$background         : red;
-
 div#quiz,
 div#drill,
 div#queries {
@@ -23,20 +8,17 @@ div#queries {
     line-height: 1.5em;
 
     p {
-        margin-top   : 0.5em;
-        margin-bottom: 0.5em;
+        margin-top   : 0.25em;
+        margin-bottom: 0.25em;
     }
-
-    // select:focus, textarea:focus, button:focus {
-    //     border-color    : $lines;
-    //     background-color: $form_button_bgcolor;
-    // }
 
     button {
         margin: 0.1em;
 
         &.selected {
-            background-color: $active_bg_btn;
+            @include theme.apply( themes.$themes ) {
+                background: theme.get('button_selected');
+            }
         }
     }
 
@@ -45,9 +27,17 @@ div#queries {
     div.query p.reply,
     div.material span.reference,
     div.material p.content {
-        border          : 1px solid $lines;
-        background-color: white;
-        padding         : 0 0.2em;
+        padding: 0 0.2em;
+        border : 1px solid;
+
+        @include theme.apply( themes.$themes ) {
+            background  : theme.get('form_elements_background');
+            border-color: theme.get('lines');
+        }
+
+        @include theme.apply( themes.$styles, 'style' ) {
+            border-radius: theme.get('radius');
+        }
     }
 
     div.query p.announcement {
@@ -59,9 +49,12 @@ div#queries {
     }
 
     div.material span.buffer {
-        color     : #999;
         font-style: italic;
         display   : block;
+
+        @include theme.apply( themes.$themes ) {
+            color: theme.get('material_buffer_text');
+        }
     }
     div.material span.buffer:first-child {
         padding-bottom: 0.5em;
@@ -96,16 +89,23 @@ div#queries {
             }
 
             &.required {
-                color: blue;
+                @include theme.apply( themes.$themes ) {
+                    color: theme.get('material_required_text');
+                }
             }
 
             &.ignored {
                 font-style: italic;
-                color     : green;
+
+                @include theme.apply( themes.$themes ) {
+                    color: theme.get('material_ignored_text');
+                }
             }
 
             &.special {
-                color: red;
+                @include theme.apply( themes.$themes ) {
+                    color: theme.get('material_special_text');
+                }
             }
 
             &.item {
@@ -114,19 +114,27 @@ div#queries {
 
             &.item div.details {
                 font-style      : normal;
-                color           : black;
                 display         : none;
                 position        : absolute;
                 top             : 100%;
                 left            : 0;
                 z-index         : 1;
-                border          : 1px solid $lines;
-                background-color: white;
                 padding         : 0 0.2em;
                 transform       : translate( 0.5em, 0 );
                 width           : 30em;
                 max-height      : 20em;
                 overflow-y      : auto;
+                border          : 1px solid;
+
+                @include theme.apply( themes.$themes ) {
+                    color       : theme.get('material_details_text');
+                    background  : theme.get('material_details_background');
+                    border-color: theme.get('lines');
+                }
+
+                @include theme.apply( themes.$styles, 'style' ) {
+                    border-radius: theme.get('radius');
+                }
             }
 
             @media ( max-width: 48em ) {
@@ -149,13 +157,21 @@ div#queries {
         div.timer_display {
             font-size       : 300%;
             font-weight     : bold;
-            border          : 3px double $lines;
-            background-color: white;
             display         : inline-block;
             padding         : 0.25em 0.125em;
             margin-bottom   : 0.25em;
             width           : 1.6em;
             text-align      : center;
+            border          : 3px double;
+
+            @include theme.apply( themes.$themes ) {
+                background  : theme.get('form_elements_background');
+                border-color: theme.get('lines');
+            }
+
+            @include theme.apply( themes.$styles, 'style' ) {
+                border-radius: calc( theme.get('radius') / 2 );
+            }
         }
 
         div.button_group {
@@ -180,26 +196,43 @@ div#queries {
         table {
             position  : absolute;
             width     : calc( 100vw - 2em );
-            box-shadow: 0px 0px 0.25em 0.25em $background;
             margin-top: 0.5em;
+
+            @include theme.apply( themes.$themes ) {
+                box-shadow: 0px 0px 0.25em 0.25em theme.get('main_background');
+            }
+
+            tr:first-of-type {
+                td {
+                    border-top: 1px solid;
+                    @include theme.apply( themes.$themes ) {
+                        border-color: theme.get('lines');
+                    }
+                }
+            }
 
             tr td:nth-of-type(2) {
                 width: 6em;
             }
 
             tr.is_current_query td {
-                background-color: $active_bg_cell;
+                @include theme.apply( themes.$themes ) {
+                    background: theme.get('search_is_current_query');
+                }
             }
 
             span.match {
                 font-weight: bold;
-                color      : blue;
+
+                @include theme.apply( themes.$themes ) {
+                    color: theme.get('search_match_text');
+                }
             }
         }
     }
 
     div.query {
-        width: 30em;
+        width: 28.5em;
 
         p.prompt {
             height : 3em;
@@ -213,7 +246,7 @@ div#queries {
     }
 
     div.material {
-        width: 30em;
+        width: 28.5em;
 
         span.reference {
             margin-left : 0.5em;
@@ -233,92 +266,59 @@ div#queries {
     }
 }
 
+div#drill {
+    margin: 0;
 
+    div.query_type_buttons {
+        p {
+            margin: 0;
+        }
 
+        button {
+            display: block;
+            margin : 1em 0;
+        }
+    }
+}
 
+div#queries {
+    div.intro {
+        padding-bottom: 1em;
+        margin-bottom : 1em;
+        border-bottom : 3px double;
 
+        @include theme.apply( themes.$themes ) {
+            border-color: theme.get('lines');
+        }
+    }
 
+    div.query_id {
+        break-inside: avoid;
+    }
 
+    & > div.query_id ~ div.query_id {
+        margin-top : 1em;
+        padding-top: 1em;
+        border-top : 3px double;
 
+        @include theme.apply( themes.$themes ) {
+            border-color: theme.get('lines');
+        }
+    }
 
+    div.query {
+        display       : inline-block;
+        vertical-align: top;
+        margin-right  : 1em;
+    }
 
-
-
-
-table.board {
-    border: none;
-
-    thead td {
+    p.announcement span {
         background-color: white;
-    }
+        padding         : 0 0.2em;
+        border          : 1px solid;
 
-    td.top_left_corner {
-        background-color: $background;
-        border-color    : $background $lines $lines $background;
-
-        text-align    : right;
-        vertical-align: bottom;
-        padding-bottom: 0.5em;
-        padding-right : 0.5em;
-    }
-
-    td.clickable {
-        cursor: pointer;
-
-        &:hover {
-            background-color: $active_bg_cell;
+        @include theme.apply( themes.$themes ) {
+            border-color: theme.get('lines');
         }
-    }
-
-    tr.selected td {
-        background-color: $active_bg_cell;
-    }
-
-    td.selected {
-        background-color: lightgreen;
-
-        &:hover {
-            background-color: lightgreen;
-        }
-    }
-
-    tr.vertical td, td.vertical {
-        writing-mode  : vertical-rl;
-        padding       : 0.3em 0px 0.3em 0em;
-        width         : 2.5em;
-        vertical-align: middle;
-    }
-
-    @-moz-document url-prefix() {
-        tr.vertical td, td.vertical {
-            vertical-align: top;
-            padding       : 0.3em 0 0.3em 1em;
-        }
-    }
-
-    tr.center td, td.center {
-        text-align: center;
-    }
-
-    tr.right td, td.right {
-        text-align: right;
-    }
-
-    tbody tr td:nth-of-type(1) {
-        width: 2em;
-    }
-
-    tbody tr td:nth-of-type(2) {
-        width: 3em;
-    }
-
-    td.team_name,
-    td.team_score_position,
-    td.team_score_points {
-        font-weight: bold;
-    }
-
-    td.team_name {
-        padding-left: 0.7em;
     }
 }

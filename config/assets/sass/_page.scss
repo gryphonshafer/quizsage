@@ -11,7 +11,8 @@ $padding      : 1rem !default;
 @use 'themes';
 
 body {
-    margin: 0;
+    margin   : 0;
+    min-width: 375px;
 
     header {
         font-size    : 1em * $header_scale;

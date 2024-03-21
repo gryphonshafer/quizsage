@@ -31,7 +31,7 @@ form {
 select, textarea, button, input {
     @include theme.apply( themes.$themes ) {
         color       : theme.get('input_text_color');
-        background  : theme.get('input_background');
+        background  : theme.get('form_elements_background');
         border-color: theme.get('lines');
     }
 

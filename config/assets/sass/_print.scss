@@ -1,0 +1,33 @@
+@media print {
+    .no_print {
+        display: none;
+    }
+
+    * {
+        color     : black !important;
+        background: white !important;
+    }
+
+    header,
+    footer {
+        visibility: hidden;
+    }
+
+    header h1 {
+        visibility : visible;
+        font-size  : 2rem !important;
+        line-height: 1.5em !important;
+        position   : absolute;
+        left       : 0.25em;
+        top        : 0.25;
+    }
+
+    main {
+        background : transparent !important;
+
+        div#queries {
+            font-size  : 1rem !important;
+            line-height: 1.5rem !important;
+        }
+    }
+}

@@ -1,6 +1,6 @@
 [% page.title = 'Statistics' %]
 
-<ul>
+<ul class="no_print">
     <li><a href="[% c.url_for('/')                             %]">Main Page</a></li>
     <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') ) %]">Meet Page</a></li>
 </ul>

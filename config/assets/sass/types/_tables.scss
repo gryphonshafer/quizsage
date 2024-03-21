@@ -65,4 +65,20 @@ table {
             }
         }
     }
+
+    tbody.no_header {
+        tr:first-of-type {
+            td:first-of-type {
+                @include theme.apply( themes.$styles, 'style' ) {
+                    border-top-left-radius: theme.get('radius');
+                }
+            }
+
+            td:last-of-type {
+                @include theme.apply( themes.$styles, 'style' ) {
+                    border-top-right-radius: theme.get('radius');
+                }
+            }
+        }
+    }
 }

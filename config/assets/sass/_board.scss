@@ -1,0 +1,209 @@
+@use 'theme';
+@use 'themes';
+
+table.board {
+    border: none;
+
+    thead td {
+        @include theme.apply( themes.$themes ) {
+            background: theme.get('td_background');
+        }
+    }
+
+    td.top_left_corner {
+        text-align    : right;
+        vertical-align: bottom;
+        padding-bottom: 0.5em;
+        padding-right : 0.5em;
+
+        @include theme.apply( themes.$themes ) {
+            background  : transparent;
+            border-color:
+                theme.get('td_background')
+                theme.get('lines')
+                theme.get('lines')
+                theme.get('td_background');
+        }
+    }
+
+    td.clickable {
+        cursor: pointer;
+
+        &:hover {
+            @include theme.apply( themes.$themes ) {
+                background: theme.get('td_clickable_hover_backbround');
+            }
+        }
+    }
+
+    tr.selected td {
+        @include theme.apply( themes.$themes ) {
+            background: theme.get('td_selected_backbround');
+        }
+    }
+
+    td.selected {
+        @include theme.apply( themes.$themes ) {
+            background: theme.get('td_selected_background');
+        }
+
+        &:hover {
+            @include theme.apply( themes.$themes ) {
+                background: theme.get('td_selected_hover_background');
+            }
+        }
+    }
+
+    tr.vertical td, td.vertical {
+        writing-mode  : vertical-rl;
+        padding       : 0.3em 0px 0.3em 0em;
+        width         : 2.5em;
+        vertical-align: middle;
+    }
+
+    @-moz-document url-prefix() {
+        tr.vertical td, td.vertical {
+            vertical-align: top;
+            padding       : 0.3em 0 0.3em 1em;
+        }
+    }
+
+    tr.center td, td.center {
+        text-align: center;
+    }
+
+    tr.right td, td.right {
+        text-align: right;
+    }
+
+    tbody tr td:nth-of-type(1) {
+        width: 2em;
+    }
+
+    tbody tr td:nth-of-type(2) {
+        width: 3em;
+    }
+
+    td.team_name,
+    td.team_score_position,
+    td.team_score_points {
+        font-weight: bold;
+    }
+
+    td.team_name {
+        padding-left: 0.7em;
+    }
+}
+
+table.board {
+    thead {
+        td.top_left_corner {
+            border: none;
+        }
+
+        tr:first-of-type td.team_name,
+        tr:first-of-type td.team_score_position {
+            border-top: 1px solid;
+
+            @include theme.apply( themes.$themes ) {
+                border-color: theme.get('lines');
+            }
+        }
+
+        tr:first-of-type td:nth-of-type(2) {
+            @include theme.apply( themes.$styles, 'style' ) {
+                border-top-left-radius: theme.get('radius');
+            }
+        }
+
+        tr:first-of-type td:last-of-type {
+            @include theme.apply( themes.$styles, 'style' ) {
+                border-top-right-radius: theme.get('radius');
+            }
+        }
+
+        tr:last-of-type td,
+        td[rowspan="3"] {
+            border-bottom: none;
+        }
+
+        tr:nth-last-of-type(1),
+        tr:nth-last-of-type(2) {
+            td:last-of-type {
+                border-right: none;
+            }
+        }
+    }
+
+    tbody {
+        tr:first-of-type td {
+            border-top: 1px solid;
+
+            @include theme.apply( themes.$themes ) {
+                border-color: theme.get('lines');
+            }
+        }
+
+        tr:first-of-type td:first-of-type {
+            @include theme.apply( themes.$styles, 'style' ) {
+                border-top-left-radius: theme.get('radius');
+            }
+        }
+    }
+}
+
+div#board {
+    width     : max-content;
+    margin    : 0 auto;
+    overflow-y: scroll;
+    max-height: calc( 100vh - 26px );
+
+    table.board {
+        margin: 0;
+
+        td.clickable {
+            cursor: default;
+
+            &:hover {
+                @include theme.apply( themes.$themes ) {
+                    background: theme.get('td_background');
+                }
+            }
+        }
+
+        td.selected {
+            @include theme.apply( themes.$themes ) {
+                background: theme.get('td_background');
+            }
+        }
+
+        &:nth-of-type(1) {
+            position: fixed;
+        }
+
+        &:nth-of-type(1) tbody,
+        &:nth-of-type(2) thead {
+                visibility: hidden;
+        }
+
+        &:nth-of-type(1) tbody td,
+        &:nth-of-type(2) thead td {
+            border: 1px solid transparent;
+        }
+
+        td {
+            padding-top   : calc( ( 5vw - 15px ) / 6 );
+            padding-bottom: calc( ( 5vw - 15px ) / 6 );
+        }
+    }
+}
+
+div#board::-webkit-scrollbar {
+    background: transparent;
+    width     : 0px;
+}
+
+div#board {
+    scrollbar-width   : none;
+    -ms-overflow-style: none;
+}

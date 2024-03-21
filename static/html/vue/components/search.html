@@ -11,10 +11,12 @@
     <label><input type="checkbox" v-model="exact"> Exact</label>
 
     <table v-if="matched_verses.length">
-        <tr v-for="verse in matched_verses" :class="{ is_current_query: verse.is_current_query }">
-            <td>{{ verse.bible }}</td>
-            <td class="nowrap">{{ verse.book }} {{ verse.chapter }}:{{ verse.verse }}</td>
-            <td><span v-for="part in verse.text_parts" :class="part.type">{{ part.text }}</span></td>
-        </tr>
+        <tbody class="no_header">
+            <tr v-for="verse in matched_verses" :class="{ is_current_query: verse.is_current_query }">
+                <td>{{ verse.bible }}</td>
+                <td class="no_wrap">{{ verse.book }} {{ verse.chapter }}:{{ verse.verse }}</td>
+                <td><span v-for="part in verse.text_parts" :class="part.type">{{ part.text }}</span></td>
+            </tr>
+        </tbody>
     </table>
 </div>
