@@ -282,6 +282,18 @@ body {
 
         main {
             padding-top: calc( $padding + 2.5em );
+            min-height: calc(
+                100vh -
+                (
+                    $header_height +
+                    $footer_height +
+                    $border_width +
+                    $padding * 2 +
+                    $padding * $header_scale * 2 +
+                    $padding * $footer_scale / 1.5 * 2 +
+                    2.5em
+                )
+            );
         }
     }
 }

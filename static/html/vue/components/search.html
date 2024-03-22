@@ -9,6 +9,7 @@
 
     <input type="text" v-model="text" placeholder="Search Text">
     <label><input type="checkbox" v-model="exact"> Exact</label>
+    <button class="clear" @click="text = ''">Clear</button>
 
     <table v-if="matched_verses.length">
         <tbody class="no_header">

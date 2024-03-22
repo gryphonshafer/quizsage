@@ -197,10 +197,15 @@ div#queries {
             margin-left: 0.5em;
         }
 
+        button.clear {
+            margin-left: 0.5em;
+        }
+
         table {
             position  : absolute;
             width     : calc( 100vw - 2em );
             margin-top: 0.5em;
+            z-index   : 30;
 
             @include theme.apply( themes.$themes ) {
                 box-shadow: 0px 0px 0.25em 0.25em theme.get('main_background');
@@ -267,6 +272,7 @@ div#queries {
         display       : inline-block;
         vertical-align: top;
         margin-right  : 1em;
+        margin-bottom : 0.5em;
     }
 }
 
@@ -324,5 +330,30 @@ div#queries {
         @include theme.apply( themes.$themes ) {
             border-color: theme.get('lines');
         }
+    }
+}
+
+@media ( max-width: 540px ) {
+    div#quiz div.operation {
+        div.select_type,
+        div.results,
+        div.quiz_control {
+            min-width  : auto;
+            margin-left: 7em;
+        }
+    }
+}
+
+@media ( max-width: 700px ) {
+    div#quiz table.board {
+        font-size  : 70%;
+        line-height: 1.5em;
+    }
+}
+
+@media ( max-width: 500px ) {
+    div#quiz table.board {
+        font-size  : 50%;
+        line-height: 1.5em;
     }
 }

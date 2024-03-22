@@ -49,4 +49,31 @@
         } );
     [% END %]
     [% page.js.inline.push(board_events) %]
+
+    [% click_events = BLOCK %]
+        let html_class_list;
+        const themes = [ 'light', 'dark', 'sand', 'midnight' ];
+
+        window.addEventListener( 'load', () => {
+            html_class_list = window.document.querySelector('html').classList;
+        } );
+
+        window.addEventListener( 'click', () => {
+            let found_class_name;
+
+            html_class_list.forEach( class_name => {
+                if ( class_name.indexOf( 'theme-' ) != -1 ) {
+                    html_class_list.remove(class_name);
+                    found_class_name = class_name.substr(6);
+                }
+            } );
+
+            let theme_index = themes.findIndex( name => name == found_class_name );
+            theme_index++;
+            if ( theme_index >= themes.length ) theme_index = 0;
+
+            html_class_list.add( 'theme-' + themes[theme_index] );
+        } );
+    [% END %]
+    [% page.js.inline.push(click_events) %]
 [% END %]
