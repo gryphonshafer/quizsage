@@ -1,9 +1,44 @@
-<div class="reading">
-    <query></query>
-    <material></material>
-    <search ref="search"></search>
+<div class="intro no_print">
+    <button onclick="window.history.back()">Go Back</button>
+    <button onclick="window.location.reload()">Regenerate</button>
 </div>
 
-<div class="operation">
-    <queries_controls></queries_controls>
+<div v-for="query in queries" class="query_id">
+    <p class="announcement">
+        Query <span>{{ query.id }}</span>
+        is a <span>{{ query.single.type_name }}</span>
+        from the <span>{{ query.single.bible }}</span>.
+    </p>
+
+    <div>
+        <div class="query">
+            <span class="reference">
+                {{ query.single.book }} {{ query.single.chapter }}:{{ query.single.verse }}
+            </span>
+
+            <p class="prompt">
+                {{ query.single.pre_prompt }}
+                {{ query.single.prompt }}
+            </p>
+
+            <p class="reply">
+                {{ query.single.reply }}
+            </p>
+        </div>
+
+        <div class="query" v-if="query.double">
+            <span class="reference">
+                {{ query.double.book }} {{ query.double.chapter }}:{{ query.double.verse }}
+            </span>
+
+            <p class="prompt">
+                {{ query.double.pre_prompt }}
+                {{ query.double.prompt }}
+            </p>
+
+            <p class="reply">
+                {{ query.double.reply }}
+            </p>
+        </div>
+    </div>
 </div>

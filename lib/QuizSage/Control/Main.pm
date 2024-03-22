@@ -8,6 +8,17 @@ sub home ($self) {
         if ( $self->stash('user') );
 }
 
+sub set ($self) {
+    $self->session( $self->param('type') => $self->param('name') );
+
+    if ( my $user = $self->stash('user') ) {
+        $user->data->{settings}{ $self->param('type') } = $self->param('name');
+        $user->save;
+    }
+
+    $self->redirect_to( $self->req->headers->referer );
+}
+
 1;
 
 =head1 NAME
@@ -23,7 +34,16 @@ for "Main" actions.
 
 =head2 home
 
-Handler for the home page.
+Handler for the home page. The home page has a not-logged-in view and a
+logged-in view that are substantially different.
+
+=head2 set
+
+This handler will set the C<type>-parameter-named session value to the C<name>
+parameter value. If the user is logged in, this handler will also save the
+the C<name> parameter value to the user's settings JSON under the
+C<type>-parameter-named name. Finally, this handler will redirect back to the
+referer.
 
 =head1 INHERITANCE
 

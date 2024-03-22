@@ -1,33 +1,35 @@
 [% page.title = ( practice_type == 'quiz/pickup' ) ? 'Pick-Up Quiz Settings' : 'Queries Drill Setup' %]
 
-<h1>QuizSage: [% page.title %]</h1>
-
 <p><a href="[% c.url_for('/') %]">Main Page</a></p>
 
-<p>
-    Enter the
-    [% ( practice_type == 'quiz/pickup' ) ? 'pick-up quiz' : 'queries drill' %]'s settings below.
-    Your settings will be saved for future practices.
-</p>
+<details>
+    <summary>Instructions</summary>
 
-[% IF practice_type == 'quiz/pickup' %]
     <p>
-        The roster main field needs to have a single entry per line, with team
-        name first on a line, then each quizzer on a line. There needs to be at
-        least a single blank line between each team. All names can be single or
-        multiple words in length. You can optionally append a Bible translation to
-        a team name or quizzer name to specify the Bible translation for that team
-        or quizzer. The default Bible will be used for quizzers without a
-        quizzer-level Bible or team-level Bible defined.
+        Enter the
+        [% ( practice_type == 'quiz/pickup' ) ? 'pick-up quiz' : 'queries drill' %]'s settings below.
+        Your settings will be saved for future practices.
     </p>
-[% END %]
 
-<p>
-    The material label/description field must contain a valid, full material
-    label or description. For details about how these can be written,
-    consult the
-    <a href="[% c.url_for('/docs/material_labels.md') %]">material labels documentation</a>.
-</p>
+    [% IF practice_type == 'quiz/pickup' %]
+        <p>
+            The roster main field needs to have a single entry per line, with team
+            name first on a line, then each quizzer on a line. There needs to be at
+            least a single blank line between each team. All names can be single or
+            multiple words in length. You can optionally append a Bible translation to
+            a team name or quizzer name to specify the Bible translation for that team
+            or quizzer. The default Bible will be used for quizzers without a
+            quizzer-level Bible or team-level Bible defined.
+        </p>
+    [% END %]
+
+    <p>
+        The material label/description field must contain a valid, full material
+        label or description. For details about how these can be written,
+        consult the
+        <a href="[% c.url_for('/docs/material_labels.md') %]">material labels documentation</a>.
+    </p>
+</details>
 
 <form method="post">
     <input type="hidden" name="generate_queries" value="0">
@@ -47,53 +49,42 @@
     <br>
 
     [% IF practice_type == 'quiz/pickup' %]
-        <fieldset style="vertical-align: top">
+        <fieldset class="roster">
             <legend>Roster</legend>
             <label>
                 Default Bible:
-                <input type="text" name="bible" value="[% bible %]"
-                    style="width: 5em">
+                <input type="text" name="bible" value="[% bible %]">
             </label>
-            <textarea
-                rows="15"
-                cols="16"
-                name="roster_data">[% roster_data %]</textarea>
+            <textarea name="roster_data">[% roster_data %]</textarea>
         </fieldset>
     [% END %]
 
-    <fieldset
-        style="
-            vertical-align: top;
-            text-align    : left;
-            [% IF practice_type == 'quiz/pickup' %]
-                max-width: 1vw;
-            [% END %]
-        "
-    >
+    <fieldset class="material_label">
         <legend>Material Label/Description</legend>
-        <textarea
-            rows="3"
-            style="width: 50vw"
-            name="material_label">[% material_label %]</textarea>
-
-        [% IF label_aliases AND label_aliases.size > 0 %]
-            <h2>Available Labels</h2>
-            <dl>
-                [% FOR alias IN label_aliases %]
-                    <dt>[% alias.name %]</dt>
-                    <dd>[% alias.label %]</dd>
-                [% END %]
-            </dl>
-        [% END %]
-
-        [% IF bibles AND bibles.size > 0 %]
-            <h2>Supported Bibles</h2>
-            <dl>
-                [% FOR item IN bibles %]
-                    <dt>[% item.acronym %]</dt>
-                    <dd>[% item.name %] ([% item.year %])</dd>
-                [% END %]
-            </dl>
-        [% END %]
+        <textarea name="material_label">[% material_label %]</textarea>
     </fieldset>
 </form>
+
+[% IF label_aliases AND label_aliases.size > 0 %]
+    <details>
+        <summary>Available Labels</summary>
+        <dl>
+            [% FOR alias IN label_aliases %]
+                <dt>[% alias.name %]</dt>
+                <dd>[% alias.label %]</dd>
+            [% END %]
+        </dl>
+    </details>
+[% END %]
+
+[% IF bibles AND bibles.size > 0 %]
+    <details>
+        <summary>Supported Bibles</summary>
+        <dl>
+            [% FOR item IN bibles %]
+                <dt>[% item.acronym %]</dt>
+                <dd>[% item.name %] ([% item.year %])</dd>
+            [% END %]
+        </dl>
+    </details>
+[% END %]

@@ -1,14 +1,12 @@
 [% page.title = 'Roster' %]
 
-<h1>QuizSage: [% page.title %]</h1>
-
-<ul>
+<ul class="no_print">
     <li><a href="[% c.url_for('/')                             %]">Main Page</a></li>
     <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') ) %]">Meet Page</a></li>
 </ul>
 
 [% FOR team IN roster %]
-    <div class="quiz_summary_box" style="min-height: 16rem">
+    <div class="summary_box roster_box">
         <b>[% team.name %]</b>
         <ul>
             [% FOR quizzer IN team.quizzers %]

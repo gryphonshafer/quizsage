@@ -1,7 +1,5 @@
 [% page.title = 'Meet' %]
 
-<h1>QuizSage: [% page.title %]</h1>
-
 [%
     FOR bracket IN state.brackets;
         FOR set IN bracket.sets;
@@ -12,22 +10,20 @@
     END;
 %]
 
-<ul style="display: inline-block; vertical-align: top">
-    <li><a href="[% c.url_for('/')                                             %]">Main Page</a></li>
-    <li><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/roster')       %]">Roster</a></li>
-    <li><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/distribution') %]">Distribution</a></li>
-    <li><a href="[% c.url_for('/meet/' _ c.param('meet_id') _ '/stats')        %]">Statistics</a></li>
+<ul class="column no_print">
+    <li><a href="[% c.url_for('/')                                               %]">Main Page</a></li>
+    <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') _ '/roster' )       %]">Roster</a></li>
+    <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') _ '/distribution' ) %]">Distribution</a></li>
+    <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') _ '/stats' )        %]">Statistics</a></li>
 </ul>
 
-<div style="display: inline-block; vertical-align: top">
-    <ul>
-        [% FOR room_number IN room_numbers.keys.sort %]
-            <li><a href="[%
-                c.url_for('/meet/' _ c.param('meet_id') _ '/board/' _ room_number )
-            %]">Scoreboard Room [% room_number %]</a></li>
-        [% END %]
-    </ul>
-</div>
+<ul class="column no_print">
+    [% FOR room_number IN room_numbers.keys.sort %]
+        <li><a href="[%
+            c.url_for( '/meet/' _ c.param('meet_id') _ '/board/' _ room_number )
+        %]">Scoreboard Room [% room_number %]</a></li>
+    [% END %]
+</ul>
 
 [% BLOCK event %]
     [% FOR event IN events %]
@@ -35,12 +31,7 @@
             type == 'pre'  && event.stop  == row.start ||
             type == 'post' && event.start == row.stop
         %]
-            <div style="
-                background: white;
-                border    : solid 1px silver;
-                margin    : 1rem 0;
-                padding   : 0 0.25rem;
-            ">
+            <div class="info_box">
                 <b>[% event.name %]</b>
                 [% event.date %]
                 from [% event.start_time %]
@@ -65,7 +56,7 @@
 
         <div>
             [% IF schedule %]
-                <div class="quiz_summary_box" style="width: 6rem">
+                <div class="summary_box schedule_row_lead">
                     [% schedule.date %]<br>
                     [% schedule.start_time %]<br>
                     [% schedule.stop_time %]<br>
@@ -74,8 +65,7 @@
             [% END %]
 
             [% FOR quiz IN set.rooms %]
-                <div class="quiz_summary_box"
-                style="position: relative">
+                <div class="summary_box relative">
                     [%
                         resolved_teams = 0;
                         teams_names    = [];
@@ -102,11 +92,7 @@
                     Room: [% quiz.room %]
 
                     [% IF quiz.current_query_id %]
-                        <span style="
-                            position: absolute;
-                            top     : 0.5em;
-                            right   : 0.75em;
-                        ">
+                        <span class="query">
                             Query: [% quiz.current_query_id %]
                         </span>
                     [% END %]
@@ -116,13 +102,7 @@
                     [% IF qm_auth %]
                         [% IF quiz.id %]
                             <a
-                                style="
-                                    font-style     : italic;
-                                    position       : absolute;
-                                    bottom         : 0.5em;
-                                    right          : 0.75em;
-                                    text-decoration: none;
-                                "
+                                class="qm_auth"
                                 onclick="
                                     return confirm(
                                         'Are you absolutely sure you want to do this?\n' +
@@ -134,13 +114,7 @@
                             >Delete Data</a>
                         [% ELSIF NOT teams_resolved %]
                             <a
-                                style="
-                                    font-style     : italic;
-                                    position       : absolute;
-                                    bottom         : 0.5em;
-                                    right          : 0.75em;
-                                    text-decoration: none;
-                                "
+                                class="qm_auth"
                                 onclick="
                                     return confirm(
                                         'Are you absolutely sure you want to do this?\n' +

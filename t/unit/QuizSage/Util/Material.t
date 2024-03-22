@@ -1,8 +1,61 @@
 use Test2::V0;
 use exact -conf;
+use Mojo::JSON 'decode_json';
+use QuizSage::Model::Label;
 use QuizSage::Util::Material qw{ text2words material_json };
 
+my @spew;
+my $mock_mojo_file  = mock 'Mojo::File' => ( override => [ spew => sub { @spew = @_ } ] );
+my $mock_file_path  = mock 'File::Path' => ( override => 'make_path' );
+my $model_label_obj = QuizSage::Model::Label->new;
+my $mock_label      = mock 'QuizSage::Model::Label' => (
+    override => [
+        new            => sub { $model_label_obj },
+        bible_acronyms => sub { [ qw( ESV NASB NIV ) ] },
+    ],
+);
+
 imported_ok( qw{ text2words material_json } );
+
+like(
+    dies { material_json() },
+    qr/Must provide either label or description/,
+    'Must provide either label or description',
+);
+
+like(
+    dies { material_json( label => 'Test', description => 'Test' ) },
+    qr/Must provide either label or description/,
+    'Must provide either label or description but not both',
+);
+
+like(
+    dies { material_json( label => 'NIV' ) },
+    qr/Must supply at least 1 valid reference range/,
+    'Must supply at least 1 valid reference range',
+);
+
+is( material_json( label => 'Eph 6:17 NIV', force => 1 ), {
+    description => 'Ephesians 6:17 NIV',
+    id          => '35bec86e7f147048',
+    json_file   => check_isa('Mojo::File'),
+}, 'material_json' );
+
+isa_ok( $spew[0], 'Mojo::File' );
+
+is( decode_json( $spew[1] ), hash {
+    bibles      => {
+        NIV => hash {
+            type => 'primary',
+        },
+    },
+    description => 'Ephesians 6:17 NIV',
+    ranges      => [{
+        range  => 'Ephesians 6:17',
+        verses => D(),
+    }],
+    etc(),
+}, 'JSON valid and has expected contents' );
 
 is(
     text2words(

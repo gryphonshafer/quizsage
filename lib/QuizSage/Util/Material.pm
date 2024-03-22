@@ -33,6 +33,18 @@ fun material_json (
     :$user        = undef, # user ID from application database
     :$force       = 0,
 ) {
+    # remove any material JSON files that haven't been accessed in the last N
+    # days, where N is from config: material json atime_life
+    my $now        = time;
+    my $atime_life = conf->get( qw{ material json atime_life } );
+    my $json_path  = path( join( '/',
+        conf->get( qw{ config_app root_dir } ),
+        conf->get( qw{ material json location } ),
+    ) );
+    $json_path->list->grep( sub ($file) {
+        ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
+    } )->each('remove');
+
     croak('Must provide either label or description (and not both)')
         if ( not $description and not $label or $description and $label );
 
@@ -40,13 +52,7 @@ fun material_json (
     $description    = $model_label->descriptionize($label) if ($label);
     my $id          = substr( Digest->new('SHA-256')->add($description)->hexdigest, 0, 16 );
 
-    my $json_file = path(
-        join( '/',
-            conf->get( qw{ config_app root_dir } ),
-            conf->get( qw{ material json } ),
-            $id . '.json',
-        )
-    );
+    my $json_file = $json_path->child( $id . '.json' );
 
     my $return = {
         description => $description,
@@ -59,7 +65,7 @@ fun material_json (
     # setup data structure
     my $data = $model_label->parse($description);
 
-    croak('Must supply at least 1 valid reference range') unless ( $data->{ranges}->@* );
+    croak('Must supply at least 1 valid reference range') unless ( $data->{ranges} and $data->{ranges}->@* );
     croak('Must have least 1 primary supported Bible translation by canonical acronym')
         unless ( $data->{bibles} and $data->{bibles}{primary} and $data->{bibles}{primary}->@* );
 
@@ -183,10 +189,6 @@ an existing JSON file should be rebuilt. (Default is false.)
 The function returns a hashref with a C<label> and C<output> keys. The "label"
 will be the canonicalized material label, and the "output" is the file that was
 created or recreated.
-
-sub =head2 canonicalize_label($label) {
-
-Take a string input of a material label and return that label canonicalized.
 
 =head3 JSON DATA STRUCTURE
 

@@ -41,18 +41,20 @@ sub thaw ( $self, $data ) {
     return $data;
 }
 
-sub pickup ( $self, $pickup_settings, $user ) {
+sub pickup ( $self, $pickup_settings, $user = undef ) {
     my $quiz_settings    = {};
     my $quiz_defaults    = $self->conf->get('quiz_defaults');
     my $available_bibles = $self->dq('material')->get( 'bible', ['acronym'] )->run->column;
 
     # canonicalize default bible acronym
 
-    $pickup_settings->{bible} = uc ( $pickup_settings->{bible} // '' );
+    $pickup_settings->{bible} = uc ( $pickup_settings->{bible} // $quiz_defaults->{bible} // '' );
     die 'Default bible is invalid or unavailable'
         unless ( $pickup_settings->{bible} and grep { $_ eq $pickup_settings->{bible} } @$available_bibles );
 
     # canonicalize roster and save in quiz settings
+
+    $pickup_settings->{roster_data} //= $quiz_defaults->{roster_data};
 
     my $roster = {
         default_bible => $pickup_settings->{bible},
@@ -64,8 +66,10 @@ sub pickup ( $self, $pickup_settings, $user ) {
     # parse material label, append missing bibles, and build material JSON
 
     my $roster_bibles = { map { $_->{bible} => 1 } map { $_->{quizzers}->@* } @$roster };
-    my $label         = QuizSage::Model::Label->new( user_id => $user->id );
-    my $label_data    = $label->parse( $pickup_settings->{material_label} );
+    my $label         = QuizSage::Model::Label->new( maybe user_id => $user->id );
+    my $label_data    = $label->parse(
+        $pickup_settings->{material_label} // $quiz_defaults->{material_label}
+    );
 
     $label_data->{bibles}          //= {};
     $label_data->{bibles}{primary} //= [ $pickup_settings->{bible} ];
@@ -90,7 +94,10 @@ sub pickup ( $self, $pickup_settings, $user ) {
 
     $quiz_settings->{distribution} = Omniframe::Class::Javascript->new(
         basepath  => $root_dir . '/static/js',
-        importmap => $self->js_app_config( 'quiz', $pickup_settings->{js_apps_id} )->{importmap},
+        importmap => $self->js_app_config(
+            'quiz',
+            $pickup_settings->{js_apps_id} // $quiz_defaults->{js_apps_id},
+        )->{importmap},
     )->run(
         $root_dir . '/ocjs/lib/Model/Meet/distribution.js',
         {
@@ -101,25 +108,27 @@ sub pickup ( $self, $pickup_settings, $user ) {
 
     # cleanup roster data and save user pickup quiz settings
 
-    $pickup_settings->{roster_data} =~ s/[ ]{2,}/ /g;
-    $pickup_settings->{roster_data} =~ s/\t/ /g;
-    $pickup_settings->{roster_data} =~ s/\r?\n/\n/g;
-    $pickup_settings->{roster_data} =~ s/\n{3,}/\n\n/g;
-    $pickup_settings->{roster_data} =~ s/(?:^\s+|\s+$)//g;
+    if ($user) {
+        $pickup_settings->{roster_data} =~ s/[ ]{2,}/ /g;
+        $pickup_settings->{roster_data} =~ s/\t/ /g;
+        $pickup_settings->{roster_data} =~ s/\r?\n/\n/g;
+        $pickup_settings->{roster_data} =~ s/\n{3,}/\n\n/g;
+        $pickup_settings->{roster_data} =~ s/(?:^\s+|\s+$)//g;
 
-    $user->data->{settings}{pickup_quiz} = {
-        bible          => $pickup_settings->{bible},
-        material_label => $quiz_settings->{material}{label},
-        roster_data    => $pickup_settings->{roster_data},
-    };
+        $user->data->{settings}{pickup_quiz} = {
+            bible          => $pickup_settings->{bible},
+            material_label => $quiz_settings->{material}{label},
+            roster_data    => $pickup_settings->{roster_data},
+        };
 
-    $user->save;
+        $user->save;
+    }
 
     # create and return quiz
 
     return $self->create({
-        settings => $quiz_settings,
-        user_id  => $user->id,
+        settings      => $quiz_settings,
+        maybe user_id => ($user) ? $user->id : undef,
     });
 }
 
@@ -139,7 +148,7 @@ sub latest_quiz_in_meet_room ( $self, $meet_id, $room_number ) {
 sub ensure_material_json_exists ($self) {
     return if ( -f join( '/',
         $self->conf->get( qw( config_app root_dir ) ),
-        $self->conf->get( qw( material json ) ),
+        $self->conf->get( qw( material json location ) ),
         $self->data->{settings}{material}{id} . '.json',
     ) );
 
@@ -151,8 +160,8 @@ sub ensure_material_json_exists ($self) {
     }
 }
 
-sub create_material_json_from_label ( $self, $label, $user ) {
-    my $label_obj       = QuizSage::Model::Label->new( user_id => $user->id );
+sub create_material_json_from_label ( $self, $label, $user = undef ) {
+    my $label_obj       = QuizSage::Model::Label->new( maybe user_id => $user->id );
     my $canonical_label = ( ref $label ) ? $label_obj->format($label) : $label_obj->canonicalize($label);
     my $material        = material_json( label => $canonical_label );
 
@@ -172,26 +181,109 @@ QuizSage::Model::Quiz
 =head1 SYNOPSIS
 
     use QuizSage::Model::Quiz;
+    use QuizSage::Model::User;
 
     my $quiz = QuizSage::Model::Quiz->new;
+
+    my $pickup_quiz = $quiz->pickup(
+        {},                                  # quiz settings
+        QuizSage::Model::User->new->load(1), # user (optional),
+    );
+
+    my $quiz_object = $quiz->latest_quiz_in_meet_room(
+        42, # meet ID
+        1,  # room number
+    );
+
+    $quiz->ensure_material_json_exists;
+
+    my $material_metadata = $quiz->create_material_json_from_label(
+        'Gal 1-2',                            # material label
+        QuizSage::Model::User->new->load(42), # user (optional)
+    );
 
 =head1 DESCRIPTION
 
 This class is the model for quiz objects.
 
+=head1 EXTENDED METHODS
+
+=head2 create, save, delete
+
+Extended from L<Omniframe::Role::Model>, these methods are appended with
+functionality that will, if the object is a quiz under a meet (versus a pickup
+quiz) message the scoreboard socket for the meet and room with the C<state> or
+C<settings> of the quiz.
+
 =head1 OBJECT METHODS
 
 =head2 freeze, thaw
 
+Likely not used directly, these method run data pre-save to and post-read from
+the database functions. C<freeze> will encode C<settings> C<thaw> will decode
+C<settings>.
+
 =head2 pickup
 
-=head2 settings
+This method requires a settings hashref and can accept an optional user object.
+Based on these inputs, the method will generate a pickup quiz and return that
+quiz object.
+
+    my $pickup_quiz = $quiz->pickup(
+        {},                                  # quiz settings
+        QuizSage::Model::User->new->load(1), # user (optional),
+    );
+
+Internally, given the quiz settings hashref, the method will:
+
+=over
+
+=item * Canonicalize the default C<bible> acronym and C<roster_data>, then save
+in the pickup quiz's settings
+
+=item * Parse the C<material_label>, append any missing bibles, and build a
+material JSON file
+
+=item * Build a distribution for the quiz using the "quiz"
+L<QuizSage::Role::JSApp> configuration
+
+=item * Cleanup settings data and save it to the user's settings under
+C<pickup_quiz> (if a user was provided as input)
+
+=back
+
+Any missing configuration values are pulled from quiz settings defaults from the
+C<quiz_defaults> configuration value.
 
 =head2 latest_quiz_in_meet_room
 
+This method requires a meet ID and a room number as input, and it will search
+for and return the quiz object of the last modified quiz matching the inputs
+(or undefined if no quiz is found).
+
+    my $quiz_object = $quiz->latest_quiz_in_meet_room(
+        42, # meet ID
+        1,  # room number
+    );
+
 =head2 ensure_material_json_exists
 
+This method will ensure the material JSON file for a quiz exists. If the file
+doesn't exist, it'll be created.
+
+    $quiz->ensure_material_json_exists;
+
 =head2 create_material_json_from_label
+
+Thie method will create a material JSON file from a material label (and
+optionally a loaded user object).
+
+    my $material_metadata = $quiz->create_material_json_from_label(
+        'Gal 1-2',                            # material label
+        QuizSage::Model::User->new->load(42), # user (optional)
+    );
+
+The hashref returned will contains keys for C<label>, C<description>, and C<id>.
 
 =head1 WITH ROLES
 

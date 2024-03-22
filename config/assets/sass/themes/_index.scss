@@ -1,0 +1,20 @@
+@use 'light';
+@use 'dark';
+@use 'sand';
+@use 'midnight';
+
+$themes: (
+    light   : light.$theme,
+    dark    : dark.$theme,
+    sand    : sand.$theme,
+    midnight: midnight.$theme,
+) !default;
+
+$styles: (
+    rounded: (
+        radius: 0.5em,
+    ),
+    square: (
+        radius: 0em,
+    ),
+) !default;

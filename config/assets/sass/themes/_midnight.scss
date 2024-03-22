@@ -1,0 +1,75 @@
+$theme: (
+    header_background: black,
+    header_text      : dimgray,
+
+    nav_icon_color        : royalblue,
+    nav_icon_color_hover  : deepskyblue,
+    nav_icon_color_active : red,
+    nav_icon_color_current: darkred,
+
+    dialog_error_background  : #300,
+    dialog_success_background: #020,
+
+    main_background: black,
+
+    text : dimgray,
+    lines: darkslategray,
+
+    selection_color     : darkgray,
+    selection_background: darkslategray,
+
+    a_link   : royalblue,
+    a_visited: steelblue,
+    a_hover  : deepskyblue,
+    a_active : salmon,
+    a_current: red,
+
+    legend_background          : black,
+    fieldset_background        : black,
+    form_elements_background   : black,
+
+    input_text_color           : dimgray,
+
+    button_background          : darkslategray,
+    button_text_color          : black,
+    button_selected            : slategray,
+
+    form_hover_border_color    : dimgray,
+    form_focus_background      : black,
+    form_focus_border_color    : dimgray,
+    form_disabled_background   : black,
+    form_disabled_color        : black,
+    form_active_background     : black,
+    form_active_color          : dimgray,
+    form_active_border_color   : darkgray,
+
+    radiobox_background        : black,
+    radiobox_checked_color     : black,
+    radiobox_checked_background: black,
+
+    material_buffer_text       : darkslategray,
+    material_ignored_text      : green,
+    material_special_text      : darkred,
+    material_details_text      : dimgray,
+    material_details_background: black,
+
+    search_is_current_query: #020,
+    search_match_text      : royalblue,
+
+    th_background                : #222,
+    th_text                      : dimgray,
+    td_background                : black,
+    td_text                      : dimgray,
+    blank_cell                   : #222,
+    td_selected_background       : #020,
+    td_selected_hover_background : #020,
+    td_clickable_hover_background: #224,
+
+    footer_background: #222,
+    footer_color     : darkgray,
+    footer_a_link    : royalblue,
+    footer_a_visited : steelblue,
+    footer_a_hover   : deepskyblue,
+    footer_a_active  : salmon,
+    footer_separator : dimgray,
+) !default;

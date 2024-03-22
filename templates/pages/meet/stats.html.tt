@@ -1,8 +1,6 @@
 [% page.title = 'Statistics' %]
 
-<h1>QuizSage: [% page.title %]</h1>
-
-<ul>
+<ul class="no_print">
     <li><a href="[% c.url_for('/')                             %]">Main Page</a></li>
     <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') ) %]">Meet Page</a></li>
 </ul>
@@ -27,7 +25,7 @@
                     [% IF rank.team %]
                         <td>[% rank.team %]</td>
                     [% ELSE %]
-                        <td style="background-color: #f0f0f0"></td>
+                        <td class="blank_cell"></td>
                     [% END %]
                     <td>
                         [% PROCESS st_ing.html.tt position = rank.position %]
@@ -43,7 +41,7 @@
     <h2>[% IF filter_tag %][% filter_tag %] [% END %][% type.ucfirst %] by Points Average</h2>
 
     [% IF stats.$type.size > 0 %]
-        <table>
+        <table class="stats">
             <thead>
                 <tr>
                     <th>Position</th>
@@ -104,13 +102,13 @@
                                 empty_columns = stats.meta.$type.quizzes_max - item.quizzes.size;
                                 FOR [ 1 .. empty_columns ];
                             %]
-                                <td style="background-color: #f0f0f0"></td>
+                                <td class="blank_cell"></td>
                             [% END %]
                         </tr>
                     [% END %]
                 [% END %]
             </tbody>
-        <table>
+        </table>
     [% ELSE %]
         <p>No statistics currently available.</p>
     [% END %]

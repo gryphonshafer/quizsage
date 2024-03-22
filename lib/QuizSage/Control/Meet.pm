@@ -11,6 +11,14 @@ sub passwd ($self) {
     if ( my $meet_passwd = $self->param('meet_passwd') ) {
         $self->stash('user')->data->{settings}{meet_passwd} = $self->bcrypt($meet_passwd);
         $self->stash('user')->save;
+
+        $self->flash(
+            message => {
+                type => 'success',
+                text => 'Successfully set your meet official password.',
+            }
+        );
+
         $self->redirect_to('/');
     }
 }
@@ -77,15 +85,37 @@ for "Meet" actions.
 
 =head2 passwd
 
+This controller handles the setting of a user's meet password (otherwise known
+as their quiz magistrate password).
+
 =head2 state
+
+This controller handles meet state display by setting the C<state> stash value
+based on L<QuizSage::Model::Meet>'s C<state>. If a user has a matching meet
+password, then the C<qm_auth> stash value will be true.
 
 =head2 roster
 
+This controller handles meet roster display by setting the C<roster> stash value
+based on L<QuizSage::Model::Meet>'s C<build.roster> data.
+
 =head2 distribution
+
+This controller handles meet distribution display by setting the C<build> stash
+value based on L<QuizSage::Model::Meet>'s C<build> data.
 
 =head2 stats
 
+This controller handles meet statistics display by setting the C<stats> stash
+value based on L<QuizSage::Model::Meet>'s C<stats>.
+
 =head2 board
+
+This controller handler powers the live scoreboard display. It requires
+C<meet_id> and C<room_number> parameters. Based on these, it'll either load the
+latest quiz for the meet and room into the stash as C<quiz> (if a web page is
+requested), return quiz data in JSON (if JSON is requested), or setup a web
+socket for the meet and room (if a web socket is requested).
 
 =head1 INHERITANCE
 

@@ -1,8 +1,6 @@
 [% page.title = 'Distribution' %]
 
-<h1>QuizSage: [% page.title %]</h1>
-
-<ul>
+<ul class="no_print">
     <li><a href="[% c.url_for('/')                             %]">Main Page</a></li>
     <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') ) %]">Meet Page</a></li>
 </ul>
@@ -13,12 +11,7 @@
     <h2>Bracket: [% bracket.name %]</h2>
 
     [% IF bracket.material %]
-        <div style="
-            background: white;
-            border    : solid 1px silver;
-            margin    : 1rem 0;
-            padding   : 0 0.25rem;
-        ">
+        <div class="info_box">
             <b>Material:</b> [% bracket.material.label %]
         </div>
     [% END %]
@@ -26,7 +19,7 @@
     [% FOR set IN bracket.sets %]
         <div>
             [% FOR quiz IN set.rooms %]
-                <div class="quiz_summary_box" style="width: 10rem; height: 28rem">
+                <div class="summary_box distribution_box">
                     <b>Quiz: [% quiz.name %]</b>
 
                     <table>

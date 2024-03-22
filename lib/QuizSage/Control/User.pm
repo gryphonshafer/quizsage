@@ -75,7 +75,7 @@ sub account ($self) {
 
         try {
             die 'Email, first and last name, and phone fields must be filled in'
-                if ( grep { length $params{$_} == 0 } @fields );
+                if ( grep { not $params{$_} or length $params{$_} == 0 } @fields );
 
             $self->stash('user')->data->{$_} = $params{$_} for (@fields);
             $self->stash('user')->data->{passwd} = $params{passwd} if ( $params{passwd} );
@@ -212,10 +212,7 @@ sub login ($self) {
         my $user = QuizSage::Model::User->new->login( map { $self->param($_) } qw( email passwd ) );
 
         $self->info( 'Login success for: ' . $user->data->{email} );
-        $self->session(
-            user_id           => $user->id,
-            last_request_time => time,
-        );
+        $self->session( user_id => $user->id );
     }
     catch ($e) {
         if ( $e =~ /human\-verification/i ) {
@@ -240,12 +237,7 @@ sub logout ($self) {
         'Logout requested from: ' .
         ( ( $self->stash('user') ) ? $self->stash('user')->data->{email} : '(Unlogged-in user)' )
     );
-    $self->session(
-        user_id           => undef,
-        last_request_time => undef,
-        quiz_password     => undef,
-    );
-
+    $self->session( user_id => undef );
     $self->redirect_to('/');
 }
 
@@ -288,7 +280,7 @@ QuizSage::Control::User
 =head1 DESCRIPTION
 
 This class is a subclass of L<Mojolicious::Controller> and provides handlers
-for "user" actions.
+for "User" actions.
 
 =head1 METHODS
 
@@ -298,23 +290,31 @@ Handler for user create and user profile edit.
 
 =head2 verify
 
-Handler for verify.
+Handler for user verify, which is when a user clicks on a verification link sent
+to them via email. This method handles that event, conducting verification via
+L<QuizSage::Model::User>'s C<verify>.
 
 =head2 forgot_password
 
-Handler for forgot password.
+Handler for forgot password form and email send. Will initially display a forgot
+password form, and when submitted, will send a C<reset_password> email to the
+user via L<QuizSage::Model::User>'s C<send_email>.
 
 =head2 reset_password
 
-Handler for reset password.
+Handler for reset password, which is when a user clicks on a reset password link
+sent to them via email. This controller calls out to L<QuizSage::Model::User>'s
+C<reset_password> for the reset logic.
 
 =head2 login
 
-Handler for login.
+Handler for login. If logic is successful, the session will be updated with a
+C<user_id> field and a C<last_request_time> field, which L<QuizSage::Control>
+uses for login/user setup per request as needed.
 
 =head2 logout
 
-Handler for logout.
+Handler for logout. Deletes the session value C<user_id>.
 
 =head1 INHERITANCE
 

@@ -12,6 +12,17 @@ sub startup ($self) {
         if ( my $user_id = $c->session('user_id') ) {
             try {
                 $c->stash( 'user' => QuizSage::Model::User->new->load($user_id) );
+
+                if (
+                    $c->stash('user') and
+                    $c->stash('user')->data and
+                    $c->stash('user')->data->{settings}
+                ) {
+                    for my $type ( qw( theme style ) ) {
+                        $c->session( $type => $c->stash('user')->data->{settings}{$type} )
+                            if ( $c->stash('user')->data->{settings}{$type} );
+                    }
+                }
             }
             catch ($e) {
                 delete $c->session->{'user_id'};
@@ -44,21 +55,28 @@ sub startup ($self) {
     );
 
     $users->any(
-        '/:practice_type' => [ practice_type => [ qw( quiz/pickup queries/setup ) ] ]
+        '/:practice_type' => [ practice_type => [ qw( quiz/pickup drill/setup ) ] ]
     )->to('quiz#practice');
 
     $users->any("/quiz/$_")->to("quiz#$_") for ( qw( teams build ) );
 
-    $users->any( $_->[0] => [ format => ['json'] ] )->to( $_->[1], format => undef ) for (
-        [ '/queries',       'quiz#queries'      ],
-        [ '/quiz/queries',  'quiz#quiz_queries' ],
-        [ '/quiz/:quiz_id', 'quiz#quiz'         ],
-    );
+    $users
+        ->any( $_->[0] => [ format => ['json'] ] )
+        ->to(
+            $_->[1],
+            format            => undef,
+            maybe action_type => $_->[2],
+        ) for (
+            [ '/drill',         'quiz#queries', 'drill'   ],
+            [ '/queries',       'quiz#queries', 'queries' ],
+            [ '/quiz/:quiz_id', 'quiz#quiz',    undef     ],
+        );
 
     $users->post('/quiz/save/:quiz_id'  )->to('quiz#save'  );
     $users->any ('/quiz/delete/:quiz_id')->to('quiz#delete');
 
     $all->any('/')->to('main#home');
+    $all->any( '/set/:type/:name' => [ type => [ qw( theme style ) ] ] )->to('main#set');
 
     $all->any("/user/$_")->to("user#$_") for ( qw( forgot_password login ) );
     $all->any('/user/create')->to( 'user#account', account_action_type => 'create' );
@@ -95,15 +113,21 @@ QuizSage::Control
 
 This class is a subclass of L<Omniframe::Control> and provides an override to
 the C<startup> method such that L<MojoX::ConfigAppStart> (along with its
-required C<mojo_app_lib> configuration key) is sufficient to startup a basic
-(and mostly useless) web application.
+required C<mojo_app_lib> configuration key) is sufficient to startup the web
+application.
 
 =head1 METHODS
 
 =head2 startup
 
-This is a basic, thin startup method for L<Mojolicious>. This method calls
-C<setup> and sets a universal route that renders a basic text message.
+This is the startup method for L<Mojolicious>. This method calls
+L<Omniframe::Control>'s C<setup> and sets all routes for the web application.
+
+All routes are given the page wrapper C<page.html.tt>, which itself is wrapped
+by Omniframe's C<wrapper.html.tt>.
+
+When a user logs in, their browser is given a C<user_id>, which (if valid) is
+loaded into a C<user> object for all pages.
 
 =head1 INHERITANCE
 

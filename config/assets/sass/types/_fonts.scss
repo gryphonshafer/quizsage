@@ -1,0 +1,18 @@
+$root_font_size: 16px !default;
+
+@use '../css/fonts/inter-tight';
+@use '../css/fonts/material-icons';
+
+:root {
+    font-size: $root_font_size;
+}
+
+body {
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 400;
+    line-height: 1.5em;
+}
+
+.material-symbols-outlined {
+    font-size: 2em;
+}

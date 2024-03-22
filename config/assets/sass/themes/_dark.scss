@@ -1,0 +1,75 @@
+$theme: (
+    header_background: black,
+    header_text      : lightgray,
+
+    nav_icon_color        : #007acc,
+    nav_icon_color_hover  : royalblue,
+    nav_icon_color_active : darkred,
+    nav_icon_color_current: darkred,
+
+    dialog_error_background  : #600,
+    dialog_success_background: #060,
+
+    main_background: #232327,
+
+    text : #ccc,
+    lines: #555,
+
+    selection_color     : khaki,
+    selection_background: royalblue,
+
+    a_link   : #007acc,
+    a_visited: #2579b3,
+    a_hover  : royalblue,
+    a_active : darkred,
+    a_current: darkred,
+
+    legend_background          : black,
+    fieldset_background        : #18181a,
+    form_elements_background   : #373737,
+
+    input_text_color           : white,
+
+    button_background          : dimgray,
+    button_text_color          : black,
+    button_selected            : khaki,
+
+    form_hover_border_color    : royalblue,
+    form_focus_background      : #373737,
+    form_focus_border_color    : blue,
+    form_disabled_background   : white,
+    form_disabled_color        : white,
+    form_active_background     : #373737,
+    form_active_color          : white,
+    form_active_border_color   : red,
+
+    radiobox_background        : white,
+    radiobox_checked_color     : white,
+    radiobox_checked_background: black,
+
+    material_buffer_text       : #999,
+    material_ignored_text      : green,
+    material_special_text      : red,
+    material_details_text      : black,
+    material_details_background: white,
+
+    search_is_current_query: #030,
+    search_match_text      : royalblue,
+
+    th_background                : #444,
+    th_text                      : white,
+    td_background                : black,
+    td_text                      : white,
+    blank_cell                   : #222,
+    td_selected_background       : #030,
+    td_selected_hover_background : #030,
+    td_clickable_hover_background: #336,
+
+    footer_background: darkslategray,
+    footer_color     : lightgray,
+    footer_a_link    : lightblue,
+    footer_a_visited : lightgray,
+    footer_a_hover   : lightblue,
+    footer_a_active  : darkred,
+    footer_separator : dimgray,
+) !default;

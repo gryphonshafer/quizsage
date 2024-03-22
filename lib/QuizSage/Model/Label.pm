@@ -82,14 +82,15 @@ sub parse ( $self, $input = $self->data->{label} ) {
     # Translations pulled out and canonicalized
     #     - Upper-cased, deduplicated, and sorted
     #     - If a single translation is both a primary and auxiliary, the auxiliary is dropped
+    if ( my @bible_acronyms = $self->bible_acronyms->@* ) {
+        my $bible_re = '\b(?<bible>(?:' . join( '|', @bible_acronyms ) . ')(?:(?:\s*\*+)|\b))';
 
-    my $bible_re = '\b(?<bible>(?:' . join( '|', $self->bible_acronyms->@* ) . ')(?:(?:\s*\*+)|\b))';
-
-    for my $input (@input) {
-        next if ( ref $input );
-        while ( $input =~ s/$bible_re//i ) {
-            my $bible = uc $+{bible};
-            $data->{bibles}{ ( $bible =~ s/\s*\*+// ) ? 'auxiliary' : 'primary' }{$bible} = 1;
+        for my $input (@input) {
+            next if ( ref $input );
+            while ( $input =~ s/$bible_re//i ) {
+                my $bible = uc $+{bible};
+                $data->{bibles}{ ( $bible =~ s/\s*\*+// ) ? 'auxiliary' : 'primary' }{$bible} = 1;
+            }
         }
     }
 

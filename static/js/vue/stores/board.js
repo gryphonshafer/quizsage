@@ -36,9 +36,17 @@ const state = {
 };
 
 function set_board_scale(teams) {
-    const columns_count = 3 + teams.length + teams.flatMap( team => team.quizzers ).length;
-    window.document.querySelector('div#board').style.fontSize =
-        'calc( ( 100vw - 40px ) / ' + ( columns_count * 3.5 ) + ' )';
+    const board = window.document.querySelector('div#board');
+
+    if (board) {
+        const columns_count = 3 + teams.length + teams.flatMap( team => team.quizzers ).length;
+        const count_adjust  = ( window.chrome ) ? 3.125 : 3.5;
+
+        board.style.fontSize   = 'calc( ( 100vw - 1em ) / ' + ( columns_count * count_adjust ) + ' )';
+        board.style.lineHeight = '1.5em';
+
+        if ( window.chrome ) board.classList.add('chrome');
+    }
 }
 
 set_board_scale( quiz_data.teams );

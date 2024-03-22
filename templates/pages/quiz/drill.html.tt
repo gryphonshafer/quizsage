@@ -1,0 +1,13 @@
+[%
+    page.title = 'Queries Drill',
+    page.vue   = 1;
+    page.demi  = 1;
+    page.pinia = 1;
+
+    js_app_config = quiz.js_app_config('drill');
+
+    page.js.importmap = js_app_config.importmap;
+    page.js.module    = page.js.module.merge( js_app_config.module );
+%]
+
+<div id="drill" v-cloak></div>

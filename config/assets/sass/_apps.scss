@@ -1,0 +1,359 @@
+@use 'theme';
+@use 'themes';
+
+div#quiz,
+div#drill,
+div#queries {
+    font-size  : 75%;
+    line-height: 1.5em;
+
+    p {
+        margin-top   : 0.25em;
+        margin-bottom: 0.25em;
+    }
+
+    button {
+        margin: 0.1em;
+
+        &.selected {
+            @include theme.apply( themes.$themes ) {
+                background: theme.get('button_selected');
+            }
+        }
+    }
+
+    div.query p.announcement span,
+    div.query p.prompt,
+    div.query p.reply,
+    div.material span.reference,
+    div.material p.content {
+        padding: 0 0.2em;
+        border : 1px solid;
+
+        @include theme.apply( themes.$themes ) {
+            background  : theme.get('form_elements_background');
+            border-color: theme.get('lines');
+        }
+
+        @include theme.apply( themes.$styles, 'style' ) {
+            border-radius: theme.get('radius');
+        }
+    }
+
+    div.query p.announcement {
+        margin-top: 0;
+    }
+
+    div.material span.reference {
+        padding: 0.125em 0.25em;
+    }
+
+    div.material span.buffer {
+        font-style: italic;
+        display   : block;
+
+        @include theme.apply( themes.$themes ) {
+            color: theme.get('material_buffer_text');
+        }
+    }
+    div.material span.buffer:first-child {
+        padding-bottom: 0.5em;
+    }
+    div.material span.buffer:not(:first-child) {
+        padding-top: 0.5em;
+    }
+
+    div.thesaurus {
+        display: inline;
+
+        ul {
+            margin: 0 0 0 1em;
+        }
+
+        li {
+            list-style : none;
+        }
+
+        & > ul {
+            margin: 0;
+        }
+
+        & > ul > li:not(:first-child) {
+            margin-top: 1em;
+        }
+
+        span {
+            &.word {
+                font-weight    : bold;
+                text-decoration: underline;
+            }
+
+            &.required {
+                @include theme.apply( themes.$themes ) {
+                    color: theme.get('material_required_text');
+                }
+            }
+
+            &.ignored {
+                font-style: italic;
+
+                @include theme.apply( themes.$themes ) {
+                    color: theme.get('material_ignored_text');
+                }
+            }
+
+            &.special {
+                @include theme.apply( themes.$themes ) {
+                    color: theme.get('material_special_text');
+                }
+            }
+
+            &.item {
+                position: relative;
+            }
+
+            &.item div.details {
+                font-style      : normal;
+                display         : none;
+                position        : absolute;
+                top             : 100%;
+                left            : 0;
+                z-index         : 1;
+                padding         : 0 0.2em;
+                transform       : translate( 0.5em, 0 );
+                width           : 30em;
+                max-height      : 20em;
+                overflow-y      : auto;
+                border          : 1px solid;
+
+                @include theme.apply( themes.$themes ) {
+                    color       : theme.get('material_details_text');
+                    background  : theme.get('material_details_background');
+                    border-color: theme.get('lines');
+                }
+
+                @include theme.apply( themes.$styles, 'style' ) {
+                    border-radius: theme.get('radius');
+                }
+            }
+
+            @media ( max-width: 48em ) {
+                &.item div.details {
+                    width: 16em;
+                }
+            }
+
+            &.item:hover div.details {
+                display: block;
+            }
+        }
+    }
+
+    div.timer {
+        float       : left;
+        margin-right: 1em;
+        position    : relative;
+
+        div.timer_display {
+            font-size       : 300%;
+            font-weight     : bold;
+            display         : inline-block;
+            padding         : 0.25em 0.125em;
+            margin-bottom   : 0.25em;
+            width           : 1.6em;
+            text-align      : center;
+            border          : 3px double;
+
+            @include theme.apply( themes.$themes ) {
+                background  : theme.get('form_elements_background');
+                border-color: theme.get('lines');
+            }
+
+            @include theme.apply( themes.$styles, 'style' ) {
+                border-radius: calc( theme.get('radius') / 2 );
+            }
+        }
+
+        div.button_group {
+            position: absolute;
+            top     : 4em;
+            left    : 0;
+        }
+    }
+
+    div.select_type,
+    div.results {
+        min-width: 45em;
+    }
+
+    div.search {
+        position: relative;
+
+        button {
+            margin-bottom: 0.25em;
+        }
+
+        label {
+            margin-left: 0.5em;
+        }
+
+        button.clear {
+            margin-left: 0.5em;
+        }
+
+        table {
+            position  : absolute;
+            width     : calc( 100vw - 2em );
+            margin-top: 0.5em;
+            z-index   : 30;
+
+            @include theme.apply( themes.$themes ) {
+                box-shadow: 0px 0px 0.25em 0.25em theme.get('main_background');
+            }
+
+            tr:first-of-type {
+                td {
+                    border-top: 1px solid;
+                    @include theme.apply( themes.$themes ) {
+                        border-color: theme.get('lines');
+                    }
+                }
+            }
+
+            tr td:nth-of-type(2) {
+                width: 6em;
+            }
+
+            tr.is_current_query td {
+                @include theme.apply( themes.$themes ) {
+                    background: theme.get('search_is_current_query');
+                }
+            }
+
+            span.match {
+                font-weight: bold;
+
+                @include theme.apply( themes.$themes ) {
+                    color: theme.get('search_match_text');
+                }
+            }
+        }
+    }
+
+    div.query {
+        width: 28.5em;
+
+        p.prompt {
+            height : 3em;
+            padding: 0.2em 0.5em;
+        }
+
+        p.reply {
+            height : 12em;
+            padding: 0.2em 0.5em;
+        }
+    }
+
+    div.material {
+        width: 28.5em;
+
+        span.reference {
+            margin-left : 0.5em;
+            margin-right: 0.5em;
+        }
+
+        p.content {
+            height : 16em;
+            padding: 0.2em 0.5em;
+        }
+    }
+
+    div.reading, div.operation {
+        display       : inline-block;
+        vertical-align: top;
+        margin-right  : 1em;
+        margin-bottom : 0.5em;
+    }
+}
+
+div#drill {
+    margin: 0;
+
+    div.query_type_buttons {
+        p {
+            margin: 0;
+        }
+
+        button {
+            display: block;
+            margin : 0.25em 0;
+        }
+    }
+}
+
+div#queries {
+    div.intro {
+        padding-bottom: 1em;
+        margin-bottom : 1em;
+        border-bottom : 3px double;
+
+        @include theme.apply( themes.$themes ) {
+            border-color: theme.get('lines');
+        }
+    }
+
+    div.query_id {
+        break-inside: avoid;
+    }
+
+    & > div.query_id ~ div.query_id {
+        margin-top : 1em;
+        padding-top: 1em;
+        border-top : 3px double;
+
+        @include theme.apply( themes.$themes ) {
+            border-color: theme.get('lines');
+        }
+    }
+
+    div.query {
+        display       : inline-block;
+        vertical-align: top;
+        margin-right  : 1em;
+    }
+
+    p.announcement span {
+        background-color: white;
+        padding         : 0 0.2em;
+        border          : 1px solid;
+
+        @include theme.apply( themes.$themes ) {
+            border-color: theme.get('lines');
+        }
+    }
+}
+
+@media ( max-width: 540px ) {
+    div#quiz div.operation {
+        div.select_type,
+        div.results,
+        div.quiz_control {
+            min-width  : auto;
+            margin-left: 7em;
+        }
+    }
+}
+
+@media ( max-width: 700px ) {
+    div#quiz table.board {
+        font-size  : 70%;
+        line-height: 1.5em;
+    }
+}
+
+@media ( max-width: 500px ) {
+    div#quiz table.board {
+        font-size  : 50%;
+        line-height: 1.5em;
+    }
+}

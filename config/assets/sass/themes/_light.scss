@@ -1,0 +1,75 @@
+$theme: (
+    header_background: white,
+    header_text      : darkslategray,
+
+    nav_icon_color        : darkblue,
+    nav_icon_color_hover  : blue,
+    nav_icon_color_active : darkred,
+    nav_icon_color_current: darkred,
+
+    dialog_error_background  : #fdd,
+    dialog_success_background: #dfd,
+
+    main_background: aliceblue,
+
+    text : black,
+    lines: silver,
+
+    selection_color     : yellow,
+    selection_background: dodgerblue,
+
+    a_link   : blue,
+    a_visited: darkblue,
+    a_hover  : blue,
+    a_active : darkred,
+    a_current: darkred,
+
+    legend_background          : white,
+    fieldset_background        : whitesmoke,
+    form_elements_background   : white,
+
+    input_text_color           : black,
+
+    button_background          : gainsboro,
+    button_text_color          : black,
+    button_selected            : yellow,
+
+    form_hover_border_color    : blue,
+    form_focus_background      : lightyellow,
+    form_focus_border_color    : darkblue,
+    form_disabled_background   : white,
+    form_disabled_color        : white,
+    form_active_background     : lightyellow,
+    form_active_color          : blue,
+    form_active_border_color   : red,
+
+    radiobox_background        : white,
+    radiobox_checked_color     : white,
+    radiobox_checked_background: black,
+
+    material_buffer_text       : #999,
+    material_ignored_text      : green,
+    material_special_text      : red,
+    material_details_text      : black,
+    material_details_background: white,
+
+    search_is_current_query: #cfc,
+    search_match_text      : blue,
+
+    th_background                : lightgray,
+    th_text                      : black,
+    td_background                : white,
+    td_text                      : black,
+    blank_cell                   : whitesmoke,
+    td_selected_background       : #cfc,
+    td_selected_hover_background : #cfc,
+    td_clickable_hover_background: #cdf,
+
+    footer_background: darkslategray,
+    footer_color     : lightgray,
+    footer_a_link    : lightblue,
+    footer_a_visited : lightgray,
+    footer_a_hover   : lightblue,
+    footer_a_active  : darkred,
+    footer_separator : dimgray,
+) !default;
