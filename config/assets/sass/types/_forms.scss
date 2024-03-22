@@ -28,6 +28,10 @@ form {
     }
 }
 
+button {
+    line-height: 1em;
+}
+
 select,
 textarea,
 button,
@@ -66,18 +70,12 @@ input:hover:not([disabled]) {
     }
 }
 
-select:focus, textarea:focus, button:focus, input:focus {
-    @include theme.apply( themes.$themes ) {
-        border-color: theme.get('form_focus_border_color');
-    }
-}
-
 select:focus,
 textarea:focus,
-button:focus,
-input:focus:not([type='radio']):not([type='checkbox']) {
+input:focus:not([type='radio']):not([type='checkbox']):not([type='submit']):not([type='reset']) {
     @include theme.apply( themes.$themes ) {
-        background: theme.get('form_focus_background');
+        border-color: theme.get('form_focus_border_color');
+        background  : theme.get('form_focus_background');
     }
 }
 

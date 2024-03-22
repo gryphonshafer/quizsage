@@ -10,10 +10,13 @@ $theme: (
     dialog_error_background  : #fdd,
     dialog_success_background: #dfd,
 
-    main_background: rgba( 236, 246, 254, 1 ),
+    main_background: aliceblue,
 
-    text : #18191f,
-    lines: lightgray,
+    text : black,
+    lines: silver,
+
+    selection_color     : yellow,
+    selection_background: dodgerblue,
 
     a_link   : blue,
     a_visited: darkblue,
@@ -22,23 +25,23 @@ $theme: (
     a_current: darkred,
 
     legend_background          : white,
-    fieldset_background        : rgba( 255, 255, 255, 0.25 ),
+    fieldset_background        : whitesmoke,
     form_elements_background   : white,
 
     input_text_color           : black,
 
-    button_background          : silver,
+    button_background          : gainsboro,
     button_text_color          : black,
-    button_selected            : lightgreen,
+    button_selected            : yellow,
 
-    form_hover_border_color    : lightgray,
-    form_focus_background      : #fffff0,
-    form_focus_border_color    : yellow,
+    form_hover_border_color    : blue,
+    form_focus_background      : lightyellow,
+    form_focus_border_color    : darkblue,
     form_disabled_background   : white,
     form_disabled_color        : white,
-    form_active_background     : white,
-    form_active_color          : black,
-    form_active_border_color   : silver,
+    form_active_background     : lightyellow,
+    form_active_color          : blue,
+    form_active_border_color   : red,
 
     radiobox_background        : white,
     radiobox_checked_color     : white,
@@ -50,7 +53,7 @@ $theme: (
     material_details_text      : black,
     material_details_background: white,
 
-    search_is_current_query: lightgreen,
+    search_is_current_query: #cfc,
     search_match_text      : blue,
 
     th_background                : lightgray,
@@ -58,9 +61,9 @@ $theme: (
     td_background                : white,
     td_text                      : black,
     blank_cell                   : #f0f0f0,
-    td_selected_backbround       : lightgreen,
-    td_selected_hover_background : green,
-    td_clickable_hover_backbround: darkgreen,
+    td_selected_background       : #cfc,
+    td_selected_hover_background : #cfc,
+    td_clickable_hover_background: #cdf,
 
     footer_background: #0b0d17,
     footer_color     : lightgray,

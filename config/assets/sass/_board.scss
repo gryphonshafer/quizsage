@@ -20,14 +20,14 @@ table.board {
 
         &:hover {
             @include theme.apply( themes.$themes ) {
-                background: theme.get('td_clickable_hover_backbround');
+                background: theme.get('td_clickable_hover_background');
             }
         }
     }
 
     tr.selected td {
         @include theme.apply( themes.$themes ) {
-            background: theme.get('td_selected_backbround');
+            background: theme.get('td_selected_background');
         }
     }
 

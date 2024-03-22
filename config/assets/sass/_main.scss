@@ -6,6 +6,13 @@ body {
         color: theme.get('text');
     }
 
+    ::selection {
+        @include theme.apply( themes.$themes ) {
+            color     : theme.get('selection_color');
+            background: theme.get('selection_background');
+        }
+    }
+
     a:link {
         @include theme.apply( themes.$themes ) {
             color: theme.get('a_link');

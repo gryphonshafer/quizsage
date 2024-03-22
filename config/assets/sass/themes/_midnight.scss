@@ -15,6 +15,9 @@ $theme: (
     text : darkgray,
     lines: darkslategray,
 
+    selection_color     : yellow,
+    selection_background: dodgerblue,
+
     a_link   : royalblue,
     a_visited: steelblue,
     a_hover  : deepskyblue,
@@ -58,9 +61,9 @@ $theme: (
     td_background                : #222,
     td_text                      : darkgray,
     blank_cell                   : #f0f0f0,
-    td_selected_backbround       : lightgreen,
+    td_selected_background       : lightgreen,
     td_selected_hover_background : green,
-    td_clickable_hover_backbround: lightgreen,
+    td_clickable_hover_background: lightgreen,
 
     footer_background: #222,
     footer_color     : darkgray,
