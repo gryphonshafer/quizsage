@@ -202,13 +202,14 @@ div#queries {
         }
 
         table {
-            position  : absolute;
-            width     : calc( 100vw - 2em );
-            margin-top: 0.5em;
-            z-index   : 30;
+            position      : absolute;
+            width         : calc( 100vw - 4em );
+            margin-top    : 0.25em;
+            padding-bottom: 2em;
+            z-index       : 30;
 
             @include theme.apply( themes.$themes ) {
-                box-shadow: 0px 0px 0.25em 0.25em theme.get('main_background');
+                box-shadow: 0 4em 0 4em theme.get('main_background');
             }
 
             tr:first-of-type {
