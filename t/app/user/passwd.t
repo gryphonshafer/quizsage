@@ -15,7 +15,14 @@ my $user  = QuizSage::Model::User->new->create({
 });
 $user->save({ active => 1 });
 
+mojo->app->hook( before_routes => sub ($c) { $c->session( captcha => 1234567 ) } );
+
 mojo->post_ok( '/user/forgot_password' => form => { email => $email } )
+    ->status_is(200)
+    ->attr_is( 'dialog#message', 'class', 'error' )
+    ->text_like( 'dialog#message', qr|captcha sequence provided does not match| );
+
+mojo->post_ok( '/user/forgot_password' => form => { email => $email, captcha => 1234567 } )
     ->status_is(302)
     ->header_is( location => url('/') )
     ->get_ok('/')
@@ -23,7 +30,7 @@ mojo->post_ok( '/user/forgot_password' => form => { email => $email } )
     ->attr_is( 'dialog#message', 'class', 'success' )
     ->text_like( 'dialog#message', qr|Sent email to:| );
 
-mojo->post_ok( '/user/forgot_password' => form => { email => 'not_exists_' . $email } )
+mojo->post_ok( '/user/forgot_password' => form => { email => 'not_exists_' . $email, captcha => 1234567 } )
     ->status_is(200)
     ->attr_is( 'dialog#message', 'class', 'error' )
     ->text_like( 'dialog#message', qr|Failed to load user| );

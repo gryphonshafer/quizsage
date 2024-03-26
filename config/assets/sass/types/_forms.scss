@@ -32,6 +32,10 @@ button {
     line-height: 1em;
 }
 
+input:focus:not([type='radio']):not([type='checkbox']):not([type='submit']):not([type='reset']) {
+    width: 13em;
+}
+
 select,
 textarea,
 button,

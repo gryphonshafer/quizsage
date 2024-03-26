@@ -1,0 +1,5 @@
+<img src="[% c.url_for('/captcha') %]" alt="Captcha Image" class="captcha">
+<label>
+    Captcha:
+    <input type="text" name="captcha" value="[% captcha %]" placeholder="Captcha">
+</label>

@@ -2,7 +2,7 @@
 
 <ul><li><a href="[% c.url_for('/') %]">Main Page</a></li></ul>
 
-<form method="post"[% IF account_action_type == 'create' %] id="create_new_user_form"[% END %]>
+<form method="post">
     <fieldset>
         <legend>[% page.title %]</legend>
 
@@ -32,29 +32,15 @@
                 autocomplete="tel">
         </label>
 
-        [% IF account_action_type == 'create' %]
-            [% g_recaptcha_cb = BLOCK %]
-                function g_recaptcha_cb(token) {
-                    document.getElementById('create_new_user_form').submit();
-                }
-            [% END %]
-            [%
-                recaptcha_site_key = c.app.conf.get( 'recaptcha', 'site_key' );
-                IF recaptcha_site_key;
-                    page.js.defer.push('https://www.google.com/recaptcha/api.js');
-                    page.js.inline.push(g_recaptcha_cb);
-                END;
-            %]
-            <input type="submit" value="Create New User"
-                [% IF recaptcha_site_key %]
-                    class="g-recaptcha"
-                    data-sitekey="[% recaptcha_site_key %]"
-                    data-callback="g_recaptcha_cb"
-                    data-action="create_new_user"
-                [% END %]
-            >
-        [% ELSE %]
-            <input type="submit" value="Save User Profile">
-        [% END %]
+        [%
+            IF account_action_type == 'create';
+                PROCESS captcha.html.tt;
+            END;
+        %]
+
+        <input type="submit"
+            value="[%
+                IF account_action_type == 'create' %]Create New User[% ELSE %]Save User Profile[% END
+            %]">
     </fieldset>
 </form>

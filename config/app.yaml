@@ -23,6 +23,19 @@ default:
         from: QuizSage <example@example.org>
     bcrypt:
         salt: 63MWT0N6PQlNU43R
+    captcha:
+        width      : 216
+        height     : 50
+        size       : 20
+        ttf        : static/fonts/inter-tight/inter-tight-v*-latin_latin-ext-700.ttf
+        rotation   : 7
+        x          : 13
+        y_base     : 35
+        y_rotate   : 100
+        noise      : 1000
+        background : [ 255, 255, 255 ]
+        text_color : [ 'rand(128)', 'rand(128)', 'rand(128)' ]
+        noise_color: [ 'rand(128) + 128', 'rand(128) + 128', 'rand(128) + 128' ]
     material:
         obml: local/obml
         json:

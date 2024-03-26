@@ -20,6 +20,19 @@
     }
 }
 
+img.captcha {
+    border: solid 1px;
+    width : 13.5em;
+
+    @include theme.apply( themes.$themes ) {
+        border-color: theme.get('lines');
+    }
+
+    @include theme.apply( themes.$styles, 'style' ) {
+        border-radius: theme.get('radius');
+    }
+}
+
 fieldset.roster {
     margin-right: 1em;
 
@@ -77,7 +90,7 @@ div.info_box {
     }
 
     @include theme.apply( themes.$styles, 'style' ) {
-        border-radius: calc( theme.get('radius') * 1 );
+        border-radius: theme.get('radius');
     }
 }
 

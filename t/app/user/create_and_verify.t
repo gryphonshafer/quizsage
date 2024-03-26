@@ -6,10 +6,26 @@ setup;
 
 mojo->get_ok('/user/create')
     ->status_is(200)
-    ->attr_is( 'form#create_new_user_form', 'method', 'post' );
+    ->attr_is( 'form', 'method', 'post' );
 
 my $email  = stuff('email');
 my $passwd = 'terrible_but_long_enough_password';
+
+mojo->app->hook( before_routes => sub ($c) { $c->session( captcha => 1234567 ) } );
+
+mojo->post_ok(
+        '/user/create',
+        form => {
+            email      => $email,
+            passwd     => $passwd,
+            first_name => 'First Name',
+            last_name  => 'Last Name',
+            phone      => '1234567890',
+        },
+    )
+    ->status_is(200)
+    ->attr_is( 'dialog#message', 'class', 'error' )
+    ->text_like( 'dialog#message', qr|captcha sequence provided does not match| );
 
 mojo->post_ok(
         '/user/create',
@@ -19,6 +35,7 @@ mojo->post_ok(
             first_name => 'First Name',
             last_name  => 'Last Name',
             phone      => '123',
+            captcha    => 1234567,
         },
     )
     ->status_is(200)
@@ -33,6 +50,7 @@ mojo->post_ok(
             first_name => 'First Name',
             last_name  => 'Last Name',
             phone      => '1234567890',
+            captcha    => 1234567,
         },
     )
     ->status_is(302)

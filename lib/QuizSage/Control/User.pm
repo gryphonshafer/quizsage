@@ -13,7 +13,7 @@ sub account ($self) {
             die 'Email, password, first and last name, and phone fields must be filled in'
                 if ( grep { length $params{$_} == 0 } @fields );
 
-            $self->_recaptcha;
+            $self->_captcha;
 
             unless ( $self->stash('user') ) {
                 my $user = QuizSage::Model::User->new->create({ map { $_ => $params{$_} } @fields });
@@ -46,9 +46,8 @@ sub account ($self) {
             }
         }
         catch ($e) {
-            if ( $e =~ /human\-verification/i ) {
+            if ( $e =~ /\bcaptcha\b/i ) {
                 $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
-                $self->info('reCaptcha score too low');
                 $self->stash( message => $e );
             }
             else {
@@ -125,7 +124,7 @@ sub verify ($self) {
 sub forgot_password ($self) {
     if ( my $email = $self->param('email') ) {
         try {
-            $self->_recaptcha;
+            $self->_captcha;
 
             my $user = QuizSage::Model::User->new->load( { email => $email }, 1 );
             if ( $user->data->{active} ) {
@@ -158,15 +157,8 @@ sub forgot_password ($self) {
             $self->redirect_to('/');
         }
         catch ($e) {
-            if ( $e =~ /human\-verification/i ) {
-                $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
-                $self->info('reCaptcha score too low');
-                $self->stash( message => $e );
-            }
-            else {
-                $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
-                $self->stash( message => $e );
-            }
+            $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
+            $self->stash( message => $e );
         }
     }
 }
@@ -207,7 +199,7 @@ sub reset_password ($self) {
 
 sub login ($self) {
     try {
-        $self->_recaptcha;
+        $self->_captcha;
 
         my $user = QuizSage::Model::User->new->login( map { $self->param($_) } qw( email passwd ) );
 
@@ -215,9 +207,8 @@ sub login ($self) {
         $self->session( user_id => $user->id );
     }
     catch ($e) {
-        if ( $e =~ /human\-verification/i ) {
+        if ( $e =~ /\bcaptcha\b/i ) {
             $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
-            $self->info('reCaptcha score too low');
             $self->flash( message => $e );
         }
         else {
@@ -241,34 +232,23 @@ sub logout ($self) {
     $self->redirect_to('/');
 }
 
-sub _recaptcha ($self) {
-    if ( my $recaptcha_secret_key = $self->app->conf->get( qw( recaptcha secret_key ) ) ) {
-        my $site_verify = $self->ua->post(
-            'https://www.google.com/recaptcha/api/siteverify',
-            form => {
-                secret   => $recaptcha_secret_key,
-                response => $self->param('g-recaptcha-response'),
-            },
-        )->result->json;
+{
+    ( my $contact_email = conf->get( qw( email from ) ) )
+        =~ s/(<|>)/ ( $1 eq '<' ) ? '&lt;' : '&gt;' /eg;
 
-        $self->info( 'Recaptcha site verify score: ' . ( $site_verify->{score} // '>>undef<<' ) );
-
-        ( my $contact_email = conf->get( qw( email from ) ) )
-            =~ s/(<|>)/ ( $1 eq '<' ) ? '&lt;' : '&gt;' /eg;
+    sub _captcha ($self) {
+        my $captcha = $self->param('captcha') // '';
+        $captcha =~ s/\D//g;
 
         die join( ' ',
-            'Human-verification score too low.',
-            'This may be due to a page load issue with your browser of choice.',
-            'Try reloading the page, waiting for a minute, then resubmitting the form.',
+            'The captcha sequence provided does not match the captcha sequence in the captcha image.',
+            'Please try again.',
             'If the problem persists, email <b>' . $contact_email . '</b> for help.',
-        ) unless (
-            $site_verify and
-            $site_verify->{score} and
-            $site_verify->{score} > $self->app->conf->get( qw( recaptcha min_score ) ) // 0.5
-        );
-    }
+        ) unless ( $captcha and $self->session('captcha') and $captcha eq $self->session('captcha') );
 
-    return;
+        delete $self->session->{captcha};
+        return;
+    }
 }
 
 1;

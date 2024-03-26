@@ -1,7 +1,7 @@
 [% UNLESS user %]
     <ul><li><a href="[% c.url_for('/user/create') %]">Create New User</a></li></ul>
 
-    <form method="post" action="[% c.url_for('/user/login') %]" id="login_form">
+    <form method="post" action="[% c.url_for('/user/login') %]">
         <fieldset>
             <legend>Login</legend>
 
@@ -14,27 +14,9 @@
                 <input type="password" name="passwd" value="[% passwd %]" placeholder="Password">
             </label>
 
-            [% g_recaptcha_cb = BLOCK %]
-                function g_recaptcha_cb(token) {
-                    document.getElementById('login_form').submit();
-                }
-            [% END %]
-            [%
-                recaptcha_site_key = c.app.conf.get( 'recaptcha', 'site_key' );
-                IF recaptcha_site_key;
-                    page.js.defer.push('https://www.google.com/recaptcha/api.js');
-                    page.js.inline.push(g_recaptcha_cb);
-                END;
-            %]
+            [% PROCESS captcha.html.tt %]
 
-            <input type="submit" value="Login"
-                [% IF recaptcha_site_key %]
-                    class="g-recaptcha"
-                    data-sitekey="[% recaptcha_site_key %]"
-                    data-callback="g_recaptcha_cb"
-                    data-action="login"
-                [% END %]
-            >
+            <input type="submit" value="Login">
         </fieldset>
     </form>
 

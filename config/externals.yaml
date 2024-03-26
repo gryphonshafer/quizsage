@@ -16,6 +16,7 @@ google_fonts:
             formats:
                 - woff2
                 - woff
+                - ttf
     icons:
         types:
             - 'Material Symbols Outlined'

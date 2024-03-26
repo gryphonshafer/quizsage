@@ -77,6 +77,7 @@ sub startup ($self) {
 
     $all->any('/')->to('main#home');
     $all->any( '/set/:type/:name' => [ type => [ qw( theme style ) ] ] )->to('main#set');
+    $all->any('/captcha')->to('main#captcha');
 
     $all->any("/user/$_")->to("user#$_") for ( qw( forgot_password login ) );
     $all->any('/user/create')->to( 'user#account', account_action_type => 'create' );
