@@ -55,6 +55,7 @@ export default Pinia.defineStore( 'store', {
             add_verse       : false,
             durations       : { quizzer_response: 40 },
             hidden_solution : true,
+            is_drill        : true,
         };
     },
 

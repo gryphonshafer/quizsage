@@ -95,8 +95,9 @@ export default Pinia.defineStore( 'store', {
                     synonymous_verbatim_open_book: '',
                 },
             },
-            eligible_teams  : get_eligible_teams( quiz.state.teams ),
-            hidden_solution : ( ( miscellaneous.meet_id && quiz.board_row() ) ? true : false ),
+            eligible_teams : get_eligible_teams( quiz.state.teams ),
+            hidden_solution: ( ( miscellaneous.meet_id && quiz.board_row() ) ? true : false ),
+            is_drill       : false,
         };
     },
 

@@ -9,7 +9,8 @@ export default {
 
     computed: {
         ...Pinia.mapState( store, [
-            'current', 'eligible_teams', 'is_quiz_done', 'last_event_if_not_viewed', 'hidden_solution',
+            'current', 'eligible_teams', 'is_quiz_done', 'last_event_if_not_viewed',
+            'hidden_solution', 'is_drill',
         ] ),
     },
 

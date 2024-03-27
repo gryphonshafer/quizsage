@@ -23,7 +23,7 @@
     <p
         :class="{
             prompt: true,
-            hidden: hidden_solution,
+            hidden: (is_drill) ? false : hidden_solution,
         }"
     >
         {{ current.query.pre_prompt }}
