@@ -206,7 +206,10 @@ sub stats ($self) {
                 } @$quizzes_data;
 
                 if ($quiz) {
-                    my ($team) = grep { $rank->{position} == $_->{score}{position} } $quiz->{state}{teams}->@*;
+                    $rank->{quiz_id} = $quiz->{quiz_id};
+                    my ($team) =
+                        grep { $rank->{position} == $_->{score}{position} }
+                        $quiz->{state}{teams}->@*;
                     $rank->{team} = $team->{name} if ($team);
                 }
 
@@ -223,6 +226,7 @@ sub stats ($self) {
             if ( $quiz_data and $quiz_data->{state} ) {
                 for my $team ( $quiz_data->{state}{teams}->@* ) {
                     push( @{ $stats->{teams}{ $team->{name} } }, {
+                        quiz_id  => $quiz_data->{quiz_id},
                         bracket  => $bracket->{name},
                         name     => $quiz->{name},
                         weight   => $quiz->{weight} // $bracket->{weight} // 1,
@@ -232,6 +236,7 @@ sub stats ($self) {
 
                     for my $quizzer ( $team->{quizzers}->@* ) {
                         push( @{ $stats->{quizzers}{ $quizzer->{name} } }, {
+                            quiz_id => $quiz_data->{quiz_id},
                             bracket => $bracket->{name},
                             name    => $quiz->{name},
                             weight  => $quiz->{weight} // $bracket->{weight} // 1,

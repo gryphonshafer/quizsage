@@ -116,17 +116,17 @@ sub teams ($self) {
 sub build ($self) {
     my $meet = QuizSage::Model::Meet->new->load( $self->param('meet') );
 
-    unless ( $meet and $self->stash('user')->qm_auth($meet) ) {
-        $self->flash( message => 'Unauthorized to build a quiz for this meet' );
-        return $self->redirect_to( '/meet/' . $self->param('meet') );
-    }
-
     my $quizzes = QuizSage::Model::Quiz->new->every_data({
         meet_id => $meet->id,
         bracket => $self->param('bracket'),
         name    => $self->param('quiz'),
     });
     return $self->redirect_to( '/quiz/' . $quizzes->[0]{quiz_id} ) if ( $quizzes and @$quizzes );
+
+    unless ( $meet and $self->stash('user')->qm_auth($meet) ) {
+        $self->flash( message => 'Unauthorized to build a quiz for this meet' );
+        return $self->redirect_to( '/meet/' . $self->param('meet') );
+    }
 
     my $settings = $meet->quiz_settings( $self->param('bracket'), $self->param('quiz') );
     unless ($settings) {

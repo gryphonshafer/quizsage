@@ -29,7 +29,10 @@
                     [% END %]
                     <td>
                         [% PROCESS st_ing.html.tt position = rank.position %]
-                        in [% rank.quiz %]
+                        in
+                        [% IF rank.quiz_id %]<a href="[% c.url_for( '/quiz/' _ rank.quiz_id ) %]">[% END %]
+                            [% rank.quiz %]
+                        [% IF rank.quiz_id %]</a>[% END %]
                     </td>
                 </tr>
             [% END %]
@@ -90,12 +93,19 @@
                                 <td>
                                     [% quiz.points %] pts. <i>(at [% quiz.weight %])</i>
                                     <br>
+
                                     [% IF quiz.position %]
                                         [% PROCESS st_ing.html.tt position = quiz.position %]
                                     [% END %]
-                                    [%
-                                        ( quiz.bracket.length > 6 ) ? quiz.bracket.substr( 0, 6 ) _ '.' : quiz.bracket
-                                    %] [% quiz.name %]
+
+                                    [% IF quiz.quiz_id %]<a
+                                        href="[% c.url_for( '/quiz/' _ quiz.quiz_id ) %]">[% END %]
+                                        [%
+                                            ( quiz.bracket.length > 6 )
+                                                ? quiz.bracket.substr( 0, 6 ) _ '.'
+                                                : quiz.bracket
+                                        %] [% quiz.name %]
+                                    [% IF quiz.quiz_id %]</a>[% END %]
                                 </td>
                             [% END %]
                             [%
