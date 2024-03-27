@@ -11,6 +11,15 @@ mojo->get_ok('/user/create')
 my $email  = stuff('email');
 my $passwd = 'terrible_but_long_enough_password';
 
+my $captcha_sequence;
+mojo->app->hook( after_dispatch => sub ($c) { $captcha_sequence = $c->session('captcha') } );
+
+mojo->get_ok('/captcha')
+    ->status_is(200)
+    ->header_is( 'content-type' => 'image/png' );
+
+like( $captcha_sequence, qr/^\d{7}$/, 'captcha sequence is 7 digits' );
+
 mojo->app->hook( before_routes => sub ($c) { $c->session( captcha => 1234567 ) } );
 
 mojo->post_ok(

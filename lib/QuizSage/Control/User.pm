@@ -199,8 +199,6 @@ sub reset_password ($self) {
 
 sub login ($self) {
     try {
-        $self->_captcha;
-
         my $user = QuizSage::Model::User->new->login( map { $self->param($_) } qw( email passwd ) );
 
         $self->info( 'Login success for: ' . $user->data->{email} );

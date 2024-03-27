@@ -17,28 +17,11 @@ my $user = QuizSage::Model::User->new->create({
 });
 $user->save({ active => 1 });
 
-mojo->app->hook( before_routes => sub ($c) { $c->session( captcha => 1234567 ) } );
-
 mojo->post_ok(
         '/user/login',
         form => {
             email  => $email,
             passwd => $passwd,
-        },
-    )
-    ->status_is(302)
-    ->header_is( location => url('/') )
-    ->get_ok('/')
-    ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'error' )
-    ->text_like( 'dialog#message', qr|captcha sequence provided does not match| );
-
-mojo->post_ok(
-        '/user/login',
-        form => {
-            email   => $email,
-            passwd  => $passwd,
-            captcha => 1234567,
         },
     )
     ->status_is(302)
@@ -57,7 +40,6 @@ mojo->post_ok(
             first_name => 'New First Name',
             last_name  => 'New Last Name',
             phone      => '4567891230',
-            captcha    => 1234567,
         },
     )
     ->status_is(302)
@@ -84,8 +66,7 @@ is(
 
 mojo->post_ok(
         '/user/profile' => form => {
-            passwd  => 'short',
-            captcha => 1234567,
+            passwd => 'short',
         },
     )
     ->status_is(200)

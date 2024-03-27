@@ -14,8 +14,6 @@
                 <input type="password" name="passwd" value="[% passwd %]" placeholder="Password">
             </label>
 
-            [% PROCESS captcha.html.tt %]
-
             <input type="submit" value="Login">
         </fieldset>
     </form>

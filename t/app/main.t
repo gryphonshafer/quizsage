@@ -27,23 +27,11 @@ mojo->get_ok('/')
     ->attr_is( 'form', 'method', 'post' )
     ->attr_is( 'form', 'action', url('/user/login') );
 
-my $captcha_sequence;
-mojo->app->hook( after_dispatch => sub ($c) { $captcha_sequence = $c->session('captcha') } );
-
-mojo->get_ok('/captcha')
-    ->status_is(200)
-    ->header_is( 'content-type' => 'image/png' );
-
-like( $captcha_sequence, qr/^\d{7}$/, 'captcha sequence is 7 digits' );
-
-mojo->app->hook( before_routes => sub ($c) { $c->session( captcha => 1234567 ) } );
-
 mojo->post_ok(
         '/user/login',
         form => {
-            email   => $email,
-            passwd  => $passwd,
-            captcha => '12-345-67',
+            email  => $email,
+            passwd => $passwd,
         },
     )
     ->status_is(302)
@@ -62,9 +50,8 @@ mojo->get_ok('/user/logout')
 mojo->post_ok(
         '/user/login',
         form => {
-            email   => $email,
-            passwd  => 'incorrect_passwd',
-            captcha => '12-345-67',
+            email  => $email,
+            passwd => 'incorrect_passwd',
         },
     )
     ->status_is(302)
@@ -73,21 +60,6 @@ mojo->post_ok(
     ->status_is(200)
     ->attr_is( 'dialog#message', 'class', 'error' )
     ->text_like( 'dialog#message', qr|Login failed| );
-
-mojo->post_ok(
-        '/user/login',
-        form => {
-            email   => $email,
-            passwd  => 'incorrect_passwd',
-            captcha => '1138',
-        },
-    )
-    ->status_is(302)
-    ->header_is( location => url('/') )
-    ->get_ok('/')
-    ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'error' )
-    ->text_like( 'dialog#message', qr|captcha sequence provided does not match| );
 
 mojo->get_ok('/set/theme/theme_name')
     ->status_is(302)
