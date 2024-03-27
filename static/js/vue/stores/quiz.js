@@ -96,7 +96,7 @@ export default Pinia.defineStore( 'store', {
                 },
             },
             eligible_teams  : get_eligible_teams( quiz.state.teams ),
-            hidden_solution : true,
+            hidden_solution : ( ( miscellaneous.meet_id && quiz.board_row() ) ? true : false ),
         };
     },
 
