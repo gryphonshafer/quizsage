@@ -17,6 +17,7 @@ jobs:
             curl -s https://api.github.com/repos/sass/dart-sass/releases/latest | \
             grep browser_download_url | grep linux-x64.tar.gz | perl -ne '/:\s+"([^"]+)"/; print "$1\n"'
           ) | tar -xvpz --strip-components=1 --exclude="LICENSE"
+      - run: apt-get install -y libgd3 libgd-dev
       - uses: perl-actions/install-with-cpanm@v1
         env:
           PERL_CPANM_OPT: --from https://cpan.metacpan.org/ --notest --force --skip-satisfied
