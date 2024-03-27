@@ -21,7 +21,12 @@ export default {
         ...Pinia.mapActions( store, ['replace_query'] ),
 
         reset_replace_query() {
-            if ( this.$root.$refs.controls ) this.$root.$refs.controls.trigger_event('reset');
+            if ( this.$root.$refs.controls ) {
+                this.$root.$refs.controls.trigger_event('reset');
+            }
+            else if ( this.$root.$refs.timer ) {
+                this.$root.$refs.timer.reset();
+            }
             this.replace_query();
         },
     },

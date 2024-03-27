@@ -149,35 +149,23 @@ div#queries {
         }
     }
 
-    div.timer {
-        float       : left;
-        margin-right: 1em;
-        position    : relative;
+    div.timer div.timer_display {
+        font-size       : 300%;
+        font-weight     : bold;
+        display         : inline-block;
+        padding         : 0.25em 0.125em;
+        margin-bottom   : 0.25em;
+        width           : 1.6em;
+        text-align      : center;
+        border          : 3px double;
 
-        div.timer_display {
-            font-size       : 300%;
-            font-weight     : bold;
-            display         : inline-block;
-            padding         : 0.25em 0.125em;
-            margin-bottom   : 0.25em;
-            width           : 1.6em;
-            text-align      : center;
-            border          : 3px double;
-
-            @include theme.apply( themes.$themes ) {
-                background  : theme.get('form_elements_background');
-                border-color: theme.get('lines');
-            }
-
-            @include theme.apply( themes.$styles, 'style' ) {
-                border-radius: calc( theme.get('radius') / 2 );
-            }
+        @include theme.apply( themes.$themes ) {
+            background  : theme.get('form_elements_background');
+            border-color: theme.get('lines');
         }
 
-        div.button_group {
-            position: absolute;
-            top     : 4em;
-            left    : 0;
+        @include theme.apply( themes.$styles, 'style' ) {
+            border-radius: calc( theme.get('radius') / 2 );
         }
     }
 
@@ -277,8 +265,26 @@ div#queries {
     }
 }
 
+div#quiz {
+    div.timer {
+        float       : left;
+        margin-right: 1em;
+        position    : relative;
+
+        div.button_group {
+            position: absolute;
+            top     : 4em;
+            left    : 0;
+        }
+    }
+}
+
 div#drill {
     margin: 0;
+
+    div.timer {
+        margin-bottom: 1em;
+    }
 
     div.query_type_buttons {
         p {

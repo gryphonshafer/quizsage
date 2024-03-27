@@ -34,11 +34,12 @@ default:
                 classes/material        : classes/material
                 classes/queries         : classes/queries
                 modules/template        : modules/template
+                vue/components/controls : vue/components/controls/drill
                 vue/components/material : vue/components/material
                 vue/components/query    : vue/components/query
                 vue/components/search   : vue/components/search
                 vue/components/thesaurus: vue/components/thesaurus
-                vue/components/controls : vue/components/controls/drill
+                vue/components/timer    : vue/components/timer
                 vue/store               : vue/stores/drill
         queries:
             module:

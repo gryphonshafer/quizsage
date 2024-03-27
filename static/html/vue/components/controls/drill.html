@@ -17,7 +17,7 @@
     <p><b>Generate Query:</b></p>
 
     <button v-for="query_type in query_types"
-        @click="create_query( query_type.key )">{{ query_type.label }}</button>
+        @click="reset_create_query( query_type.key )">{{ query_type.label }}</button>
 
     <p><b>Exit Queries Drill:</b></p>
 

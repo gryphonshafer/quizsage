@@ -53,6 +53,7 @@ export default Pinia.defineStore( 'store', {
             selected        : { bible: current.query.bible },
             next_query_bible: bibles[0],
             add_verse       : false,
+            durations       : { quizzer_response: 40 },
         };
     },
 
