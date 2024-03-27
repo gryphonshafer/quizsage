@@ -95,7 +95,8 @@ export default Pinia.defineStore( 'store', {
                     synonymous_verbatim_open_book: '',
                 },
             },
-            eligible_teams: get_eligible_teams( quiz.state.teams ),
+            eligible_teams  : get_eligible_teams( quiz.state.teams ),
+            hidden_solution : true,
         };
     },
 
@@ -130,6 +131,7 @@ export default Pinia.defineStore( 'store', {
             event_id   = undefined,
         ) {
             try {
+                this.hidden_solution = false;
                 quiz.action( action, team_id, quizzer_id, qsstypes, event_id );
                 update_data(this);
                 this.save_quiz_data();
@@ -198,6 +200,10 @@ export default Pinia.defineStore( 'store', {
         last_event_if_not_viewed() {
             const last_event = this.board.findLast( event => event.query );
             return ( this.current.event.id != last_event.id ) ? last_event : undefined;
+        },
+
+        toggle_hidden_solution() {
+            this.hidden_solution = ! this.hidden_solution;
         },
 
         is_quiz_done() {

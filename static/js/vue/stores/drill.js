@@ -54,23 +54,30 @@ export default Pinia.defineStore( 'store', {
             next_query_bible: bibles[0],
             add_verse       : false,
             durations       : { quizzer_response: 40 },
+            hidden_solution : true,
         };
     },
 
     actions: {
         replace_query() {
-            this.current   = get_current( this.current.query.type, this.next_query_bible );
-            this.add_verse = false;
+            this.current         = get_current( this.current.query.type, this.next_query_bible );
+            this.add_verse       = false;
+            this.hidden_solution = true;
         },
 
         create_query(type) {
-            this.current        = get_current( type, this.next_query_bible );
-            this.selected.bible = this.current.query.bible;
-            this.add_verse      = false;
+            this.current         = get_current( type, this.next_query_bible );
+            this.selected.bible  = this.current.query.bible;
+            this.add_verse       = false;
+            this.hidden_solution = true;
         },
 
         set_next_query_bible(bible) {
             this.next_query_bible = bible;
+        },
+
+        toggle_hidden_solution() {
+            this.hidden_solution = ! this.hidden_solution;
         },
 
         toggle_add_verse() {

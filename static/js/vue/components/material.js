@@ -8,7 +8,7 @@ export default {
     },
 
     computed: {
-        ...Pinia.mapState( store, [ 'current', 'selected' ] ),
+        ...Pinia.mapState( store, [ 'current', 'selected', 'hidden_solution', 'toggle_hidden_solution' ] ),
 
         buffer() {
             return this.current.materials

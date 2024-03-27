@@ -5,15 +5,26 @@
         @click="selected.bible = set.bible.name"
     >{{ set.bible.name + ( ( set.bible.type == 'auxiliary' ) ? '*' : '' ) }}</button>
 
-    <span class="reference">{{
+    <span
+        :class="{
+            reference: true,
+            hidden   : hidden_solution,
+        }"
+    >{{
         current.query.book    + ' ' +
         current.query.chapter + ':' +
         current.query.verse
     }}</span>
 
     <button @click="reset_replace_query">Replace</button>
+    <button @click="toggle_hidden_solution">{{ (hidden_solution) ? 'Show' : 'Hide' }}</button>
 
-    <p class="content">
+    <p
+        :class="{
+            content: true,
+            hidden : hidden_solution,
+        }"
+    >
         <span class="buffer" v-if="buffer.previous"
             >...{{
                 buffer.previous.text.split(/\s+/).slice(-7).join(' ')

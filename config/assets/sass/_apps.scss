@@ -45,7 +45,9 @@ div#queries {
     }
 
     div.material span.reference {
-        padding: 0.125em 0.25em;
+        padding  : 0.125em 0.25em;
+        min-width: 8em;
+        display  : inline-block;
     }
 
     div.material span.buffer {
@@ -265,6 +267,20 @@ div#queries {
     }
 }
 
+div#quiz,
+div#drill {
+    .hidden {
+        * {
+            display: none !important;
+        }
+
+        @include theme.apply( themes.$themes ) {
+            color     : theme.get('fieldset_background') !important;
+            background: theme.get('fieldset_background') !important;
+        }
+    }
+}
+
 div#quiz {
     div.timer {
         float       : left;
@@ -275,6 +291,11 @@ div#quiz {
             position: absolute;
             top     : 4em;
             left    : 0;
+
+            button {
+                display      : block;
+                margin-bottom: 0.25em;
+            }
         }
     }
 }

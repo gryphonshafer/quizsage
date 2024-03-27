@@ -20,12 +20,22 @@
         from the <span>{{ current.query.bible }}</span>.
     </p>
 
-    <p class="prompt">
+    <p
+        :class="{
+            prompt: true,
+            hidden: hidden_solution,
+        }"
+    >
         {{ current.query.pre_prompt }}
         <thesaurus type="prompt"></thesaurus>
     </p>
 
-    <p class="reply">
+    <p
+        :class="{
+            reply : true,
+            hidden: hidden_solution,
+        }"
+    >
         <template v-if="! current.event || current.event.type != 'X'">
             <thesaurus type="reply"></thesaurus>
         </template>

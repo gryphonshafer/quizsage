@@ -3,13 +3,15 @@ import template from 'modules/template';
 
 export default {
     computed: {
-        ...Pinia.mapState( store, [ 'board', 'current', 'selected', 'teams' ] ),
+        ...Pinia.mapState( store, [ 'board', 'current', 'selected', 'teams', 'hidden_solution' ] ),
     },
 
     methods: {
-        ...Pinia.mapActions( store, [ 'is_quiz_done', 'view_query' ] ),
+        ...Pinia.mapActions( store, [ 'is_quiz_done', 'view_query', 'toggle_hidden_solution' ] ),
 
         select_quizzer( quizzer_id, team_id ) {
+            if ( this.hidden_solution ) this.toggle_hidden_solution();
+
             if ( this.is_quiz_done() ) return;
 
             this.selected.quizzer_id = quizzer_id;
