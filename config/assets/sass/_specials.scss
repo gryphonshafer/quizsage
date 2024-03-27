@@ -114,7 +114,7 @@ div.summary_box {
 }
 
 div.schedule_row_lead {
-    width: 6rem;
+    width: 6em;
 }
 
 div.roster_box {
@@ -145,29 +145,62 @@ a.qm_auth {
     text-decoration: none;
 }
 
+body.state div.schedule_row {
+    font-size   : 75%;
+    line-height : 1.5em;
+    padding-left: 8em;
+
+    div.schedule_row_lead {
+        margin-left: calc( -8em + 1px );
+    }
+}
+
 table.stats {
-    @media ( max-width: 1200px ) {
-        font-size  : 0.9em;
+    font-size  : 75%;
+    line-height: 1.5em;
+
+    @media ( max-width: 1150px ) {
+        font-size  : 70%;
         line-height: 1.5em;
     }
 
     @media ( max-width: 1080px ) {
-        font-size  : 0.8em;
+        font-size  : 65%;
         line-height: 1.5em;
     }
 
-    @media ( max-width: 960px ) {
-        font-size  : 0.7em;
+    @media ( max-width: 1000px ) {
+        font-size  : 60%;
         line-height: 1.5em;
     }
 
-    @media ( max-width: 850px ) {
-        font-size  : 0.6em;
+    @media ( max-width: 910px ) {
+        font-size  : 55%;
         line-height: 1.5em;
     }
 
-    @media ( max-width: 740px ) {
-        font-size  : 0.5em;
+    @media ( max-width: 840px ) {
+        font-size  : 50%;
+        line-height: 1.5em;
+    }
+
+    @media ( max-width: 770px ) {
+        font-size  : 45%;
+        line-height: 1.5em;
+    }
+
+    @media ( max-width: 710px ) {
+        font-size  : 40%;
+        line-height: 1.5em;
+    }
+
+    @media ( max-width: 620px ) {
+        font-size  : 35%;
+        line-height: 1.5em;
+    }
+
+    @media ( max-width: 550px ) {
+        font-size  : 30%;
         line-height: 1.5em;
     }
 }

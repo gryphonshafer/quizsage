@@ -1,4 +1,7 @@
-[% page.title = 'Meet' %]
+[%
+    page.title = 'Meet';
+    page.body_classes.push('state');
+%]
 
 [%
     FOR bracket IN state.brackets;
@@ -54,7 +57,7 @@
             row    = schedule
         %]
 
-        <div>
+        <div class="schedule_row">
             [% IF schedule %]
                 <div class="summary_box schedule_row_lead">
                     [% schedule.date %]<br>
