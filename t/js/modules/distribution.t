@@ -11,11 +11,11 @@ my $distribution = Omniframe::Class::Javascript->new(
     q{
         import distribution from 'modules/distribution';
 
-        console.log(
+        OCJS.out(
             distribution(
-                window.types,
-                window.bibles,
-                window.teams_count,
+                OCJS.in.types,
+                OCJS.in.bibles,
+                OCJS.in.teams_count,
             )
         );
     },

@@ -66,11 +66,11 @@ else {
 
 =head1 NAME
 
-material_label.pl - Work with material labels including label storage
+label.pl - Work with material labels including label storage
 
 =head1 SYNOPSIS
 
-    material_label.pl OPTIONS
+    label.pl OPTIONS
         -u, --user   USER_ID_OR_EMAIL_ADDRESS
         -a, --aliases
         -n, --name   NAME

@@ -17,11 +17,11 @@ catch ($error) {
 
 =head1 NAME
 
-material_json.pl - Build JSON file of materials from material SQLite database
+json.pl - Build JSON file of materials from material SQLite database
 
 =head1 SYNOPSIS
 
-    material_json.pl OPTIONS
+    json.pl OPTIONS
         -d, --description CANONICALIZED_MATERIAL_DESCRIPTION
         -l, --label       REFERENCE_BLOCKS_AND_TRANSLATION_LABEL
         -u, --user        USER_ID

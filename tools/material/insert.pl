@@ -98,11 +98,11 @@ $verse_put_single->run(@$_) while ( $_ = shift @verse_insert_cache );
 
 =head1 NAME
 
-material_insert.pl - Insert OBML source content into a material SQLite database
+insert.pl - Insert OBML source content into a material SQLite database
 
 =head1 SYNOPSIS
 
-    material_insert.pl OPTIONS
+    insert.pl OPTIONS
         -b, --bible BIBLE_TRANSLATION
         -o, --obml  OBML_DIRECTORY     # default: config setting
         -s, --size  INSERT_CACHE_SIZE  # detault: 300
@@ -117,7 +117,7 @@ This program will insert OBML source content into a material SQLite database.
 
 One or more Bible translation acronyms.
 
-    ./material_insert.pl \
+    ./insert.pl \
         -b AKJV -b AMP -b BSB -b ESV -b HCSB -b KJ21 -b KJV \
         -b NASB -b NASB1995 -b NIV -b NKJV -b NLT -b NRSVA -b RSV
 

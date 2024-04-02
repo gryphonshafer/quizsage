@@ -6,6 +6,8 @@ export default class Material {
     };
 
     constructor ( inputs = { material: {} } ) {
+        if ( inputs.material === undefined ) inputs.material = {};
+
         Object.keys( this.constructor.default_settings ).forEach( key =>
             this[key] = ( inputs.material[key] !== undefined )
                 ? inputs.material[key]
@@ -58,7 +60,7 @@ export default class Material {
                         ),
                 ] ) );
 
-            return this;
+                return this;
         } );
     }
 
@@ -185,7 +187,7 @@ export default class Material {
         let key = Object.keys( this.data.thesaurus ).find( key => key.toLowerCase() == word );
         if ( ! key ) return;
 
-        let entry = structuredClone( this.data.thesaurus[key] );
+        let entry = JSON.parse( JSON.stringify( this.data.thesaurus[key] ) );
         if ( typeof entry === 'string' ) {
             key   = entry;
             entry = this.data.thesaurus[key];

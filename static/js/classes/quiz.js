@@ -12,6 +12,8 @@ export default class Quiz {
     };
 
     constructor ( inputs = { quiz : {} } ) {
+        if ( inputs.quiz === undefined ) inputs.quiz = {};
+
         Object.keys( this.constructor.default_settings ).forEach( key =>
             this[key] = ( inputs.quiz[key] !== undefined )
                 ? inputs.quiz[key]
@@ -83,8 +85,8 @@ export default class Quiz {
     }
 
     #build_board() {
-        const distribution       = structuredClone( this.distribution );
-        this.state.teams       ||= structuredClone( this.teams );
+        const distribution       = JSON.parse( JSON.stringify( this.distribution ) );
+        this.state.teams       ||= JSON.parse( JSON.stringify( this.teams ) );
         this.state.board       ||= [];
         this.state.query_cache ||= [];
 
@@ -92,7 +94,7 @@ export default class Quiz {
         this.state.board = [];
 
         this.state.events.forEach( event => {
-            const record = structuredClone(event);
+            const record = JSON.parse( JSON.stringify(event) );
 
             // if event is a ruled action...
             if (

@@ -13,6 +13,8 @@ export default class Queries {
     };
 
     constructor ( inputs = { queries : {} } ) {
+        if ( inputs.queries === undefined ) inputs.queries = {};
+
         Object.keys( this.constructor.default_settings ).forEach( key =>
             this[key] = ( inputs.queries[key] !== undefined )
                 ? inputs.queries[key]
@@ -158,7 +160,7 @@ export default class Queries {
             this.reset();
         }
 
-        return structuredClone( verses[ Math.floor( Math.random() * verses.length ) ] );
+        return JSON.parse( JSON.stringify( verses[ Math.floor( Math.random() * verses.length ) ] ) );
     }
 
     #prompt_reply_text( verse, phrase_start, phrase_length, next_break = undefined ) {
@@ -385,7 +387,7 @@ export default class Queries {
             };
         }
 
-        return structuredClone(return_data);
+        return JSON.parse( JSON.stringify(return_data) );
     }
 
     add_verse(query) {
@@ -400,7 +402,7 @@ export default class Queries {
 
         if ( ! next_verse ) throw 'Unable to find next verse';
 
-        query.original = structuredClone(query);
+        query.original = JSON.parse( JSON.stringify(query) );
 
         if ( query.type.substr( 0, 1 ).toUpperCase() == 'Q' )
             query.pre_prompt = `Quote ${query.book}, chapter ${query.chapter}, ` + (

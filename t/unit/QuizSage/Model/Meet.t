@@ -14,6 +14,7 @@ DOES_ok( $obj, $_ ) for ( qw(
 can_ok( $obj, qw(
     create
     freeze thaw
+    from_season_meet
     state
     quiz_settings
     stats

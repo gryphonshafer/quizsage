@@ -3,6 +3,7 @@ package QuizSage::Model::Meet;
 use exact -class;
 use Mojo::JSON qw( encode_json decode_json );
 use QuizSage::Model::Quiz;
+use QuizSage::Model::Season;
 
 with qw(
     Omniframe::Role::Bcrypt
@@ -39,6 +40,16 @@ sub freeze ( $self, $data ) {
 sub thaw ( $self, $data ) {
     $data->{$_} = ( defined $data->{$_} ) ? decode_json( $data->{$_} ) : {} for ( qw( settings build ) );
     return $data;
+}
+
+sub from_season_meet ( $self, $season_name, $meet_name ) {
+    my $season = QuizSage::Model::Season->new->load({ name => $season_name })
+        or croak qq{Unable to locate season based on name: "$season_name"};
+
+    my $meet = $self->new->load({ name => $meet_name, season_id => $season->id })
+        or croak qq{Unable to locate meet based on name: "$meet_name"};
+
+    return $meet;
 }
 
 sub state ($self) {
@@ -351,6 +362,14 @@ hashref and the C<build> hashref.
 Also, it will C<bcrypt> passwords before storing them in the database. It
 expects a hashref of values and will return a hashref of values with the
 C<passwd> crypted.
+
+=head2 from_season_meet
+
+This method requires a season name and meet name. It will attempt to find and
+return a loaded meet object for the meet matching the input names.
+
+    my $meet = QuizSage::Model::Meet->new
+        ->from_season_meet( 'Season Name', 'Meet Name' );
 
 =head2 state
 

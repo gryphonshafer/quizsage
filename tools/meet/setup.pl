@@ -86,11 +86,11 @@ elsif ( $opt->{action} ) {
 
 =head1 NAME
 
-meet.pl - Build and edit meets and seasons
+setup.pl - Build and edit meets and seasons
 
 =head1 SYNOPSIS
 
-    meet.pl OPTIONS
+    setup.pl OPTIONS
         -c, --context  CONTEXT # season | meet
         -i, --id       PRIMARY_KEY_ID
         -e, --season   SEASON_NAME

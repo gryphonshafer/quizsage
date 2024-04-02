@@ -181,11 +181,11 @@ $dq->commit;
 
 =head1 NAME
 
-thesaurus_insert.pl - Get and insert synonyms and other data into a material SQLite database
+thesaurus.pl - Get and insert synonyms and other data into a material SQLite database
 
 =head1 SYNOPSIS
 
-    thesaurus_insert.pl OPTIONS
+    thesaurus.pl OPTIONS
         -s, --sleep SECONDS  # default: 4
         -e, --estimate
         -h, --help
