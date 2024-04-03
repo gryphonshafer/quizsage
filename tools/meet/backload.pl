@@ -35,7 +35,7 @@ if ( $opt->{ocjs} ) {
     $js = Omniframe::Class::Javascript->with_roles('QuizSage::Role::JSApp')->new;
     $js = $js->new(
         basepath  => $root_dir . '/static/js/',
-        importmap => $js->js_app_config('queries')->{importmap},
+        importmap => $js->js_app_config('quiz')->{importmap},
     );
 }
 
@@ -71,7 +71,7 @@ for my $quiz_data (@$meet_data) {
             push( @{ $opt->{bible} }, shift @{ $opt->{bible} } );
             +{
                 bible => $opt->{bible}[0],
-                id    => +$id,
+                id    => ++$id,
                 type  => $_,
             };
         } $quiz_data->{distribution}->@*
@@ -87,6 +87,18 @@ for my $quiz_data (@$meet_data) {
             const quiz = new Quiz( OCJS.in );
             quiz.ready.then( () => {
                 OCJS.in.events.forEach( event => {
+                    let attempts = 0;
+                    while ( attempts < 3 ) {
+                        try {
+                            quiz.queries.add_verse( quiz.board_row().query );
+                            break;
+                        }
+                        catch (e) {
+                            quiz.replace_query();
+                        }
+                    }
+                    if ( attempts >= 3 ) throw 'Failed to add a verse';
+
                     quiz.action(
                         event.result,
                         ( ( event.team ) ? quiz.state.teams[ event.team - 1 ].id : null ),
@@ -109,10 +121,8 @@ for my $quiz_data (@$meet_data) {
                 )->slurp ),
             },
             quiz => {
-                settings => {
-                    distribution => $quiz_settings->{distribution},
-                    teams        => $quiz_settings->{teams},
-                },
+                teams        => $quiz_settings->{teams},
+                distribution => $quiz_settings->{distribution},
             },
             events => $quiz_data->{events},
         },
