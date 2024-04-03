@@ -113,6 +113,7 @@ for my $quiz_data (@$meet_data) {
                 } );
 
                 OCJS.out( quiz.state );
+                if ( quiz.board_row() ) throw 'Quiz incomplete';
             } );
         \,
         {
@@ -148,7 +149,7 @@ $meet->save if ( $opt->{database} );
 
 sub parse_meet_data ($meet_data_file) {
     my $data = path($meet_data_file)->slurp;
-    $data =~ s/^#//mg;
+    $data =~ s/^#.*?$//mg;
 
     my @paragraphs = split( /\n\s+/, $data );
     @paragraphs = $paragraphs[-1] if ( $opt->{last} );
