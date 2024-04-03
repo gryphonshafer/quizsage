@@ -16,6 +16,7 @@ my $opt = options( qw{
     database|d
     ocjs|o
     print|p
+    last|l
 } );
 
 pod2usage('Input text data file unreadable') unless ( -r $opt->{input} );
@@ -146,6 +147,12 @@ for my $quiz_data (@$meet_data) {
 $meet->save if ( $opt->{database} );
 
 sub parse_meet_data ($meet_data_file) {
+    my $data = path($meet_data_file)->slurp;
+    $data =~ s/^#//mg;
+
+    my @paragraphs = split( /\n\s+/, $data );
+    @paragraphs = $paragraphs[-1] if ( $opt->{last} );
+
     return [
         map {
             my @parts = split(/\n/);
@@ -182,7 +189,7 @@ sub parse_meet_data ($meet_data_file) {
             } @parts ];
 
             $quiz;
-        } grep { not /^#/ } split( /\n\s+/, path($meet_data_file)->slurp )
+        } @paragraphs
     ];
 }
 
@@ -231,6 +238,7 @@ backload.pl - Backload meet quiz data
         -d, --database
         -o, --ocjs
         -p, --print
+        -l, --last
         -h, --help
         -m, --man
 
@@ -305,3 +313,16 @@ Boolean. Use OCJS to build quiz state.
 =head2 -p, --print
 
 Boolean. Print quiz data.
+
+=head2 -l, --last
+
+Normally, this program will process all data in the input; however, if this flag
+is set, it will only process the last "paragraph" (or quiz) of data. This allows
+for a simple setup of a data-file-writing testing enviornment:
+
+    while read -r newfile
+    do
+        ./tools/meet/backload.pl \
+            -s "$SEASON_NAME" -n "$MEET_NAME" -e "$EMAIL" -b NIV \
+            -i "$PATH_TO_DATA_FILE" -o -p -d -l
+    done < <(inotifywait -m -e modify "$PATH_TO_DATA_FILE")
