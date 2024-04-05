@@ -40,11 +40,8 @@ if ( $opt->{ocjs} ) {
     );
 }
 
-if ( $opt->{database} ) {
-    $_->delete for (
-        QuizSage::Model::Quiz->new->every({ meet_id => $meet->id })->@*
-    );
-}
+my $quiz_objs;
+$quiz_objs = QuizSage::Model::Quiz->new->every({ meet_id => $meet->id }) if ( $opt->{database} );
 
 for my $quiz_data (@$meet_data) {
     print "\n" if ( $opt->{print} and state $i++ );
@@ -135,21 +132,29 @@ for my $quiz_data (@$meet_data) {
             map { $_->{score}{points} } $quiz_state->{teams}->@*;
     }
 
-    QuizSage::Model::Quiz->new->create({
-        meet_id     => $meet->id,
-        user_id     => $user->id,
-        bracket     => $quiz_data->{bracket},
-        name        => $quiz_data->{quiz},
-        settings    => $quiz_settings,
-        maybe state => $quiz_state,
-    }) if ( $opt->{database} );
+    if ( $opt->{database} ) {
+        $_->delete for ( grep {
+            $_->data->{bracket} eq $quiz_data->{bracket} and
+            $_->data->{name} eq $quiz_data->{quiz}
+        } $quiz_objs->@* );
+
+        QuizSage::Model::Quiz->new->create({
+            meet_id     => $meet->id,
+            user_id     => $user->id,
+            bracket     => $quiz_data->{bracket},
+            name        => $quiz_data->{quiz},
+            settings    => $quiz_settings,
+            maybe state => $quiz_state,
+        });
+    }
 }
 
 $meet->save if ( $opt->{database} );
 
 sub parse_meet_data ($meet_data_file) {
     my $data = path($meet_data_file)->slurp;
-    $data =~ s/^#.*?$//mg;
+    $data =~ s/^\s*#.*?\n//mg;
+    $data =~ s/#\N+//mg;
 
     my @paragraphs = split( /\n\s+/, $data );
     @paragraphs = $paragraphs[-1] if ( $opt->{last} );
