@@ -60,6 +60,10 @@ body {
 
         form {
             text-align: right;
+
+            button {
+                margin-left: 0.5em;
+            }
         }
 
         &.error {
@@ -71,6 +75,12 @@ body {
         &.success {
             @include theme.apply( themes.$themes ) {
                 background: theme.get('dialog_success_background');
+            }
+        }
+
+        &.notice {
+            @include theme.apply( themes.$themes ) {
+                background: theme.get('dialog_notice_background');
             }
         }
     }

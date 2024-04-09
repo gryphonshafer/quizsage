@@ -107,11 +107,18 @@
                             <a
                                 class="qm_auth"
                                 onclick="
-                                    return confirm(
-                                        'Are you absolutely sure you want to do this?\n' +
-                                        'This will delete all data for this quiz.\n' +
-                                        'There is no undo...'
+                                    notice(
+                                        'Are you absolutely sure you want to do this?<br>'
+                                            + 'This will delete all data for this quiz.<br>'
+                                            + 'There is no undo...',
+                                        [ 'Yes, I\'m sure!', 'Nevermind' ],
+                                        event => {
+                                            if ( event.target.textContent == 'Yes, I\'m sure!' )
+                                                document.location.href =
+                                                '[% c.url_for('/quiz/delete/' _ quiz.id ) %]';
+                                        },
                                     );
+                                    return false;
                                 "
                                 href="[% c.url_for('/quiz/delete/' _ quiz.id ) %]"
                             >Delete Data</a>
@@ -119,11 +126,23 @@
                             <a
                                 class="qm_auth"
                                 onclick="
-                                    return confirm(
-                                        'Are you absolutely sure you want to do this?\n' +
-                                        'This is likely not needed. Teams should\n' +
-                                        'automatically populate.'
+                                    notice(
+                                        'Are you absolutely sure you want to do this?<br>'
+                                            + 'This is likely not needed. Teams should<br>'
+                                            + 'automatically populate.'
+                                        [ 'Yes, I\'m sure!', 'Nevermind' ],
+                                        event => {
+                                            if ( event.target.textContent == 'Yes, I\'m sure!' )
+                                                document.location.href = '[%
+                                                    c.url_for('/quiz/teams').query(
+                                                        meet    => c.param('meet_id'),
+                                                        bracket => bracket.name,
+                                                        quiz    => quiz.name,
+                                                    )
+                                                %]';
+                                        },
                                     );
+                                    return false;
                                 "
                                 href="[%
                                     c.url_for('/quiz/teams').query(

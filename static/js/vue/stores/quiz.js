@@ -113,13 +113,13 @@ export default Pinia.defineStore( 'store', {
                     e == 'Unable to select a verse from which to construct query' ||
                     e == 'Unable to find phrase block from which to construct query'
                 ) {
-                    alert(
-                        'Unable to replace query, likely due to insufficient size of material.\n' +
+                    notice(
+                        'Unable to replace query, likely due to insufficient size of material.<br>' +
                         'Try exiting the quiz and expanding the material.'
                     );
                 }
                 else {
-                    alert( 'Unexpected error occurred: ' + e + '.' );
+                    notice( 'Unexpected error occurred: ' + e + '.' );
                 }
             }
         },
@@ -143,14 +143,14 @@ export default Pinia.defineStore( 'store', {
                     e == 'Unable to select a verse from which to construct query' ||
                     e == 'Unable to find phrase block from which to construct query'
                 ) {
-                    alert(
-                        'Unable to create a query, likely due to insufficient size of material.\n' +
-                        'Try exiting the quiz and expanding the material.'
+                    notice(
+                        'Unable to create a query, likely due to insufficient size of material.<br>' +
+                        'Try exiting the quiz and expanding the material.',
                     );
                     this.delete_last_action();
                 }
                 else {
-                    alert( 'Unexpected error occurred: ' + e + '.' );
+                    notice( 'Unexpected error occurred: ' + e + '.' );
                 }
             }
         },
@@ -212,14 +212,24 @@ export default Pinia.defineStore( 'store', {
         },
 
         exit_quiz() {
-            if ( ! this.is_quiz_done() && ! confirm(
-                'Are you sure you want to exit the quiz? The quiz is not finished.'
-            ) ) return;
-
-            window.location.href = new URL(
+            const new_url = new URL(
                 ( miscellaneous.meet_id ) ? '/meet/' + miscellaneous.meet_id : '/quiz/pickup',
                 url,
             );
+
+            if ( ! this.is_quiz_done() ) {
+                notice(
+                    'Are you sure you want to exit the quiz? The quiz is not finished.',
+                    [ 'Yes, exit the quiz', 'No, stay here' ],
+                    event => {
+                        if ( event.target.textContent == 'Yes, exit the quiz' )
+                            window.location.href = new_url;
+                    },
+                );
+            }
+            else {
+                window.location.href = new_url;
+            }
         },
     },
 } );

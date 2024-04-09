@@ -45,7 +45,7 @@ export default {
                     }
                     catch (e) {
                         console.log(e);
-                        alert('Unable to "Add Verse"');
+                        notice('Unable to "Add Verse"');
                         this.selected.type.add_verse = ! this.selected.type.add_verse;
                     }
                 }
@@ -55,7 +55,7 @@ export default {
                     }
                     catch (e) {
                         console.log(e);
-                        alert('Unable to revoke "Add Verse"');
+                        notice('Unable to revoke "Add Verse"');
                         this.selected.type.add_verse = ! this.selected.type.add_verse;
                     }
                 }

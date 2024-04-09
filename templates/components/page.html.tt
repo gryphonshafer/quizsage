@@ -15,7 +15,7 @@
 
 [% IF message OR c.session.flash.message %]
     [% fv = (message) ? message : c.session.flash.message %]
-    <dialog id="message" open autofocus class="[% fv.type || 'error' %]">
+    <dialog open autofocus class="[% fv.type || 'error' %]">
         [% UNLESS fv.ref %]
             [% fv %]
         [% ELSIF fv.ref == 'HASH' %]
@@ -29,6 +29,34 @@
         <form method="dialog"><button>OK</button></form>
     </dialog>
 [% END %]
+
+<dialog id="notice" class="notice">
+    <div>Notice</div>
+    <form method="dialog">
+        <button>OK</button>
+    </form>
+</dialog>
+
+[% js = BLOCK %]
+    function notice( message, options = 'OK', callback = undefined ) {
+        document.querySelector('dialog#notice div').innerHTML = message;
+
+        if ( typeof options == 'string' ) options = [options];
+
+        let buttons_html = '';
+        options.forEach( option => buttons_html += '<button>' + option + '</button>' );
+
+        document.querySelector('dialog#notice form').innerHTML = buttons_html;
+
+        if (callback) document.querySelectorAll('dialog#notice button')
+            .forEach( button => button.onclick = callback );
+
+        const notice = document.querySelector('dialog#notice');
+        notice.autofocus = true;
+        notice.show();
+    }
+[% END %]
+[% page.js.inline.push(js) %]
 
 [% UNLESS no_page_page %]
     [%
