@@ -19,7 +19,10 @@ sub passwd ($self) {
             }
         );
 
-        $self->redirect_to('/');
+        $self->redirect_to( delete $self->session->{referer} // '/' );
+    }
+    else {
+        $self->session( referer => $self->req->headers->referer );
     }
 }
 
