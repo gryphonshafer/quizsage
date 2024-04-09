@@ -1,4 +1,4 @@
-[% page.title = 'Statistics' %]
+[% page.title = 'Meet Statistics' %]
 
 <ul class="no_print">
     <li><a href="[% c.url_for('/')                             %]">Main Page</a></li>
@@ -43,7 +43,14 @@
 [% BLOCK by_points_average %]
     <h2>[% IF filter_tag %][% filter_tag %] [% END %][% type.ucfirst %] by Points Average</h2>
 
-    [% IF stats.$type.size > 0 %]
+    [% has_content = 0 %]
+    [% FOR item IN stats.$type %]
+        [% IF NOT filter_tag OR item.tags AND item.tags.grep( '^' _ filter_tag _ '$' ).size %]
+            [% has_content = 1 %]
+        [% END %]
+    [% END %]
+
+    [% IF has_content %]
         <table class="stats">
             <thead>
                 <tr>

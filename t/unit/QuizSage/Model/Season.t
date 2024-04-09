@@ -11,7 +11,7 @@ DOES_ok( $obj, $_ ) for ( qw(
 ) );
 can_ok( $obj, qw(
     create
-    freeze thaw active_seasons
+    freeze thaw active_seasons stats
 ) );
 
 $obj->dq->begin_work;
@@ -53,6 +53,8 @@ is(
 );
 
 ref_ok( $obj->data->{settings}, 'HASH', 'settings is a hash' );
+
+ok( lives { $obj->stats }, 'stats' ) or note $@;
 
 $obj->dq->rollback;
 

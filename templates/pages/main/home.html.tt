@@ -47,6 +47,12 @@
         [% FOR season IN active_seasons %]
             <h3>[% IF season.location %][% season.location %]: [% END %][% season.name %]</h3>
 
+            <ul>
+                <li>
+                    <a href="[% c.url_for('/season/' _ season.season_id _ '/stats' ) %]">Season Statistics</a>
+                </li>
+            </ul>
+
             [% IF season.meets.size > 0 %]
                 <table>
                     <thead>

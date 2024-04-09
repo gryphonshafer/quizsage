@@ -311,7 +311,11 @@ sub stats ($self) {
     };
 
     $stats->{vra_quizzers} = [
-        sort { $b->{vra_sum} <=> $a->{vra_sum} or $b->{points_sum} <=> $a->{points_sum} }
+        sort {
+            $b->{vra_sum} <=> $a->{vra_sum} or
+            $b->{points_sum} <=> $a->{points_sum} or
+            $a->{name} cmp $b->{name}
+        }
         grep { $_->{vra_sum} }
         map {
             my $quizzer = $_;

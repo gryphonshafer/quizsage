@@ -4,6 +4,14 @@ roster:
     tags:
         append : Youth
         default: Veteran
+# module:
+#     - vue/apps/quiz
+# importmap:
+#     modules/template      : modules/template
+#     vue/components/element: vue/components/element
+#     vue/store             : vue/stores/quiz
+# defer:
+#     - util/websocket
 # inputs:
 #     material:
 #         ignored_types:
@@ -38,11 +46,20 @@ roster:
 #         synonymous: 2
 #         verbatim: 4
 #         with_reference: 1
-# module:
-#     - vue/apps/quiz
-# importmap:
-#     modules/template      : modules/template
-#     vue/components/element: vue/components/element
-#     vue/store             : vue/stores/quiz
-# defer:
-#     - util/websocket
+statistics:
+    drop:
+        type : lowest
+        meets: [ 1, 2, 3 ]
+    meets:
+        - name  : District Meet 1
+          weight: 2
+        - name  : District Meet 2
+          weight: 2
+        - name  : District Meet 3
+          weight: 2
+        - name  : District Meet 4
+          weight: 4
+        - name  : District Meet 5
+          weight: 5
+        - name  : District Championships
+          weight: 7

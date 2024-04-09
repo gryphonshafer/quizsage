@@ -54,6 +54,10 @@ sub startup ($self) {
         [ '',              'state'        ],
     );
 
+    $users->any( '/season/:season_id' . $_->[0] )->to( 'season#' . $_->[1] ) for (
+        [ '/stats', 'stats' ],
+    );
+
     $users->any(
         '/:practice_type' => [ practice_type => [ qw( quiz/pickup drill/setup ) ] ]
     )->to('quiz#practice');
