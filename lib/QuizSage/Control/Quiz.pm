@@ -159,7 +159,10 @@ sub quiz ($self) {
     $quiz->ensure_material_json_exists;
 
     unless ( ( $self->stash('format') // '' ) eq 'json' ) {
-        $self->stash( quiz => $quiz );
+        $self->stash(
+            quiz    => $quiz,
+            meet_id => $quiz->data->{meet_id},
+        );
     }
     else {
         my $data = $quiz->data;
