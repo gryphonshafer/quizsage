@@ -48,7 +48,10 @@ export default class Scoring {
             event => [ 'correct', 'incorrect', 'no_trigger' ].find( action => event.action == action )
         );
 
+        let message = undefined;
         scoring_events.forEach( ( event, index ) => {
+            message = undefined;
+
             if ( event.action == 'correct' ) {
                 const team    = quiz.state.teams.find( team => team.id == event.team_id );
                 const quizzer = team.quizzers.find( quizzer => quizzer.id == event.quizzer_id );
@@ -87,6 +90,11 @@ export default class Scoring {
                     quizzer.score.incorrect == 0 &&
                     ! quizzer.score.open_book
                 ) ? this.ceiling_bonus : 0;
+
+                if ( quizzer.score.correct + quizzer.score.open_book >= this.ceiling_full ) message =
+                    'Ceiling reached: ' + quizzer.name + '<br>'
+                        + '<i>(' + quizzer.score.correct + ' correct '
+                        + 'with ' + quizzer.score.open_book + ' open book)</i>';
 
                 const preceding_numeric_id  = parseInt( scoring_events[index].id ) - 1;
                 event.score.follow_bonus = (
@@ -175,6 +183,6 @@ export default class Scoring {
             .map( ({ team }) => team )
             .forEach( team => team.score.position = ++position );
 
-        return quiz;
+        return message;
     }
 }

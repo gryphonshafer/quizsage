@@ -150,7 +150,7 @@ export default class Quiz {
             this.state.board.push( distribution.shift() );
         }
 
-        this.scoring.score(this);
+        return this.scoring.score(this);
     }
 
     #setup_query( record, distribution ) {
@@ -251,7 +251,8 @@ export default class Quiz {
         }
 
         if ( ! event_id ) this.state.events.push(event);
-        this.#build_board();
+        const message = this.#build_board();
+        if (message) notice(message);
     }
 
     replace_query() {
