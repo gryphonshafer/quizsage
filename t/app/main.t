@@ -24,8 +24,8 @@ mojo->get_ok('/')
     ->text_is( title => 'QuizSage' )
     ->attr_is( 'meta[charset]', 'charset', 'utf-8' )
     ->attr_like( 'link[rel="stylesheet"]:last-of-type', 'href', qr|\bapp.css\?version=\d+| )
-    ->attr_is( 'form', 'method', 'post' )
-    ->attr_is( 'form', 'action', url('/user/login') );
+    ->attr_is( 'main form', 'method', 'post' )
+    ->attr_is( 'main form', 'action', url('/user/login') );
 
 mojo->post_ok(
         '/user/login',
@@ -45,7 +45,7 @@ mojo->get_ok('/user/logout')
     ->header_is( location => url('/') )
     ->get_ok('/')
     ->status_is(200)
-    ->attr_is( 'form', 'method', 'post' );
+    ->attr_is( 'main form', 'method', 'post' );
 
 mojo->post_ok(
         '/user/login',

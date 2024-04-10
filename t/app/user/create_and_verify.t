@@ -6,7 +6,7 @@ setup;
 
 mojo->get_ok('/user/create')
     ->status_is(200)
-    ->attr_is( 'form', 'method', 'post' );
+    ->attr_is( 'main form', 'method', 'post' );
 
 my $email  = stuff('email');
 my $passwd = 'terrible_but_long_enough_password';
