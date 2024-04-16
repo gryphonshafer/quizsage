@@ -101,7 +101,7 @@ my $meet_names = { map {
 
 my $ph  = join( ', ', map { '?' } @meet_ids );
 my $set = $dq->sql(qq{
-    SELECT meet_id, bracket, state
+    SELECT meet_id, bracket, name, state
     FROM quiz
     WHERE meet_id IN ($ph)
 })->run(@meet_ids);
@@ -109,14 +109,18 @@ my $set = $dq->sql(qq{
 say join( ',',
     'Meet',
     'Bracket',
-    'Query',
-    'Result',
+    'Quiz',
+    'QryNum',
+    'QryLtr',
+    'Reference',
     'Label',
     'Type',
-    'Base Subtype',
+    'Result',
+    'Base',
     'QSS',
+    'Team',
     'Quizzer',
-    'Meet Average',
+    'Average',
 );
 
 while ( my $quiz = $set->next ) {
@@ -125,6 +129,10 @@ while ( my $quiz = $set->next ) {
 
     my $quizzer_names = {
         map { $_->{id} => $_->{name} } map { $_->{quizzers}->@* } $data->{state}{teams}->@*
+    };
+
+    my $team_names = {
+        map { $_->{id} => $_->{name} } $data->{state}{teams}->@*
     };
 
     for my $board ( $data->{state}{board}->@* ) {
@@ -141,14 +149,16 @@ while ( my $quiz = $set->next ) {
         say join( ',',
             $meet_names->{ $data->{meet_id} },
             $data->{bracket},
-            substr( $board->{id}, 0, length( $board->{id} ) - 1 ) .
-                '.' .
-                ( ( ord( substr( $board->{id}, length( $board->{id} ) - 1, 1 ) ) - 64 ) * 3 - 1 ),
-            join( ' ', map { ucfirst } split( /_/, $board->{action} ) ),
+            $data->{name},
+            substr( $board->{id}, 0, length( $board->{id} ) - 1 ),
+            ( ord( substr( $board->{id}, length( $board->{id} ) - 1, 1 ) ) - 64 ),
+            $reference,
             $verses_labels->{$reference} // 'Full Material',
             $verse_info->{type},
+            join( ' ', map { ucfirst } split( /_/, $board->{action} ) ),
             $board->{query}{type},
             $board->{qsstypes} // '',
+            $team_names->{ $board->{team_id} // '' } // '',
             $quizzer_names->{ $board->{quizzer_id} // '' } // '',
             $stats->{ $data->{meet_id} }{ $quizzer_names->{ $board->{quizzer_id} // '' } // '' } // '',
         );
