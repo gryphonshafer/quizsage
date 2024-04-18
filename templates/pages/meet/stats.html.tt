@@ -1,12 +1,13 @@
 [% page.title = 'Meet Statistics' %]
 
-<ul class="no_print">
-    <li><a href="[% c.url_for('/')                             %]">Main Page</a></li>
-    <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') ) %]">Meet Page</a></li>
-</ul>
+<h2>
+    [% meet.data.name %]
+    at
+    [% meet.data.location %]
+</h2>
 
 [% FOR bracket IN stats.rankings %]
-    <h2>[% bracket.bracket %] Rankings</h2>
+    <h3>[% bracket.bracket %] Rankings</h3>
 
     <table>
         <thead>
@@ -41,7 +42,7 @@
 [% END %]
 
 [% BLOCK by_points_average %]
-    <h2>[% IF filter_tag %][% filter_tag %] [% END %][% type.ucfirst %] by Points Average</h2>
+    <h3>[% IF filter_tag %][% filter_tag %] [% END %][% type.ucfirst %] by Points Average</h3>
 
     [% has_content = 0 %]
     [% FOR item IN stats.$type %]
@@ -134,7 +135,7 @@
 [% PROCESS by_points_average type = 'quizzers', filter_tag = undef    %]
 [% PROCESS by_points_average type = 'quizzers', filter_tag = 'Rookie' %]
 
-<h2>Quizzers with VRAs</h2>
+<h3>Quizzers with VRAs</h3>
 
 [% IF stats.vra_quizzers.size > 0 %]
     <table>

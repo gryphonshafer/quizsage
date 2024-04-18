@@ -4,8 +4,11 @@ use exact 'Mojolicious::Controller';
 use QuizSage::Model::Season;
 
 sub stats ($self) {
+    my $season = QuizSage::Model::Season->new->load( $self->param('season_id') );
+
     $self->stash(
-        stats => QuizSage::Model::Season->new->load( $self->param('season_id') )->stats,
+        stats  => $season->stats,
+        season => $season,
     );
 }
 

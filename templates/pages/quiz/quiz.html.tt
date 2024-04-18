@@ -1,5 +1,5 @@
 [%
-    page.title = 'Quiz',
+    page.title = (meet_id) ? quiz.data.bracket _ ' ' _ quiz.data.name : 'Pick-Up Quiz',
     page.vue   = 1;
     page.demi  = 1;
     page.pinia = 1;

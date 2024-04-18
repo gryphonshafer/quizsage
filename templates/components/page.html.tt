@@ -154,10 +154,10 @@
                         ];
                     ELSE;
                         icon_link_data_set = [
-                            [ 'Meet State',   [ '/meet/', meet_id                  ], 'trophy'           ],
-                            [ 'Statistics',   [ '/meet/', meet_id, '/stats'        ], 'bar_chart_4_bars' ],
-                            [ 'Roster',       [ '/meet/', meet_id, '/roster'       ], 'group'            ],
-                            [ 'Distribution', [ '/meet/', meet_id, '/distribution' ], 'scatter_plot'     ],
+                            [ 'Meet State',        [ '/meet/', meet_id                  ], 'trophy'           ],
+                            [ 'Meet Statistics',   [ '/meet/', meet_id, '/stats'        ], 'bar_chart_4_bars' ],
+                            [ 'Meet Roster',       [ '/meet/', meet_id, '/roster'       ], 'group'            ],
+                            [ 'Meet Distribution', [ '/meet/', meet_id, '/distribution' ], 'scatter_plot'     ],
                         ];
                     END;
 

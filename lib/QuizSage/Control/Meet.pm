@@ -31,24 +31,31 @@ sub state ($self) {
     $self->stash(
         state   => $meet->state,
         qm_auth => $self->stash('user')->qm_auth($meet),
+        meet    => $meet,
     );
 }
 
 sub roster ($self) {
+    my $meet = QuizSage::Model::Meet->new->load( $self->param('meet_id') );
     $self->stash(
-        roster => QuizSage::Model::Meet->new->load( $self->param('meet_id') )->data->{build}{roster},
+        roster => $meet->data->{build}{roster},
+        meet   => $meet,
     );
 }
 
 sub distribution ($self) {
+    my $meet = QuizSage::Model::Meet->new->load( $self->param('meet_id') );
     $self->stash(
-        build => QuizSage::Model::Meet->new->load( $self->param('meet_id') )->data->{build},
+        build => $meet->data->{build},
+        meet  => $meet,
     );
 }
 
 sub stats ($self) {
+    my $meet = QuizSage::Model::Meet->new->load( $self->param('meet_id') );
     $self->stash(
-        stats => QuizSage::Model::Meet->new->load( $self->param('meet_id') )->stats,
+        stats => $meet->stats,
+        meet  => $meet,
     );
 }
 

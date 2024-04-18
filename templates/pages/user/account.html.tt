@@ -1,7 +1,5 @@
 [% page.title = ( account_action_type == 'create' ) ? 'Create New User' : 'Edit Current User' %]
 
-<ul><li><a href="[% c.url_for('/') %]">Main Page</a></li></ul>
-
 <form method="post">
     <fieldset>
         <legend>[% page.title %]</legend>

@@ -1,5 +1,5 @@
 [%
-    page.title = 'Meet';
+    page.title = 'Meet State';
     page.body_classes.push('state');
 %]
 
@@ -13,8 +13,13 @@
     END;
 %]
 
+<h2>
+    [% meet.data.name %]
+    at
+    [% meet.data.location %]
+</h2>
+
 <ul class="column no_print">
-    <li><a href="[% c.url_for('/')                                               %]">Main Page</a></li>
     <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') _ '/roster' )       %]">Roster</a></li>
     <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') _ '/distribution' ) %]">Distribution</a></li>
     <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') _ '/stats' )        %]">Statistics</a></li>
@@ -46,7 +51,7 @@
 [% END %]
 
 [% FOR bracket IN state.brackets %]
-    <h2>Bracket: [% bracket.name %]</h2>
+    <h3>Bracket: [% bracket.name %]</h3>
 
     [% FOR set IN bracket.sets %]
         [% schedule = set.rooms.0.schedule %]

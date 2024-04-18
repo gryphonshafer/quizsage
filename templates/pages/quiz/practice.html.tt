@@ -1,7 +1,5 @@
 [% page.title = ( practice_type == 'quiz/pickup' ) ? 'Pick-Up Quiz Settings' : 'Queries Drill Setup' %]
 
-<p><a href="[% c.url_for('/') %]">Main Page</a></p>
-
 <details>
     <summary>Instructions</summary>
 

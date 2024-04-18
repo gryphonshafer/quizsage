@@ -1,14 +1,15 @@
-[% page.title = 'Distribution' %]
+[% page.title = 'Meet Distribution' %]
 
-<ul class="no_print">
-    <li><a href="[% c.url_for('/')                             %]">Main Page</a></li>
-    <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') ) %]">Meet Page</a></li>
-</ul>
+<h2>
+    [% meet.data.name %]
+    at
+    [% meet.data.location %]
+</h2>
 
 [% IF per_quiz AND per_quiz.material %]<p>Material: [% per_quiz.material.label %]</p>[% END %]
 
 [% FOR bracket IN build.brackets %]
-    <h2>Bracket: [% bracket.name %]</h2>
+    <h3>Bracket: [% bracket.name %]</h3>
 
     [% IF bracket.material %]
         <div class="info_box">

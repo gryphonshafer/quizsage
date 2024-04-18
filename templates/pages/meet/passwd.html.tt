@@ -1,7 +1,5 @@
 [% page.title = "Set Meet Officials' Password" %]
 
-<ul><li><a href="[% c.url_for('/') %]">Main Page</a></li></ul>
-
 <form method="post" action="[% c.url_for('/meet/passwd') %]">
     <fieldset>
         <legend>Set Meet Officials' Password</legend>
