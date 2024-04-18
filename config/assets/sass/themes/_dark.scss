@@ -27,7 +27,8 @@ $theme: (
 
     legend_background          : black,
     fieldset_background        : #18181a,
-    form_elements_background   : #373737,
+    // form_elements_background   : #373737,
+    form_elements_background   : black,
 
     input_text_color           : white,
 
@@ -49,10 +50,11 @@ $theme: (
     radiobox_checked_background: black,
 
     material_buffer_text       : #999,
+    material_required_text     : royalblue,
     material_ignored_text      : green,
     material_special_text      : red,
-    material_details_text      : black,
-    material_details_background: white,
+    material_details_text      : #ccc,
+    material_details_background: black,
 
     search_is_current_query: #030,
     search_match_text      : royalblue,
