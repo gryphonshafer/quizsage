@@ -27,6 +27,7 @@ export default {
                 }
                 else {
                     this.state = 'Reset';
+                    flash_window();
                 }
             };
 

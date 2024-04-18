@@ -37,21 +37,38 @@
 
 [% js = BLOCK %]
     function notice( message, options = 'OK', callback = undefined ) {
-        document.querySelector('dialog#notice div').innerHTML = message;
+        window.document.querySelector('dialog#notice div').innerHTML = message;
 
         if ( typeof options == 'string' ) options = [options];
 
         let buttons_html = '';
         options.forEach( option => buttons_html += '<button>' + option + '</button>' );
 
-        document.querySelector('dialog#notice form').innerHTML = buttons_html;
+        window.document.querySelector('dialog#notice form').innerHTML = buttons_html;
 
-        if (callback) document.querySelectorAll('dialog#notice button')
+        if (callback) window.document.querySelectorAll('dialog#notice button')
             .forEach( button => button.onclick = callback );
 
-        const notice = document.querySelector('dialog#notice');
+        const notice = window.document.querySelector('dialog#notice');
         notice.autofocus = true;
         notice.show();
+    }
+
+    function flash_window() {
+        window.document.querySelector('table.board td.top_left_corner').style.backgroundColor = 'transparent';
+
+        const main  = window.document.querySelector('main');
+        const color = window.getComputedStyle(main).backgroundColor
+            .slice( 4, -1 ).split(',').map( value => parseInt(value) );
+
+        const inverted = `rgb( ${ color.map( value => 255 - value ).join(', ') } )`;
+
+        main.style.backgroundColor = inverted;
+        let flashes  = 0;
+        let interval = setInterval( () => {
+            main.style.backgroundColor = ( main.style.backgroundColor ) ? '' : inverted;
+            if ( flashes++ > 3 ) clearInterval(interval);
+        }, 50 );
     }
 [% END %]
 [% page.js.inline.push(js) %]
