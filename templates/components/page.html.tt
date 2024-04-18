@@ -118,7 +118,7 @@
 
     <header>
         <a href="[% c.url_for('/') %]"><img
-            src="[% c.url_for('/logo/favicon-32x32.png') %]" alt="QuizSage" width="32" height="32"></a>
+            src="[% c.url_for('/logo/source.svg') %]" alt="QuizSage" width="32" height="32"></a>
         <h1>[% IF base_title != 'QuizSage'
             %]<span class="hide_priority_1">QuizSage: </span>[% END %][% base_title %]</h1>
         <div>
