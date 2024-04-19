@@ -74,12 +74,12 @@ $material_dq->rollback;
 
 mojo->get_ok( '/meet/' . $meet->id )
     ->status_is(200)
-    ->text_is( 'h2:nth-of-type(1)', 'Bracket: Preliminary' )
-    ->text_is( 'h2:nth-of-type(2)', 'Bracket: Auxiliary' )
-    ->text_is( 'h2:nth-of-type(3)', 'Bracket: Top 9' )
-    ->text_is( 'h2:nth-of-type(1) + div b', 'Instructions and Announcements' )
-    ->text_like( 'h2:nth-of-type(1) ~ div > div:nth-child(1)', qr|Fri, Dec 1| )
-    ->text_is( 'h2:nth-of-type(1) ~ div > div:nth-child(1) + div a b', 'Quiz: 1' );
+    ->text_is( 'h3:nth-of-type(1)', 'Bracket: Preliminary' )
+    ->text_is( 'h3:nth-of-type(2)', 'Bracket: Auxiliary' )
+    ->text_is( 'h3:nth-of-type(3)', 'Bracket: Top 9' )
+    ->text_is( 'h3:nth-of-type(1) + div b', 'Instructions and Announcements' )
+    ->text_like( 'h3:nth-of-type(1) ~ div > div:nth-child(1)', qr|Fri, Dec 1| )
+    ->text_is( 'h3:nth-of-type(1) ~ div > div:nth-child(1) + div a b', 'Quiz: 1' );
 
 mojo->get_ok( '/meet/' . $meet->id . '/roster' )
     ->status_is(200)
@@ -90,15 +90,15 @@ mojo->get_ok( '/meet/' . $meet->id . '/roster' )
 
 mojo->get_ok( '/meet/' . $meet->id . '/distribution' )
     ->status_is(200)
-    ->text_is( 'h2:nth-of-type(1) ~ div > div:nth-child(1) b', 'Quiz: 1' );
+    ->text_is( 'h3:nth-of-type(1) ~ div > div:nth-child(1) b', 'Quiz: 1' );
 
 mojo->get_ok( '/meet/' . $meet->id . '/stats' )
     ->status_is(200)
-    ->text_is( 'h2:nth-of-type(1)', 'Top 9 Rankings' )
-    ->text_is( 'h2:nth-of-type(2)', 'Quizzers by Points Average' )
-    ->text_is( 'h2:nth-of-type(3)', 'Rookie Quizzers by Points Average' )
-    ->text_is( 'h2:nth-of-type(4)', 'Quizzers with VRAs' )
-    ->text_is( 'h2:nth-of-type(5)', 'Teams by Points Average' );
+    ->text_is( 'h3:nth-of-type(1)', 'Top 9 Rankings' )
+    ->text_is( 'h3:nth-of-type(2)', 'Quizzers by Points Average' )
+    ->text_is( 'h3:nth-of-type(3)', 'Rookie Quizzers by Points Average' )
+    ->text_is( 'h3:nth-of-type(4)', 'Quizzers with VRAs' )
+    ->text_is( 'h3:nth-of-type(5)', 'Teams by Points Average' );
 
 mojo->get_ok( '/meet/' . $meet->id . '/board/1' )
     ->status_is(200)

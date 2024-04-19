@@ -29,8 +29,8 @@ mojo->app->hook( before_routes => sub ($c) { $c->session( user_id => $user->id )
 
 mojo->get_ok( '/season/' . $season->id . '/stats' )
     ->status_is(200)
-    ->text_is( 'h2:nth-of-type(1)', 'Quizzers by Points Average' )
-    ->text_is( 'h2:nth-of-type(2)', 'Rookie Quizzers by Points Average' )
-    ->text_is( 'h2:nth-of-type(3)', 'Quizzers with VRAs' );
+    ->text_is( 'h3:nth-of-type(1)', 'Quizzers by Points Average' )
+    ->text_is( 'h3:nth-of-type(2)', 'Rookie Quizzers by Points Average' )
+    ->text_is( 'h3:nth-of-type(3)', 'Quizzers with VRAs' );
 
 teardown;
