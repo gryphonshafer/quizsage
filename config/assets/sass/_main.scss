@@ -42,6 +42,21 @@ body {
         margin-bottom: 0;
     }
 
+    ul > ul {
+        margin-top:    0;
+        margin-bottom: 0;
+    }
+
+    li.no_bullet {
+        margin-left    : -1em;
+        list-style-type: none;
+    }
+
+    li {
+        margin-top   : 0.125em;
+        margin-bottom: 0.125em;
+    }
+
     dialog {
         margin   : 2em auto 0 auto;
         padding  : 1em;

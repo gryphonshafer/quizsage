@@ -1,0 +1,54 @@
+[%-
+    # data = [
+    #     'Destination',  # arreyref = [ `title`, `link` (or just reuse `title`) ]
+    #     '/destination', # arrayref = join to string; scalarref = skip url_for()
+    #     'icon_name',    # if in `icons`, use value; otherwise, use as is
+    #     'class_name',   # optional; reference means multiple
+    # ]
+
+    icons = {
+        # home          => 'home',
+        create_user     => 'person_add',
+        forgot_password => 'lock_reset',
+        memorize        => 'sim_card_download',
+        review          => 'sim_card',
+        # memory        => 'memory',
+        drill           => 'tools_power_drill',
+        pickup          => 'swords',
+        edit_user       => 'person_edit',
+        meet_state      => 'trophy',
+        stats           => 'bar_chart_4_bars',
+        roster          => 'group',
+        distribution    => 'scatter_plot',
+        password        => 'key',
+        # logout        => 'logout',
+        # menu          => 'menu',
+    };
+
+    title   = '';
+    link    = '';
+    href    = '';
+    icon    = '';
+    classes = [];
+
+    IF data.0.ref == 'ARRAY';
+        title = data.0.0;
+        link  = data.0.1 || data.0.0;
+    ELSE;
+        title = data.0;
+    END;
+
+    href    = c.url_for( ( data.1.ref == 'ARRAY' ) ? data.1.join('') : data.1 );
+    icon    = icons.${ data.2 } || data.2;
+    classes = ( data.3.ref == 'ARRAY' ) ? data.3 : ( data.3 ) ? [ data.3 ] : [];
+
+    IF c.url_for == href;
+        classes.push('current');
+    END;
+-%]
+<a
+    href="[% href %]"
+    title="[% title %]"
+    [% IF classes.size > 0 %]class="[% classes.join(' ') %]"[% END %]
+><span class="material-symbols-outlined">[% icon %]</span></a>[% IF link %]
+<a href="[% href %]">[% link %]</a>[% END -%]

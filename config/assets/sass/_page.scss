@@ -113,7 +113,7 @@ body {
 
     nav {
         display    : none;
-        position   : fixed;
+        position   : absolute;
         top        : 0;
         left       : auto;
         right      : 0;
@@ -131,6 +131,10 @@ body {
 
         &:target {
             display: block;
+        }
+
+        a.toggle_menu {
+            top: calc( 1em - 1px );
         }
 
         ul {

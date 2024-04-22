@@ -7,7 +7,7 @@
 
 <p>
     <button onclick="window.history.back()">Go Back a Page</button>
-    <button onclick="window.location.href = '[% c.url_for('/') %]'">Go to the Main Page</button>
+    <button onclick="window.location.href = '[% c.url_for('/') %]'">Go to the Home Page</button>
 </p>
 
 <p>
