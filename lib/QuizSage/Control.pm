@@ -44,6 +44,7 @@ sub startup ($self) {
     $users->any('/user/logout')->to('user#logout');
 
     $users->any('/meet/passwd')->to('meet#passwd');
+    $users->any( '/memory/' . $_ )->to( 'memory#' . $_ ) for ( qw( memorize review state ) );
     $users
         ->any( '/meet/:meet_id/board/:room_number' => [ format => ['json'] ] )
         ->to( 'meet#board', format => undef );

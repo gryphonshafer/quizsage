@@ -1,0 +1,3 @@
+[% page.title = 'Initial Memorization' %]
+
+<p>This page will become the location for: <b>[% page.title %]</b></p>
