@@ -33,9 +33,9 @@
             Memorization
             <ul>
                 [% FOR icon_link_data IN [
-                    [ ['Initial Memorization'], '/memory/memorize', 'memorize' ],
-                    [ ['Memorization Review'],  '/memory/review',   'review'   ],
-                    [ ['Memory State'],         '/memory/state',    'memory'   ],
+                    [ ['Initial Memorization'], '/memory/memorize/setup', 'memorize' ],
+                    [ ['Memorization Review'],  '/memory/review',         'review'   ],
+                    [ ['Memory State'],         '/memory/state',          'memory'   ],
                 ] %]
                     <li class="no_bullet">[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
                 [% END %]
@@ -48,10 +48,12 @@
             <ul>
                 <li class="no_bullet">
                     [% PROCESS icon_link.html.tt data = [ ['Queries Drill'], '/drill/setup', 'drill' ] %]
+                </li>
+                <li class="no_bullet">
+                    [% PROCESS icon_link.html.tt
+                        data = [ ['Pick-Up Quiz'], '/quiz/pickup/setup', 'pickup' ] %]
                     <i>(and Generate Queries to Print)</i>
                 </li>
-                <li class="no_bullet">[% PROCESS icon_link.html.tt
-                    data = [ ['Pick-Up Quiz'], '/drill/pickup', 'pickup' ] %]</li>
             </ul>
         </li>
     </ul>
@@ -84,7 +86,7 @@
                         [% FOR meet IN season.meets %]
                             <tr>
                                 <td><a href="[%
-                                    c.url_for( '/meet/' _ meet.meet_id )
+                                    c.url_for( '/meet/' _ meet.meet_id _ '/state' )
                                 %]">[% meet.name %]</a></td>
                                 <td>[% meet.location %]</td>
                                 <td>[% meet.start %]</td>

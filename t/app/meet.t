@@ -72,7 +72,7 @@ $meet->build;
 
 $material_dq->rollback;
 
-mojo->get_ok( '/meet/' . $meet->id )
+mojo->get_ok( '/meet/' . $meet->id . '/state' )
     ->status_is(200)
     ->text_is( 'h3:nth-of-type(1)', 'Bracket: Preliminary' )
     ->text_is( 'h3:nth-of-type(2)', 'Bracket: Auxiliary' )

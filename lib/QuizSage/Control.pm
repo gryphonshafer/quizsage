@@ -48,19 +48,18 @@ sub startup ($self) {
     $users
         ->any( '/meet/:meet_id/board/:room_number' => [ format => ['json'] ] )
         ->to( 'meet#board', format => undef );
-    $users->any( '/meet/:meet_id' . $_->[0] )->to( 'meet#' . $_->[1] ) for (
-        [ '/roster',       'roster'       ],
-        [ '/distribution', 'distribution' ],
-        [ '/stats',        'stats'        ],
-        [ '',              'state'        ],
-    );
+    $users->any( '/meet/:meet_id/' . $_ )->to( 'meet#' . $_ ) for ( qw( state roster distribution stats ) );
 
     $users->any( '/season/:season_id' . $_->[0] )->to( 'season#' . $_->[1] ) for (
         [ '/stats', 'stats' ],
     );
 
     $users->any(
-        '/:practice_type' => [ practice_type => [ qw( quiz/pickup drill/setup ) ] ]
+        '/:practice_type' => [ practice_type => [ qw(
+            memory/memorize/setup
+            drill/setup
+            quiz/pickup/setup
+        ) ] ]
     )->to('quiz#practice');
 
     $users->any("/quiz/$_")->to("quiz#$_") for ( qw( teams build ) );
@@ -72,9 +71,10 @@ sub startup ($self) {
             format            => undef,
             maybe action_type => $_->[2],
         ) for (
-            [ '/drill',         'quiz#queries', 'drill'   ],
-            [ '/queries',       'quiz#queries', 'queries' ],
-            [ '/quiz/:quiz_id', 'quiz#quiz',    undef     ],
+            [ '/drill',                'quiz#queries', 'drill'   ],
+            [ '/queries',              'quiz#queries', 'queries' ],
+            [ '/quiz/:quiz_id',        'quiz#quiz',    undef     ],
+            [ '/quiz/pickup/:quiz_id', 'quiz#quiz',    undef     ],
         );
 
     $users->post('/quiz/save/:quiz_id'  )->to('quiz#save'  );

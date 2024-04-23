@@ -6,18 +6,21 @@ use QuizSage::Model::Meet;
 use QuizSage::Model::Quiz;
 
 sub practice ($self) {
-    my $user  = $self->stash('user');
-    my $label = QuizSage::Model::Label->new( user_id => $user->id );
+    $self->stash( practice_label =>
+        ( $self->param('practice_type') eq 'memory/memorize/setup' ) ? 'memorize'      :
+        ( $self->param('practice_type') eq 'drill/setup'           ) ? 'queries_drill' :
+        ( $self->param('practice_type') eq 'quiz/pickup/setup'     ) ? 'pickup_quiz'   : undef
+    );
 
+    my $user          = $self->stash('user');
+    my $label         = QuizSage::Model::Label->new( user_id => $user->id );
     my $quiz_defaults = $label->conf->get('quiz_defaults');
-    my $user_settings = $user->data->{settings}{
-        ( $self->param('practice_type') eq 'quiz/pickup' ) ? 'pickup_quiz' : 'queries_drill'
-    } // {};
+    my $user_settings = $user->data->{settings}{ $self->stash('practice_label') }  // {};
 
     my $settings;
     $settings->{$_} = $self->param($_) // $user_settings->{$_} // $quiz_defaults->{$_}
         for (
-            ( $self->param('practice_type') eq 'quiz/pickup' )
+            ( $self->stash('practice_label') eq 'pickup_quiz' )
                 ? ( qw( bible roster_data material_label ) )
                 : ('material_label')
         );
@@ -32,34 +35,37 @@ sub practice ($self) {
             %$settings,
         );
     }
-    elsif ( $self->param('practice_type') eq 'quiz/pickup' and not $self->param('generate_queries') ) {
-        try {
-            my $quiz_id = QuizSage::Model::Quiz->new->pickup( $settings, $user )->id;
-            $self->info( 'Pickup quiz generated: ' . $quiz_id );
-            return $self->redirect_to( '/quiz/' . $quiz_id );
-        }
-        catch ($e) {
-            $self->info( 'Pickup quiz error: ' . $e );
-            $self->flash( message => 'Pickup quiz settings error: ' . $e );
-            return $self->redirect_to('/quiz/pickup');
-        }
-    }
-    else {
+    elsif (
+        $self->stash('practice_label') eq 'memorize' or
+        $self->stash('practice_label') eq 'queries_drill' or
+        $self->stash('practice_label') eq 'pickup_quiz' and $self->param('generate_queries')
+    ) {
         my $parsed_label = $label->parse( $settings->{material_label} );
 
         $settings->{material_label} .= ' ' . $settings->{bible}
             if ( not $parsed_label->{bibles} and $settings->{bible} );
         $settings->{material_label} = $label->canonicalize( $settings->{material_label} );
 
-        $user->data->{settings}{
-            ( $self->param('generate_queries') ) ? 'pickup_quiz' : 'queries_drill'
-        } = $settings;
-
+        $user->data->{settings}{ $self->stash('practice_label') } = $settings;
         $user->save;
 
         return $self->redirect_to(
-            ( $self->param('generate_queries') ) ? '/queries' : '/drill'
+            ( $self->stash('practice_label') eq 'memorize'      ) ? '/memory/memorize' :
+            ( $self->stash('practice_label') eq 'queries_drill' ) ? '/drill'           :
+            ( $self->stash('practice_label') eq 'pickup_quiz'   ) ? '/queries'         : '/'
         );
+    }
+    elsif ( $self->stash('practice_label') eq 'pickup_quiz' and not $self->param('generate_queries') ) {
+        try {
+            my $quiz_id = QuizSage::Model::Quiz->new->pickup( $settings, $user )->id;
+            $self->info( 'Pickup quiz generated: ' . $quiz_id );
+            return $self->redirect_to( '/quiz/pickup/' . $quiz_id );
+        }
+        catch ($e) {
+            $self->info( 'Pickup quiz error: ' . $e );
+            $self->flash( message => 'Pickup quiz settings error: ' . $e );
+            return $self->redirect_to('/quiz/pickup/setup');
+        }
     }
 }
 
@@ -156,18 +162,28 @@ sub build ($self) {
 
 sub quiz ($self) {
     my $quiz = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
-    $quiz->ensure_material_json_exists;
 
-    unless ( ( $self->stash('format') // '' ) eq 'json' ) {
-        $self->stash(
-            quiz    => $quiz,
-            meet_id => $quiz->data->{meet_id},
-        );
+    if (
+        not $quiz->data->{meet_id} and
+        $quiz->data->{user_id} and $quiz->data->{user_id} ne $self->stash('user')->id
+    ) {
+        $self->flash( message => 'Unauthorized to view this particular quiz' );
+        return $self->redirect_to('/');
     }
     else {
-        my $data = $quiz->data;
-        $data->{json_material_path} = $self->url_for( $quiz->conf->get( qw( material json path ) ) );
-        $self->render( json => $data );
+        $quiz->ensure_material_json_exists;
+
+        unless ( ( $self->stash('format') // '' ) eq 'json' ) {
+            $self->stash(
+                quiz    => $quiz,
+                meet_id => $quiz->data->{meet_id},
+            );
+        }
+        else {
+            my $data = $quiz->data;
+            $data->{json_material_path} = $self->url_for( $quiz->conf->get( qw( material json path ) ) );
+            $self->render( json => $data );
+        }
     }
 }
 

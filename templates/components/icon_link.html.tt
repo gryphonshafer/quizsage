@@ -38,11 +38,14 @@
         title = data.0;
     END;
 
-    href    = c.url_for( ( data.1.ref == 'ARRAY' ) ? data.1.join('') : data.1 );
+    href    = c.url_for( ( data.1.ref == 'ARRAY' ) ? data.1.join('') : data.1 ).to_string;
     icon    = icons.${ data.2 } || data.2;
     classes = ( data.3.ref == 'ARRAY' ) ? data.3 : ( data.3 ) ? [ data.3 ] : [];
 
-    IF c.url_for == href;
+    url  = c.url_for.to_string.replace( '/\d+$', '' );
+    home = c.url_for('/').to_string;
+
+    IF url == home AND href == home OR url != home AND href.search( '^' _ url );
         classes.push('current');
     END;
 -%]

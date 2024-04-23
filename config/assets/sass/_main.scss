@@ -138,6 +138,10 @@ body {
                     color: theme.get('nav_icon_color_active');
                 }
             }
+
+            input[type='checkbox'] {
+                margin-right: 0.25em;
+            }
         }
 
         &[open] {

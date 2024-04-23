@@ -127,17 +127,18 @@
                 ELSE;
                     UNLESS meet_id;
                         icon_link_data_set = [
-                            [ 'Initial Memorization', '/memory/memorize', 'memorize' ],
-                            [ 'Memorization Review',  '/memory/review',   'review'   ],
-                            [ 'Memory State',         '/memory/state',    'memory'   ],
+                            [ 'Initial Memorization', '/memory/memorize/setup', 'memorize' ],
+                            [ 'Memorization Review',  '/memory/review',         'review'   ],
+                            [ 'Memory State',         '/memory/state',          'memory'   ],
 
-                            [ 'Queries Drill', '/drill/setup',  'drill'     ],
-                            [ 'Pick-Up Quiz',  '/quiz/pickup',  'pickup'    ],
+                            [ 'Queries Drill', '/drill/setup',       'drill'  ],
+                            [ 'Pick-Up Quiz',  '/quiz/pickup/setup', 'pickup' ],
+
                             [ 'Edit Profile',  '/user/profile', 'edit_user' ],
                         ];
                     ELSE;
                         icon_link_data_set = [
-                            [ 'Meet State',        [ '/meet/', meet_id                  ], 'meet_state'   ],
+                            [ 'Meet State',        [ '/meet/', meet_id, '/state'        ], 'meet_state'   ],
                             [ 'Meet Statistics',   [ '/meet/', meet_id, '/stats'        ], 'stats'        ],
                             [ 'Meet Roster',       [ '/meet/', meet_id, '/roster'       ], 'roster'       ],
                             [ 'Meet Distribution', [ '/meet/', meet_id, '/distribution' ], 'distribution' ],

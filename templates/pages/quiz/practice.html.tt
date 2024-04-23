@@ -1,15 +1,21 @@
-[% page.title = ( practice_type == 'quiz/pickup' ) ? 'Pick-Up Quiz Settings' : 'Queries Drill Setup' %]
+[%
+    practice_name =
+        ( practice_label == 'pickup_quiz'   ) ? 'Pick-Up Quiz'         :
+        ( practice_label == 'queries_drill' ) ? 'Queries Drill'        :
+        ( practice_label == 'memorize'      ) ? 'Initial Memorization' : '';
+
+    page.title = practice_name _ ' Setup';
+%]
 
 <details>
     <summary>Instructions</summary>
 
     <p>
-        Enter the
-        [% ( practice_type == 'quiz/pickup' ) ? 'pick-up quiz' : 'queries drill' %]'s settings below.
+        Enter the [% practice_name.lower %]'s settings below.
         Your settings will be saved for future practices.
     </p>
 
-    [% IF practice_type == 'quiz/pickup' %]
+    [% IF practice_label == 'pickup_quiz' %]
         <p>
             The roster main field needs to have a single entry per line, with team
             name first on a line, then each quizzer on a line. There needs to be at
@@ -33,20 +39,20 @@
     <input type="hidden" name="generate_queries" value="0">
 
     <input type="submit"
-        value="Run [% IF practice_type == 'quiz/pickup' %]Pick-Up Quiz[% ELSE %]Queries Drill[% END %]"
+        value="Run [% practice_name %]"
         onclick="
             this.form.elements.namedItem('generate_queries').value = 0;
         ">
 
-    [% IF practice_type == 'quiz/pickup' %]
-        <input type="submit" value="Generate Queries" onclick="
+    [% IF practice_label == 'pickup_quiz' %]
+        <input type="submit" value="Generate Queries to Print" onclick="
             this.form.elements.namedItem('generate_queries').value = 1;
         ">
     [% END %]
 
     <br>
 
-    [% IF practice_type == 'quiz/pickup' %]
+    [% IF practice_label == 'pickup_quiz' %]
         <fieldset class="roster">
             <legend>Roster</legend>
             <label>

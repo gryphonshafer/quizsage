@@ -1,9 +1,20 @@
 package QuizSage::Control::Memory;
 
 use exact 'Mojolicious::Controller';
+use QuizSage::Model::Memory;
 
 sub memorize ($self) {
-    $self->warn('memorize');
+    my $memory = QuizSage::Model::Memory->new;
+
+    unless ( $self->req->json ) {
+        $self->stash( to_memorize => $memory->to_memorize( $self->stash('user') ) );
+    }
+    else {
+        my $data = $self->req->json;
+        $data->{user_id} = $self->stash('user')->id,
+        $memory->memorized($data);
+        $self->render( json => { memorize_saved => 1 } );
+    }
 }
 
 sub review ($self) {
