@@ -84,11 +84,10 @@ sub review_verse( $self, $user ) {
         SELECT
             memory_id, book, chapter, verse, bible, level,
             JULIANDAY('NOW') - JULIANDAY(created) AS first_memorized,
-            JULIANDAY('NOW') - JULIANDAY(last_modified) AS last_studied,
-            ROUND( JULIANDAY('NOW') - JULIANDAY(last_modified) ) AS days_since
+            JULIANDAY('NOW') - JULIANDAY(last_modified) AS last_studied
         FROM memory
         WHERE user_id = ? AND level > 0
-        ORDER BY level, days_since, RANDOM()
+        ORDER BY level * 4 - last_studied, RANDOM()
     })->run( $user->id )->first({});
 
     return unless ($review_verse);
