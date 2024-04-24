@@ -27,7 +27,6 @@ $theme: (
 
     legend_background          : black,
     fieldset_background        : #18181a,
-    // form_elements_background   : #373737,
     form_elements_background   : black,
 
     input_text_color           : white,
@@ -45,9 +44,9 @@ $theme: (
     form_active_color          : white,
     form_active_border_color   : red,
 
-    radiobox_background        : white,
-    radiobox_checked_color     : white,
-    radiobox_checked_background: black,
+    radiobox_background        : black,
+    radiobox_checked_color     : black,
+    radiobox_checked_background: darkred,
 
     material_buffer_text       : #999,
     material_required_text     : royalblue,

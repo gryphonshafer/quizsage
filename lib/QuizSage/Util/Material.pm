@@ -9,8 +9,8 @@ use QuizSage::Model::Label;
 
 exact->exportable( qw{ text2words material_json } );
 
-sub text2words ($text) {
-    $text = lc $text;
+sub text2words ( $text, $skip_lc = 0 ) {
+    $text = lc $text unless ($skip_lc);
 
     $text =~ s/(^|\W)'(\w.*?)'(\W|$)/$1$2$3/g; # rm single-quotes from around words/phrases
     $text =~ s/[,:\-]+$//g;                    # rm commas, colons, and dashes at end of lines

@@ -18,7 +18,15 @@ sub memorize ($self) {
 }
 
 sub review ($self) {
-    $self->warn('review');
+    my $memory = QuizSage::Model::Memory->new;
+
+    $memory->reviewed(
+        $self->param('memory_id'),
+        $self->param('level'),
+        $self->stash('user')->id,
+    ) if ( $self->param('memory_id') and $self->param('level') );
+
+    $self->stash( verse => $memory->review_verse( $self->stash('user') ) );
 }
 
 sub state ($self) {

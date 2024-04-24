@@ -115,6 +115,12 @@ body {
             border-radius: calc( theme.get('radius') * 2 );
         }
 
+        &:hover {
+            @include theme.apply( themes.$themes ) {
+                border-color: theme.get('form_hover_border_color');
+            }
+        }
+
         & + details {
             margin-top: 1em;
         }

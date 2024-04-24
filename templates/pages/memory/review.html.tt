@@ -1,3 +1,61 @@
 [% page.title = 'Memorization Review' %]
 
-<p>This page will become the location for: <b>[% page.title %]</b></p>
+[% IF verse AND verse.words > 0 %]
+    <details>
+        <summary>Information</summary>
+        <ul>
+            <li>Number of Words: [% verse.words.size %]</li>
+            <li>First Memorized: [% verse.first_memorized | format('%0.1f') %] days ago</li>
+            <li>Last Studied: [% verse.last_studied | format('%0.1f') %] days ago</li>
+        </ul>
+    </details>
+
+    <form method="post">
+        <fieldset>
+            <legend>Memorization Self-Assessment Level</legend>
+            <input name="level" type="range" min="1" max="10" value="[% verse.level %]">
+            <input type="hidden" name="memory_id" value="[% verse.memory_id %]">
+            <input type="submit" value="Continue">
+        </fieldset>
+    </form>
+
+    <details>
+        <summary>Full Text</summary>
+        <p>[% verse.text %]</p>
+    </details>
+
+    <details>
+        <summary>Reference</summary>
+        <p>[% verse.book %] [% verse.chapter %]:[% verse.verse %] [% verse.bible %]</p>
+    </details>
+
+    [%
+        size       = 5;
+        skip       = 3;
+        start      = 0;
+        iterations = [];
+
+        WHILE start < verse.words.size - 1;
+            to = ( start + size < verse.words.size ) ? start + size : verse.words.size;
+            iterations.push( [ start, to ] );
+            start = start + skip;
+        END;
+    %]
+    [% FOR iteration IN iterations %]
+        <details>
+            <summary>Words [% iteration.0 + 1 %] to [% iteration.1 %]</summary>
+            <p>
+                [% UNLESS loop.first %]...[% END %][%
+                    verse.words.slice( iteration.0, iteration.1 - 1 ).join(' ')
+                %][% UNLESS loop.last %]...[% END %]
+            </p>
+        </details>
+    [% END %]
+[% ELSE %]
+    <p>
+        There appear to be no verses available for review.
+        Try going to the [%
+            PROCESS icon_link.html.tt,
+                data = [ ['Initial Memorization'], '/memory/memorize/setup', 'memorize' ]
+        %] page, selecting some verses, and returning here.
+[% END %]
