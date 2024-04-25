@@ -65,7 +65,9 @@
 
     <fieldset class="material_label">
         <legend>Material Label/Description</legend>
-        <textarea name="material_label">[% material_label %]</textarea>
+        <textarea name="material_label">[%
+            c.param('label') || material_label
+        %]</textarea>
     </fieldset>
 </form>
 

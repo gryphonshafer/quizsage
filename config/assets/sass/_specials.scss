@@ -226,11 +226,7 @@ div.tiles {
     font-size  : 75%;
     line-height: 1em;
     display    : flex;
-    margin     : 1em 0 1em 0;
-
-    & > div:nth-child(2) {
-        margin-left: 3em;
-    }
+    margin     : 1em 0;
 
     & > div:last-child > div {
         margin-right: 1em;
@@ -253,7 +249,9 @@ div.tiles {
     }
 
     & > div:first-child {
-        position: fixed;
+        position: sticky;
+        top     : 0;
+        left    : 0;
 
         @include theme.apply( themes.$themes ) {
             background: theme.get('fieldset_background');
@@ -261,7 +259,7 @@ div.tiles {
     }
 
     & > div:first-child > div {
-        width     : 2.66em;
+        width     : 3em;
         text-align: right;
     }
 

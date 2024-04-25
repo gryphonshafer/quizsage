@@ -1,7 +1,7 @@
 [% page.title = 'Memory State' %]
 
 [% IF state.tiles %]
-    <h2>Memorization Quantity</h2>
+    <h2>Initial Memorization Over Past Year</h2>
     <div class="horizontal_scroller">
         <div class="tiles">
             <div>
@@ -52,21 +52,22 @@
 [% page.js.inline.push(tiles_scroll_right) %]
 
 [% IF state.report %]
-    <h2>Memorization Quality</h2>
-    <dl>
+    <h2>Memorization Review Quality Levels</h2>
+    <ul>
         [% FOR section IN state.report %]
-            <dt>[%
+            [% NEXT IF state.report.size == 2 AND section.level == 'all' %]
+            <li class="no_bullet"><b>[%
                 ( section.level == 'all' )
-                    ? section.level.ucfirst _ ' Levels'
+                    ? 'All Levels (Combined)'
                     : 'Level ' _ section.level
-            %]</dt>
-            <dd>
-                <ul>
-                    [% FOR block IN section.blocks %]
-                        <li>[% block.refs %] [% block.bible %]</li>
-                    [% END %]
-                </ul>
-            </dd>
+            %]</b></li>
+            <ul>
+                [% FOR block IN section.blocks %]
+                    <li><a href="[%
+                        c.url_for('/drill/setup').query( label => block.refs _ ' ' _ block.bible )
+                    %]">[% block.refs %] [% block.bible %]</a></li>
+                [% END %]
+            </ul>
         [% END %]
-    </dl>
+    </ul>
 [% END %]
