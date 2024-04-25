@@ -214,6 +214,7 @@ div.horizontal_scroller {
 
     @include theme.apply( themes.$themes ) {
         border-color: theme.get('lines');
+        background: theme.get('fieldset_background');
     }
 
     @include theme.apply( themes.$styles, 'style' ) {
@@ -255,7 +256,7 @@ div.tiles {
         position: fixed;
 
         @include theme.apply( themes.$themes ) {
-            background: theme.get('main_background');
+            background: theme.get('fieldset_background');
         }
     }
 
