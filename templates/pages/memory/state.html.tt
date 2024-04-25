@@ -1,3 +1,1 @@
 [% page.title = 'Memory State' %]
-
-<p>This page will become the location for: <b>[% page.title %]</b></p>

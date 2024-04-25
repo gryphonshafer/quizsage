@@ -30,7 +30,7 @@ sub review ($self) {
 }
 
 sub state ($self) {
-    $self->warn('state');
+    $self->stash( state => QuizSage::Model::Memory->new->state( $self->stash('user') ) );
 }
 
 1;
