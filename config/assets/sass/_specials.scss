@@ -1,3 +1,5 @@
+@use 'sass:color';
+@use 'sass:math';
 @use 'theme';
 @use 'themes';
 
@@ -202,5 +204,86 @@ table.stats {
     @media ( max-width: 550px ) {
         font-size  : 30%;
         line-height: 1.5em;
+    }
+}
+
+div.horizontal_scroller {
+    max-width : max-content;
+    overflow-x: auto;
+    border    : 1px solid;
+
+    @include theme.apply( themes.$themes ) {
+        border-color: theme.get('lines');
+    }
+
+    @include theme.apply( themes.$styles, 'style' ) {
+        border-radius: theme.get('radius');
+    }
+}
+
+div.tiles {
+    font-size  : 75%;
+    line-height: 1em;
+    display    : flex;
+    margin     : 1em 0 1em 0;
+
+    & > div:nth-child(2) {
+        margin-left: 3em;
+    }
+
+    & > div:last-child > div {
+        margin-right: 1em;
+    }
+
+    & > div {
+        display       : flex;
+        flex-direction: column;
+
+        & > div {
+            width : 1em;
+            height: 1em;
+            margin: 1px;
+            border: 1px solid transparent;
+
+            @include theme.apply( themes.$styles, 'style' ) {
+                border-radius: calc( theme.get('radius') / 2 );
+            }
+        }
+    }
+
+    & > div:first-child {
+        position: fixed;
+
+        @include theme.apply( themes.$themes ) {
+            background: theme.get('main_background');
+        }
+    }
+
+    & > div:first-child > div {
+        width     : 2.66em;
+        text-align: right;
+    }
+
+    & > div > div.tile_0 {
+        @include theme.apply( themes.$themes ) {
+            background  : theme.get('tiles_end_color');
+            border-color: theme.get('lines');
+        }
+    }
+
+    $max_steps: 12;
+    @for $i from 1 through $max_steps {
+        & > div > div.tile_#{$i} {
+            @include theme.apply( themes.$themes ) {
+                $this_step_color: mix(
+                    theme.get('tiles_start_color'),
+                    theme.get('tiles_end_color'),
+                    math.div( $i, $max_steps ) * 100%
+                );
+
+                background  : $this_step_color;
+                border-color: color.adjust( $this_step_color, $lightness: theme.get('tiles_border_alter') );
+            }
+        }
     }
 }

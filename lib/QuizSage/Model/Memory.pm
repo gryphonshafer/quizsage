@@ -116,15 +116,15 @@ sub reviewed ( $self, $memory_id, $level, $user_id ) {
 
 sub state ( $self, $user ) {
     return {
-        green_tiles => $self->green_tiles( $user->id ),
-        report      => $self->report( $user->id ),
+        tiles  => $self->tiles( $user->id ),
+        report => $self->report( $user->id ),
     };
 }
 
-sub green_tiles ( $self, $user_id ) {
+sub tiles ( $self, $user_id ) {
     my %studying = map { @$_ } $self->dq->sql(q{
         SELECT
-            STRFTIME( '%Y-%m-%d', last_modified ),
+            STRFTIME( '%Y-%m-%d', created ),
             COUNT(*)
         FROM memory
         WHERE user_id = ? AND level > 0
@@ -136,26 +136,34 @@ sub green_tiles ( $self, $user_id ) {
     my $today = $dt->ymd;
 
     $dt->subtract( years => 1 );
+    $dt->subtract( days => $dt->dow ) if ( $dt->dow != 7 );
 
-    my $days = [];
-    while ( not $days->[-1] or $days->[-1]{date} ne $today ) {
-        my $date = $dt->ymd;
-        my $dow  = $dt->dow;
+    my ( $weeks, $month, $date ) = ( [], '', '' );
+    my @days;
 
-        $dow = 0 if ( $dow == 7 );
+    until ( $date eq $today ) {
+        $date = $dt->ymd;
 
-        push( @$days, {
-            date       => $date,
-            verses     => $studying{$date} // 0,
-            dow        => $dow,
-            day_abbr   => $dt->day_abbr,
-            month_abbr => $dt->month_abbr,
+        push( @days, {
+            strftime => $dt->strftime('%a %b %d'),
+            verses   => $studying{$date} // 0,
         } );
+
+        if ( $month ne $dt->month_abbr ) {
+            delete $weeks->[0][0]{month} if ( @$weeks == 1 and $weeks->[0][0]{month} );
+            $month = $days[0]{month} = $dt->month_abbr;
+        }
+
+        if ( @days == 7 ) {
+            push( @$weeks, [@days] );
+            @days = ();
+        }
 
         $dt->add( days => 1 );
     }
 
-    return $days;
+    push( @$weeks, [@days] ) if (@days);
+    return $weeks;
 }
 
 sub report ( $self, $user_id ) {
@@ -241,7 +249,7 @@ Saves the level of memorization of a verse.
 
 =head2 state
 
-=head2 green_tiles
+=head2 tiles
 
 =head2 report
 
