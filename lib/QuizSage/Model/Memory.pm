@@ -303,6 +303,8 @@ Saves the level of memorization of a verse.
 
 =head2 report
 
+=head2 sharing
+
 =head1 WITH ROLE
 
 L<Omniframe::Role::Model>.
