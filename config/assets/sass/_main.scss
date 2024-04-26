@@ -37,13 +37,10 @@ body {
         }
     }
 
-    li > ul {
-        margin-top   : 0;
-        margin-bottom: 0;
-    }
-
+    li > ul,
+    ul.column,
     ul > ul {
-        margin-top:    0;
+        margin-top   : 0;
         margin-bottom: 0;
     }
 
@@ -101,10 +98,10 @@ body {
     }
 
     details {
-        border : 1px solid;
-        padding: 0.25em 1em;
-        display: block;
-        width  : fit-content;
+        border   : 1px solid;
+        padding  : 0.25em 1em;
+        display  : block;
+        max-width: max-content;
 
         @include theme.apply( themes.$themes ) {
             border-color: theme.get('lines');

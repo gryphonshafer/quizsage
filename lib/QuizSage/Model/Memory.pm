@@ -116,8 +116,9 @@ sub reviewed ( $self, $memory_id, $level, $user_id ) {
 
 sub state ( $self, $user ) {
     return {
-        tiles     => $self->tiles( $user->id ),
-        report    => $self->report( $user->id ),
+        tiles  => $self->tiles( $user->id ),
+        report => $self->report( $user->id ),
+
         shared_to => $self->dq->sql(q{
             SELECT
                 u.user_id,
@@ -128,6 +129,26 @@ sub state ( $self, $user ) {
             JOIN user AS u ON sm.shared_user_id = u.user_id
             WHERE sm.memorizer_user_id = ?
         })->run( $user->id )->all({}),
+
+        shared_from => [
+            map {
+                +{
+                    user   => $_,
+                    tiles  => $self->tiles( $_->{user_id} ),
+                    report => $self->report( $_->{user_id} ),
+                };
+            }
+            $self->dq->sql(q{
+                SELECT
+                    u.user_id,
+                    u.first_name,
+                    u.last_name,
+                    u.email
+                FROM shared_memory AS sm
+                JOIN user AS u ON sm.memorizer_user_id = u.user_id
+                WHERE sm.shared_user_id = ?
+            })->run( $user->id )->all({})->@*,
+        ],
     };
 }
 
@@ -217,13 +238,16 @@ sub report ( $self, $user_id ) {
         };
     } sort { $b <=> $a } keys %$data ];
 
+    my $all_blocks = [ map { +{
+        bible => $_,
+        refs  => $bible_ref->clear->in( join( '; ', $all->{$_}->@* ) )->refs,
+    } } sort { $a cmp $b } keys %$all ];
+
     unshift( @$data, {
         level  => 'all',
-        blocks => [ map { +{
-            bible => $_,
-            refs  => $bible_ref->clear->in( join( '; ', $all->{$_}->@* ) )->refs
-        } } sort { $a cmp $b } keys %$all ],
-    } );
+        blocks => $all_blocks,
+        json   => encode_json($all_blocks),
+    } ) if (@$all_blocks);
 
     return $data;
 }

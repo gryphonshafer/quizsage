@@ -214,7 +214,7 @@ div.horizontal_scroller {
 
     @include theme.apply( themes.$themes ) {
         border-color: theme.get('lines');
-        background: theme.get('fieldset_background');
+        background  : theme.get('fieldset_background');
     }
 
     @include theme.apply( themes.$styles, 'style' ) {
@@ -282,6 +282,22 @@ div.tiles {
 
                 background  : $this_step_color;
                 border-color: color.adjust( $this_step_color, $lightness: theme.get('tiles_border_alter') );
+            }
+        }
+    }
+}
+
+details.with_horizontal_scroller {
+    div.horizontal_scroller {
+        margin-top: 1em;
+
+        @include theme.apply( themes.$themes ) {
+            background: theme.get('main_background');
+        }
+
+        div.tiles > div:first-child {
+            @include theme.apply( themes.$themes ) {
+                background: theme.get('main_background');
             }
         }
     }

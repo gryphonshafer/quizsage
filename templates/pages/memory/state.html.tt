@@ -50,33 +50,37 @@
 [% END %]
 [% page.js.inline.push(tiles_scroll_right) %]
 
+[% BLOCK report %]
+    [% IF data AND data.size %]
+        <ul>
+            [% FOR section IN data %]
+                [% NEXT IF data.size == 2 AND section.level == 'all' %]
+                <li class="no_bullet"><b>[%
+                    ( section.level == 'all' )
+                        ? 'All Levels (Combined)'
+                        : 'Level ' _ section.level
+                %]</b></li>
+                <ul>
+                    [% FOR block IN section.blocks %]
+                        <li><a href="[%
+                            c.url_for('/drill/setup').query( label => block.refs _ ' ' _ block.bible )
+                        %]">[% block.refs %] [% block.bible %]</a></li>
+                    [% END %]
+                </ul>
+            [% END %]
+        </ul>
+    [% ELSE %]
+        <p>There is currently no memorization review data.</p>
+    [% END %]
+[% END %]
+
 <h2>Initial Memorization: [% user.data.first_name _ ' ' _ user.data.last_name %]</h2>
 
 [% PROCESS tiles, data = state.tiles %]
 
 <h2>Memorization Review: [% user.data.first_name _ ' ' _ user.data.last_name %]</h2>
 
-[% IF state.report AND state.report.size %]
-    <ul>
-        [% FOR section IN state.report %]
-            [% NEXT IF state.report.size == 2 AND section.level == 'all' %]
-            <li class="no_bullet"><b>[%
-                ( section.level == 'all' )
-                    ? 'All Levels (Combined)'
-                    : 'Level ' _ section.level
-            %]</b></li>
-            <ul>
-                [% FOR block IN section.blocks %]
-                    <li><a href="[%
-                        c.url_for('/drill/setup').query( label => block.refs _ ' ' _ block.bible )
-                    %]">[% block.refs %] [% block.bible %]</a></li>
-                [% END %]
-            </ul>
-        [% END %]
-    </ul>
-[% ELSE %]
-    <p>There is currently no memorization review data.</p>
-[% END %]
+[% PROCESS report, data = state.report %]
 
 <h2>Share Memory State</h2>
 
@@ -185,4 +189,30 @@
     </ul>
 [% ELSE %]
     <p>There are no persons with whom you are currently sharing your memory state.</p>
+[% END %]
+
+<h2>Shared Memory States</h2>
+
+<p>
+    <b>Merged Label (of All Selected Persons):</b>
+    <span>There appears to be no merged label available.</span>
+</p>
+
+[% IF state.shared_from AND state.shared_from.size %]
+    [% FOR person IN state.shared_from %]
+        <details class="with_horizontal_scroller">
+            <summary>
+                [% IF person.report AND person.report.size %]
+                    <input type="checkbox" value="[% person.report.0.json | html %]">
+                [% END %]
+                [% person.user.first_name %]
+                [% person.user.last_name %]
+            </summary>
+
+            [% PROCESS tiles,  data = person.tiles  %]
+            [% PROCESS report, data = person.report %]
+        </details>
+    [% END %]
+[% ELSE %]
+    <p>There are no persons who have shared their memory state with you.</p>
 [% END %]
