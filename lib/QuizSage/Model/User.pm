@@ -111,6 +111,15 @@ sub qm_auth ( $self, $meet ) {
     }
 }
 
+sub by_full_name ( $self, $name ) {
+    return $self->dq->sql(q{
+        SELECT user_id, first_name, last_name, email
+        FROM user
+        WHERE active AND first_name || ' ' || last_name LIKE ?
+        ORDER BY 2, 3, 4
+    })->run( '%' . $name . '%' )->all({});
+}
+
 1;
 
 =head1 NAME
@@ -216,6 +225,13 @@ It requires the meet ID or a meet object.
 
     $user->qm_auth(42); # meet ID
     $user->qm_auth( QuizSage::Model::Meet->new->load(42) ); # meet object
+
+=head2 by_full_name
+
+This method requires an input string representing a case-insensetive substring
+of the first and last name of a user. The method will return an arrayref of
+hashrefs with C<user_id>, C<first_name>, C<last_name>, and C<email> that match
+active users.
 
 =head1 WITH ROLES
 

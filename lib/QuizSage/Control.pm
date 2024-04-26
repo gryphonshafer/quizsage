@@ -43,8 +43,12 @@ sub startup ($self) {
     $users->any('/user/profile')->to( 'user#account', account_action_type => 'profile' );
     $users->any('/user/logout')->to('user#logout');
 
+    $users->any( '/memory/' . $_ )->to( 'memory#' . $_ ) for ( qw( memorize review ) );
+    $users
+        ->any( '/memory/state' => [ format => ['json'] ] )
+        ->to( 'memory#state', format => undef );
+
     $users->any('/meet/passwd')->to('meet#passwd');
-    $users->any( '/memory/' . $_ )->to( 'memory#' . $_ ) for ( qw( memorize review state ) );
     $users
         ->any( '/meet/:meet_id/board/:room_number' => [ format => ['json'] ] )
         ->to( 'meet#board', format => undef );

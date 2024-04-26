@@ -116,8 +116,18 @@ sub reviewed ( $self, $memory_id, $level, $user_id ) {
 
 sub state ( $self, $user ) {
     return {
-        tiles  => $self->tiles( $user->id ),
-        report => $self->report( $user->id ),
+        tiles     => $self->tiles( $user->id ),
+        report    => $self->report( $user->id ),
+        shared_to => $self->dq->sql(q{
+            SELECT
+                u.user_id,
+                u.first_name,
+                u.last_name,
+                u.email
+            FROM shared_memory AS sm
+            JOIN user AS u ON sm.shared_user_id = u.user_id
+            WHERE sm.memorizer_user_id = ?
+        })->run( $user->id )->all({}),
     };
 }
 
@@ -216,6 +226,22 @@ sub report ( $self, $user_id ) {
     } );
 
     return $data;
+}
+
+sub sharing ( $self, $data ) {
+    $self->dq->sql(
+        ( $data->{action} eq 'add' )
+            ? q{
+                INSERT OR IGNORE INTO shared_memory
+                ( memorizer_user_id, shared_user_id ) VALUES ( ?, ? )
+            }
+            : q{
+                DELETE FROM shared_memory
+                WHERE memorizer_user_id = ? AND shared_user_id = ?
+            }
+    )->run( $data->{memorizer_user_id}, $data->{shared_user_id} );
+
+    return;
 }
 
 1;

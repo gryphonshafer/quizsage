@@ -161,3 +161,52 @@ input[type='range'] {
         }
     }
 }
+
+a.button {
+    border         : 1px solid;
+    text-decoration: none;
+    padding        : 0.0625em 0.25em;
+
+    @include theme.apply( themes.$themes ) {
+        color       : theme.get('button_text_color') !important;
+        background  : theme.get('button_background');
+        border-color: theme.get('lines');
+    }
+
+    @include theme.apply( themes.$styles, 'style' ) {
+        border-radius: theme.get('radius');
+    }
+
+    &:hover {
+        @include theme.apply( themes.$themes ) {
+            background  : theme.get('button_background');
+            border-color: theme.get('form_hover_border_color');
+        }
+    }
+
+    &:active {
+        @include theme.apply( themes.$themes ) {
+            color       : theme.get('form_active_color') !important;
+            background  : theme.get('form_active_background');
+            border-color: theme.get('form_active_border_color');
+        }
+    }
+}
+
+label.smart_search {
+    position: relative;
+
+    select {
+        position              : absolute;
+        top                   : 100%;
+        right                 : -10em;
+        width                 : 23em;
+        border-top-left-radius: 0;
+        visibility            : hidden;
+        overflow-y            : auto;
+
+        option {
+            padding: 0.25em 0.5em;
+        }
+    }
+}

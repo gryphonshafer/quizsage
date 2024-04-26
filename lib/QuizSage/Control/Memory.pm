@@ -2,6 +2,7 @@ package QuizSage::Control::Memory;
 
 use exact 'Mojolicious::Controller';
 use QuizSage::Model::Memory;
+use QuizSage::Model::User;
 
 sub memorize ($self) {
     my $memory = QuizSage::Model::Memory->new;
@@ -30,7 +31,23 @@ sub review ($self) {
 }
 
 sub state ($self) {
-    $self->stash( state => QuizSage::Model::Memory->new->state( $self->stash('user') ) );
+    unless ( ( $self->stash('format') // '' ) eq 'json' ) {
+        my $memory = QuizSage::Model::Memory->new;
+
+        if ( $self->param('user_id') ) {
+            $memory->sharing({
+                action            => $self->param('action'),
+                memorizer_user_id => $self->stash('user')->id,
+                shared_user_id    => $self->param('user_id'),
+            });
+            return $self->redirect_to('/memory/state');
+        }
+
+        $self->stash( state => $memory->state( $self->stash('user') ) );
+    }
+    else {
+        $self->render( json => QuizSage::Model::User->new->by_full_name( $self->param('name') ) );
+    }
 }
 
 1;
