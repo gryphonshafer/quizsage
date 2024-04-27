@@ -252,3 +252,6 @@ from the string.
     my @words = text2words(
         q{Jesus asked, "What's (the meaning of) this: 'I and my Father are one.'"};
     )->@*;
+
+You can optionally pass in a true second value, which will cause the function
+to skip lower-casing words.

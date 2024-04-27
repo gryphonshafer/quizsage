@@ -105,15 +105,21 @@ for "Memory" actions.
 
 =head2 memorize
 
-This controller handles C<memorize> display.
+This controller handles the initial memorization page by setting the
+C<to_memorize> stash value based on L<QuizSage::Model::Memory>'s C<to_memorize>.
+It will also handle memorized verse save actions via JSON POST.
 
 =head2 review
 
-This controller handles C<review> display.
+This controller handles the memorization review page by setting the
+C<verse> stash value based on L<QuizSage::Model::Memory>'s C<review_verse>.
 
 =head2 state
 
-This controller handles C<state> display.
+This controller handles the memorization state page by setting the C<state>
+stash value based on L<QuizSage::Model::Memory>'s C<state>.
+
+It also handles a variety of other calls coming off the memorization state page.
 
 =head1 INHERITANCE
 

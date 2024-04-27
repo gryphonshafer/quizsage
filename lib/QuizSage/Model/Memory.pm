@@ -293,23 +293,52 @@ This class is the model for memory objects.
 =head2 to_memorize
 
 Requires a loaded L<QuizSage::Model::User> object. Returns an arrayref of
-hashrefs, each being a verse of data.
+hashrefs, each being a verse of data. Verse data includes C<book>, C<chapter>,
+C<verse>, C<bible>, C<text>, a JSON-encoded string of the C<reference>, and the
+memorization level of C<memorized>.
 
 =head2 memorized
 
-Saves the level of memorization of a verse.
+Saves the level of memorization of a verse. Requires a hashref containing the
+keys C<user_id>, C<book>, C<chapter>, C<verse>, C<bible>, and C<level>.
 
 =head2 review_verse
 
+Requires a loaded L<QuizSage::Model::User> object. It will return either
+C<undef> if there's no review data for the user, or if there is, a hashref of
+data that includes the C<text> of the verse and the C<words> as an arrayref.
+
 =head2 reviewed
+
+This method requires a memory ID (primary key), a memorization level integer,
+and a user ID (primary key). It will then save the level to that row in the
+C<memory> database table.
 
 =head2 state
 
+Requires a loaded L<QuizSage::Model::User> object. Will return a hashref with
+C<tiles> (from the C<tiles> method), C<report> (from the C<report> method),
+C<shared_to> containing user information the state is shared to, and
+C<shared_from> containing user, tiles, and report data of users shared to this
+user.
+
 =head2 tiles
+
+Requires a user ID (primary key). Will return an arrayref of arrayrefs of days
+data (including counts per day of verses memorized) suitable to create a tiles
+display.
 
 =head2 report
 
+Requires a user ID (primary key). Will return a data structure suitable for
+rendering a memorization report.
+
 =head2 sharing
+
+This method requires a hashref with keys C<memorizer_user_id> and
+C<shared_user_id> along with C<action> which is expected to be either "add" or
+"remove". The method will then either add or remove a shared memory state record
+in the C<shared_memory> database table.
 
 =head1 WITH ROLE
 
