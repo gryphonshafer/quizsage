@@ -37,9 +37,21 @@ body {
         }
     }
 
-    li > ul {
+    li > ul,
+    ul.column,
+    ul > ul {
         margin-top   : 0;
         margin-bottom: 0;
+    }
+
+    li.no_bullet {
+        margin-left    : -1em;
+        list-style-type: none;
+    }
+
+    li {
+        margin-top   : 0.125em;
+        margin-bottom: 0.125em;
     }
 
     dialog {
@@ -86,10 +98,10 @@ body {
     }
 
     details {
-        border : 1px solid;
-        padding: 0.25em 1em;
-        display: block;
-        width  : fit-content;
+        border   : 1px solid;
+        padding  : 0.25em 1em;
+        display  : block;
+        max-width: max-content;
 
         @include theme.apply( themes.$themes ) {
             border-color: theme.get('lines');
@@ -98,6 +110,12 @@ body {
 
         @include theme.apply( themes.$styles, 'style' ) {
             border-radius: calc( theme.get('radius') * 2 );
+        }
+
+        &:hover {
+            @include theme.apply( themes.$themes ) {
+                border-color: theme.get('form_hover_border_color');
+            }
         }
 
         & + details {
@@ -122,6 +140,10 @@ body {
                 @include theme.apply( themes.$themes ) {
                     color: theme.get('nav_icon_color_active');
                 }
+            }
+
+            input[type='checkbox'] {
+                margin-right: 0.25em;
             }
         }
 

@@ -1,5 +1,5 @@
 [% UNLESS user %]
-    <ul><li><a href="[% c.url_for('/user/create') %]">Create New User</a></li></ul>
+    [% PROCESS icon_link.html.tt data = [ ['Create New User'], '/user/create', 'create_user' ] %]
 
     <form method="post" action="[% c.url_for('/user/login') %]">
         <fieldset>
@@ -18,40 +18,60 @@
         </fieldset>
     </form>
 
-    <ul><li>
-        <a href="[% c.url_for('/user/forgot_password') %]">Forgot Password</a>
-        <i>(or Resend Verification Email)</i>
-    </li></ul>
+    [% PROCESS icon_link.html.tt data = [ ['Forgot Password'], '/user/forgot_password', 'forgot_password' ] %]
+    <i>(or Resend Verification Email)</i>
 [% ELSE %]
     <p>
         Logged in as: <b>[% user.data.first_name %]</b>.
-        (<a href="[% c.url_for('/user/profile') %]">Edit Profile</a> or
-        <a href="[% c.url_for('/user/logout') %]">Logout</a>)
+        ([% PROCESS icon_link.html.tt data = [ ['Edit Profile'], '/user/profile', 'edit_user' ] %]
+        or
+        [% PROCESS icon_link.html.tt data = [ ['Logout'], '/user/logout', 'logout' ] %])
     </p>
 
-    <ul>
-        <li><a href="[% c.url_for('/quiz/pickup') %]">Pick-Up Quiz</a></li>
-        <li><a href="[% c.url_for('/drill/setup') %]">Queries Drill</a></li>
+    <ul class="column">
+        <li>
+            Memorization
+            <ul>
+                [% FOR icon_link_data IN [
+                    [ ['Initial Memorization'], '/memory/memorize/setup', 'memorize' ],
+                    [ ['Memorization Review'],  '/memory/review',         'review'   ],
+                    [ ['Memory State'],         '/memory/state',          'memory'   ],
+                ] %]
+                    <li class="no_bullet">[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
+                [% END %]
+            </ul>
+        </li>
+    </ul>
+    <ul class="column">
+        <li>
+            Practice
+            <ul>
+                <li class="no_bullet">
+                    [% PROCESS icon_link.html.tt data = [ ['Queries Drill'], '/drill/setup', 'drill' ] %]
+                </li>
+                <li class="no_bullet">
+                    [% PROCESS icon_link.html.tt
+                        data = [ ['Pick-Up Quiz'], '/quiz/pickup/setup', 'pickup' ] %]
+                    <i>(and Generate Queries to Print)</i>
+                </li>
+            </ul>
+        </li>
     </ul>
 
     <h2>Active Seasons</h2>
 
     [% IF active_seasons.size > 0 %]
-        <ul>
-            <li>
-                <a href="[% c.url_for('/meet/passwd') %]">Set Meet Officials' Password</a>
-                <i>(for user [% user.data.first_name %])</i>
-            </li>
-        </ul>
+
+        <ul><li class="no_bullet">[% PROCESS icon_link.html.tt
+            data = [ ['Set Quiz Magistrate Password'], '/meet/passwd', 'password' ] %]</li></ul>
 
         [% FOR season IN active_seasons %]
             <h3>[% IF season.location %][% season.location %]: [% END %][% season.name %]</h3>
 
-            <ul>
-                <li>
-                    <a href="[% c.url_for('/season/' _ season.season_id _ '/stats' ) %]">Season Statistics</a>
-                </li>
-            </ul>
+            <ul><li class="no_bullet">[%
+                PROCESS icon_link.html.tt
+                    data = [ ['Season Statistics'], [ '/season/', season.season_id, '/stats' ], 'stats' ]
+            %]</li></ul>
 
             [% IF season.meets.size > 0 %]
                 <table>
@@ -66,7 +86,7 @@
                         [% FOR meet IN season.meets %]
                             <tr>
                                 <td><a href="[%
-                                    c.url_for( '/meet/' _ meet.meet_id )
+                                    c.url_for( '/meet/' _ meet.meet_id _ '/state' )
                                 %]">[% meet.name %]</a></td>
                                 <td>[% meet.location %]</td>
                                 <td>[% meet.start %]</td>

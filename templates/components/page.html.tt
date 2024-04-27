@@ -112,27 +112,6 @@
     [% END %]
     [% page.js.inline.push(set_theme_setup) %]
 
-    [% BLOCK icon_link %]
-        [%
-            classes = [];
-            href    = ( data.2 != 'menu' )
-                ? c.url_for( ( data.1.ref ) ? data.1.join('') : data.1 )
-                : data.1;
-
-            IF data.3;
-                classes.push( data.3 );
-            END;
-            IF c.url_for == href;
-                classes.push('current');
-            END;
-        %]
-        <a
-            href="[% href %]"
-            title="[% data.0 %]"
-            [% IF classes.size %]class="[% classes.join(' ') %]"[% END %]
-        ><span class="material-symbols-outlined">[% data.2 %]</span></a>
-    [% END %]
-
     <header>
         <a href="[% c.url_for('/') %]"><img
             src="[% c.url_for('/logo/source.svg') %]" alt="QuizSage" width="32" height="32"></a>
@@ -142,83 +121,114 @@
             [%
                 UNLESS user;
                     icon_link_data_set = [
-                        [ 'Create New User', '/user/create',          'person_add' ],
-                        [ 'Forgot Password', '/user/forgot_password', 'key'        ],
+                        [ 'Create New User', '/user/create',          'create_user'     ],
+                        [ 'Forgot Password', '/user/forgot_password', 'forgot_password' ],
                     ];
                 ELSE;
                     UNLESS meet_id;
                         icon_link_data_set = [
-                            [ 'Pick-Up Quiz',  '/quiz/pickup',  'settings_b_roll'   ],
-                            [ 'Queries Drill', '/drill/setup',  'tools_power_drill' ],
-                            [ 'Edit Profile',  '/user/profile', 'person_edit'       ],
+                            [ 'Initial Memorization', '/memory/memorize/setup', 'memorize' ],
+                            [ 'Memorization Review',  '/memory/review',         'review'   ],
+                            [ 'Memory State',         '/memory/state',          'memory'   ],
+
+                            [ 'Queries Drill', '/drill/setup',       'drill'  ],
+                            [ 'Pick-Up Quiz',  '/quiz/pickup/setup', 'pickup' ],
+
+                            [ 'Edit Profile',  '/user/profile', 'edit_user' ],
                         ];
                     ELSE;
                         icon_link_data_set = [
-                            [ 'Meet State',        [ '/meet/', meet_id                  ], 'trophy'           ],
-                            [ 'Meet Statistics',   [ '/meet/', meet_id, '/stats'        ], 'bar_chart_4_bars' ],
-                            [ 'Meet Roster',       [ '/meet/', meet_id, '/roster'       ], 'group'            ],
-                            [ 'Meet Distribution', [ '/meet/', meet_id, '/distribution' ], 'scatter_plot'     ],
+                            [ 'Meet State',        [ '/meet/', meet_id, '/state'        ], 'meet_state'   ],
+                            [ 'Meet Statistics',   [ '/meet/', meet_id, '/stats'        ], 'stats'        ],
+                            [ 'Meet Roster',       [ '/meet/', meet_id, '/roster'       ], 'roster'       ],
+                            [ 'Meet Distribution', [ '/meet/', meet_id, '/distribution' ], 'distribution' ],
+
+                            [ 'Set QM Password', '/meet/passwd', 'password'  ],
                         ];
                     END;
 
                     icon_link_data_set.push(
-                        [ "Set Meet Officials' Password", '/meet/passwd', 'gavel'  ],
-                        [ 'Logout',                       '/user/logout', 'logout' ],
+                        [ 'Logout', '/user/logout', 'logout' ],
                     );
                 END;
 
                 icon_link_data_set.unshift( [ 'Home', '/', 'home' ] );
 
                 FOR icon_link_data IN icon_link_data_set;
-                    PROCESS icon_link, data = icon_link_data;
+                    PROCESS icon_link.html.tt, data = icon_link_data;
                 END;
             %]
         </div>
-        [% PROCESS icon_link, data = [ 'Navigation Menu', '#menu', 'menu', 'toggle_menu' ] %]
+        [% PROCESS icon_link.html.tt, data = [ 'Navigation Menu', '#menu', 'menu', 'toggle_menu' ] %]
     </header>
 
     <nav id="menu">
-        [% PROCESS icon_link, data = [ 'Navigation Menu', '#', 'menu', 'toggle_menu current' ] %]
+        [% PROCESS icon_link.html.tt, data = [ 'Navigation Menu', '#', 'menu', [ 'toggle_menu', 'current' ] ] %]
         <ul>
+            <li>[% PROCESS icon_link.html.tt, data = [ ['Home Page'], '/', 'home' ] %]</li>
             [% UNLESS user %]
-                <li><a href="[% c.url_for('/')            %]">Main Page</a></li>
-                <li><a href="[% c.url_for('/user/create') %]">Create New User</a></li>
-                <li>
-                    <a href="[% c.url_for('/user/forgot_password') %]">Forgot Password</a>
-                    <i>(or Resend Verification Email)</i>
-                </li>
+                [% FOR icon_link_data IN [
+                    [ ['Create New User'], '/user/create',          'create_user'     ],
+                    [ ['Forgot Password'], '/user/forgot_password', 'forgot_password' ],
+                ] %]
+                    <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
+                [% END %]
             [% ELSE %]
-                <li><a href="[% c.url_for('/') %]">Main Page</a></li>
-
-                [% IF meet_id %]
+                [% UNLESS meet_id %]
+                    <li>
+                        Memorization
+                        <ul>
+                            [% FOR icon_link_data IN [
+                                [ ['Initial Memorization'], '/memory/memorize', 'memorize' ],
+                                [ ['Memorization Review'],  '/memory/review',   'review'   ],
+                                [ ['Memory State'],         '/memory/state',    'memory'   ],
+                            ] %]
+                                <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
+                            [% END %]
+                        </ul>
+                    </li>
+                    [% FOR icon_link_data IN [
+                        [ ['Queries Drill'], '/drill/setup', 'drill'  ],
+                        [ ['Pick-Up Quiz'],  '/quiz/pickup', 'pickup' ],
+                    ] %]
+                        <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
+                    [% END %]
+                [% ELSE %]
                     <li>
                         Meet
                         <ul>
-                            <li><a href="[% c.url_for( '/meet/' _ meet_id)
-                                %]">State</a></li>
-                            <li><a href="[% c.url_for( '/meet/' _ meet_id _ '/distribution' )
-                                %]">Distribution</a></li>
-                            <li><a href="[% c.url_for( '/meet/' _ meet_id _ '/roster' )
-                                %]">Roster</a></li>
+                            [% FOR icon_link_data IN [
+                                [ ['State'],        [ '/meet/', meet_id ],                  'meet_state'   ],
+                                [ ['Distribution'], [ '/meet/', meet_id, '/distribution' ], 'distribution' ],
+                                [ ['Roster'],       [ '/meet/', meet_id, '/roster' ],       'roster'       ],
+                            ] %]
+                                <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
+                            [% END %]
                             [% IF room_numbers %]
                                 <li>
                                     Scoreboards
                                     <ul>
                                         [% FOR room_number IN room_numbers %]
-                                            <li><a href="[%
-                                                c.url_for( '/meet/' _ meet_id _ '/board/' _ room_number )
-                                            %]">Room [% room_number %]</a></li>
+                                            [%
+                                                title = 'Room '    _ room_number;
+                                                icon  = 'counter_' _ room_number;
+                                            %]
+                                            <li>[% PROCESS icon_link.html.tt, data = [
+                                                [title],
+                                                [ '/meet/', meet_id, '/board/', room_number ],
+                                                icon,
+                                            ] %]</li>
                                         [% END %]
                                     </ul>
                                 </li>
                             [% END %]
-                            <li><a href="[% c.url_for( '/meet/' _ meet_id _ '/stats' ) %]">Statistics</a></li>
+                            <li>[% PROCESS icon_link.html.tt,
+                                data = [ ['Statistics'], [ '/meet/', meet_id, '/stats' ], 'stats' ] %]</li>
                         </ul>
                     </li>
+                    <li>[% PROCESS icon_link.html.tt,
+                        data = [ ['Set QM Password'], '/meet/passwd', 'password' ] %]</li>
                 [% END %]
-
-                <li><a href="[% c.url_for('/drill/setup') %]">Queries Drill</a></li>
-                <li><a href="[% c.url_for('/quiz/pickup') %]">Pick-Up Quiz</a></li>
             [% END %]
 
             [% FOR type IN [
@@ -239,9 +249,12 @@
             [% END %]
 
             [% IF user %]
-                <li><a href="[% c.url_for('/meet/passwd')  %]">Set Meet Officials' Password</a></li>
-                <li><a href="[% c.url_for('/user/profile') %]">Edit Profile</a></li>
-                <li><a href="[% c.url_for('/user/logout')  %]">Logout</a></li>
+                [% UNLESS meet_id %]
+                    <li>[% PROCESS icon_link.html.tt,
+                        data = [ ['Edit Profile'], '/user/profile', 'edit_user' ] %]</li>
+                [% END %]
+                <li>[% PROCESS icon_link.html.tt,
+                    data = [ ['Logout'], '/user/logout', 'logout' ] %]</li>
             [% END %]
         </ul>
     </nav>

@@ -27,7 +27,6 @@ $theme: (
 
     legend_background          : black,
     fieldset_background        : #18181a,
-    // form_elements_background   : #373737,
     form_elements_background   : black,
 
     input_text_color           : white,
@@ -39,15 +38,15 @@ $theme: (
     form_hover_border_color    : royalblue,
     form_focus_background      : #373737,
     form_focus_border_color    : blue,
-    form_disabled_background   : white,
-    form_disabled_color        : white,
+    form_disabled_background   : #333,
+    form_disabled_color        : #666,
     form_active_background     : #373737,
     form_active_color          : white,
     form_active_border_color   : red,
 
-    radiobox_background        : white,
-    radiobox_checked_color     : white,
-    radiobox_checked_background: black,
+    radiobox_background        : black,
+    radiobox_checked_color     : black,
+    radiobox_checked_background: darkred,
 
     material_buffer_text       : #999,
     material_required_text     : royalblue,
@@ -75,4 +74,8 @@ $theme: (
     footer_a_hover   : lightblue,
     footer_a_active  : darkred,
     footer_separator : dimgray,
+
+    tiles_start_color : #0e0,
+    tiles_end_color   : #000,
+    tiles_border_alter: 20%,
 ) !default;

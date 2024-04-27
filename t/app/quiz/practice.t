@@ -20,7 +20,7 @@ my $dom;
 mojo->app->hook( before_routes => sub ($c) { $c->session( user_id => $user->id ) } );
 mojo->app->hook( after_render => sub ( $c, $output, $format ) { $dom = Mojo::DOM->new($$output) } );
 
-mojo->get_ok('/quiz/pickup')
+mojo->get_ok('/quiz/pickup/setup')
     ->status_is(200)
     ->element_exists('input[name="bible"]')
     ->element_exists('textarea[name="roster_data"]')
@@ -37,7 +37,7 @@ my $mock = mock 'QuizSage::Model::Quiz' => ( override => [
 ] );
 
 mojo->post_ok(
-    '/quiz/pickup',
+    '/quiz/pickup/setup',
     form => {
         default_bible  => $default_bible,
         roster_data    => $roster_data,
@@ -45,7 +45,7 @@ mojo->post_ok(
     },
 )
     ->status_is(302)
-    ->header_is( location => '/quiz/42' );
+    ->header_is( location => '/quiz/pickup/42' );
 
 mojo->get_ok('/drill/setup')
     ->status_is(200)

@@ -1,0 +1,241 @@
+[% page.title = 'Memory State' %]
+
+[% BLOCK tiles %]
+    <div class="horizontal_scroller">
+        <div class="tiles">
+            <div>
+                <div></div>
+                <div>Sun</div>
+                <div>Mon</div>
+                <div>Tue</div>
+                <div>Wed</div>
+                <div>Thr</div>
+                <div>Fri</div>
+                <div>Sat</div>
+            </div>
+
+            [%
+                max_steps  = 12;
+                step_shift = 3;
+            %]
+            [% FOR week IN data %]
+                <div>
+                    <div>[% week.0.month %]</div>
+                    [% FOR day IN week %]
+                        <div
+                            class="tile_[%
+                                ( day.verses == 0        ) ? 0         :
+                                ( day.verses > max_steps ) ? max_steps : day.verses + step_shift
+                            %]"
+                            title="[% day.verses
+                                %] verse[% IF day.verses != 1 %]s[% END %] on [% day.strftime %]"></div>
+                    [% END %]
+                </div>
+            [% END %]
+        </div>
+    </div>
+[% END %]
+
+[% tiles_scroll_right = BLOCK %]
+    let h_scrollers;
+
+    window.addEventListener( 'load', () => {
+        h_scrollers = window.document.querySelectorAll('div.horizontal_scroller');
+        window.dispatchEvent( new Event('resize') );
+    } );
+
+    window.addEventListener( 'resize', () => {
+        h_scrollers.forEach( h_scroller => h_scroller.scrollLeft = h_scroller.scrollLeftMax );
+    } );
+[% END %]
+[% page.js.inline.push(tiles_scroll_right) %]
+
+[% BLOCK report %]
+    [% IF data AND data.size %]
+        <ul>
+            [% FOR section IN data %]
+                [% NEXT IF data.size == 2 AND section.level == 'all' %]
+                <li class="no_bullet"><b>[%
+                    ( section.level == 'all' )
+                        ? 'All Levels (Combined)'
+                        : 'Level ' _ section.level
+                %]</b></li>
+                <ul>
+                    [% FOR block IN section.blocks %]
+                        <li><a href="[%
+                            c.url_for('/drill/setup').query( label => block.refs _ ' ' _ block.bible )
+                        %]">[% block.refs %] [% block.bible %]</a></li>
+                    [% END %]
+                </ul>
+            [% END %]
+        </ul>
+    [% ELSE %]
+        <p>There is currently no memorization review data.</p>
+    [% END %]
+[% END %]
+
+<h2>Initial Memorization: [% user.data.first_name _ ' ' _ user.data.last_name %]</h2>
+
+[% PROCESS tiles, data = state.tiles %]
+
+<h2>Memorization Review: [% user.data.first_name _ ' ' _ user.data.last_name %]</h2>
+
+[% PROCESS report, data = state.report %]
+
+<h2>Share Memory State</h2>
+
+<form id="share_memory_state" method="get">
+    <fieldset>
+        <legend>Add Person to Sharing</legend>
+        <label class="smart_search">
+            Person's Name
+            <input type="text" name="user_full_name" value="" placeholder="Person's Name" autocomplete="off">
+            <select></select>
+        </label>
+        <input type="hidden" name="action" value="add">
+        <input type="hidden" name="user_id" value="">
+    </fieldset>
+</form>
+
+[% share_memory_state = BLOCK %]
+    window.addEventListener( 'load', () => {
+        const form  = window.document.querySelector('form#share_memory_state');
+        const id    = form.querySelector('input[name="user_id"]');
+        const name  = form.querySelector('input[name="user_full_name"]');
+        const names = form.querySelector('select');
+
+        name.value     = '';
+        let last_value = '';
+
+        const submit = () => {
+            id.value = names.selectedOptions[0].value;
+            form.submit();
+        };
+
+        name.addEventListener( 'keyup', event => {
+            if ( ! ( event.key == 'ArrowDown' && names.options.length > 0 ) ) {
+                if ( ! name.value || name.value.length < 2 ) {
+                    names.style.visibility = 'hidden';
+                    names.options.length   = 0;
+                }
+                else {
+                    if ( last_value != name.value ) {
+                        fetch( "[% c.url_for %].json?" + new URLSearchParams({ name: name.value }) )
+                            .then( reply => reply.json() )
+                            .then( data => {
+                                if ( data.length == 0 ) {
+                                    names.style.visibility = 'hidden';
+                                    names.options.length   = 0;
+                                }
+                                else {
+                                    names.style.visibility = 'visible';
+                                    names.options.length   = 0;
+                                    names.append(
+                                        ...data.map( user => {
+                                            return new Option(
+                                                [
+                                                    user.first_name,
+                                                    user.last_name,
+                                                    '(' + user.email + ')',
+                                                ].join(' '),
+                                                user.user_id,
+                                            );
+                                        } )
+                                    );
+                                    names.size =
+                                        ( data.length > 7 ) ? 7 :
+                                        ( data.length < 2 ) ? 2 : data.length;
+                                }
+                            } );
+                    }
+                }
+            }
+            else {
+                names.focus();
+                names.options[0].selected = true;
+            }
+            last_value = name.value;
+        } );
+
+        names.addEventListener( 'keydown', event => {
+            if ( event.key == 'ArrowUp' && names.options[0].selected ) {
+                names.options[0].selected = false;
+                name.focus();
+            }
+            else if ( event.key == 'Enter' ) {
+                submit();
+            }
+        } );
+
+        names.addEventListener( 'click', event => {
+            submit();
+        } );
+    } );
+[% END %]
+[% page.js.inline.push(share_memory_state) %]
+
+<h3>Current Share List</h3>
+
+[% IF state.shared_to AND state.shared_to.size %]
+    <ul>
+        [% FOR person IN state.shared_to %]
+            <li>
+                [% person.first_name %]
+                [% person.last_name %]
+                ([% person.email %])
+                <a href="[% c.url_for.query({ action => 'remove', user_id => person.user_id }) %]">Remove</a>
+            </li>
+        [% END %]
+    </ul>
+[% ELSE %]
+    <p>There are no persons with whom you are currently sharing your memory state.</p>
+[% END %]
+
+<h2>Shared Memory States</h2>
+
+[% IF state.shared_from AND state.shared_from.size %]
+    <form id="shared_from_labels" method="get">
+        <input type="hidden" name="shared_from_labels" value="1">
+
+        <p style="margin-top: -1em"><button disabled>Pick-Up Quiz from Selected</button></p>
+
+        [% FOR person IN state.shared_from %]
+            <details class="with_horizontal_scroller">
+                <summary>
+                    [% IF person.report AND person.report.size %]
+                        <input type="checkbox" name="label" value="[% person.report.0.json | html %]">
+                    [% END %]
+                    [% person.user.first_name %]
+                    [% person.user.last_name %]
+                </summary>
+
+                [% PROCESS tiles,  data = person.tiles  %]
+                [% PROCESS report, data = person.report %]
+            </details>
+        [% END %]
+    </form>
+[% ELSE %]
+    <p>There are no persons who have shared their memory state with you.</p>
+[% END %]
+
+[% shared_from_labels = BLOCK %]
+    window.addEventListener( 'load', () => {
+        const checkboxes = window.document.querySelectorAll('form#shared_from_labels input[type="checkbox"]');
+        const buttons    = window.document.querySelectorAll('form#shared_from_labels button');
+
+        buttons.forEach(
+            button => button.disabled =
+                ! [ ...checkboxes ].filter( checkbox => checkbox.checked ).length
+        );
+
+        checkboxes.forEach( checkbox => {
+            checkbox.addEventListener( 'change', () => {
+                buttons.forEach(
+                    button => button.disabled =
+                        ! [ ...checkboxes ].filter( checkbox => checkbox.checked ).length
+                );
+            } );
+        } );
+    } );
+[% END %]
+[% page.js.inline.push(shared_from_labels) %]

@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS shared_memory;
+DROP TABLE IF EXISTS memory;

@@ -20,17 +20,37 @@
 </h2>
 
 <ul class="column no_print">
-    <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') _ '/roster' )       %]">Roster</a></li>
-    <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') _ '/distribution' ) %]">Distribution</a></li>
-    <li><a href="[% c.url_for( '/meet/' _ c.param('meet_id') _ '/stats' )        %]">Statistics</a></li>
+    <li>
+        Meet Information
+        <ul>
+            [% FOR icon_link_data IN [
+                [ ['Roster'],       [ '/meet/', c.param('meet_id'), '/roster'       ], 'roster'       ],
+                [ ['Distribution'], [ '/meet/', c.param('meet_id'), '/distribution' ], 'distribution' ],
+                [ ['Statistics'],   [ '/meet/', c.param('meet_id'), '/stats'        ], 'stats'        ],
+            ] %]
+                <li class="no_bullet">[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
+            [% END %]
+        </ul>
+    </li>
 </ul>
 
 <ul class="column no_print">
-    [% FOR room_number IN room_numbers.keys.sort %]
-        <li><a href="[%
-            c.url_for( '/meet/' _ c.param('meet_id') _ '/board/' _ room_number )
-        %]">Scoreboard Room [% room_number %]</a></li>
-    [% END %]
+    <li>
+        Scoreboards
+        <ul>
+            [% FOR room_number IN room_numbers.keys.sort %]
+                [%
+                    title = 'Room '    _ room_number;
+                    icon  = 'counter_' _ room_number;
+                %]
+                <li class="no_bullet">[% PROCESS icon_link.html.tt, data = [
+                    [title],
+                    [ '/meet/', c.param('meet_id'), '/board/', room_number ],
+                    icon,
+                ] %]</li>
+            [% END %]
+        </ul>
+    </li>
 </ul>
 
 [% BLOCK event %]

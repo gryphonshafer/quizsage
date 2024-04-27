@@ -1,0 +1,62 @@
+[% page.title = 'Initial Memorization' %]
+
+[% IF to_memorize.size > 0 %]
+    <p>
+        Select a reference to view the verse text.
+        Once memorized, check the checkbox.
+    </p>
+
+    <p>
+        <button id="expand_all">Expand All</button>
+        <button id="collapse_all">Collapse All</button>
+    </p>
+
+    <div id="memorize">
+        [% FOR verse IN to_memorize %]
+            <details>
+                <summary>
+                    <input type="checkbox"
+                        [% IF verse.memorized %]checked[% END %]
+                        value="[% verse.reference | html %]">
+                    [% verse.book %] [% verse.chapter %]:[% verse.verse %] [% verse.bible %]
+                </summary>
+                <p>[% verse.text %]</p>
+            </details>
+        [% END %]
+    </div>
+
+    [% js = BLOCK %]
+        window.addEventListener( 'load', () => {
+            const verses = window.document.querySelectorAll('div#memorize details');
+
+            window.document.querySelector('button#expand_all').onclick =
+                () => verses.forEach( verse => verse.open = true );
+            window.document.querySelector('button#collapse_all').onclick =
+                () => verses.forEach( verse => verse.open = false );
+
+            verses.forEach( verse => {
+                verse.querySelector('input').onclick = (event) => {
+                    const data = JSON.parse( event.target.value );
+                    data.level = ( event.target.checked ) ? 1 : 0;
+
+                    fetch(
+                        window.document.location.href,
+                        {
+                            method: 'POST',
+                            body  : JSON.stringify(data),
+                        },
+                    );
+                };
+            } );
+        } );
+    [% END %]
+    [% page.js.inline.push(js) %]
+[% ELSE %]
+    <p>
+        There doesn't seem to be any verses to pull material from to memorize.
+        Try going to the [%
+            PROCESS icon_link.html.tt,
+                data = [ ['Initial Memorization'], '/memory/memorize/setup', 'memorize' ]
+        %] page and entering a different material label.
+    </p>
+[% END %]
