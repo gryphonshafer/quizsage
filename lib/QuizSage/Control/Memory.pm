@@ -3,6 +3,7 @@ package QuizSage::Control::Memory;
 use exact 'Mojolicious::Controller';
 use QuizSage::Model::Memory;
 use QuizSage::Model::User;
+use Mojo::JSON 'decode_json';
 
 sub memorize ($self) {
     my $memory = QuizSage::Model::Memory->new;
@@ -42,7 +43,46 @@ sub state ($self) {
             });
             return $self->redirect_to('/memory/state');
         }
+        elsif ( $self->param('shared_from_labels') ) {
+            my ( %bibles, @names, @refs );
+            for my $label ( map { decode_json($_) } $self->every_param('label')->@* ) {
+                push( @names, $label->{name} );
+                for my $block ( $label->{blocks}->@* ) {
+                    $bibles{ $block->{bible} };
+                    push( @refs, $block->{refs} );
+                }
+            }
 
+            @names = map { $_->[0] } sort { $a->[1] <=> $b->[1] } map { [ $_, rand ] } @names;
+            my @teams;
+            if ( @names > 2 and @names % 3 == 1 ) {
+                @teams = (
+                    [ shift @names, shift @names ],
+                    [ shift @names, shift @names ],
+                );
+            }
+            elsif ( @names > 2 and @names % 3 == 2 ) {
+                @teams = (
+                    [ shift @names, shift @names, shift @names ],
+                    [ shift @names, shift @names ],
+                );
+            }
+            push( @teams, [ grep { defined } shift @names, shift @names, shift @names ] ) while (@names);
+            @teams = map { $_->[0] } sort { $a->[1] <=> $b->[1] } map { [ $_, rand ] } @teams;
+
+            my $team_number;
+            return $self->redirect_to(
+                $self->url_for('/quiz/pickup/setup')->query(
+                    roster => join( "\n\n", map { join( "\n", 'Team ' . ++$team_number, @$_ ) } @teams ),
+                    label  => join( ' ',
+                        QuizSage::Model::Memory->new->bible_ref
+                            ->acronyms(0)->sorting(1)->add_detail(0)
+                            ->clear->in(@refs)->refs,
+                        sort keys %bibles,
+                    ),
+                )
+            );
+        }
         $self->stash( state => $memory->state( $self->stash('user') ) );
     }
     else {

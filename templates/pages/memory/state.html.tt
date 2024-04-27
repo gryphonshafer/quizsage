@@ -97,7 +97,7 @@
     </fieldset>
 </form>
 
-[% tiles_scroll_right = BLOCK %]
+[% share_memory_state = BLOCK %]
     window.addEventListener( 'load', () => {
         const form  = window.document.querySelector('form#share_memory_state');
         const id    = form.querySelector('input[name="user_id"]');
@@ -172,7 +172,7 @@
         } );
     } );
 [% END %]
-[% page.js.inline.push(tiles_scroll_right) %]
+[% page.js.inline.push(share_memory_state) %]
 
 <h3>Current Share List</h3>
 
@@ -193,26 +193,49 @@
 
 <h2>Shared Memory States</h2>
 
-<p>
-    <b>Merged Label (of All Selected Persons):</b>
-    <span>There appears to be no merged label available.</span>
-</p>
-
 [% IF state.shared_from AND state.shared_from.size %]
-    [% FOR person IN state.shared_from %]
-        <details class="with_horizontal_scroller">
-            <summary>
-                [% IF person.report AND person.report.size %]
-                    <input type="checkbox" value="[% person.report.0.json | html %]">
-                [% END %]
-                [% person.user.first_name %]
-                [% person.user.last_name %]
-            </summary>
+    <form id="shared_from_labels" method="get">
+        <input type="hidden" name="shared_from_labels" value="1">
 
-            [% PROCESS tiles,  data = person.tiles  %]
-            [% PROCESS report, data = person.report %]
-        </details>
-    [% END %]
+        <p style="margin-top: -1em"><button disabled>Pick-Up Quiz from Selected</button></p>
+
+        [% FOR person IN state.shared_from %]
+            <details class="with_horizontal_scroller">
+                <summary>
+                    [% IF person.report AND person.report.size %]
+                        <input type="checkbox" name="label" value="[% person.report.0.json | html %]">
+                    [% END %]
+                    [% person.user.first_name %]
+                    [% person.user.last_name %]
+                </summary>
+
+                [% PROCESS tiles,  data = person.tiles  %]
+                [% PROCESS report, data = person.report %]
+            </details>
+        [% END %]
+    </form>
 [% ELSE %]
     <p>There are no persons who have shared their memory state with you.</p>
 [% END %]
+
+[% shared_from_labels = BLOCK %]
+    window.addEventListener( 'load', () => {
+        const checkboxes = window.document.querySelectorAll('form#shared_from_labels input[type="checkbox"]');
+        const buttons    = window.document.querySelectorAll('form#shared_from_labels button');
+
+        buttons.forEach(
+            button => button.disabled =
+                ! [ ...checkboxes ].filter( checkbox => checkbox.checked ).length
+        );
+
+        checkboxes.forEach( checkbox => {
+            checkbox.addEventListener( 'change', () => {
+                buttons.forEach(
+                    button => button.disabled =
+                        ! [ ...checkboxes ].filter( checkbox => checkbox.checked ).length
+                );
+            } );
+        } );
+    } );
+[% END %]
+[% page.js.inline.push(shared_from_labels) %]

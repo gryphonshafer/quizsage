@@ -59,7 +59,7 @@
                 Default Bible:
                 <input type="text" name="bible" value="[% bible %]">
             </label>
-            <textarea name="roster_data">[% roster_data %]</textarea>
+            <textarea name="roster_data">[% c.param('roster') || roster_data %]</textarea>
         </fieldset>
     [% END %]
 

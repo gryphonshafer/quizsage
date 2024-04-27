@@ -5,11 +5,12 @@ use Bible::Reference;
 use DateTime;
 use Mojo::JSON 'encode_json';
 use QuizSage::Model::Label;
+use QuizSage::Model::User;
 use QuizSage::Util::Material 'text2words';
 
 with 'Omniframe::Role::Model';
 
-my $bible_ref = Bible::Reference->new;
+class_has bible_ref => Bible::Reference->new;
 
 sub to_memorize ( $self, $user ) {
     my $quiz_defaults = $self->conf->get('quiz_defaults');
@@ -61,7 +62,7 @@ sub to_memorize ( $self, $user ) {
                     memorized => $sth_level->run( $user->id, $book, $chapter, $verse, $_ )->value // 0,
                 };
             } @bibles;
-        } $bible_ref->clear->acronyms(0)->sorting(1)->add_detail(1)->in(
+        } $self->bible_ref->clear->acronyms(0)->sorting(1)->add_detail(1)->in(
             join( '; ', map { $_->{range}->@* } $material_data->{ranges}->@* )
         )->as_verses->@*
     ];
@@ -198,11 +199,11 @@ sub tiles ( $self, $user_id ) {
 }
 
 sub report ( $self, $user_id ) {
-    $bible_ref->acronyms(1)->sorting(1)->add_detail(0);
+    $self->bible_ref->acronyms(1)->sorting(1)->add_detail(0);
 
     my $data;
 
-    $data->{ $_->{level} }{ $_->{bible} } = $bible_ref->clear->in( $_->{label} )->refs for (
+    $data->{ $_->{level} }{ $_->{bible} } = $self->bible_ref->clear->in( $_->{label} )->refs for (
         $self->dq->sql(q{
             SELECT level, bible, GROUP_CONCAT( books, '; ' ) AS label
             FROM (
@@ -240,14 +241,19 @@ sub report ( $self, $user_id ) {
 
     my $all_blocks = [ map { +{
         bible => $_,
-        refs  => $bible_ref->clear->in( join( '; ', $all->{$_}->@* ) )->refs,
+        refs  => $self->bible_ref->clear->in( join( '; ', $all->{$_}->@* ) )->refs,
     } } sort { $a cmp $b } keys %$all ];
-
-    unshift( @$data, {
-        level  => 'all',
-        blocks => $all_blocks,
-        json   => encode_json($all_blocks),
-    } ) if (@$all_blocks);
+    if (@$all_blocks) {
+        my $user_data = QuizSage::Model::User->new->load($user_id)->data;
+        unshift( @$data, {
+            level  => 'all',
+            blocks => $all_blocks,
+            json   => encode_json({
+                name   => $user_data->{first_name} . ' ' . $user_data->{last_name},
+                blocks => $all_blocks,
+            }),
+        } );
+    }
 
     return $data;
 }
