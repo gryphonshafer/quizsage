@@ -1,7 +1,6 @@
 package QuizSage::Role::Meet::Build;
 
 use exact -role;
-use Mojo::JSON 'decode_json';
 use Omniframe::Class::Javascript;
 use Omniframe::Util::Text 'trim';
 use QuizSage::Model::Season;
@@ -133,7 +132,7 @@ sub _create_material_json ( $self, $build_settings, $user_id = undef ) {
 sub _build_bracket_data ( $self, $build_settings ) {
     my $bracket_names;
     $bracket_names->{ $_->{name} }++ for ( $build_settings->{brackets}->@* );
-    croak('Duplicate bracket names') if ( grep { $_ > 1 } values %$bracket_names );
+    die "Duplicate bracket names\n" if ( grep { $_ > 1 } values %$bracket_names );
 
     for my $bracket ( $build_settings->{brackets}->@* ) {
         my $teams = ( $bracket->{teams}{source} eq 'roster' )
@@ -247,7 +246,7 @@ sub _build_bracket_data ( $self, $build_settings ) {
 
         my $quiz_names;
         $quiz_names->{ $_->{name} }++ for ( map { $_->{rooms}->@* } $bracket->{sets}->@* );
-        croak('Duplicate quiz names') if ( grep { $_ > 1 } values %$quiz_names );
+        die "Duplicate quiz names\n" if ( grep { $_ > 1 } values %$quiz_names );
     }
 
     return;
@@ -298,6 +297,11 @@ sub _schedule_integration( $self, $build_settings ) {
             $event->{stop}  = $event->{start}->clone->add( minutes => $event->{duration} );
         }
 
+        my ($bracket_overrides) = reverse grep {
+            not $_->{quiz} and
+            $_->{bracket} eq $bracket->{name}
+        } $schedule->{overrides}->@*;
+
         for my $set ( $bracket->{sets}->@* ) {
             my $determine_event_start_and_stop = sub ($type) {
                 for my $event ( grep {
@@ -318,9 +322,13 @@ sub _schedule_integration( $self, $build_settings ) {
             # if an event is before this set, determine event's start/stop
             $determine_event_start_and_stop->('before');
 
-            my $set_duration = $blocks->[$block_i]->{duration} // $schedule_duration;
-            my $set_start    = $pointer->clone;
-            my $set_stop     = $pointer->add( minutes => $set_duration )->clone;
+            my $set_duration =
+                ( ($bracket_overrides) ? $bracket_overrides->{duration} : undef ) //
+                $blocks->[$block_i]->{duration} //
+                $schedule_duration;
+
+            my $set_start = $pointer->clone;
+            my $set_stop  = $pointer->add( minutes => $set_duration )->clone;
 
             my $push_down_set_start_stop_if_an_event_conflicts = sub {
                 while (
@@ -397,8 +405,11 @@ sub _schedule_integration( $self, $build_settings ) {
             $_->{after} and not $_->{stop} and
             not ref $_->{after} and $_->{after} eq $bracket->{name}
         } @$events ) {
-            $event->{start} = $pointer->clone if ( not $event->{start} );
-            $event->{stop}  = $event->{start}->clone->add( minutes => $event->{duration} );
+            $event->{start} = (
+                $bracket->{sets}[-1]{rooms}[-1]{schedule}{stop} // $pointer
+            )->clone if ( not $event->{start} );
+
+            $event->{stop} = $event->{start}->clone->add( minutes => $event->{duration} );
         }
     }
 
@@ -428,6 +439,52 @@ sub _schedule_integration( $self, $build_settings ) {
             }
         }
         $build_settings->{events} = $events;
+    }
+
+    # check that no 2 quizzes are happening at the same time in the same location
+    # and check that no teams are quizzing in 2 places at the same time
+    my @quizzes = map {
+        my $bracket = $_->{name};
+        map { +{ %$_, bracket => $bracket } } map { $_->{rooms}->@* } $_->{sets}->@*;
+    } $build_settings->{brackets}->@*;
+
+    while ( my $quiz_1 = shift @quizzes ) {
+        for my $quiz_2 (@quizzes) {
+            my ( $quiz_1_start, $quiz_1_stop, $quiz_2_start, $quiz_2_stop ) = (
+                $quiz_1->{schedule}{start},
+                $quiz_1->{schedule}{stop},
+                $quiz_2->{schedule}{start},
+                $quiz_2->{schedule}{stop},
+            );
+
+            if (
+                $quiz_1_start >= $quiz_2_start and $quiz_1_start < $quiz_2_stop  or
+                $quiz_1_stop  <= $quiz_2_stop  and $quiz_1_stop  > $quiz_2_start or
+                $quiz_2_start >= $quiz_1_start and $quiz_2_start < $quiz_1_stop  or
+                $quiz_2_stop  <= $quiz_1_stop  and $quiz_2_stop  > $quiz_1_start
+            ) {
+                warn(
+                    $quiz_1->{bracket} . ' Quiz ' . $quiz_1->{name} . ' (room ' . $quiz_1->{room} . ')' .
+                    ' happens at the same time as ' .
+                    $quiz_2->{bracket} . ' Quiz ' . $quiz_2->{name} . ' (room ' . $quiz_1->{room} . ')' . "\n"
+                ) if ( $quiz_1->{room} == $quiz_2->{room} );
+
+                my @teams_quiz_1 = map {
+                    $_->{name} // ( $_->{bracket} // $_->{quiz} ) . ' ' . $_->{position}
+                } $quiz_1->{roster}->@*;
+                for my $team_quiz_2 ( map {
+                    $_->{name} // ( $_->{bracket} // $_->{quiz} ) . ' ' . $_->{position}
+                } $quiz_2->{roster}->@* ) {
+                    warn(
+                        $team_quiz_2 . ' is in ' .
+                        $quiz_1->{bracket} . ' Quiz ' . $quiz_1->{name} . ' (room ' . $quiz_1->{room} . ')' .
+                        ' and ' .
+                        $quiz_2->{bracket} . ' Quiz ' . $quiz_2->{name} . ' (room ' . $quiz_1->{room} . ')' .
+                        ', which are at the same time' . "\n"
+                    ) if ( grep { $team_quiz_2 eq $_ } @teams_quiz_1 );
+                }
+            }
+        }
     }
 
     return;

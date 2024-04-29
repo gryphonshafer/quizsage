@@ -48,7 +48,7 @@ sub state ($self) {
             for my $label ( map { decode_json($_) } $self->every_param('label')->@* ) {
                 push( @names, $label->{name} );
                 for my $block ( $label->{blocks}->@* ) {
-                    $bibles{ $block->{bible} };
+                    $bibles{ $block->{bible} } = 1;
                     push( @refs, $block->{refs} );
                 }
             }
