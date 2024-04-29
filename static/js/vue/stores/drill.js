@@ -23,7 +23,23 @@ const queries = await Promise.all( [ queries_promise, material_promise ] )
 let current_query;
 
 function get_current( type, bible ) {
-    current_query = queries.create( type, bible );
+    try {
+        const new_query = queries.create( type, bible );
+        current_query = new_query;
+    }
+    catch (e) {
+        console.log(e);
+        notice(
+            'Unable to create query, likely due to insufficient material label range(s) width.<br>' +
+            'Try avoiding this query type or go back to setup to alter the material label range(s).',
+            [ 'Stay here and continue', 'Go back to setup' ],
+            event => {
+                if ( event.target.textContent == 'Go back to setup' )
+                    window.location.href = new URL( '/drill/setup', url );
+            },
+        );
+    }
+
     return {
         query: current_query,
         ...queries.material.materials(current_query),
@@ -84,9 +100,20 @@ export default Pinia.defineStore( 'store', {
         toggle_add_verse() {
             this.add_verse = ! this.add_verse;
 
-            current_query = ( this.add_verse )
-                ? queries.add_verse   (current_query)
-                : queries.remove_verse(current_query);
+            try {
+                current_query = ( this.add_verse )
+                    ? queries.add_verse   (current_query)
+                    : queries.remove_verse(current_query);
+            }
+            catch (e) {
+                if ( e != 'Unable to find next verse' ) throw e;
+                this.add_verse = ! this.add_verse;
+                notice(
+                    'Unable to add a verse due to a next verse being unavailable.',
+                    'OK',
+                );
+                return;
+            }
 
             this.current = {
                 query: current_query,

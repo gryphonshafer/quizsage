@@ -84,6 +84,8 @@ for my $quiz_data (@$meet_data) {
 
             const quiz = new Quiz( OCJS.in );
             quiz.ready.then( () => {
+                if ( quiz.error ) throw quiz.error;
+
                 OCJS.in.events.forEach( event => {
                     let attempts = 0;
                     while ( attempts < 3 ) {

@@ -66,7 +66,13 @@ export default class Quiz {
             );
 
             this.state.events ||= [];
-            this.#build_board();
+
+            try {
+                this.#build_board();
+            }
+            catch (e) {
+                this.error = e;
+            }
 
             return this;
         } );

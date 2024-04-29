@@ -24,6 +24,7 @@ const queries = await Promise.all( [ quiz_promise, material_promise ] )
     } )
     .then( quiz => {
         try {
+            if ( quiz.error ) throw quiz.error;
             while ( quiz.board_row() ) {
                 quiz.action( 'incorrect', quiz.teams[0].id, quiz.teams[0].quizzers[0].id );
             }
@@ -32,11 +33,11 @@ const queries = await Promise.all( [ quiz_promise, material_promise ] )
             console.log(e);
             notice(
                 "Unable to construct a complete quiz's worth of queries, " +
-                "likely due to insufficient material. " +
+                "likely due to insufficient material.<br>" +
                 "Try expanding the material and re-generating the queries.",
                 'OK',
                 () => {
-                    window.location.href = new URL( '/quiz/pickup', url );
+                    window.location.href = new URL( '/quiz/pickup/setup', url );
                 },
             );
         }

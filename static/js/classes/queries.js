@@ -195,12 +195,16 @@ export default class Queries {
             : min_prompt;
 
         let reset_count = 0;
+        let attempts    = 0;
 
         while (true) {
             let verse;
             let phrase_start;
 
             while ( ! verse ) {
+                attempts++;
+                if ( attempts > 100 ) throw 'Unable to find phrase block from which to construct query';
+
                 let verse_candidate;
 
                 try {

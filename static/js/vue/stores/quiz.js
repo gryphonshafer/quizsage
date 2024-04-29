@@ -75,7 +75,30 @@ function update_data(store) {
 
 export default Pinia.defineStore( 'store', {
     state() {
-        const current = get_current() || get_current( quiz.state.board.at(-1).id );
+        const exit_quiz_url = new URL(
+            ( miscellaneous.meet_id ) ? '/meet/' + miscellaneous.meet_id + '/state' : '/quiz/pickup/setup',
+            url,
+        );
+
+        let current;
+        let eligible_teams;
+
+        try {
+            if ( quiz.error ) throw quiz.error;
+            current        = get_current() || get_current( quiz.state.board.at(-1).id );
+            eligible_teams = get_eligible_teams( quiz.state.teams );
+        }
+        catch (e) {
+            console.log(e);
+            notice(
+                "Unable to construct a complete quiz, likely due to insufficient material.<br>" +
+                "Try expanding the material and retrying.",
+                'OK',
+                () => {
+                    window.location.href = exit_quiz_url;
+                },
+            );
+        }
 
         return {
             durations: {
@@ -95,9 +118,10 @@ export default Pinia.defineStore( 'store', {
                     synonymous_verbatim_open_book: '',
                 },
             },
-            eligible_teams : get_eligible_teams( quiz.state.teams ),
+            eligible_teams : eligible_teams,
             hidden_solution: ( ( miscellaneous.meet_id && quiz.board_row() ) ? true : false ),
             is_drill       : false,
+            exit_quiz_url  : exit_quiz_url,
         };
     },
 
@@ -212,23 +236,18 @@ export default Pinia.defineStore( 'store', {
         },
 
         exit_quiz() {
-            const new_url = new URL(
-                ( miscellaneous.meet_id ) ? '/meet/' + miscellaneous.meet_id + '/state' : '/quiz/pickup/setup',
-                url,
-            );
-
             if ( ! this.is_quiz_done() ) {
                 notice(
                     'Are you sure you want to exit the quiz? The quiz is not finished.',
                     [ 'Yes, exit the quiz', 'No, stay here' ],
                     event => {
                         if ( event.target.textContent == 'Yes, exit the quiz' )
-                            window.location.href = new_url;
+                            window.location.href = this.exit_quiz_url;
                     },
                 );
             }
             else {
-                window.location.href = new_url;
+                window.location.href = this.exit_quiz_url;
             }
         },
     },
