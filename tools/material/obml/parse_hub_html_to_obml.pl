@@ -229,8 +229,8 @@ parse_hub_html_to_obml.pl - Parse raw HTML source of Bible Hub content
 
 =head1 DESCRIPTION
 
-This program will fetch the HTML source of Bible Hub content and save it
-locally, tracking progress via a status file.
+This program will parse the HTML source of Bible Hub content and save it
+as OBML.
 
 =head2 -s, --source
 

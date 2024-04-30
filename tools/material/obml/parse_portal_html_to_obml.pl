@@ -1,23 +1,22 @@
 #!/usr/bin/env perl
 use exact -cli;
 use Bible::OBML;
-use Bible::OBML::Gateway;
 use File::Path 'make_path';
 use Mojo::ByteStream;
+use Mojo::Collection 'c';
+use Mojo::DOM;
 use Mojo::File 'path';
 use Parallel::ForkManager;
+use Mojo::JSON 'decode_json';
 
 my $opt = options( qw{ source|s=s obml|o=s bible|b=s@ target|t=s force|f forks|k } );
 
-$opt->{source} ||= './gateway_html';
+$opt->{source} ||= './portal_html';
 $opt->{obml}   ||= './obml';
 $opt->{forks}  ||= 16;
 
 $opt->{$_}    = path( $opt->{$_} ) for ( qw( source obml ) );
 $opt->{bible} = [ map { uc } @{ $opt->{bible} } ];
-
-my $bg = Bible::OBML::Gateway->new;
-my $o  = Bible::OBML->new;
 
 my $files = $opt->{source}
     ->list_tree
@@ -44,17 +43,16 @@ $SIG{INT} = sub {
     exit;
 };
 
+my $bible_obml = Bible::OBML->new;
+my $bible_ref  = Bible::Reference->new( bible => 'Protestant' );
+
 $files->each( sub ( $item, $count ) {
     if ( not $pm->start ) {
         my $obml;
         try {
-            $obml = $o->html(
-                $bg->parse(
-                    Mojo::ByteStream->new(
-                        $item->{source}->slurp
-                    )->decode
-                )
-            )->obml;
+            $obml = parse(
+                $item->{source}->slurp
+            )
         }
         catch ($e) {
             $e =~ s/\s+at\s+.+\s+line\s+\d+\.//;
@@ -92,14 +90,90 @@ $files->each( sub ( $item, $count ) {
 
 $pm->wait_all_children;
 
+sub _retag ( $tag, $retag ) {
+    $tag->tag($retag);
+    delete $tag->attr->{$_} for ( keys %{ $tag->attr } );
+}
+
+sub parse ($html) {
+    return unless ($html);
+
+    my $data = decode_json(
+        Mojo::DOM->new($html)->at('script#__NEXT_DATA__')->text
+    )->{props}{pageProps}{result}{data}[0]{results}[0];
+
+    my $text = '~' . $data->{reference} . '~' . "\n\n";
+    for my $passage ( $data->{passages}->@* ) {
+        $passage->{content} =~ s/(?:^\s+|\s+$)//g;
+        $passage->{content} =~ s|<i>(.+?)</i>|^$1^|gi;
+        $passage->{content} =~ s|<woj>(.+?)</woj>|*$1*|gi;
+
+        $bible_ref->acronyms(1)->require_chapter_match(1)->require_book_ucfirst(1);
+
+        my @crs = map {
+            s/(\d)\.(\d)/$1:$2/g;
+            s/(\d)([A-z])/$1 $2/g;
+            s/\./ /g;
+            s/([,;])/$1 /g;
+            s/\s+/ /g;
+            $bible_ref->clear->in($_)->refs;
+        } ( $passage->{cross_references} ) ? split( /\|\|/, $passage->{cross_references} ) : ();
+
+        my @fts = map {
+            s/(?:^\s+|\s+$)//g;
+            s|<i>(.+?)</i>|^$1^|gi;
+            s|<woj>(.+?)</woj>|*$1*|gi;
+            $bible_ref->clear->in($_)->as_text;
+        } ( $passage->{footnotes} ) ? split( /\|\|/, $passage->{footnotes} ) : ();
+
+        $passage->{content} =~ s|<cr>(.+?)</cr>| '{' . $crs[ $1 - 1 ] . '}' |egi;
+        $passage->{content} =~ s|<ft>(.+?)</ft>| '[' . $fts[ $1 - 1 ] . ']' |egi;
+
+        if ( $passage->{subhead} ) {
+            $text .= "\n\n = " . $passage->{content} . " = \n\n";
+        }
+        else {
+            $text .= "\n\n" if ( $passage->{np} );
+            $text .= ' |' . $passage->{verse} . '| ';
+            $text .= $passage->{content};
+        }
+    }
+
+    my $poetry = sub ($block) {
+        $block =~ s/^/    /;
+        $block =~ s/\n/\n    /g;
+        $block;
+    };
+
+    $text =~ s~</?(?:table|td)>~~sgi;
+    $text =~ s|<tr>(.+?)</tr>|    $1|sgi;
+    $text =~ s|<pb/?>|\n\n|gi;
+    $text =~ s|<br/?>|\n|gi;
+    $text =~ s|<indent>(.+?)</indent>|    $1|sgi;
+    $text =~ s|<poetry>(.+?)</poetry>|$poetry->($1)|sgei;
+    $text =~ s|<smallcap>(.+?)</smallcap>|\\$1\\|sgi;
+    $text =~ s|</?list\d*>||gi;
+    $text =~ s|<hang(\d+)>(\s*)(.+?)</hang\d+>|
+        ( ( length $2 ) ? $2 : "\n" ) . ( ' ' x ( 4 * $1 - 1 ) ) . $3 . ""
+    |sgei;
+    $text =~ s|<center>(\s*)(.+?)</center>| ( ( length $1 ) ? $1 : '    ' ) . $2 |sgie;
+    $text =~ s|<[^>]*>||sg;
+    $text =~ s/\n{3,}/\n\n/g;
+    $text =~ s/^[ ]{,3}//mg;
+
+    my $obml = $bible_obml->obml($text)->obml;
+    $obml =~ s/\n{3,}/\n\n/g;
+    return $obml;
+}
+
 =head1 NAME
 
-parse_gateway_html_to_obml.pl - Parse raw HTML source of Bible Gateway content
+parse_portal_html_to_obml.pl - Parse raw HTML source of Bible Portal content
 
 =head1 SYNOPSIS
 
-    parse_gateway_html_to_obml.pl OPTIONS
-        -s, --source DIRECTORY          # default: ./gateway_html
+    parse_portal_html_to_obml.pl OPTIONS
+        -s, --source DIRECTORY          # default: ./portal_html
         -o, --obml   DIRECTORY          # default: ./obml
         -b, --bible  BIBLE_TRANSLATION  # default: (all available)
         -t, --target REGEX
@@ -110,13 +184,13 @@ parse_gateway_html_to_obml.pl - Parse raw HTML source of Bible Gateway content
 
 =head1 DESCRIPTION
 
-This program will parse the HTML source of Bible Gateway content and save it
+This program will parse the HTML source of Bible Portal content and save it
 as OBML.
 
 =head2 -s, --source
 
 This is the directory where HTML content (one chapter per file) are stored. It
-defaults to "./gateway_html". Files are stored in a tree in the form:
+defaults to "./portal_html". Files are stored in a tree in the form:
 
     TRANSLATION/BOOK/TRANSLATION_BOOK_CHAPTER.html
 
