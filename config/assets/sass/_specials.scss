@@ -302,3 +302,23 @@ details.with_horizontal_scroller {
         }
     }
 }
+
+@media ( max-width: 535px ) {
+    form#share_memory_state fieldset {
+        text-align: left;
+
+        label.smart_search {
+            input {
+                display: block !important;
+            }
+
+            select {
+                left: -1.75em;
+
+                @include theme.apply( themes.$styles, 'style' ) {
+                    border-top-left-radius: theme.get('radius');
+                }
+            }
+        }
+    }
+}

@@ -11,8 +11,7 @@ $padding      : 1rem !default;
 @use 'themes';
 
 body {
-    margin   : 0;
-    min-width: 375px;
+    margin: 0;
 
     @include theme.apply( themes.$themes ) {
         background: theme.get('main_background');
@@ -298,6 +297,30 @@ body {
                     2.5em
                 )
             );
+        }
+    }
+
+    @media ( max-width: 380px ) {
+        header div a:first-child {
+            display: none;
+        }
+    }
+
+    @media ( max-width: 345px ) {
+        header div a {
+            margin-right: 0.5em;
+        }
+    }
+
+    @media ( max-width: 300px ) {
+        header div a {
+            margin-right: 0em;
+        }
+    }
+
+    @media ( max-width: 250px ) {
+        header div {
+            display: none;
         }
     }
 }

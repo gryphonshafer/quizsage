@@ -385,3 +385,10 @@ div#queries {
         line-height: 1.5em;
     }
 }
+
+@media ( max-width: 505px ) {
+    div#drill div.query_type_buttons button {
+        display: inline-block;
+        margin-right: 0.25em;
+    }
+}
