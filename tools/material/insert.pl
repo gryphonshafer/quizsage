@@ -4,7 +4,6 @@ use Mojo::ByteStream;
 use Mojo::File 'path';
 use Text::Unidecode 'unidecode';
 use Omniframe;
-use QuizSage::Util::Material 'text2string';
 
 my $opt      = options( qw{ bible|b=s@ obml|o=s size|s=i } );
 my $obml_dir = $opt->{obml} ||
@@ -83,7 +82,6 @@ for my $bible (@bibles) {
                 $chapter,
                 $verse,
                 $text,
-                join( ' ', @{ text2string($text) } ),
             ] );
 
             if ( @verse_insert_cache == $opt->{size} ) {

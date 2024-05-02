@@ -130,14 +130,22 @@ sub parse ($html) {
         $passage->{content} =~ s|<ft>(.+?)</ft>| '[' . $fts[ $1 - 1 ] . ']' |egi;
 
         if ( $passage->{subhead} ) {
-            $text .= "\n\n = " . $passage->{content} . " = \n\n";
+            $text .= "\n\n= " . $passage->{content} . " =\n\n";
         }
         else {
             $text .= "\n\n" if ( $passage->{np} );
-            $text .= ' |' . $passage->{verse} . '| ';
+            $text .= ( ( $text =~ /\S$/ ) ? ' ' : '' ) . '|' . $passage->{verse} . '| ';
             $text .= $passage->{content};
         }
     }
+
+    $text =~ s~</?table>~~sgi;
+    $text =~ s|<td>(.+?)</td>|$1 |sgi;
+    $text =~ s|<tr>(.+?)</tr>|    $1|sgi;
+    $text =~ s|<pb/?>|\n\n|gi;
+    $text =~ s|<br/?>|\n|gi;
+
+    $text =~ s|<indent>(.+?)</indent>|    $1|sgi;
 
     my $poetry = sub ($block) {
         $block =~ s/^/    /;
@@ -145,11 +153,6 @@ sub parse ($html) {
         $block;
     };
 
-    $text =~ s~</?(?:table|td)>~~sgi;
-    $text =~ s|<tr>(.+?)</tr>|    $1|sgi;
-    $text =~ s|<pb/?>|\n\n|gi;
-    $text =~ s|<br/?>|\n|gi;
-    $text =~ s|<indent>(.+?)</indent>|    $1|sgi;
     $text =~ s|<poetry>(.+?)</poetry>|$poetry->($1)|sgei;
     $text =~ s|<smallcap>(.+?)</smallcap>|\\$1\\|sgi;
     $text =~ s|</?list\d*>||gi;
@@ -158,12 +161,10 @@ sub parse ($html) {
     |sgei;
     $text =~ s|<center>(\s*)(.+?)</center>| ( ( length $1 ) ? $1 : '    ' ) . $2 |sgie;
     $text =~ s|<[^>]*>||sg;
-    $text =~ s/\n{3,}/\n\n/g;
-    $text =~ s/^[ ]{,3}//mg;
 
-    my $obml = $bible_obml->obml($text)->obml;
-    $obml =~ s/\n{3,}/\n\n/g;
-    return $obml;
+    $text =~ s/([a-z])([:;,!?])([A-Za-z])/$1$2 $3/g;
+
+    return $bible_obml->obml($text)->obml;
 }
 
 =head1 NAME

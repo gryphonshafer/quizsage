@@ -207,7 +207,7 @@ sub parse ($html) {
     } );
 
     my $obml = $bible_obml->html( $chapter->to_string )->obml;
-    $obml =~ s/\n{3,}/\n\n/g;
+    $obml =~ s/([a-z])([:;,!?])([A-Za-z])/$1$2 $3/g;
     return $obml;
 }
 
