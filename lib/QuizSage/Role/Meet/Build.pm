@@ -1,6 +1,7 @@
 package QuizSage::Role::Meet::Build;
 
 use exact -role;
+use Mojo::JSON 'decode_json';
 use Omniframe::Class::Javascript;
 use Omniframe::Util::Text 'trim';
 use QuizSage::Model::Season;
