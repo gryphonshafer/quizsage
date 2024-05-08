@@ -276,7 +276,7 @@ sub _schedule_integration( $self, $build_settings ) {
     }
 
     # events setup
-    my $events = $schedule->{events} // {};
+    my $events = $schedule->{events} // [];
     for my $event (@$events) {
         $event->{start} = $self->time->parse( $event->{start} )->datetime if ( $event->{start} );
         $event->{duration} //= $schedule_duration;
