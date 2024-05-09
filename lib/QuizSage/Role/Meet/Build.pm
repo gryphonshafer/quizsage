@@ -43,8 +43,9 @@ sub _merge_meet_and_season_settings ($self) {
                 if ( $set->{roster}{$_} );
         }
         delete $set->{roster};
-        $build_settings->{schedule} = delete $set->{schedule} if ( $set->{schedule} );
-        $build_settings->{per_quiz}->{$_} = delete $set->{$_} for ( keys %$set );
+        for my $name ( qw( schedule per_quiz ) ) {
+            $build_settings->{$name} = delete $set->{$name} if ( $set->{$name} );
+        }
     }
 
     return $build_settings;
