@@ -16,7 +16,7 @@
 
             [%
                 max_steps  = 12;
-                step_shift = 3;
+                step_shift = 2;
             %]
             [% FOR week IN data %]
                 <div>
@@ -24,8 +24,8 @@
                     [% FOR day IN week %]
                         <div
                             class="tile_[%
-                                ( day.verses == 0        ) ? 0         :
-                                ( day.verses > max_steps ) ? max_steps : day.verses + step_shift
+                                ( day.verses == 0 ) ? 0 :
+                                ( day.verses + step_shift > max_steps ) ? max_steps : day.verses + step_shift
                             %]"
                             title="[% day.verses
                                 %] verse[% IF day.verses != 1 %]s[% END %] on [% day.strftime %]"></div>
