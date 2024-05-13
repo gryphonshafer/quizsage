@@ -41,34 +41,41 @@
 
     window.addEventListener( 'load', () => {
         h_scrollers = window.document.querySelectorAll('div.horizontal_scroller');
-        window.dispatchEvent( new Event('resize') );
-    } );
 
-    window.addEventListener( 'resize', () => {
-        h_scrollers.forEach( h_scroller => h_scroller.scrollLeft = h_scroller.scrollLeftMax );
+        window.addEventListener( 'resize', () => {
+            h_scrollers.forEach( h_scroller => h_scroller.scrollLeft = h_scroller.scrollLeftMax );
+        } );
+
+        window.dispatchEvent( new Event('resize') );
+
+        window.document.querySelectorAll('details.with_horizontal_scroller').forEach( details => {
+            details.addEventListener( 'toggle', () => {
+                h_scrollers.forEach( h_scroller => h_scroller.scrollLeft = h_scroller.scrollLeftMax );
+            } );
+        } );
     } );
 [% END %]
 [% page.js.inline.push(tiles_scroll_right) %]
 
 [% BLOCK report %]
     [% IF data AND data.size %]
-        <ul>
-            [% FOR section IN data %]
-                [% NEXT IF data.size == 2 AND section.level == 'all' %]
-                <li class="no_bullet"><b>[%
-                    ( section.level == 'all' )
-                        ? 'All Levels (Combined)'
-                        : 'Level ' _ section.level
-                %]</b></li>
+        [% FOR section IN data %]
+            <details>
+                <summary>
+                    Level [% section.level %]
+                    <i>([% section.number %] verse[% ( section.number > 1 ) ? 's' : '' %])</i>
+                </summary>
                 <ul>
-                    [% FOR block IN section.blocks %]
-                        <li><a href="[%
-                            c.url_for('/drill/setup').query( label => block.refs _ ' ' _ block.bible )
-                        %]">[% block.refs %] [% block.bible %]</a></li>
+                    [% FOR block IN section.data %]
+                        <li>
+                            [% block.book %] [% block.chapter %]:[% block.run %]
+                            [% block.bible %]
+                            <i>([% block.number %] verse[% ( block.number > 1 ) ? 's' : '' %])</i>
+                        </li>
                     [% END %]
                 </ul>
-            [% END %]
-        </ul>
+            </details>
+        [% END %]
     [% ELSE %]
         <p>There is currently no memorization review data.</p>
     [% END %]
@@ -197,13 +204,13 @@
     <form id="shared_from_labels" method="get">
         <input type="hidden" name="shared_from_labels" value="1">
 
-        <p style="margin-top: -1em"><button disabled>Pick-Up Quiz from Selected</button></p>
+        <button disabled>Pick-Up Quiz from Selected</button>
 
         [% FOR person IN state.shared_from %]
             <details class="with_horizontal_scroller">
                 <summary>
                     [% IF person.report AND person.report.size %]
-                        <input type="checkbox" name="label" value="[% person.report.0.json | html %]">
+                        <input type="checkbox" name="persons" value="[% person.json | html %]">
                     [% END %]
                     [% person.user.first_name %]
                     [% person.user.last_name %]

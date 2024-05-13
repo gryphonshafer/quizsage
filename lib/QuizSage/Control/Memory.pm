@@ -44,15 +44,9 @@ sub state ($self) {
             return $self->redirect_to('/memory/state');
         }
         elsif ( $self->param('shared_from_labels') ) {
-            my ( %bibles, @names, @refs );
-            for my $label ( map { decode_json($_) } $self->every_param('label')->@* ) {
-                push( @names, $label->{name} );
-                for my $block ( $label->{blocks}->@* ) {
-                    $bibles{ $block->{bible} } = 1;
-                    push( @refs, $block->{refs} );
-                }
-            }
+            my @persons = map { decode_json($_) } $self->every_param('persons')->@*;
 
+            my @names = map { $_->{name} } @persons;
             @names = map { $_->[0] } sort { $a->[1] <=> $b->[1] } map { [ $_, rand ] } @names;
             my @teams;
             if ( @names > 2 and @names % 3 == 1 ) {
@@ -74,11 +68,9 @@ sub state ($self) {
             return $self->redirect_to(
                 $self->url_for('/quiz/pickup/setup')->query(
                     roster => join( "\n\n", map { join( "\n", 'Team ' . ++$team_number, @$_ ) } @teams ),
-                    label  => join( ' ',
-                        QuizSage::Model::Memory->new->bible_ref
-                            ->acronyms(0)->sorting(1)->add_detail(0)
-                            ->clear->in(@refs)->refs,
-                        sort keys %bibles,
+                    label  => $memory->shared_labels(
+                        $self->stash('user')->id,
+                        [ map { $_->{id} } @persons ],
                     ),
                 )
             );

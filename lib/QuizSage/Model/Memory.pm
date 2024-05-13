@@ -137,6 +137,10 @@ sub state ( $self, $user ) {
                     user   => $_,
                     tiles  => $self->tiles( $_->{user_id} ),
                     report => $self->report( $_->{user_id} ),
+                    json   => encode_json({
+                        id   => $_->{user_id},
+                        name => $_->{first_name} . ' ' . $_->{last_name},
+                    }),
                 };
             }
             $self->dq->sql(q{
@@ -159,7 +163,10 @@ sub tiles ( $self, $user_id ) {
             STRFTIME( '%Y-%m-%d', created ),
             COUNT(*)
         FROM memory
-        WHERE user_id = ? AND level > 0
+        WHERE
+            user_id = ? AND
+            level > 0 AND
+            created >= DATETIME( 'NOW', '-1 year' )
         GROUP BY 1
         ORDER BY 1
     })->run($user_id)->all->@*;
@@ -199,63 +206,36 @@ sub tiles ( $self, $user_id ) {
 }
 
 sub report ( $self, $user_id ) {
-    $self->bible_ref->acronyms(1)->sorting(1)->add_detail(0);
-
     my $data;
 
-    $data->{ $_->{level} }{ $_->{bible} } = $self->bible_ref->clear->in( $_->{label} )->refs for (
-        $self->dq->sql(q{
-            SELECT level, bible, GROUP_CONCAT( books, '; ' ) AS label
-            FROM (
-                SELECT level, bible, book || ' ' || GROUP_CONCAT( chapters, '; ') AS books
-                FROM (
-                    SELECT level, bible, book, chapter || ':' || GROUP_CONCAT( verse, ', ' ) AS chapters
-                    FROM memory
-                    WHERE user_id = ? AND level > 0
-                    GROUP BY 1, 2, 3, chapter
-                )
-                GROUP BY 1, 2, book
-            )
-            GROUP BY 1, 2
-        })->run($user_id)->all({})->@*
+    push( @{ $data->{ $_->{level} } }, $_ ) for (
+        _make_runs( $self->dq->sql(q{
+            SELECT
+                level,
+                bible,
+                book,
+                chapter,
+                GROUP_CONCAT( verse, ', ' ) AS verses,
+                COUNT(*) AS number
+            FROM memory
+            WHERE
+                user_id = ? AND
+                level > 0 AND
+                last_modified >= DATETIME( 'NOW', '-1 year' )
+            GROUP BY 1, 2, 3, 4
+            ORDER BY 1 DESC, 2, 3, 4
+        } )->run($user_id)->all({}) )->@*
     );
 
-    my $all;
-
-    $data = [ map {
-        my $level = $_;
+    return [ map {
+        my $number;
+        $number += $_->{number} for ( $data->{$_}->@* );
         +{
-            level  => $level,
-            blocks => [
-                map {
-                    push( @{ $all->{$_} }, $data->{$level}{$_} );
-                    +{
-                        bible => $_,
-                        refs  => $data->{$level}{$_},
-                    };
-                }
-                sort { $a cmp $b } keys %{ $data->{$level} }
-            ],
+            level  => $_,
+            number => $number,
+            data   => $data->{$_},
         };
     } sort { $b <=> $a } keys %$data ];
-
-    my $all_blocks = [ map { +{
-        bible => $_,
-        refs  => $self->bible_ref->clear->in( join( '; ', $all->{$_}->@* ) )->refs,
-    } } sort { $a cmp $b } keys %$all ];
-    if (@$all_blocks) {
-        my $user_data = QuizSage::Model::User->new->load($user_id)->data;
-        unshift( @$data, {
-            level  => 'all',
-            blocks => $all_blocks,
-            json   => encode_json({
-                name   => $user_data->{first_name} . ' ' . $user_data->{last_name},
-                blocks => $all_blocks,
-            }),
-        } );
-    }
-
-    return $data;
 }
 
 sub sharing ( $self, $data ) {
@@ -274,6 +254,56 @@ sub sharing ( $self, $data ) {
     return;
 }
 
+sub shared_labels ( $self, $user_id, $user_ids ) {
+    return join( "\n",
+        map {
+            $_->{book} . ' ' . $_->{chapter} . ':' . $_->{run} . ' ' . $_->{bible}
+        }
+        _make_runs( $self->dq->sql(q{
+            SELECT
+                book,
+                chapter,
+                bible,
+                GROUP_CONCAT( verse, ', ' ) AS verses
+            FROM (
+                SELECT
+                    m.book,
+                    m.chapter,
+                    m.bible,
+                    m.verse
+                FROM shared_memory AS sm
+                JOIN memory AS m ON sm.memorizer_user_id = m.user_id
+                WHERE
+                    m.level > 0 AND
+                    m.last_modified >= DATETIME( 'NOW', '-1 year' ) AND
+                    sm.shared_user_id = ? AND
+                    sm.memorizer_user_id IN ( } . join( ', ', map { $self->dq->quote($_) } @$user_ids ) . q{ )
+                GROUP BY 1, 2, 3, 4
+            )
+            GROUP BY 1, 2, 3
+        } )->run($user_id)->all({}) )->@*
+    );
+}
+
+sub _make_runs ($data) {
+    return [ map {
+        my @verses;
+        for my $verse ( split( /\s*,\s*/, $_->{verses} ) ) {
+            if ( @verses and not ref $verses[-1] and $verses[-1] + 1 == $verse ) {
+                push( @verses, [ pop @verses, $verse ] );
+            }
+            elsif ( @verses and ref $verses[-1] and $verses[-1][1] + 1 == $verse ) {
+                $verses[-1][1] = $verse;
+            }
+            else {
+                push( @verses, $verse );
+            }
+        }
+        $_->{runs} = \@verses;
+        $_->{run}  = join( ', ', map { ( ref $_ ) ? join( '-', @$_ ) : $_ } @verses );
+        $_;
+    } @$data ];
+}
 1;
 
 =head1 NAME
@@ -339,6 +369,12 @@ This method requires a hashref with keys C<memorizer_user_id> and
 C<shared_user_id> along with C<action> which is expected to be either "add" or
 "remove". The method will then either add or remove a shared memory state record
 in the C<shared_memory> database table.
+
+=head2 shared_labels
+
+Requires a user ID (assumed to be a user making the request) and an arrayref of
+user IDs (assumed to be user IDs shared with the user making the request). The
+method will return a string where each line is a chapter reference label.
 
 =head1 WITH ROLE
 

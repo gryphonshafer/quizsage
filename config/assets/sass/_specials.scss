@@ -322,3 +322,18 @@ details.with_horizontal_scroller {
         }
     }
 }
+
+form#shared_from_labels {
+    button {
+        margin: -1em 0 1em 0;
+    }
+
+    details details {
+        margin-top   : 1em;
+        margin-bottom: 1em;
+
+        @include theme.apply( themes.$themes ) {
+            background: theme.get('main_background');
+        }
+    }
+}
