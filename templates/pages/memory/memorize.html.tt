@@ -1,12 +1,20 @@
 [% page.title = 'Initial Memorization' %]
 
 [% IF to_memorize.size > 0 %]
-    <p>
-        Select a reference to view the verse text.
-        Once memorized, check the checkbox.
-    </p>
+    <details>
+        <summary>Instructions</summary>
+        <p>
+            Select a reference to view the verse text.
+            Once memorized, check the checkbox.
+            Your initial memorization state is remembered between sessions,
+            so you can return to the
+            <a href="[% c.url_for('/memory/memorize/setup') %]">initial memorization setup</a>
+            multiple times
+            change the scope of the verses for each memorization session.
+        </p>
+    </details>
 
-    <p>
+    <p class="buttons">
         <button id="expand_all">Expand All</button>
         <button id="collapse_all">Collapse All</button>
     </p>

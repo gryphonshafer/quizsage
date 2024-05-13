@@ -91,6 +91,16 @@
 
 <h2>Share Memory State</h2>
 
+<details>
+    <summary>Instructions</summary>
+    <p>
+        You may optionally share your memory state with any other active user of
+        the application. Type their name or a substring of their name in the
+        field below, then select their name when it appears. You may remove them
+        from your share list at any time.
+    </p>
+</details>
+
 <form id="share_memory_state" method="get">
     <fieldset>
         <legend>Add Person to Sharing</legend>

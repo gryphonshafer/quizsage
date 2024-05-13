@@ -12,7 +12,7 @@
 
     <p>
         Enter the [% practice_name.lower %]'s settings below.
-        Your settings will be saved for future practices.
+        Your settings will be saved for future [% practice_name.lower %] use.
     </p>
 
     [% IF practice_label == 'pickup_quiz' %]
@@ -33,6 +33,15 @@
         consult the
         <a href="[% c.url_for('/docs/material_labels.md') %]">material labels documentation</a>.
     </p>
+
+    [% IF practice_label == 'memorize' %]
+        <p>
+            For initial memorization, it's recommended you enter a material
+            label/description that comprises a set of sequential verses you intent
+            to memorize in a single session. You can return here to alter your
+            material label/description for each memorization session.
+        </p>
+    [% END %]
 </details>
 
 <form method="post">

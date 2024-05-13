@@ -2,7 +2,18 @@
 
 [% IF verse AND verse.words > 0 %]
     <details>
-        <summary>Information</summary>
+        <summary>Instructions</summary>
+        <p>
+            Select any verse information components below as needed or desired
+            to evoke memory of the verse. Based on your recollection of the
+            verse, slide the memorization self-assessment level to rate your
+            memory. Left-most is weakest; right-most is strongest. Then click
+            the "Continue" button.
+        </p>
+    </details>
+
+    <details>
+        <summary>Verse Information</summary>
         <ul>
             <li>Number of Words: [% verse.words.size %]</li>
             <li>First Memorized: [% verse.first_memorized | format('%0.1f') %] days ago</li>
