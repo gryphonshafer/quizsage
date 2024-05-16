@@ -50,6 +50,8 @@ sub parse ( $self, $input = $self->data->{label} ) {
     $self->user_aliases( $self->aliases ) unless ( $self->user_aliases );
 
     my $data;
+    $input //= '';
+    $input =~ s/\r?\n/ /g;
     my @input = ' ' . $input . ' ';
 
     # Embedded labels identified and tokenized
