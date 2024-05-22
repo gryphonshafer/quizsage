@@ -17,6 +17,8 @@
     <p class="buttons">
         <button id="expand_all">Expand All</button>
         <button id="collapse_all">Collapse All</button>
+        <button id="check_all">Check All</button>
+        <button id="uncheck_all">Uncheck All</button>
     </p>
 
     <div id="memorize">
@@ -41,6 +43,11 @@
                 () => verses.forEach( verse => verse.open = true );
             window.document.querySelector('button#collapse_all').onclick =
                 () => verses.forEach( verse => verse.open = false );
+
+            window.document.querySelector('button#check_all').onclick =
+                () => verses.forEach( verse => verse.querySelector('input').checked = true );
+            window.document.querySelector('button#uncheck_all').onclick =
+                () => verses.forEach( verse => verse.querySelector('input').checked = false );
 
             verses.forEach( verse => {
                 verse.querySelector('input').onclick = (event) => {
