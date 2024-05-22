@@ -32,25 +32,25 @@
             </thead>
             <tbody>
                 [%
-                    row_position = 0;
-                    last_item    = undef;
+                    row_position  = 0;
+                    last_position = undef;
+                    last_item     = undef;
                 %]
                 [% FOR item IN stats.$type %]
                     [% IF NOT filter_tag OR item.tags AND item.tags.grep( '^' _ filter_tag _ '$' ).size %]
                         [%
-                            IF NOT last_item OR (
-                                last_item.ytd_avg != item.ytd_avg OR
-                                last_item.total_avg != item.total_avg
-                            );
-                                row_position      = row_position + 1;
-                                this_row_position = row_position;
-                            ELSE;
-                                this_row_position = '';
-                            END;
-                            last_item = item;
+                            row_position  = row_position + 1;
+                            this_position = (
+                                NOT last_item OR (
+                                    last_item.ytd_avg   != item.ytd_avg OR
+                                    last_item.total_avg != item.total_avg
+                                )
+                            ) ? row_position : last_position;
                         %]
                         <tr>
-                            <td class="right">[%  this_row_position %]</td>
+                            <td class="[%
+                                ( last_position != this_position ) ? 'right' : 'right tie'
+                            %]">[% this_position %]</td>
                             <td>
                                 [% item.name %]
                                 [% IF NOT filter_tag AND item.tags AND item.tags.grep('^Rookie$').size %]
@@ -75,6 +75,10 @@
                                 [% END %]
                             [% END %]
                         </tr>
+                        [%
+                            last_position = this_position;
+                            last_item     = item;
+                        %]
                     [% END %]
                 [% END %]
             </tbody>
@@ -92,36 +96,34 @@
 [% IF stats.vra_quizzers.size > 0 %]
     <table>
         <thead>
-            <tr>
+            <tr class="bottom">
                 <th>Position</th>
                 <th>Quizzer</th>
-                <th>VRAs</th>
+                <th>Total</th>
                 [% FOR meet IN stats.meets %]
-
-                    <th>
+                    <th class="small">
                         <a href="[% c.url_for( '/meet/' _ meet.meet_id _ '/stats' )
-                            %]">Meet [% loop.count %]</a>
+                            %]">[% meet.name.replace( '\s+', '<br>' ) %]</a>
                     </th>
                 [% END %]
             </tr>
         </thead>
         <tbody>
             [%
-                row_position = 0;
-                last_item    = undef;
+                row_position  = 0;
+                last_position = undef;
+                last_item     = undef;
             %]
             [% FOR quizzer IN stats.vra_quizzers %]
                 [%
-                    IF NOT last_item OR last_item != quizzer.vra_sum;
-                        row_position      = row_position + 1;
-                        this_row_position = row_position;
-                    ELSE;
-                        this_row_position = '';
-                    END;
-                    last_item = quizzer.vra_sum;
+                    row_position  = row_position + 1;
+                    this_position =
+                        ( NOT last_item OR last_item != quizzer.vra_sum ) ? row_position : last_position;
                 %]
                 <tr>
-                    <td class="right">[% this_row_position %]</td>
+                    <td class="[%
+                        ( last_position != this_position ) ? 'right' : 'right tie'
+                    %]">[% this_position %]</td>
                     <td>[% quizzer.name %]</td>
                     <td class="right">[% quizzer.vra_sum %]</td>
                     [% FOR meet IN quizzer.meets %]
@@ -132,6 +134,10 @@
                         [% END %]
                     [% END %]
                 </tr>
+                [%
+                    last_position = this_position;
+                    last_item     = quizzer.vra_sum;
+                %]
             [% END %]
         </tbody>
     </table>

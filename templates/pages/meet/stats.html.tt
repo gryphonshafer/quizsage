@@ -66,25 +66,25 @@
             </thead>
             <tbody>
                 [%
-                    row_position = 0;
-                    last_item    = undef;
+                    row_position  = 0;
+                    last_position = undef;
+                    last_item     = undef;
                 %]
                 [% FOR item IN stats.$type %]
                     [% IF NOT filter_tag OR item.tags AND item.tags.grep( '^' _ filter_tag _ '$' ).size %]
                         [%
-                            IF NOT last_item OR (
-                                last_item.points_avg != item.points_avg OR
-                                last_item.points_sum != item.points_sum
-                            );
-                                row_position      = row_position + 1;
-                                this_row_position = row_position;
-                            ELSE;
-                                this_row_position = '';
-                            END;
-                            last_item = item;
+                            row_position  = row_position + 1;
+                            this_position = (
+                                NOT last_item OR (
+                                    last_item.points_avg != item.points_avg OR
+                                    last_item.points_sum != item.points_sum
+                                )
+                            ) ? row_position : last_position;
                         %]
                         <tr>
-                            <td class="right">[% this_row_position %]</td>
+                            <td class="[%
+                                ( last_position != this_position ) ? 'right' : 'right tie'
+                            %]">[% this_position %]</td>
                             <td>
                                 [% item.name %]
                                 [% IF item.team_name %]
@@ -123,6 +123,10 @@
                                 <td class="blank_cell"></td>
                             [% END %]
                         </tr>
+                        [%
+                            last_position = this_position;
+                            last_item     = item;
+                        %]
                     [% END %]
                 [% END %]
             </tbody>
@@ -149,21 +153,20 @@
         </thead>
         <tbody>
             [%
-                row_position = 0;
-                last_item    = undef;
+                row_position  = 0;
+                last_position = undef;
+                last_item     = undef;
             %]
             [% FOR quizzer IN stats.vra_quizzers %]
                 [%
-                    IF NOT last_item OR last_item != quizzer.vra_sum;
-                        row_position      = row_position + 1;
-                        this_row_position = row_position;
-                    ELSE;
-                        this_row_position = '';
-                    END;
-                    last_item = quizzer.vra_sum;
+                    row_position  = row_position + 1;
+                    this_position =
+                        ( NOT last_item OR last_item != quizzer.vra_sum ) ? row_position : last_position;
                 %]
                 <tr>
-                    <td class="right">[% this_row_position %]</td>
+                    <td class="[%
+                        ( last_position != this_position ) ? 'right' : 'right tie'
+                    %]">[% this_position %]</td>
                     <td>[% quizzer.name %]</td>
                     <td>
                         [% quizzer.team_name %]
@@ -173,6 +176,10 @@
                     </td>
                     <td class="right">[% quizzer.vra_sum %]</td>
                 </tr>
+                [%
+                    last_position = this_position;
+                    last_item     = quizzer.vra_sum;
+                %]
             [% END %]
         </tbody>
     </table>
