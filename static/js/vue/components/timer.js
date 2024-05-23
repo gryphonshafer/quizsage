@@ -4,9 +4,10 @@ import template from 'modules/template';
 export default {
     data() {
         return {
-            value     : undefined,
-            state     : 'Start',
-            timeout_id: undefined,
+            value                : undefined,
+            state                : 'Start',
+            timeout_id           : undefined,
+            current_duration_name: undefined,
         };
     },
 
@@ -15,7 +16,7 @@ export default {
     },
 
     created() {
-        this.value = this.durations.quizzer_response;
+        this.value = this.durations.quizzer;
     },
 
     methods: {
@@ -31,31 +32,40 @@ export default {
                 }
             };
 
-            if ( this.state == 'Start' ) {
-                this.state      = 'Stop';
+            if ( this.state == 'Start' || this.state == 'Resume' ) {
+                this.state      = 'Pause';
                 this.timeout_id = setTimeout( callback, 1000 );
             }
-            else if ( this.state == 'Stop' ) {
+            else if ( this.state == 'Pause' ) {
                 clearTimeout( this.timeout_id );
                 this.timeout_id = undefined;
-                this.state      = 'Start';
+                this.state      = 'Resume';
             }
             else if ( this.state == 'Reset' ) {
                 this.reset();
             }
         },
 
-        reset( time = this.durations.quizzer_response ) {
+        reset( time = this.durations.quizzer ) {
             if ( this.timeout_id ) clearTimeout( this.timeout_id );
-            this.timeout_id = undefined;
-            this.state      = 'Start';
-            this.value      = this.durations[time] || time;
+            this.timeout_id            = undefined;
+            this.current_duration_name = undefined;
+            this.state                 = 'Start';
+            this.value                 = this.durations[time] || time;
         },
 
         start( duration_name = undefined ) {
             this.reset();
-            if (duration_name) this.value = this.durations[duration_name];
+            if (duration_name) {
+                this.value                 = this.durations[duration_name];
+                this.current_duration_name = duration_name;
+            }
             this.toggle();
+        },
+
+        quizzer_selected() {
+            if ( ! this.current_duration_name || this.current_duration_name != 'quizzer' )
+                this.start('quizzer');
         },
     },
 

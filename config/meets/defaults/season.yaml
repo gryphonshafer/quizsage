@@ -32,6 +32,7 @@ roster:
 #             phrase_minimum_reply_length: 1
 #         quiz:
 #             maximum_declined_appeals_per_team: 2
+#             trigger_wait_duration: 7
 #             quizzer_response_duration: 40
 #             timeout_duration: 40
 #             appeal_duration: 180

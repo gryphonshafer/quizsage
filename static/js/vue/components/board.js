@@ -22,9 +22,8 @@ export default {
 
             if (
                 this.current.event.current &&
-                this.$root.$refs.timer &&
-                this.$root.$refs.timer.state == 'Start'
-            ) this.$root.$refs.timer.toggle();
+                this.$root.$refs.timer
+            ) this.$root.$refs.timer.quizzer_selected();
 
             if ( this.$root.$refs.controls && ! this.selected.type.synonymous_verbatim_open_book )
                 this.$root.$refs.controls.select_type('synonymous');

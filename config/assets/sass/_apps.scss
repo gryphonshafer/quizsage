@@ -157,7 +157,7 @@ div#queries {
         display         : inline-block;
         padding         : 0.25em 0.125em;
         margin-bottom   : 0.25em;
-        width           : 1.6em;
+        width           : 2em;
         text-align      : center;
         border          : 3px double;
 
@@ -173,7 +173,7 @@ div#queries {
 
     div.select_type,
     div.results {
-        min-width: 45em;
+        min-width: 40em;
     }
 
     div.search {
@@ -361,29 +361,26 @@ div#queries {
     }
 }
 
-@media ( max-width: 540px ) {
-    div#quiz div.operation {
+@media ( max-width: 700px ) {
+    div#quiz {
         div.select_type,
         div.results,
         div.quiz_control {
-            min-width  : auto;
-            margin-left: 7em;
+            min-width: inherit;
+            display  : inline-grid;
+        }
+
+        table.board {
+            font-size  : calc( 100vw / 58 );
+            line-height: 1.5em;
         }
     }
-}
 
-@media ( max-width: 700px ) {
-    div#quiz table.board {
-        font-size  : 70%;
-        line-height: 1.5em;
-    }
-}
 
-@media ( max-width: 500px ) {
-    div#quiz table.board {
-        font-size  : 50%;
-        line-height: 1.5em;
+    div#quiz div.timer div.button_group {
+        position: unset;
     }
+
 }
 
 @media ( max-width: 505px ) {

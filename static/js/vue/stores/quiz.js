@@ -102,9 +102,10 @@ export default Pinia.defineStore( 'store', {
 
         return {
             durations: {
-                quizzer_response: quiz.quizzer_response_duration,
-                timeout         : quiz.timeout_duration,
-                appeal          : quiz.appeal_duration,
+                trigger: quiz.trigger_wait_duration,
+                quizzer: quiz.quizzer_response_duration,
+                timeout: quiz.timeout_duration,
+                appeal : quiz.appeal_duration,
             },
             material: quiz.queries.material,
             teams   : quiz.state.teams,

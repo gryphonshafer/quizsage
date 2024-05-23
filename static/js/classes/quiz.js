@@ -4,6 +4,7 @@ import Scoring      from 'classes/scoring';
 
 export default class Quiz {
     static default_settings = {
+        trigger_wait_duration            : 7,
         quizzer_response_duration        : 40,
         timeout_duration                 : 40,
         appeal_duration                  : 180,
