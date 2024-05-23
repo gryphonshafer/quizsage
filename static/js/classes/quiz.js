@@ -35,8 +35,8 @@ export default class Quiz {
                 quizzers: team[1],
             };
 
-            team.timeouts_remaining = this.timeouts_per_team;
-            team.appeals_declined   = 0;
+            team.timeouts_remaining         = this.timeouts_per_team;
+            team.appeals_declined_remaining = this.maximum_declined_appeals_per_team;
 
             if ( ! team.id ) team.id = '_' + id_counter++;
 
@@ -101,11 +101,13 @@ export default class Quiz {
         this.state.board = [];
 
         this.state.teams.forEach( team => {
-            team.timeouts_remaining = this.timeouts_per_team;
-            team.appeals_declined   = 0;
+            team.timeouts_remaining         = this.timeouts_per_team;
+            team.appeals_declined_remaining = this.maximum_declined_appeals_per_team;
         } );
 
+        let event_message = undefined;
         this.state.events.forEach( event => {
+            event_message = undefined;
             const record = JSON.parse( JSON.stringify(event) );
 
             // if event is a ruled action...
@@ -123,14 +125,19 @@ export default class Quiz {
                 record.quizzer_label = 'F';
             }
             else if ( record.action == 'timeout' ) {
-                this.state.teams.find( team => team.id == record.team_id ).timeouts_remaining--;
+                const team = this.state.teams.find( team => team.id == record.team_id );
+                team.timeouts_remaining--;
+                if ( team.timeouts_remaining <= 0 ) event_message = 'Timeouts expended: ' + team.name;
                 record.team_label = 'T';
             }
             else if ( record.action == 'appeal_accepted' ) {
                 record.team_label = 'A+';
             }
             else if ( record.action == 'appeal_declined' ) {
-                this.state.teams.find( team => team.id == record.team_id ).appeals_declined++;
+                const team = this.state.teams.find( team => team.id == record.team_id );
+                team.appeals_declined_remaining--;
+                if ( team.appeals_declined_remaining <= 0 )
+                    event_message = 'Appeal opportunities expended: ' + team.name;
                 record.team_label = 'A-';
             }
 
@@ -162,7 +169,16 @@ export default class Quiz {
             this.state.board.push( distribution.shift() );
         }
 
-        return this.scoring.score(this);
+        let scoring_message = this.scoring.score(this);
+
+        if (
+            scoring_message && (
+                this.state.events.at(-1).action == 'correct' ||
+                this.state.events.at(-1).action == 'incorrect'
+            )
+        ) return scoring_message;
+
+        return event_message;
     }
 
     #setup_query( record, distribution ) {
