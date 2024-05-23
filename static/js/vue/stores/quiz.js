@@ -157,7 +157,7 @@ export default Pinia.defineStore( 'store', {
             event_id   = undefined,
         ) {
             try {
-                this.hidden_solution = false;
+                this.hidden_solution = ( action != 'timeout' ) ? false : true;
                 quiz.action( action, team_id, quizzer_id, qsstypes, event_id );
                 update_data(this);
                 this.save_quiz_data();
