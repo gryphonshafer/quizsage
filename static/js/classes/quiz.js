@@ -100,6 +100,11 @@ export default class Quiz {
         this.state.query_cache.unshift( ...this.state.board.map( row => row.query ).filter( query => query ) );
         this.state.board = [];
 
+        this.state.teams.forEach( team => {
+            team.timeouts_remaining = this.timeouts_per_team;
+            team.appeals_declined   = 0;
+        } );
+
         this.state.events.forEach( event => {
             const record = JSON.parse( JSON.stringify(event) );
 

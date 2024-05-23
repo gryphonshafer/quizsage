@@ -33,9 +33,13 @@
                 >{{ quizzer.name }}</td>
 
                 <td rowspan="3">
-                    TOs: {{ team.timeouts_remaining }}
+                    <span
+                        :title="'Timeouts Remaining: ' + team.timeouts_remaining"
+                        >TOsR: {{ team.timeouts_remaining }}</span>
                     &nbsp;&nbsp;
-                    ADs: {{ team.appeals_declined }}
+                    <span
+                        :title="'Appeals Declined: ' + team.appeals_declined"
+                        >AD: {{ team.appeals_declined }}</span>
                 </td>
             </template>
         </tr>
