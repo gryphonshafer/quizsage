@@ -307,6 +307,7 @@ div#drill {
         margin-bottom: 1em;
     }
 
+    div.timer,
     div.query_type_buttons {
         p {
             margin: 0;
@@ -384,8 +385,11 @@ div#queries {
 }
 
 @media ( max-width: 505px ) {
-    div#drill div.query_type_buttons button {
-        display: inline-block;
-        margin-right: 0.25em;
+    div#drill {
+        div.timer button,
+        div.query_type_buttons button {
+            display     : inline-block;
+            margin-right: 0.25em;
+       }
     }
 }

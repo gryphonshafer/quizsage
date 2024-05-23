@@ -55,7 +55,8 @@
     }
 
     function flash_window() {
-        window.document.querySelector('table.board td.top_left_corner').style.backgroundColor = 'transparent';
+        let top_left_corner = window.document.querySelector('table.board td.top_left_corner');
+        if (top_left_corner) top_left_corner.style.backgroundColor = 'transparent';
 
         const main  = window.document.querySelector('main');
         const color = window.getComputedStyle(main).backgroundColor

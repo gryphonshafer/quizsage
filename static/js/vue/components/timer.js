@@ -16,7 +16,7 @@ export default {
     },
 
     created() {
-        this.value = this.durations.quizzer;
+        this.value = this.durations.quizzer || this.durations.standard;
     },
 
     methods: {
@@ -46,7 +46,7 @@ export default {
             }
         },
 
-        reset( time = this.durations.quizzer ) {
+        reset( time = this.durations.quizzer || this.durations.standard ) {
             if ( this.timeout_id ) clearTimeout( this.timeout_id );
             this.timeout_id            = undefined;
             this.current_duration_name = undefined;
