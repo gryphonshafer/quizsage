@@ -42,7 +42,16 @@
 
 p.buttons {
     margin-top   : 0;
-    margin-bottom: 1em;
+    margin-bottom: 2em;
+    line-height  : 0;
+
+    span {
+        display: inline-block;
+    }
+
+    button {
+        margin-bottom: -1em;
+    }
 }
 
 img.captcha {
