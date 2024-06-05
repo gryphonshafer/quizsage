@@ -7,6 +7,7 @@ use YAML::XS 'LoadFile';
 my $opt = options( qw{
     context|c=s
     id|i=i
+    region|r=s
     season|e=s
     name|n=s
     location|l=s
@@ -42,8 +43,10 @@ my $object = ( $opt->{context} eq 'season' ) ? QuizSage::Model::Season->new : Qu
 
 my $season_id;
 try {
-    $season_id = QuizSage::Model::Season->new->load({ name => $opt->{season} })->id
-        if ( $opt->{context} eq 'meet' and $opt->{season} );
+    $season_id = QuizSage::Model::Season->new->load({
+        name           => $opt->{season},
+        maybe location => $opt->{region},
+    })->id if ( $opt->{context} eq 'meet' and $opt->{season} );
 }
 catch ($e) {
     die $object->deat($e) . "\n";
@@ -93,9 +96,10 @@ setup.pl - Build and edit meets and seasons
     setup.pl OPTIONS
         -c, --context  CONTEXT # season | meet
         -i, --id       PRIMARY_KEY_ID
+        -r, --region   SEASON_LOCATION
         -e, --season   SEASON_NAME
         -n, --name     MEET_NAME
-        -l, --location LOCATION
+        -l, --location MEET_LOCATION
         -s, --start    DATETIME|EPOCH
         -d, --days     DURATION
         -p, --password PASSWORD
@@ -115,6 +119,10 @@ Run the program either in the "season" or "meet" context.
 =head2 -i, --id
 
 Primary key ID of the row of the C<context> desired.
+
+=head2 -r, --region
+
+Season location (or region) name.
 
 =head2 -e, --season
 
