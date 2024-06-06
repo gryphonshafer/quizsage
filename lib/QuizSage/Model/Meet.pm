@@ -53,8 +53,70 @@ sub from_season_meet ( $self, $season_name, $meet_name ) {
 }
 
 sub state ($self) {
-    my $state        = $self->data->{build};
+    my $state        = $self->deepcopy( $self->data->{build} );
     my $quizzes_data = QuizSage::Model::Quiz->new->every_data({ meet_id => $self->id });
+
+    # for every bracket that has a first-to-win-twice finals situation
+    for my $bracket (
+        grep {
+            $_->{finals} and $_->{finals} eq 'first_to_win_twice'
+        } $state->{brackets}->@*
+    ) {
+        my @bracket_quizzes = grep { $_->{bracket} eq $bracket->{name} } @$quizzes_data;
+
+        my $first_finals_quiz            = $bracket->{sets}[-1]{rooms}[0];
+        my $first_finals_quiz_name       = quotemeta( $first_finals_quiz->{name} );
+        my $first_finals_quiz_name_regex = qr/^$first_finals_quiz_name(?:\-\d+)?$/;
+        my ($first_finals_quiz_template) =
+            map { $_->{sets}[-1]{rooms}[0] }
+            grep { $_->{name} eq $bracket->{name} }
+            $self->data->{build}{brackets}->@*;
+
+        # inject missing finals quizzes into meet state data
+        for my $quiz (@bracket_quizzes) {
+            next if (
+                $quiz->{name} !~ $first_finals_quiz_name_regex or
+                grep { $_->{name} eq $quiz->{name} } $bracket->{sets}[-1]{rooms}->@*
+            );
+            my $next_finals_quiz = $self->deepcopy($first_finals_quiz_template);
+            $next_finals_quiz->{name} = $quiz->{name};
+            push( $bracket->{sets}[-1]{rooms}->@*, $next_finals_quiz );
+        }
+
+        # skip bracket if not every quiz in the bracket is complete
+        next if (
+            grep {
+                not $_->{state} or
+                not $_->{state}{board} or
+                not $_->{state}{board}->@*
+            } @bracket_quizzes or
+            grep { grep { $_->{current} } $_->{state}{board}->@* } @bracket_quizzes or
+            @bracket_quizzes != map { $_->{rooms}->@* } $bracket->{sets}->@*,
+        );
+
+        my @finals_quizzes_done = grep {
+            $_->{bracket} eq $bracket->{name} and
+            $_->{name} =~ $first_finals_quiz_name_regex and
+            (
+                $_->{state}{board}->@* and
+                not grep { $_->{current} } $_->{state}{board}->@*
+            )
+        } @bracket_quizzes;
+
+        # has the first-to-win-twice condition not yet been met
+        my $winners;
+        for my $quiz (@finals_quizzes_done) {
+            my ($winner) = grep { $_->{score}{position} == 1 } $quiz->{state}{teams}->@*;
+            $winners->{ $winner->{name} }++;
+        }
+        unless ( grep { $winners->{$_} >= 2 } keys %$winners ) {
+
+            # inject an additional finals quiz into meet state
+            my $next_finals_quiz = $self->deepcopy($first_finals_quiz_template);
+            $next_finals_quiz->{name} .= '-' . ( @finals_quizzes_done + 1 );
+            push( $bracket->{sets}[-1]{rooms}->@*, $next_finals_quiz );
+        }
+    }
 
     for my $quiz ( $quizzes_data->@* ) {
         my ($state_bracket) = grep { $_->{name} eq $quiz->{bracket} } $state->{brackets}->@*;
@@ -179,7 +241,21 @@ sub quiz_settings ( $self, $bracket_name, $quiz_name ) {
     my $find_pointers = sub {
         for my $set ( $bracket->{sets}->@* ) {
             for my $quiz ( $set->{rooms}->@* ) {
-                return $quiz, $set, $bracket if ( $quiz->{name} eq $quiz_name );
+                return $quiz, $set, $bracket if (
+                    $quiz->{name} eq $quiz_name
+                );
+            }
+        }
+
+        for my $set ( $bracket->{sets}->@* ) {
+            for my $quiz ( $set->{rooms}->@* ) {
+                my $quotemeta = quotemeta( $quiz->{name} );
+                my $regex     = qr/^$quotemeta(?:\-\d+)?$/;
+
+                if ( $quiz_name =~ $regex ) {
+                    delete $quiz->{distribution};
+                    return $quiz, $set, $bracket;
+                }
             }
         }
     };
@@ -200,10 +276,107 @@ sub quiz_settings ( $self, $bracket_name, $quiz_name ) {
 }
 
 sub stats ($self) {
-    my $build        = $self->data->{build};
+    my $build        = $self->deepcopy( $self->data->{build} );
     my $quizzes_data = QuizSage::Model::Quiz->new->every_data({ meet_id => $self->id });
 
     my $stats;
+
+    my $first_to_win_twice_positions_cache;
+    my $first_to_win_twice_positions = sub (
+        $position,
+        $finals_quizzes,
+        $meet_quizzes,
+        $bracket_name,
+    ) {
+        unless ($first_to_win_twice_positions_cache) {
+
+            # has the first-to-win-twice condition been met
+            my $winners;
+            for my $quiz (@$finals_quizzes) {
+                my ($winner) = grep { $_->{score}{position} == 1 } $quiz->{state}{teams}->@*;
+                $winners->{ $winner->{name} }++;
+            }
+            if ( grep { $winners->{$_} >= 2 } keys %$winners ) {
+                my @positions;
+
+                # first team to win first place twice is the winner
+                my ($winner) =
+                    map { $_->[0] }
+                    sort { $b->[1] <=> $a->[1] }
+                    map { [ $_, $winners->{$_} ] }
+                    keys %$winners;
+                push( @positions, $winner );
+
+                # remaining placements are based on total positional placement by team,
+                # unless there is a tie
+                my $team_position_total;
+                $team_position_total->{ $_->{name} } += $_->{score}{position}
+                    for ( grep { $_->{name} ne $winner } map { $_->{state}{teams}->@* } @$finals_quizzes );
+                my $teams_by_position_total;
+                push( $teams_by_position_total->{ $team_position_total->{$_} }->@*, $_ )
+                    for ( keys %$team_position_total );
+
+                for my $total ( sort { $a <=> $b } keys %$teams_by_position_total ) {
+                    if ( $teams_by_position_total->{$total}->@* == 1 ) {
+                        push( @positions, $teams_by_position_total->{$total}[0] );
+                    }
+                    else {
+                        # if there is a tie, the meet director will break it in the following way:
+                        #     1. score sum for finals bracket quizzes
+                        #     2. score sum for the positional bracket
+                        #     3. score sum for the entire meet
+                        push( @positions,
+                            map { $_->{team } }
+                            sort {
+                                $b->{score_sum_final_backet}       <=> $a->{score_sum_final_backet}       or
+                                $b->{score_sum_positional_bracket} <=> $a->{score_sum_positional_bracket} or
+                                $b->{score_sum_entire_meet}        <=> $a->{score_sum_entire_meet}        or
+                                $b->{team}                         <=> $a->{team}
+                            }
+                            map {
+                                my $team = $_;
+
+                                my $score_sum_final_backet = 0;
+                                $score_sum_final_backet += $_->{score}{points} for (
+                                    grep { $_->{name} eq $team }
+                                    map { $_->{state}{teams}->@* }
+                                    @$finals_quizzes
+                                );
+
+                                my $score_sum_positional_bracket = 0;
+                                $score_sum_positional_bracket += $_->{score}{points} for (
+                                    grep { $_->{name} eq $team }
+                                    map { $_->{state}{teams}->@* }
+                                    grep { $_->{bracket} eq $bracket_name }
+                                    @$meet_quizzes
+                                );
+
+                                my $score_sum_entire_meet = 0;
+                                $score_sum_entire_meet += $_->{score}{points} for (
+                                    grep { $_->{name} eq $team }
+                                    map { $_->{state}{teams}->@* }
+                                    @$meet_quizzes
+                                );
+
+                                +{
+                                    team                         => $team,
+                                    score_sum_final_backet       => $score_sum_final_backet,
+                                    score_sum_positional_bracket => $score_sum_positional_bracket,
+                                    score_sum_entire_meet        => $score_sum_entire_meet,
+                                };
+                            } $teams_by_position_total->{$total}->@*
+                        );
+                    }
+                }
+
+                $first_to_win_twice_positions_cache = \@positions;
+            }
+        }
+
+        return ($first_to_win_twice_positions_cache)
+            ? $first_to_win_twice_positions_cache->[ $position - 1 ]
+            : undef;
+    };
 
     for my $bracket ( $build->{brackets}->@* ) {
         push( @{ $stats->{rankings} }, {
@@ -211,12 +384,27 @@ sub stats ($self) {
             positions => [ map {
                 my $rank = $_;
 
-                my ($quiz) = grep {
+                my @quizzes = grep {
+                    my $quotemeta = quotemeta( $rank->{quiz} );
+                    my $regex     = qr/^$quotemeta(?:\-\d+)?$/;
+
                     $bracket->{name} eq $_->{bracket} and
-                    $rank->{quiz} eq $_->{name}
+                    (
+                        $_->{name} eq $rank->{quiz} or
+                        $_->{name} =~ $regex
+                    );
                 } @$quizzes_data;
 
-                if ($quiz) {
+                if ( $bracket->{finals} and $bracket->{finals} eq 'first_to_win_twice' and @quizzes > 1 ) {
+                    $rank->{team} = $first_to_win_twice_positions->(
+                        $rank->{position},
+                        \@quizzes,
+                        $quizzes_data,
+                        $bracket->{name},
+                    );
+                    $rank->{quiz} .= '*';
+                }
+                elsif ( my $quiz = $quizzes[0] ) {
                     $rank->{quiz_id} = $quiz->{quiz_id};
                     my ($team) =
                         grep { $rank->{position} == $_->{score}{position} }
@@ -229,17 +417,23 @@ sub stats ($self) {
         } ) if ( $bracket->{rankings} );
 
         for my $quiz ( map { $_->{rooms}->@* } $bracket->{sets}->@* ) {
-            my ($quiz_data) = grep {
+            my $quotemeta = quotemeta( $quiz->{name} );
+            my $regex     = qr/^$quotemeta(?:\-\d+)?$/;
+            my @quiz_data = grep {
                 $_->{bracket} eq $bracket->{name} and
-                $_->{name} eq $quiz->{name}
+                (
+                    $_->{name} eq $quiz->{name} or
+                    $_->{name} =~ $regex
+                ) and
+                $_->{state}
             } @$quizzes_data;
 
-            if ( $quiz_data and $quiz_data->{state} ) {
+            for my $quiz_data (@quiz_data) {
                 for my $team ( $quiz_data->{state}{teams}->@* ) {
                     push( @{ $stats->{teams}{ $team->{name} } }, {
                         quiz_id  => $quiz_data->{quiz_id},
                         bracket  => $bracket->{name},
-                        name     => $quiz->{name},
+                        name     => $quiz_data->{name},
                         weight   => $quiz->{weight} // $bracket->{weight} // 1,
                         points   => $team->{score}{points},
                         position => $team->{score}{position},
@@ -249,7 +443,7 @@ sub stats ($self) {
                         push( @{ $stats->{quizzers}{ $quizzer->{name} } }, {
                             quiz_id => $quiz_data->{quiz_id},
                             bracket => $bracket->{name},
-                            name    => $quiz->{name},
+                            name    => $quiz_data->{name},
                             weight  => $quiz->{weight} // $bracket->{weight} // 1,
                             points  => $quizzer->{score}{points},
                             vra     => scalar( grep {
