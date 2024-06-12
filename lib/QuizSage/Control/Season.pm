@@ -5,7 +5,6 @@ use QuizSage::Model::Season;
 
 sub stats ($self) {
     my $season = QuizSage::Model::Season->new->load( $self->param('season_id') );
-
     $self->stash(
         stats  => $season->stats,
         season => $season,

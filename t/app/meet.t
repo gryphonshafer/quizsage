@@ -94,11 +94,9 @@ mojo->get_ok( '/meet/' . $meet->id . '/distribution' )
 
 mojo->get_ok( '/meet/' . $meet->id . '/stats' )
     ->status_is(200)
-    ->text_is( 'h3:nth-of-type(1)', 'Top 9 Rankings' )
-    ->text_is( 'h3:nth-of-type(2)', 'Quizzers by Points Average' )
-    ->text_is( 'h3:nth-of-type(3)', 'Rookie Quizzers by Points Average' )
-    ->text_is( 'h3:nth-of-type(4)', 'Quizzers with VRAs' )
-    ->text_is( 'h3:nth-of-type(5)', 'Teams by Points Average' );
+    ->text_is( 'details:nth-of-type(1) summary', 'Top 9 Rankings' )
+    ->text_like( 'details:nth-of-type(2) summary', qr/^\s*All\s*Quizzers\s*by\s*Points\s*Average\s*$/ )
+    ->text_is( 'details:last-of-type summary', 'Quizzers with VRAs' );
 
 mojo->get_ok( '/meet/' . $meet->id . '/board/1' )
     ->status_is(200)

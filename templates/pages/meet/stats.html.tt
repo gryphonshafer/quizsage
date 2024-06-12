@@ -7,61 +7,62 @@
 </h2>
 
 [% FOR bracket IN stats.rankings %]
-    <h3>[% bracket.bracket %] Rankings</h3>
+    <details>
+        <summary>[% bracket.bracket %] Rankings</summary>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Position</th>
-                <th>Name</th>
-                <th>Based On</th>
-            </tr>
-        </thead>
-        <tbody>
-            [% row_position = 0 %]
-            [% FOR rank IN bracket.positions %]
-                [% row_position = row_position + 1 %]
-                <tr>
-                    <td class="right">[% row_position %]</td>
-                    [% IF rank.team %]
-                        <td>[% rank.team %]</td>
-                    [% ELSE %]
-                        <td class="blank_cell"></td>
-                    [% END %]
-                    <td>
-                        [% PROCESS st_ing.html.tt position = rank.position %]
-                        in
-                        [% IF rank.quiz_id %]<a href="[% c.url_for( '/quiz/' _ rank.quiz_id ) %]">[% END %]
-                            [% rank.quiz %]
-                        [% IF rank.quiz_id %]</a>[% END %]
-                    </td>
-                </tr>
-            [% END %]
-        </tbody>
-    </table>
-[% END %]
-
-[% BLOCK by_points_average %]
-    <h3>[% IF filter_tag %][% filter_tag %] [% END %][% type.ucfirst %] by Points Average</h3>
-
-    [% has_content = 0 %]
-    [% FOR item IN stats.$type %]
-        [% IF NOT filter_tag OR item.tags AND item.tags.grep( '^' _ filter_tag _ '$' ).size %]
-            [% has_content = 1 %]
-        [% END %]
-    [% END %]
-
-    [% IF has_content %]
-        <table class="stats">
+        <table>
             <thead>
                 <tr>
                     <th>Position</th>
                     <th>Name</th>
-                    <th>Points Avg.</th>
-                    <th>Points Sum</th>
-                    [% FOR i IN [ 1 .. stats.meta.$type.quizzes_max ] %]
-                        <th>Quiz [% i %]</th>
-                    [% END %]
+                    <th>Based On</th>
+                </tr>
+            </thead>
+            <tbody>
+                [% row_position = 0 %]
+                [% FOR rank IN bracket.positions %]
+                    [% row_position = row_position + 1 %]
+                    <tr>
+                        <td class="right">[% row_position %]</td>
+                        [% IF rank.team %]
+                            <td>[% rank.team %]</td>
+                        [% ELSE %]
+                            <td class="blank_cell"></td>
+                        [% END %]
+                        <td>
+                            [% PROCESS st_ing.html.tt position = rank.position %]
+                            in
+                            [% IF rank.quiz_id %]<a href="[% c.url_for( '/quiz/' _ rank.quiz_id ) %]">[% END %]
+                                [% rank.quiz %]
+                            [% IF rank.quiz_id %]</a>[% END %]
+                        </td>
+                    </tr>
+                [% END %]
+            </tbody>
+        </table>
+    </details>
+[% END %]
+
+[%
+    PROCESS by_points_average type = 'quizzers', filter_tag = undef;
+    FOR tag IN stats.tags;
+        PROCESS by_points_average type = 'quizzers', filter_tag = tag;
+    END;
+%]
+
+[% PROCESS by_points_average type = 'teams', filter_tag = undef %]
+
+<details>
+    <summary>Quizzers with VRAs</summary>
+
+    [% IF stats.vra_quizzers.size > 0 %]
+        <table>
+            <thead>
+                <tr>
+                    <th>Position</th>
+                    <th>Quizzer</th>
+                    <th>Team</th>
+                    <th>VRAs</th>
                 </tr>
             </thead>
             <tbody>
@@ -70,121 +71,135 @@
                     last_position = undef;
                     last_item     = undef;
                 %]
-                [% FOR item IN stats.$type %]
-                    [% IF NOT filter_tag OR item.tags AND item.tags.grep( '^' _ filter_tag _ '$' ).size %]
-                        [%
-                            row_position  = row_position + 1;
-                            this_position = (
-                                NOT last_item OR (
-                                    last_item.points_avg != item.points_avg OR
-                                    last_item.points_sum != item.points_sum
-                                )
-                            ) ? row_position : last_position;
-                        %]
-                        <tr>
-                            <td class="[%
-                                ( last_position != this_position ) ? 'right' : 'right tie'
-                            %]">[% this_position %]</td>
-                            <td>
-                                [% item.name %]
-                                [% IF item.team_name %]
-                                    <br>
-                                    [% item.team_name %]
-                                [% END %]
-                                [% IF NOT filter_tag AND item.tags AND item.tags.grep('^Rookie$').size %]
-                                    <i>Rookie</i>
-                                [% END %]
-                            </td>
-                            <td class="right">[% item.points_avg | format('%0.2f') %]</td>
-                            <td class="right">[% item.points_sum | format('%0.1f') %]</td>
-                            [% FOR quiz IN item.quizzes %]
-                                <td>
-                                    [% quiz.points %] pts. <i>(at [% quiz.weight %])</i>
-                                    <br>
-
-                                    [% IF quiz.position %]
-                                        [% PROCESS st_ing.html.tt position = quiz.position %]
-                                    [% END %]
-
-                                    [% IF quiz.quiz_id %]<a
-                                        href="[% c.url_for( '/quiz/' _ quiz.quiz_id ) %]">[% END %]
-                                        [%
-                                            ( quiz.bracket.length > 6 )
-                                                ? quiz.bracket.substr( 0, 6 ) _ '.'
-                                                : quiz.bracket
-                                        %] [% quiz.name %]
-                                    [% IF quiz.quiz_id %]</a>[% END %]
-                                </td>
-                            [% END %]
-                            [%
-                                empty_columns = stats.meta.$type.quizzes_max - item.quizzes.size;
-                                FOR [ 1 .. empty_columns ];
-                            %]
-                                <td class="blank_cell"></td>
-                            [% END %]
-                        </tr>
-                        [%
-                            last_position = this_position;
-                            last_item     = item;
-                        %]
-                    [% END %]
+                [% FOR quizzer IN stats.vra_quizzers %]
+                    [%
+                        row_position  = row_position + 1;
+                        this_position =
+                            ( NOT last_item OR last_item != quizzer.vra_sum ) ? row_position : last_position;
+                    %]
+                    <tr>
+                        <td class="[%
+                            ( last_position != this_position ) ? 'right' : 'right tie'
+                        %]">[% this_position %]</td>
+                        <td>
+                            [% quizzer.name %][% IF
+                                quizzer.tags AND quizzer.tags.grep('^Rookie$').size %]*[% END %]
+                        </td>
+                        <td>[% quizzer.team_name %]</td>
+                        <td class="right">[% quizzer.vra_sum %]</td>
+                    </tr>
+                    [%
+                        last_position = this_position;
+                        last_item     = quizzer.vra_sum;
+                    %]
                 [% END %]
             </tbody>
         </table>
     [% ELSE %]
         <p>No statistics currently available.</p>
     [% END %]
-[% END %]
+</details>
 
-[% PROCESS by_points_average type = 'quizzers', filter_tag = undef    %]
-[% PROCESS by_points_average type = 'quizzers', filter_tag = 'Rookie' %]
+<p>*Indicates a rookie quizzer.</p>
 
-<h3>Quizzers with VRAs</h3>
-
-[% IF stats.vra_quizzers.size > 0 %]
-    <table>
-        <thead>
-            <tr>
-                <th>Position</th>
-                <th>Quizzer</th>
-                <th>Team</th>
-                <th>VRAs</th>
-            </tr>
-        </thead>
-        <tbody>
-            [%
-                row_position  = 0;
-                last_position = undef;
-                last_item     = undef;
-            %]
-            [% FOR quizzer IN stats.vra_quizzers %]
-                [%
-                    row_position  = row_position + 1;
-                    this_position =
-                        ( NOT last_item OR last_item != quizzer.vra_sum ) ? row_position : last_position;
-                %]
-                <tr>
-                    <td class="[%
-                        ( last_position != this_position ) ? 'right' : 'right tie'
-                    %]">[% this_position %]</td>
-                    <td>[% quizzer.name %]</td>
-                    <td>
-                        [% quizzer.team_name %]
-                        [% IF quizzer.tags AND quizzer.tags.grep('^Rookie$').size %]
-                            <i>Rookie</i>
-                        [% END %]
-                    </td>
-                    <td class="right">[% quizzer.vra_sum %]</td>
-                </tr>
-                [%
-                    last_position = this_position;
-                    last_item     = quizzer.vra_sum;
-                %]
+[% BLOCK by_points_average %]
+    <details>
+        <summary>
+            [% IF filter_tag %]
+                [% filter_tag %]
+            [% ELSE %]
+                All
             [% END %]
-        </tbody>
-    </table>
-[% ELSE %]
-    <p>No statistics currently available.</p>
-[% END %]
+            [% type.ucfirst %] by Points Average
+        </summary>
 
-[% PROCESS by_points_average type = 'teams', filter_tag = undef %]
+        [% has_content = 0 %]
+        [% FOR item IN stats.$type %]
+            [% IF NOT filter_tag OR item.tags AND item.tags.grep( '^' _ filter_tag _ '$' ).size %]
+                [% has_content = 1 %]
+            [% END %]
+        [% END %]
+
+        [% IF has_content %]
+            <table class="stats">
+                <thead>
+                    <tr>
+                        <th>Position</th>
+                        <th>Name</th>
+                        <th>Points Avg.</th>
+                        <th>Points Sum</th>
+                        [% FOR i IN [ 1 .. stats.meta.$type.quizzes_max ] %]
+                            <th>Quiz [% i %]</th>
+                        [% END %]
+                    </tr>
+                </thead>
+                <tbody>
+                    [%
+                        row_position  = 0;
+                        last_position = undef;
+                        last_item     = undef;
+                    %]
+                    [% FOR item IN stats.$type %]
+                        [% IF NOT filter_tag OR item.tags AND item.tags.grep( '^' _ filter_tag _ '$' ).size %]
+                            [%
+                                row_position  = row_position + 1;
+                                this_position = (
+                                    NOT last_item OR (
+                                        last_item.points_avg != item.points_avg OR
+                                        last_item.points_sum != item.points_sum
+                                    )
+                                ) ? row_position : last_position;
+                            %]
+                            <tr>
+                                <td class="[%
+                                    ( last_position != this_position ) ? 'right' : 'right tie'
+                                %]">[% this_position %]</td>
+                                <td>
+                                    [% item.name %][%
+                                        IF item.tags AND item.tags.grep('^Rookie$').size %]*[% END %]
+                                    [% IF item.team_name %]
+                                        <br>
+                                        [% item.team_name %]
+                                    [% END %]
+                                </td>
+                                <td class="right">[% item.points_avg | format('%0.2f') %]</td>
+                                <td class="right">[% item.points_sum | format('%0.1f') %]</td>
+                                [% FOR quiz IN item.quizzes %]
+                                    <td>
+                                        [% quiz.points %] pts. <i>(at [% quiz.weight %])</i>
+                                        <br>
+
+                                        [% IF quiz.position %]
+                                            [% PROCESS st_ing.html.tt position = quiz.position %]
+                                        [% END %]
+
+                                        [% IF quiz.quiz_id %]<a
+                                            href="[% c.url_for( '/quiz/' _ quiz.quiz_id ) %]">[% END %]
+                                            [%
+                                                ( quiz.bracket.length > 6 )
+                                                    ? quiz.bracket.substr( 0, 6 ) _ '.'
+                                                    : quiz.bracket
+                                            %] [% quiz.name %]
+                                        [% IF quiz.quiz_id %]</a>[% END %]
+                                    </td>
+                                [% END %]
+                                [%
+                                    empty_columns = stats.meta.$type.quizzes_max - item.quizzes.size;
+                                    FOR [ 1 .. empty_columns ];
+                                %]
+                                    <td class="blank_cell"></td>
+                                [% END %]
+                            </tr>
+                            [%
+                                last_position = this_position;
+                                last_item     = item;
+                            %]
+                        [% END %]
+                    [% END %]
+                </tbody>
+            </table>
+        [% ELSE %]
+            <p>No statistics currently available.</p>
+        [% END %]
+    </details>
+[% END %]

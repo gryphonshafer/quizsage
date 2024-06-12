@@ -90,6 +90,7 @@ sub stats ($self) {
         }
     }
 
+    my %unique_tags;
     $stats->{quizzers} = [
         sort {
             $b->{ytd_avg} <=> $a->{ytd_avg} ||
@@ -109,6 +110,7 @@ sub stats ($self) {
 
                     my %tags = map { $_ => 1 } @$tags, @{ $meet_data->{tags} // [] };
                     $tags = [ sort keys %tags ];
+                    $unique_tags{$_}++ for (@$tags);
 
                     $meet_data;
                 }
@@ -145,6 +147,7 @@ sub stats ($self) {
         }
         keys %$quizzers_meet_data
     ];
+    $stats->{tags} = [ sort keys %unique_tags ];
 
     $stats->{vra_quizzers} = [
         sort { $b->{vra_sum} <=> $a->{vra_sum} }

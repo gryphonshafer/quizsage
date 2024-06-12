@@ -461,6 +461,7 @@ sub stats ($self) {
         }
     }
 
+    my %unique_tags;
     for my $type ( qw( teams quizzers ) ) {
         my ( $position, $quizzes_max ) = ( 0, 0 );
 
@@ -492,6 +493,7 @@ sub stats ($self) {
                         $stat->{tags} //= $quizzer->{tags} if ($quizzer);
                     } $build->{roster}->@*;
 
+                    $unique_tags{$_}++ for ( $stat->{tags}->@* );
                     $stat->{team_name} = $team->{name};
                 }
 
@@ -503,6 +505,7 @@ sub stats ($self) {
             quizzes_max => $quizzes_max,
         };
     };
+    $stats->{tags} = [ sort keys %unique_tags ];
 
     $stats->{vra_quizzers} = [
         sort {
