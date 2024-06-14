@@ -52,8 +52,22 @@
                 <li class="no_bullet">
                     [% PROCESS icon_link.html.tt
                         data = [ ['Pick-Up Quiz'], '/quiz/pickup/setup', 'pickup' ] %]
-                    <i>(and Generate Queries to Print)</i>
+                    <br><i>(and Generate Queries to Print)</i>
                 </li>
+            </ul>
+        </li>
+    </ul>
+    <ul class="column">
+        <li>
+            Reference
+            <ul>
+                [% FOR icon_link_data IN [
+                    [ ['Material Lookup'],     '/reference/material',  'material'  ],
+                    [ ['Thesaurus Lookup'],    '/reference/thesaurus', 'thesaurus' ],
+                    [ ['Reference Generator'], '/reference/generator', 'reference' ],
+                ] %]
+                    <li class="no_bullet">[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
+                [% END %]
             </ul>
         </li>
     </ul>
