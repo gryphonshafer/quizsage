@@ -1,6 +1,7 @@
 [%
     page.title = 'Scoreboard Room ' _ room_number;
     page.js.defer.push('util/websocket');
+    page.js.defer.push('util/cookies');
 
     IF quiz;
         page.vue   = 1;
@@ -78,10 +79,13 @@
 
     [% click_events = BLOCK %]
         let html_class_list;
+        let settings;
         const themes = [ 'light', 'dark', 'sand', 'midnight' ];
 
         window.addEventListener( 'load', () => {
             html_class_list = window.document.querySelector('html').classList;
+            settings = omniframe.cookies.get('quizsage_scoreboard') || {};
+            if ( settings && settings.theme ) html_class_list.add( 'theme-' + settings.theme );
         } );
 
         window.addEventListener( 'click', () => {
@@ -99,6 +103,9 @@
             if ( theme_index >= themes.length ) theme_index = 0;
 
             html_class_list.add( 'theme-' + themes[theme_index] );
+
+            settings.theme = themes[theme_index];
+            omniframe.cookies.set( 'quizsage_scoreboard', settings );
         } );
     [% END %]
     [% page.js.inline.push(click_events) %]
