@@ -37,15 +37,41 @@
     <div id="board" v-cloak></div>
 
     [% board_events = BLOCK %]
-        let board;
+        async function wait_for_table_render() {
+            const selector = 'div#board table:first-child';
+            while ( ! window.document.querySelector(selector) ) {
+                await new Promise( resolve => requestAnimationFrame(resolve) );
+            }
+            return window.document.querySelector(selector);
+        }
 
         window.addEventListener( 'load', () => {
-            board = window.document.querySelector('div#board');
-            setTimeout( () => window.dispatchEvent( new Event('resize') ), 500 );
+            wait_for_table_render().then( () => window.dispatchEvent( new Event('resize') ) );
         } );
 
         window.addEventListener( 'resize', () => {
-            board.scrollTop = board.scrollHeight;
+            wait_for_table_render().then( table => {
+                const tr         = table.querySelector('tbody tr.selected');
+                const board      = window.document.querySelector('div#board');
+                const board_rect = board.getBoundingClientRect();
+
+                if ( tr && board.scrollHeight > parseInt( board_rect.bottom - board_rect.top ) + 1 ) {
+                    const tr_rect      = tr.getBoundingClientRect();
+                    const tr_height    = tr_rect.bottom - tr_rect.top;
+                    const rows_visible =
+                        (
+                            board_rect.bottom -
+                            table.querySelector('thead').getBoundingClientRect().bottom
+                        ) / tr_height;
+
+                    board.scrollTop =
+                        parseInt( tr_rect.bottom - board_rect.bottom ) +
+                        tr_height * ( rows_visible - 1 ) / 3;
+                }
+                else {
+                    board.scrollTop = board.scrollHeight;
+                }
+            } );
         } );
     [% END %]
     [% page.js.inline.push(board_events) %]
