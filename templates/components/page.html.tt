@@ -192,12 +192,29 @@
                             [% END %]
                         </ul>
                     </li>
-                    [% FOR icon_link_data IN [
-                        [ ['Queries Drill'], '/drill/setup', 'drill'  ],
-                        [ ['Pick-Up Quiz'],  '/quiz/pickup', 'pickup' ],
-                    ] %]
-                        <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
-                    [% END %]
+                    <li>
+                        Practice
+                        <ul>
+                            [% FOR icon_link_data IN [
+                                [ ['Queries Drill'], '/drill/setup', 'drill'  ],
+                                [ ['Pick-Up Quiz'],  '/quiz/pickup', 'pickup' ],
+                            ] %]
+                                <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
+                            [% END %]
+                        </ul>
+                    </li>
+                    <li>
+                        Reference
+                        <ul>
+                            [% FOR icon_link_data IN [
+                                [ ['Material Lookup'],     '/reference/material',  'material'  ],
+                                [ ['Thesaurus Lookup'],    '/reference/thesaurus', 'thesaurus' ],
+                                [ ['Reference Generator'], '/reference/generator', 'reference' ],
+                            ] %]
+                                <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
+                            [% END %]
+                        </ul>
+                    </li>
                 [% ELSE %]
                     <li>
                         Meet

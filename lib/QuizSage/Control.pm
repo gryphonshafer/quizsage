@@ -84,6 +84,8 @@ sub startup ($self) {
     $users->post('/quiz/save/:quiz_id'  )->to('quiz#save'  );
     $users->any ('/quiz/delete/:quiz_id')->to('quiz#delete');
 
+    $users->any( '/reference/' . $_ )->to('reference#' . $_ ) for ( qw( material thesaurus generator ) );
+
     $all->any('/')->to('main#home');
     $all->any( '/set/:type/:name' => [ type => [ qw( theme style ) ] ] )->to('main#set');
     $all->any('/captcha')->to('main#captcha');
