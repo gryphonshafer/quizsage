@@ -7,9 +7,12 @@ use QuizSage::Model::Quiz;
 
 sub practice ($self) {
     $self->stash( practice_label =>
-        ( $self->param('practice_type') eq 'memory/memorize/setup' ) ? 'memorize'      :
-        ( $self->param('practice_type') eq 'drill/setup'           ) ? 'queries_drill' :
-        ( $self->param('practice_type') eq 'quiz/pickup/setup'     ) ? 'pickup_quiz'   : undef
+        ( $self->param('practice_type') eq 'memory/memorize/setup'     ) ? 'memorize'      :
+        ( $self->param('practice_type') eq 'drill/setup'               ) ? 'queries_drill' :
+        ( $self->param('practice_type') eq 'quiz/pickup/setup'         ) ? 'pickup_quiz'   :
+        ( $self->param('practice_type') eq 'reference/material/setup'  ) ? 'material'      :
+        ( $self->param('practice_type') eq 'reference/thesaurus/setup' ) ? 'thesaurus'     :
+        ( $self->param('practice_type') eq 'reference/generator/setup' ) ? 'ref_gen'       : undef
     );
 
     my $user          = $self->stash('user');
@@ -38,7 +41,10 @@ sub practice ($self) {
     elsif (
         $self->stash('practice_label') eq 'memorize' or
         $self->stash('practice_label') eq 'queries_drill' or
-        $self->stash('practice_label') eq 'pickup_quiz' and $self->param('generate_queries')
+        $self->stash('practice_label') eq 'pickup_quiz' and $self->param('generate_queries') or
+        $self->stash('practice_label') eq 'material' or
+        $self->stash('practice_label') eq 'thesaurus' or
+        $self->stash('practice_label') eq 'ref_gen'
     ) {
         my $parsed_label = $label->parse( $settings->{material_label} );
 
@@ -46,13 +52,22 @@ sub practice ($self) {
             if ( not $parsed_label->{bibles} and $settings->{bible} );
         $settings->{material_label} = $label->canonicalize( $settings->{material_label} );
 
-        $user->data->{settings}{ $self->stash('practice_label') } = $settings;
+        $user->data->{settings}{
+            (
+                $self->stash('practice_label') eq 'material' or
+                $self->stash('practice_label') eq 'thesaurus' or
+                $self->stash('practice_label') eq 'ref_gen'
+            ) ? 'reference' : $self->stash('practice_label')
+        } = $settings;
         $user->save;
 
         return $self->redirect_to(
-            ( $self->stash('practice_label') eq 'memorize'      ) ? '/memory/memorize' :
-            ( $self->stash('practice_label') eq 'queries_drill' ) ? '/drill'           :
-            ( $self->stash('practice_label') eq 'pickup_quiz'   ) ? '/queries'         : '/'
+            ( $self->stash('practice_label') eq 'memorize'      ) ? '/memory/memorize'     :
+            ( $self->stash('practice_label') eq 'queries_drill' ) ? '/drill'               :
+            ( $self->stash('practice_label') eq 'pickup_quiz'   ) ? '/queries'             :
+            ( $self->stash('practice_label') eq 'material'      ) ? '/reference/material'  :
+            ( $self->stash('practice_label') eq 'thesaurus'     ) ? '/reference/thesaurus' :
+            ( $self->stash('practice_label') eq 'ref_gen'       ) ? '/reference/generator' : '/'
         );
     }
     elsif ( $self->stash('practice_label') eq 'pickup_quiz' and not $self->param('generate_queries') ) {

@@ -207,9 +207,9 @@
                         <b>Reference</b>
                         <ul>
                             [% FOR icon_link_data IN [
-                                [ ['Material Lookup'],     '/reference/material',  'material'  ],
-                                [ ['Thesaurus Lookup'],    '/reference/thesaurus', 'thesaurus' ],
-                                [ ['Reference Generator'], '/reference/generator', 'reference' ],
+                                [ ['Material Lookup'],     '/reference/material/setup',  'material'  ],
+                                [ ['Thesaurus Lookup'],    '/reference/thesaurus/setup', 'thesaurus' ],
+                                [ ['Reference Generator'], '/reference/generator/setup', 'reference' ],
                             ] %]
                                 <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
                             [% END %]
