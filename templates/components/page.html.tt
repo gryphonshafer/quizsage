@@ -181,7 +181,7 @@
             [% ELSE %]
                 [% UNLESS meet_id %]
                     <li>
-                        Memorization
+                        <b>Memorization</b>
                         <ul>
                             [% FOR icon_link_data IN [
                                 [ ['Initial Memorization'], '/memory/memorize', 'memorize' ],
@@ -193,7 +193,7 @@
                         </ul>
                     </li>
                     <li>
-                        Practice
+                        <b>Practice</b>
                         <ul>
                             [% FOR icon_link_data IN [
                                 [ ['Queries Drill'], '/drill/setup', 'drill'  ],
@@ -204,7 +204,7 @@
                         </ul>
                     </li>
                     <li>
-                        Reference
+                        <b>Reference</b>
                         <ul>
                             [% FOR icon_link_data IN [
                                 [ ['Material Lookup'],     '/reference/material',  'material'  ],
@@ -217,7 +217,7 @@
                     </li>
                 [% ELSE %]
                     <li>
-                        Meet
+                        <b>Meet</b>
                         <ul>
                             [% FOR icon_link_data IN [
                                 [ ['State'],        [ '/meet/', meet_id ],                  'meet_state'   ],
@@ -258,7 +258,7 @@
                 [ 'style', [ 'rounded', 'square' ] ],
             ] %]
                 <li>
-                    Set [% type.0 | ucfirst %]
+                    <b>Set [% type.0 | ucfirst %]</b>
                     <ul>
                         [% FOR item IN type.1 %]
                             <li><a
