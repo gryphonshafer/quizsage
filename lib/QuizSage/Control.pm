@@ -63,6 +63,9 @@ sub startup ($self) {
             memory/memorize/setup
             drill/setup
             quiz/pickup/setup
+            reference/material/setup
+            reference/thesaurus/setup
+            reference/generator/setup
         ) ] ]
     )->to('quiz#practice');
 
