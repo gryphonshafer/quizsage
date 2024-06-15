@@ -30,7 +30,7 @@
 
     <ul class="column">
         <li>
-            Memorization
+            <b>Memorization</b>
             <ul>
                 [% FOR icon_link_data IN [
                     [ ['Initial Memorization'], '/memory/memorize/setup', 'memorize' ],
@@ -44,7 +44,7 @@
     </ul>
     <ul class="column">
         <li>
-            Practice
+            <b>Practice</b>
             <ul>
                 <li class="no_bullet">
                     [% PROCESS icon_link.html.tt data = [ ['Queries Drill'], '/drill/setup', 'drill' ] %]
@@ -59,7 +59,7 @@
     </ul>
     <ul class="column">
         <li>
-            Reference
+            <b>Reference</b>
             <ul>
                 [% FOR icon_link_data IN [
                     [ ['Material Lookup'],     '/reference/material',  'material'  ],
