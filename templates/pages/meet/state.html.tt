@@ -76,11 +76,13 @@
     [% FOR set IN bracket.sets %]
         [% schedule = set.rooms.0.schedule %]
 
-        [% PROCESS event
-            type   = 'pre',
-            events = state.events,
-            row    = schedule
-        %]
+        [% IF loop.first %]
+            [% PROCESS event
+                type   = 'pre',
+                events = state.events,
+                row    = schedule
+            %]
+        [% END %]
 
         <div class="schedule_row">
             [% IF schedule %]
@@ -182,11 +184,11 @@
                 </div>
             [% END %]
         </div>
-    [% END %]
 
-    [% PROCESS event
-        type   = 'post',
-        events = state.events,
-        row    = schedule
-    %]
+        [% PROCESS event
+            type   = 'post',
+            events = state.events,
+            row    = schedule
+        %]
+    [% END %]
 [% END %]

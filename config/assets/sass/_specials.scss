@@ -134,7 +134,7 @@ div.summary_box {
     margin          : 0.5em;
     padding         : 0.5em;
     width           : 13em;
-    height          : 11em;
+    height          : 15em;
     vertical-align  : top;
 
     @include theme.apply( themes.$themes ) {

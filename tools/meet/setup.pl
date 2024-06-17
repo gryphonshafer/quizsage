@@ -54,8 +54,8 @@ catch ($e) {
 
 my $data = {
     maybe season_id => $season_id,
-    maybe name      => $opt->{ ( $opt->{context} eq 'season' ) ? 'season' : 'name' },
-    maybe location  => $opt->{location},
+    maybe name      => $opt->{ ( $opt->{context} eq 'season' ) ? 'season' : 'name'     },
+    maybe location  => $opt->{ ( $opt->{context} eq 'season' ) ? 'region' : 'location' },
     maybe start     => $opt->{start},
     maybe days      => $opt->{days},
     maybe passwd    => $opt->{password},
@@ -63,10 +63,13 @@ my $data = {
 };
 
 try {
-    $object->load(
+    $object = $object->load(
         ( $opt->{id} )
             ? $opt->{id}
-            : { name => $opt->{ ( $opt->{context} eq 'season' ) ? 'season' : 'name' } }
+            : {
+                name           => $opt->{ ( $opt->{context} eq 'season' ) ? 'season' : 'name'     },
+                maybe location => $opt->{ ( $opt->{context} eq 'season' ) ? 'region' : 'location' },
+            }
     )->save($data);
 }
 catch ($e) {

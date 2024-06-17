@@ -254,7 +254,7 @@ sub delete ($self) {
         $quiz->delete;
     }
 
-    return $self->redirect_to( '/meet/' . $quiz->data->{meet_id} );
+    return $self->redirect_to( '/meet/' . $quiz->data->{meet_id} . '/state' );
 }
 
 1;
