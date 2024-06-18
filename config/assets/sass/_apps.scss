@@ -160,6 +160,7 @@ div#queries {
         width           : 2em;
         text-align      : center;
         border          : 3px double;
+        cursor          : pointer;
 
         @include theme.apply( themes.$themes ) {
             background  : theme.get('form_elements_background');

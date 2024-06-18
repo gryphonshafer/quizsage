@@ -1,5 +1,5 @@
 <div class="timer">
-    <div class="timer_display">{{ value }}</div>
+    <div class="timer_display" @click="toggle">{{ value }}</div>
     <div class="button_group">
         <button @click="toggle">{{ state }}</button>
         <button v-for="( value, key ) in durations"
