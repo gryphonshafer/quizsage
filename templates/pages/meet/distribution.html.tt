@@ -9,40 +9,42 @@
 [% IF per_quiz AND per_quiz.material %]<p>Material: [% per_quiz.material.label %]</p>[% END %]
 
 [% FOR bracket IN build.brackets %]
-    <h3>Bracket: [% bracket.name %]</h3>
+    <details>
+        <summary>Bracket: [% bracket.name %]</summary>
 
-    [% IF bracket.material %]
-        <div class="info_box">
-            <b>Material:</b> [% bracket.material.label %]
-        </div>
-    [% END %]
+        [% IF bracket.material %]
+            <div class="info_box">
+                <b>Material:</b> [% bracket.material.label %]
+            </div>
+        [% END %]
 
-    [% FOR set IN bracket.sets %]
-        <div>
-            [% FOR quiz IN set.rooms %]
-                <div class="summary_box distribution_box">
-                    <b>Quiz: [% quiz.name %]</b>
+        [% FOR set IN bracket.sets %]
+            <div>
+                [% FOR quiz IN set.rooms %]
+                    <div class="summary_box distribution_box">
+                        <b>Quiz: [% quiz.name %]</b>
 
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Type</th>
-                                <th>Bible</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            [% FOR query IN quiz.distribution %]
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td class="right">[% query.id %]</td>
-                                    <td>[% query.type %]</td>
-                                    <td>[% query.bible %]</td>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Bible</th>
                                 </tr>
-                            [% END %]
-                        </tbody>
-                    </table>
-                </div>
-            [% END %]
-        </div>
-    [% END %]
+                            </thead>
+                            <tbody>
+                                [% FOR query IN quiz.distribution %]
+                                    <tr>
+                                        <td class="right">[% query.id %]</td>
+                                        <td>[% query.type %]</td>
+                                        <td>[% query.bible %]</td>
+                                    </tr>
+                                [% END %]
+                            </tbody>
+                        </table>
+                    </div>
+                [% END %]
+            </div>
+        [% END %]
+    </details>
 [% END %]

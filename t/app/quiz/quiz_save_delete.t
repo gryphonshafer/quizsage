@@ -42,6 +42,6 @@ $meet_id = 42;
 
 mojo->get_ok('/quiz/delete/42')
     ->status_is(302)
-    ->header_is( location => url('/meet/42') );
+    ->header_is( location => url('/meet/42/state') );
 
 teardown;

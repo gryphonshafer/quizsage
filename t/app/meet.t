@@ -90,7 +90,7 @@ mojo->get_ok( '/meet/' . $meet->id . '/roster' )
 
 mojo->get_ok( '/meet/' . $meet->id . '/distribution' )
     ->status_is(200)
-    ->text_is( 'h3:nth-of-type(1) ~ div > div:nth-child(1) b', 'Quiz: 1' );
+    ->text_is( 'details:nth-of-type(1) div.summary_box b', 'Quiz: 1' );
 
 mojo->get_ok( '/meet/' . $meet->id . '/stats' )
     ->status_is(200)

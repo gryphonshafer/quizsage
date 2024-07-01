@@ -2,33 +2,28 @@
     [% FOR team IN roster %]
         <li>[%
             IF team.name;
-                team.name;
+                '<b>' _ team.name _ '</b>';
 
                 IF team.score;
-                    ' -- <i>';
-
-                    team.score.points;
-                    ' pts.';
-
+                    '<br><i>';
                     IF team.score.position;
-                        ' ';
                         PROCESS st_ing.html.tt position = team.score.position;
+                        ' with ';
                     END;
-
-                    '</i>';
+                    team.score.points;
+                    ' pts.</i>';
                 END;
-            ELSE;
+            ELSIF team.quiz AND team.bracket;
                 '<i>';
-
                 PROCESS st_ing.html.tt position = team.position;
-
                 IF team.quiz;
                     ' in ' _ team.quiz;
                 ELSE;
                     ' of ' _ team.bracket;
                 END;
-
                 '</i>';
+            ELSE;
+                '<i>(to be determined)</i>';
             END;
         %]</li>
     [% END %]

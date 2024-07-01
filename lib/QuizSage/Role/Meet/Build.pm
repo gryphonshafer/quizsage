@@ -43,9 +43,13 @@ sub _merge_meet_and_season_settings ($self) {
                 if ( $set->{roster}{$_} );
         }
         delete $set->{roster};
-        for my $name ( qw( schedule per_quiz ) ) {
+        for my $name ( qw( schedule per_quiz material ) ) {
             $build_settings->{$name} = delete $set->{$name} if ( $set->{$name} );
         }
+    }
+
+    if ( my $material = delete $build_settings->{material} ) {
+        $_->{material} //= $material for ( $build_settings->{brackets}->@* );
     }
 
     return $build_settings;
@@ -137,46 +141,50 @@ sub _build_bracket_data ( $self, $build_settings ) {
     die "Duplicate bracket names\n" if ( grep { $_ > 1 } values %$bracket_names );
 
     for my $bracket ( $build_settings->{brackets}->@* ) {
-        my $teams = ( $bracket->{teams}{source} eq 'roster' )
-            ? $build_settings->{roster}
-            : [
-                map {
-                    +{
-                        position => $_,
-                        bracket  => $bracket->{teams}{source},
-                    };
-                } (
-                    1 .. (
-                        grep { $bracket->{teams}{source} eq $_->{name} } $build_settings->{brackets}->@*
-                    )[0]->{teams}{derived_count} // scalar( @{ $build_settings->{roster} } )
-                )
-            ];
+        my $teams;
 
-        $teams = [ @$teams[
-            ( ( $bracket->{teams}{places}{min} ) ? $bracket->{teams}{places}{min} - 1 : 0 )
-            ..
-            ( ( $bracket->{teams}{places}{max} ) ? $bracket->{teams}{places}{max} - 1 : @$teams - 1 )
-        ] ] if ( $bracket->{teams}{places} );
+        if ( $bracket->{teams} ) {
+            $teams = ( $bracket->{teams}{source} eq 'roster' )
+                ? $build_settings->{roster}
+                : [
+                    map {
+                        +{
+                            position => $_,
+                            bracket  => $bracket->{teams}{source},
+                        };
+                    } (
+                        1 .. (
+                            grep { $bracket->{teams}{source} eq $_->{name} } $build_settings->{brackets}->@*
+                        )[0]->{teams}{derived_count} // scalar( @{ $build_settings->{roster} } )
+                    )
+                ];
 
-        $bracket->{teams}{derived_count} = @$teams;
+            $teams = [ @$teams[
+                ( ( $bracket->{teams}{places}{min} ) ? $bracket->{teams}{places}{min} - 1 : 0 )
+                ..
+                ( ( $bracket->{teams}{places}{max} ) ? $bracket->{teams}{places}{max} - 1 : @$teams - 1 )
+            ] ] if ( $bracket->{teams}{places} );
 
-        if ( $bracket->{teams}{slotting} ) {
-            if ( ( $bracket->{teams}{slotting} // '' ) eq 'random' ) {
-                $teams = [ map { $_->[0] } sort { $a->[1] <=> $b->[1] } map { [ $_, rand ] } @$teams ];
-            }
-            elsif ( ( $bracket->{teams}{slotting} // '' ) eq 'striped' ) {
-                my %queues;
-                push( @{ $queues{ $_ % $bracket->{rooms} } }, $teams->[$_] ) for ( 0 .. @$teams - 1 );
-                $teams = [ map { $queues{$_}->@* } sort { $a <=> $b } keys %queues ];
-            }
-            elsif ( ( $bracket->{teams}{slotting} // '' ) eq 'snaked' ) {
-                my %queues;
-                push( @{ $queues{
-                    ( $_ / $bracket->{rooms} % 2 )
-                        ? abs( $_ % $bracket->{rooms} - ( $bracket->{rooms} - 1 ) )
-                        : $_ % $bracket->{rooms}
-                } }, $teams->[$_] ) for ( 0 .. @$teams - 1 );
-                $teams = [ map { $queues{$_}->@* } sort { $a <=> $b } keys %queues ];
+            $bracket->{teams}{derived_count} = @$teams;
+
+            if ( $bracket->{teams}{slotting} ) {
+                if ( ( $bracket->{teams}{slotting} // '' ) eq 'random' ) {
+                    $teams = [ map { $_->[0] } sort { $a->[1] <=> $b->[1] } map { [ $_, rand ] } @$teams ];
+                }
+                elsif ( ( $bracket->{teams}{slotting} // '' ) eq 'striped' ) {
+                    my %queues;
+                    push( @{ $queues{ $_ % $bracket->{rooms} } }, $teams->[$_] ) for ( 0 .. @$teams - 1 );
+                    $teams = [ map { $queues{$_}->@* } sort { $a <=> $b } keys %queues ];
+                }
+                elsif ( ( $bracket->{teams}{slotting} // '' ) eq 'snaked' ) {
+                    my %queues;
+                    push( @{ $queues{
+                        ( $_ / $bracket->{rooms} % 2 )
+                            ? abs( $_ % $bracket->{rooms} - ( $bracket->{rooms} - 1 ) )
+                            : $_ % $bracket->{rooms}
+                    } }, $teams->[$_] ) for ( 0 .. @$teams - 1 );
+                    $teams = [ map { $queues{$_}->@* } sort { $a <=> $b } keys %queues ];
+                }
             }
         }
 
@@ -204,6 +212,21 @@ sub _build_bracket_data ( $self, $build_settings ) {
                     };
                 } @$meet
             ];
+        }
+        elsif ( $bracket->{type} eq 'manual' ) {
+            my @rooms;
+            for my $quiz ( @{ ( $bracket->{quizzes} ) ? $bracket->{quizzes} : [ $bracket->{name} ] } ) {
+                push( @rooms, {
+                    name   => $quiz,
+                    room   => @rooms + 1,
+                    roster => [ ({}) x $bracket->{teams_count} ],
+                } );
+
+                if ( @rooms == $bracket->{rooms} ) {
+                    push( @{ $bracket->{sets} }, { rooms => [@rooms] } );
+                    @rooms = ();
+                }
+            }
         }
         elsif ( $bracket->{type} eq 'positional' ) {
             my $template = $self->dataload( 'config/meets/brackets/' . $bracket->{template} . '.yaml' );
@@ -285,9 +308,11 @@ sub _schedule_integration( $self, $build_settings ) {
 
     # data calculation
     for my $bracket ( $build_settings->{brackets}->@* ) {
-        my ($source) = grep { $_->{name} eq $bracket->{teams}{source} } $build_settings->{brackets}->@*;
-        my $block_i  = 0;
-        my $pointer  = (
+        my ($source) =
+            grep { $_->{name} eq ( $bracket->{teams}{source} // '' ) }
+            $build_settings->{brackets}->@*;
+        my $block_i = 0;
+        my $pointer = (
             ($source)
                 ? $source->{sets}[-1]{rooms}[0]{schedule}{stop}
                 : $blocks->[$block_i]->{start}
@@ -471,11 +496,12 @@ sub _schedule_integration( $self, $build_settings ) {
                     $quiz_2->{bracket} . ' Quiz ' . $quiz_2->{name} . ' (room ' . $quiz_1->{room} . ')' . "\n"
                 ) if ( $quiz_1->{room} == $quiz_2->{room} );
 
-                my @teams_quiz_1 = map {
-                    $_->{name} // ( $_->{bracket} // $_->{quiz} ) . ' ' . $_->{position}
+                my @teams_quiz_1 = grep { length > 1 } map {
+                    $_->{name} // ( $_->{bracket} // $_->{quiz} // '' ) . ' ' . ( $_->{position} // '' )
                 } $quiz_1->{roster}->@*;
-                for my $team_quiz_2 ( map {
-                    $_->{name} // ( $_->{bracket} // $_->{quiz} ) . ' ' . $_->{position}
+
+                for my $team_quiz_2 ( grep { length > 1 } map {
+                    $_->{name} // ( $_->{bracket} // $_->{quiz} // '' ) . ' ' . ( $_->{position} // '' )
                 } $quiz_2->{roster}->@* ) {
                     warn(
                         $team_quiz_2 . ' is in ' .
