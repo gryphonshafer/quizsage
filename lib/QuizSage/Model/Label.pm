@@ -501,7 +501,7 @@ QuizSage::Model::Label
 =head1 DESCRIPTION
 
 This class is the model for material label objects. The primary purpose of this
-model is to parse, caonicalize, and descriptionize material labels. A material
+model is to parse, canonicalize, and descriptionize material labels. A material
 label is a string of a restricted syntax optionally with any reference set
 therein replaced by a label. See L<Material Labels|docs/material_labels.md>
 for additional details.

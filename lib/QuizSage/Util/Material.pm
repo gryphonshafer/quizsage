@@ -174,21 +174,25 @@ This package provides exportable utility functions.
 
 =head2 material_json
 
-This function accepts a material label string and will build a JSON material
-data file using data from the material database. A material label represents
-the reference range blocks, weights, and translations for the expected output.
-For example:
+This function accepts a material C<label> string and C<user> ID or material
+C<description> string and will build a JSON material data file using data from
+the  material database. A material label represents the reference range blocks,
+weights, and translations for the expected output. For example:
 
     Romans 1-4; James (1) Romans 5-8 (1) ESV NASB* NASB1995 NIV
 
-The function accepts an optional second value, an boolean value, to indicate if
-an existing JSON file should be rebuilt. (Default is false.)
+The function also accepts an optional C<force> boolean value to indicate if an
+existing JSON file should be rebuilt. (Default is false.)
 
-    my %results = material_json( 'Acts 1-20 NIV', 'force' )->%*;
+    my %results = material_json(
+        description => 'Acts 1-20 NIV',
+        force       => 1,
+    )->%*;
 
-The function returns a hashref with a C<label> and C<output> keys. The "label"
-will be the canonicalized material label, and the "output" is the file that was
-created or recreated.
+The function returns a hashref with a C<description>, C<json_file>, and C<id>
+keys. The C<description> will be the canonicalized material description, and the
+C<json_file> is the file that was created or recreated. The C<id> is the hash ID
+of the JSON file.
 
 =head3 JSON DATA STRUCTURE
 
