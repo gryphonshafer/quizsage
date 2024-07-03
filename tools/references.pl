@@ -12,16 +12,17 @@ my $opt = options( qw{
     email|e=s
     bible|b=s
     reference|r
-    whole|w
+    whole|w=i
     chapter|c=i
     phrases|p=i
     all|a
 } );
 
 if ( $opt->{all} ) {
-    $opt->{reference} = $opt->{whole} = 1;
+    $opt->{reference} = 1;
+    $opt->{whole}   //= 5;
     $opt->{chapter} //= 3;
-    $opt->{phrases} //= 3;
+    $opt->{phrases} //= 4;
 }
 
 pod2usage('Not all required parameters provided') unless (
@@ -106,7 +107,7 @@ push( $data->{sections}->@*, {
 } ) if ( $opt->{reference} );
 
 push( $data->{sections}->@*, {
-    header => 'Alphabetical Material',
+    header => 'Alphabetical Material from First ' . $opt->{whole} . ' Words',
     blocks => [ map {
         my $this_bible = $_;
         +{
@@ -124,7 +125,7 @@ push( $data->{sections}->@*, {
                                 $this_data->[1]{text},
                             )
                             : (
-                                join( ' ', @{ $this_data->[1]{words} }[ 0 .. 4 ] ),
+                                join( ' ', @{ $this_data->[1]{words} }[ 0 .. $opt->{whole} - 1 ] ),
                                 {
                                     class => 'ref',
                                     text  => $this_bible . ' ' . $this_data->[0],
@@ -238,7 +239,7 @@ references.pl - Build a "references" HTML document
         -e, --email     USER_EMAIL
         -b, --bible     BIBLE_ACRONYM   # required
         -r, --reference
-        -w, --whole
+        -w, --whole     WORD_COUNT
         -c, --chapter   KEY_WORD_COUNT
         -p, --phrases   KEY_WORD_COUNT
         -a, --all
@@ -272,7 +273,8 @@ material per Bible in Biblical order.
 =head2 -w, --whole
 
 Include a "whole" section in the output, which is the content of the
-material per Bible in alphabetical-by-verse-text order.
+material per Bible in alphabetical-by-verse-text order. The word count is the
+length of the introductory phrase printed from each translation.
 
 =head2 -c, --chapter
 
@@ -309,17 +311,30 @@ __DATA__
             }
             h1 {
                 font-size : 24px;
+                display   : block;
+                width     : fit-content;
+                margin    : 0 auto;
                 text-align: center;
+            }
+            h1 span.bibles {
+                display   : block;
+                font-size : 20px;
+            }
+            h1 ul.sections {
+                display   : block;
+                font-size : 16px;
+                width     : fit-content;
+                margin    : 1em auto 0 auto;
+                text-align: left;
             }
             h2 {
                 font-size  : 20px;
                 padding-top: 1rem;
-                margin     : 0;
+                margin     : 0 0 -1em 0;
             }
             h3 {
                 font-size : 18px;
                 text-align: right;
-                margin-top: 0;
             }
             table {
                 border-collapse: collapse;
@@ -346,6 +361,13 @@ __DATA__
                     padding-top: calc(30vh);
                     font-size  : 36px;
                 }
+                h1 span.bibles {
+                    font-size : 30px;
+                    margin-top: 2em;
+                }
+                h1 ul.sections {
+                    margin-top: 4em;
+                }
                 h2 {
                     page-break-before: always;
                 }
@@ -359,7 +381,15 @@ __DATA__
         <title>[% title %]</title>
     </head>
     <body>
-        <h1>[% title %]</h1>
+        <h1>
+            <span class="description">[% description %]</span>
+            <span class="bibles">[% bible %] with [% bibles.join(', ') %]</span>
+            <ul class="sections">
+                [% FOR section IN sections %]
+                    <li>[% section.header %]</li>
+                [% END %]
+            </ul>
+        </h1>
         [% FOR section IN sections %]
             <h2>[% section.header %]</h2>
             [% FOR block IN section.blocks %]
