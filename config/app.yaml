@@ -42,6 +42,9 @@ default:
             location  : static/json/material
             path      : /json/material
             atime_life: 274
+    reference_json:
+        location  : local/reference_json
+        atime_life: 274
     quiz_defaults:
         bible         : NIV
         duration      : 30

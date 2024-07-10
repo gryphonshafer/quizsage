@@ -24,7 +24,9 @@ sub practice ($self) {
     $settings->{$_} = $self->param($_) // $user_settings->{$_} // $quiz_defaults->{$_}
         for (
             ( $self->stash('practice_label') eq 'pickup_quiz' )
-                ? ( qw( bible roster_data material_label ) )
+                ? ( qw( bible roster_data material_label ) ) :
+            ( $self->stash('practice_label') eq 'ref_gen' )
+                ? ( qw( bible material_label ) )
                 : ('material_label')
         );
 
@@ -60,6 +62,9 @@ sub practice ($self) {
             ) ? 'reference' : $self->stash('practice_label')
         } = $settings;
         $user->save;
+
+        $self->session( ref_gen_params => $self->req->params->to_hash )
+            if ( $self->stash('practice_label') eq 'ref_gen' );
 
         return $self->redirect_to(
             ( $self->stash('practice_label') eq 'memorize'      ) ? '/memory/memorize'     :

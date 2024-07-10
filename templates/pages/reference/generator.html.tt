@@ -1,1 +1,31 @@
 [% page.title = 'Reference Generator' %]
+
+<h2>
+    <span class="description">[% description %]</span>
+    <span class="bibles">[% bibles.shift %] with [% bibles.join(', ') %]</span>
+    <ul class="sections">
+        [% FOR section IN sections %]
+            <li>[% section.header %]</li>
+        [% END %]
+    </ul>
+</h2>
+
+[% FOR section IN sections %]
+    <h3>[% section.header %]</h3>
+    [% FOR block IN section.blocks %]
+        <h4>[% block.header %]</h4>
+        <table>
+            [% FOR row IN block.rows %]
+                <tr>
+                    [% FOR cell IN row %]
+                        [% IF cell.text %]
+                            <td class="[% cell.class %]">[% cell.text %]</td>
+                        [% ELSE %]
+                            <td>[% cell %]</td>
+                        [% END %]
+                    [% END %]
+                </tr>
+            [% END %]
+        </table>
+    [% END %]
+[% END %]

@@ -1,6 +1,1 @@
 [% page.title = 'Material Lookup' %]
-
-<ul>
-    <li><b>Material Label:</b> [% material_label %]</li>
-    <li><b>Material ID:</b> [% material_id %]</li>
-</ul>

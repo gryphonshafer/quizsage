@@ -30,6 +30,23 @@
         </p>
     [% END %]
 
+    [% IF practice_label == 'ref_gen' %]
+        <p>
+            The "memorized Bible" field requires the Bible acronym; it's used
+            to understand which Bible should be used to source verse content
+            from. This "memorized  Bible" doesn't necessarily need to be part
+            of the material label/description, but it's also fine if it is.
+        </p>
+        <p>
+            Check the boxes below that to indicate which sections you want in
+            the output. You can alter the number of words used in each section.
+        </p>
+        <p><b>
+            Keep in mind that depending on your settings, you can end up
+            generating an extremely large/long/big output.
+        </b></p>
+    [% END %]
+
     <p>
         The material label/description field must contain a valid, full material
         label or description. For details about how these can be written,
@@ -72,6 +89,40 @@
                 <input type="text" name="bible" value="[% bible %]">
             </label>
             <textarea name="roster_data">[% c.param('roster') || roster_data %]</textarea>
+        </fieldset>
+    [% END %]
+
+    [% IF practice_label == 'ref_gen' %]
+        [% BLOCK pick_number %]
+            <select name="[% type %]_number">
+                [% FOR number IN [ 1 .. max ] %]
+                    <option[% IF number == default %] selected[% END %]>[% number %]</option>
+                [% END %]
+            </select>
+        [% END %]
+        <fieldset class="ref_gen">
+            <legend>Reference Generation Options</legend>
+            <label>
+                Memorized Bible:
+                <input type="text" name="bible" value="[% bible %]">
+            </label>
+            <label>
+                <input type="checkbox" name="reference" checked>
+                Reference Material
+            </label>
+            <label>
+                <input type="checkbox" name="whole" checked>
+                Alphabetical Material
+                from First [% PROCESS pick_number, type = 'whole', default = 5, max = 7 %] Words
+            </label>
+            <label>
+                <input type="checkbox" name="chapter" checked>
+                [% PROCESS pick_number, type = 'chapter', default = 3, max = 7 %]-Word Key Phrases by Chapter
+            </label>
+            <label>
+                <input type="checkbox" name="phrases" checked>
+                Global [% PROCESS pick_number, type = 'phrases', default = 4, max = 7 %]-Word Key Phrases
+            </label>
         </fieldset>
     [% END %]
 
