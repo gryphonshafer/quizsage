@@ -45,13 +45,12 @@ fun reference_data (
         )
     )->hexdigest, 0, 16 );
 
-    # remove any reference JSON files that haven't been accessed in the last N
-    # days, where N is from config: reference_json atime_life
+    # remove any reference JSON files that haven't been accessed in the last N days
     my $now        = time;
-    my $atime_life = conf->get( qw{ reference_json atime_life } );
+    my $atime_life = conf->get( qw{ reference atime_life } );
     my $json_path  = path( join( '/',
         conf->get( qw{ config_app root_dir } ),
-        conf->get( qw{ reference_json location } ),
+        conf->get( qw{ reference location json } ),
     ) );
     $json_path->list->grep( sub ($file) {
         ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
@@ -238,6 +237,8 @@ fun reference_data (
             };
         } @$bibles ],
     } ) if $phrases;
+
+    $data->{bible} = shift @{ $data->{bibles} };
 
     make_path( $json_file->dirname ) unless ( -d $json_file->dirname );
     $json_file->spew( encode_json($data) );

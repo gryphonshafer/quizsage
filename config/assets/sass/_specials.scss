@@ -71,7 +71,7 @@ fieldset.roster {
     margin-right: 1em;
 
     input[type='text'] {
-        width: 5em;
+        width: 5em !important;
     }
 
     textarea {
@@ -85,7 +85,7 @@ fieldset.ref_gen {
     text-align  : left;
 
     input[type='text'] {
-        width: 5em;
+        width: 5em !important;
     }
 
     select {

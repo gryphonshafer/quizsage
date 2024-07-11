@@ -1,8 +1,13 @@
 package QuizSage::Control::Reference;
 
 use exact 'Mojolicious::Controller';
-use Digest;
+# use Digest;
+use File::Path 'make_path';
+use Mojo::File 'path';
+use Omniframe;
 use QuizSage::Util::Reference 'reference_data';
+
+class_has conf => Omniframe->with_roles('+Conf')->new->conf;
 
 sub material ($self) {
     $self->warn('MATERIAL');
@@ -31,17 +36,54 @@ sub thesaurus ($self) {
 sub generator ($self) {
     my $ref_gen_params = $self->session('ref_gen_params') // {};
 
-    $self->stash( %{
-        reference_data(
-            label     => $ref_gen_params->{material_label},
-            bible     => $ref_gen_params->{bible},
-            user_id   => $self->stash('user')->id,
-            reference => ( ( $ref_gen_params->{reference} ) ? 1 : 0 ),
-            map {
-                $_ => ( $ref_gen_params->{$_} ) ? $ref_gen_params->{ $_ . '_number' } : 0
-            } qw( whole chapter phrases )
-        )
-    } );
+    my $reference_data = reference_data(
+        label     => $ref_gen_params->{material_label},
+        bible     => $ref_gen_params->{bible},
+        user_id   => $self->stash('user')->id,
+        reference => ( ( $ref_gen_params->{reference} ) ? 1 : 0 ),
+        map {
+            $_ => ( $ref_gen_params->{$_} ) ? $ref_gen_params->{ $_ . '_number' } : 0
+        } qw( whole chapter phrases )
+    );
+
+    # remove any reference HTML files that haven't been accessed in the last N days
+    my $now        = time;
+    my $atime_life = $self->conf->get( qw{ reference atime_life } );
+    my $html_path  = path( join( '/',
+        $self->conf->get( qw{ config_app root_dir } ),
+        $self->conf->get( qw{ reference location html } ),
+    ) );
+
+    $html_path->list->grep( sub ($file) {
+        ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
+    } )->each('remove');
+
+    my $html_file = $html_path->child( $reference_data->{id} . '.html' );
+
+    my $html;
+    unless ( -f $html_file ) {
+        $html = $self->app->tt_html(
+            $self->stash('controller') . '/' . $self->stash('action') . '.html.tt',
+            {
+                page => {
+                    no_defaults => 1,
+                    lang        => 'en',
+                    charset     => 'utf-8',
+                    viewport    => 1,
+                },
+                $reference_data->%*,
+            },
+        );
+
+        make_path( $html_file->dirname ) unless ( -d $html_file->dirname );
+        $html_file->spew($html);
+    }
+    else {
+        $html = $html_file->slurp;
+    }
+
+    $self->stash( skip_packer => 1 );
+    $self->render( text => $html );
 }
 
 1;

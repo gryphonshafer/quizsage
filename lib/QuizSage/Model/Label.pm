@@ -10,11 +10,13 @@ with 'Omniframe::Role::Model';
 has 'user_id';
 has 'user_aliases';
 
-has 'bible_ref' => Bible::Reference->new(
-    acronyms   => 0,
-    sorting    => 1,
-    add_detail => 1,
-);
+has 'bible_ref' => sub {
+    Bible::Reference->new(
+        acronyms   => 0,
+        sorting    => 1,
+        add_detail => 1,
+    );
+};
 
 has 'bible_acronyms' => sub ($self) {
     return $self->dq('material')->sql(q{

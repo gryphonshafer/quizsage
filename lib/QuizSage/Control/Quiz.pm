@@ -18,7 +18,13 @@ sub practice ($self) {
     my $user          = $self->stash('user');
     my $label         = QuizSage::Model::Label->new( user_id => $user->id );
     my $quiz_defaults = $label->conf->get('quiz_defaults');
-    my $user_settings = $user->data->{settings}{ $self->stash('practice_label') }  // {};
+    my $user_settings = $user->data->{settings}{
+        (
+            $self->stash('practice_label') eq 'material' or
+            $self->stash('practice_label') eq 'thesaurus' or
+            $self->stash('practice_label') eq 'ref_gen'
+        ) ? 'reference' : $self->stash('practice_label')
+    }  // {};
 
     my $settings;
     $settings->{$_} = $self->param($_) // $user_settings->{$_} // $quiz_defaults->{$_}
