@@ -51,3 +51,10 @@ default:
                 classes/scoring     : classes/scoring
                 modules/distribution: modules/distribution
                 modules/template    : modules/template
+        lookup:
+            module:
+              - vue/apps/lookup
+            importmap:
+                modules/template              : modules/template
+                vue/components/lookup/synonyms: vue/components/lookup/synonyms
+                vue/components/lookup/verses  : vue/components/lookup/verses

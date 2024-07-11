@@ -86,7 +86,10 @@ sub startup ($self) {
     $users->post('/quiz/save/:quiz_id'  )->to('quiz#save'  );
     $users->any ('/quiz/delete/:quiz_id')->to('quiz#delete');
 
-    $users->any( '/reference/' . $_ )->to('reference#' . $_ ) for ( qw( lookup generator ) );
+    $users
+        ->any( '/reference/lookup' => [ format => ['json'] ] )
+        ->to( 'reference#lookup', format => undef );
+    $users->any('/reference/generator')->to('reference#generator');
 
     $all->any('/')->to('main#home');
     $all->any( '/set/:type/:name' => [ type => [ qw( theme style ) ] ] )->to('main#set');

@@ -76,12 +76,7 @@ sub setup ($self) {
     my $user          = $self->stash('user');
     my $label         = QuizSage::Model::Label->new( user_id => $user->id );
     my $quiz_defaults = $label->conf->get('quiz_defaults');
-    my $user_settings = $user->data->{settings}{
-        (
-            $self->stash('setup_label') eq 'lookup' or
-            $self->stash('setup_label') eq 'ref_gen'
-        ) ? 'reference' : $self->stash('setup_label')
-    }  // {};
+    my $user_settings = $user->data->{settings}{ $self->stash('setup_label') }  // {};
 
     my $settings;
     $settings->{$_} = $self->param($_) // $user_settings->{$_} // $quiz_defaults->{$_}
@@ -116,12 +111,7 @@ sub setup ($self) {
             if ( not $parsed_label->{bibles} and $settings->{bible} );
         $settings->{material_label} = $label->canonicalize( $settings->{material_label} );
 
-        $user->data->{settings}{
-            (
-                $self->stash('setup_label') eq 'lookup' or
-                $self->stash('setup_label') eq 'ref_gen'
-            ) ? 'reference' : $self->stash('setup_label')
-        } = $settings;
+        $user->data->{settings}{ $self->stash('setup_label') } = $settings;
         $user->save;
 
         $self->session( ref_gen_params => $self->req->params->to_hash )

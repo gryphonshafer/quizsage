@@ -5,28 +5,31 @@ use exact 'Mojolicious::Controller';
 use File::Path 'make_path';
 use Mojo::File 'path';
 use Omniframe;
+use QuizSage::Util::Material 'material_json';
 use QuizSage::Util::Reference 'reference_data';
 
 class_has conf => Omniframe->with_roles('+Conf')->new->conf;
 
 sub lookup ($self) {
-    $self->warn('MATERIAL');
+    unless ( ( $self->stash('format') // '' ) eq 'json' ) {
+        $self->stash( js_app => Omniframe->with_roles('QuizSage::Role::JSApp')->new );
+    }
+    else {
+        my $user               = $self->stash('user');
+        my $quiz_defaults      = $user->conf->get('quiz_defaults');
+        my $user_settings      = $user->data->{settings}{lookup} // {};
+        my $material_label     = $user_settings->{material_label} // $quiz_defaults->{material_label};
+        my $material_json_info = material_json (
+            label => $material_label,
+            user  => $self->stash('user')->id,
+        );
 
-    # my $user           = $self->stash('user');
-    # my $quiz_defaults  = $user->conf->get('quiz_defaults');
-    # my $user_settings  = $user->data->{settings}{reference} // {};
-    # my $material_label = $user_settings->{material_label}   // $quiz_defaults->{material_label};
-    # my $material_id    = substr( Digest->new('SHA-256')->add($material_label)->hexdigest, 0, 16 );
-
-    # $self->warn(
-    #     $material_label,
-    #     $material_id,
-    # );
-
-    # $self->stash(
-    #     material_label => $material_label,
-    #     material_id    => $material_id,
-    # );
+        $self->render( json => {
+            json_material_path => $self->url_for( $self->conf->get( qw( material json path ) ) ),
+            material           => $material_json_info,
+            label              => $material_label,
+        } );
+    }
 }
 
 sub generator ($self) {
