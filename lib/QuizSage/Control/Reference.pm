@@ -9,7 +9,7 @@ use QuizSage::Util::Reference 'reference_data';
 
 class_has conf => Omniframe->with_roles('+Conf')->new->conf;
 
-sub material ($self) {
+sub lookup ($self) {
     $self->warn('MATERIAL');
 
     # my $user           = $self->stash('user');
@@ -27,10 +27,6 @@ sub material ($self) {
     #     material_label => $material_label,
     #     material_id    => $material_id,
     # );
-}
-
-sub thesaurus ($self) {
-    $self->warn('THESAURUS');
 }
 
 sub generator ($self) {
@@ -99,13 +95,9 @@ for "Reference" actions.
 
 =head1 METHODS
 
-=head2 material
+=head2 lookup
 
-This controller handles material lookup display.
-
-=head2 thesaurus
-
-This controller handles thesaurus display.
+This controller handles material and thesaurus lookup display.
 
 =head2 generator
 

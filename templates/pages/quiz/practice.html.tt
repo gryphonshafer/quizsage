@@ -1,11 +1,10 @@
 [%
     practice_name =
-        ( practice_label == 'pickup_quiz'   ) ? 'Pick-Up Quiz'         :
-        ( practice_label == 'queries_drill' ) ? 'Queries Drill'        :
-        ( practice_label == 'memorize'      ) ? 'Initial Memorization' :
-        ( practice_label == 'material'      ) ? 'Material Lookup'      :
-        ( practice_label == 'thesaurus'     ) ? 'Thesaurus Lookup'     :
-        ( practice_label == 'ref_gen'       ) ? 'Reference Generator'  : '';
+        ( practice_label == 'pickup_quiz'   ) ? 'Pick-Up Quiz'                  :
+        ( practice_label == 'queries_drill' ) ? 'Queries Drill'                 :
+        ( practice_label == 'memorize'      ) ? 'Initial Memorization'          :
+        ( practice_label == 'lookup'        ) ? 'Material and Thesaurus Lookup' :
+        ( practice_label == 'ref_gen'       ) ? 'Reference Generator'           : '';
 
     page.title = practice_name _ ' Setup';
 %]

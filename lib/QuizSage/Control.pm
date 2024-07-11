@@ -63,8 +63,7 @@ sub startup ($self) {
             memory/memorize/setup
             drill/setup
             quiz/pickup/setup
-            reference/material/setup
-            reference/thesaurus/setup
+            reference/lookup/setup
             reference/generator/setup
         ) ] ]
     )->to('quiz#practice');
@@ -87,7 +86,7 @@ sub startup ($self) {
     $users->post('/quiz/save/:quiz_id'  )->to('quiz#save'  );
     $users->any ('/quiz/delete/:quiz_id')->to('quiz#delete');
 
-    $users->any( '/reference/' . $_ )->to('reference#' . $_ ) for ( qw( material thesaurus generator ) );
+    $users->any( '/reference/' . $_ )->to('reference#' . $_ ) for ( qw( lookup generator ) );
 
     $all->any('/')->to('main#home');
     $all->any( '/set/:type/:name' => [ type => [ qw( theme style ) ] ] )->to('main#set');
