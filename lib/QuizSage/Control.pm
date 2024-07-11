@@ -59,14 +59,14 @@ sub startup ($self) {
     );
 
     $users->any(
-        '/:practice_type' => [ practice_type => [ qw(
+        '/:setup_type' => [ setup_type => [ qw(
             memory/memorize/setup
             drill/setup
             quiz/pickup/setup
             reference/lookup/setup
             reference/generator/setup
         ) ] ]
-    )->to('quiz#practice');
+    )->to('main#setup');
 
     $users->any("/quiz/$_")->to("quiz#$_") for ( qw( teams build ) );
 

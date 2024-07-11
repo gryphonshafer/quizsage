@@ -1,23 +1,23 @@
 [%
-    practice_name =
-        ( practice_label == 'pickup_quiz'   ) ? 'Pick-Up Quiz'                  :
-        ( practice_label == 'queries_drill' ) ? 'Queries Drill'                 :
-        ( practice_label == 'memorize'      ) ? 'Initial Memorization'          :
-        ( practice_label == 'lookup'        ) ? 'Material and Thesaurus Lookup' :
-        ( practice_label == 'ref_gen'       ) ? 'Reference Generator'           : '';
+    setup_name =
+        ( setup_label == 'pickup_quiz'   ) ? 'Pick-Up Quiz'                  :
+        ( setup_label == 'queries_drill' ) ? 'Queries Drill'                 :
+        ( setup_label == 'memorize'      ) ? 'Initial Memorization'          :
+        ( setup_label == 'lookup'        ) ? 'Material and Thesaurus Lookup' :
+        ( setup_label == 'ref_gen'       ) ? 'Reference Generator'           : '';
 
-    page.title = practice_name _ ' Setup';
+    page.title = setup_name _ ' Setup';
 %]
 
 <details>
     <summary>Instructions</summary>
 
     <p>
-        Enter the [% practice_name.lower %]'s settings below.
-        Your settings will be saved for future [% practice_name.lower %] use.
+        Enter the [% setup_name.lower %]'s settings below.
+        Your settings will be saved for future [% setup_name.lower %] use.
     </p>
 
-    [% IF practice_label == 'pickup_quiz' %]
+    [% IF setup_label == 'pickup_quiz' %]
         <p>
             The roster main field needs to have a single entry per line, with team
             name first on a line, then each quizzer on a line. There needs to be at
@@ -29,7 +29,7 @@
         </p>
     [% END %]
 
-    [% IF practice_label == 'ref_gen' %]
+    [% IF setup_label == 'ref_gen' %]
         <p>
             The "memorized Bible" field requires the Bible acronym; it's used
             to understand which Bible should be used to source verse content
@@ -53,7 +53,7 @@
         <a href="[% c.url_for('/docs/material_labels.md') %]">material labels documentation</a>.
     </p>
 
-    [% IF practice_label == 'memorize' %]
+    [% IF setup_label == 'memorize' %]
         <p>
             For initial memorization, it's recommended you enter a material
             label/description that comprises a set of sequential verses you intent
@@ -67,8 +67,8 @@
     <input type="hidden" name="generate_queries" value="0">
 
     [% submit_button_text = BLOCK %]
-        [% UNLESS practice_label == 'ref_gen' %]
-            Run [% practice_name %]
+        [% UNLESS setup_label == 'ref_gen' %]
+            Run [% setup_name %]
         [% ELSE %]
             Build Reference Document
         [% END %]
@@ -80,7 +80,7 @@
             this.form.elements.namedItem('generate_queries').value = 0;
         ">
 
-    [% IF practice_label == 'pickup_quiz' %]
+    [% IF setup_label == 'pickup_quiz' %]
         <input type="submit" value="Generate Queries to Print" onclick="
             this.form.elements.namedItem('generate_queries').value = 1;
         ">
@@ -88,7 +88,7 @@
 
     <br>
 
-    [% IF practice_label == 'pickup_quiz' %]
+    [% IF setup_label == 'pickup_quiz' %]
         <fieldset class="roster">
             <legend>Roster</legend>
             <label>
@@ -99,7 +99,7 @@
         </fieldset>
     [% END %]
 
-    [% IF practice_label == 'ref_gen' %]
+    [% IF setup_label == 'ref_gen' %]
         [% BLOCK pick_number %]
             <select name="[% type %]_number">
                 [% FOR number IN [ 1 .. max ] %]
