@@ -1,3 +1,18 @@
 <h2>Verses</h2>
 
-<p>Not yet implemented...</p>
+<p>Not yet fully implemented...</p>
+
+<button
+    v-for="bible in material.bibles"
+    :class="{ selected: selected.bible == bible.name }"
+    @click="selected.bible = bible.name"
+>{{ bible.name + ( ( bible.type == 'auxiliary' ) ? '*' : '' ) }}</button>
+
+<h2>{{ selected.book }} {{ selected.chapter }}:{{ selected.verse }}</h2>
+
+<select v-model="selected.book">
+    <option
+        v-for="book in references"
+        :selected="book.book == selected.book"
+    >{{ book.book }}</option>
+</select>
