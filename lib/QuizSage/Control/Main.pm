@@ -1,9 +1,10 @@
 package QuizSage::Control::Main;
 
 use exact 'Mojolicious::Controller';
-use QuizSage::Model::Season;
 use GD;
 use Mojo::File 'path';
+use QuizSage::Model::Season;
+use QuizSage::Util::Material 'material_json';
 
 sub home ($self) {
     $self->stash( active_seasons => QuizSage::Model::Season->new->active_seasons )
@@ -84,8 +85,7 @@ sub setup ($self) {
             ( $self->stash('setup_label') eq 'pickup_quiz' )
                 ? ( qw( bible roster_data material_label ) ) :
             ( $self->stash('setup_label') eq 'ref_gen' )
-                ? ( qw( bible material_label ) )
-                : ('material_label')
+                ? ( qw( bible material_label ) ) : ('material_label')
         );
 
     unless ( $self->param('material_label') or $self->param('roster_data') ) {
@@ -111,18 +111,24 @@ sub setup ($self) {
             if ( not $parsed_label->{bibles} and $settings->{bible} );
         $settings->{material_label} = $label->canonicalize( $settings->{material_label} );
 
+        if ( $self->stash('setup_label') eq 'ref_gen' ) {
+            $settings->{reference} = ( $self->req->param('reference') ) ? 1 : 0;
+            $settings->{$_}        = ( $self->req->param($_) ) ? 0 + $self->req->param( $_ . '_number' ) : 0
+                for ( qw( whole chapter phrases ) );
+        }
+
         $user->data->{settings}{ $self->stash('setup_label') } = $settings;
         $user->save;
-
-        $self->session( ref_gen_params => $self->req->params->to_hash )
-            if ( $self->stash('setup_label') eq 'ref_gen' );
 
         return $self->redirect_to(
             ( $self->stash('setup_label') eq 'memorize'      ) ? '/memory/memorize'     :
             ( $self->stash('setup_label') eq 'queries_drill' ) ? '/drill'               :
             ( $self->stash('setup_label') eq 'pickup_quiz'   ) ? '/queries'             :
-            ( $self->stash('setup_label') eq 'lookup'        ) ? '/reference/lookup'    :
-            ( $self->stash('setup_label') eq 'ref_gen'       ) ? '/reference/generator' : '/'
+            ( $self->stash('setup_label') eq 'ref_gen'       ) ? '/reference/generator' :
+            ( $self->stash('setup_label') eq 'lookup'        ) ? '/reference/lookup/' . material_json (
+                label => $settings->{material_label},
+                user  => $self->stash('user')->id,
+            )->{id} : '/'
         );
     }
     elsif ( $self->stash('setup_label') eq 'pickup_quiz' and not $self->param('generate_queries') ) {

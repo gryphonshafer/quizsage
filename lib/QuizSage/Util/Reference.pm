@@ -11,22 +11,22 @@ use QuizSage::Util::Material 'text2words';
 exact->exportable('reference_data');
 
 fun reference_data (
-    :$label     = undef, # material label/description
-    :$user_id   = undef, # user ID from application database
-    :$bible     = undef, # acronym for memorized Bible
-    :$reference = 1,     # boolean; include reference section
-    :$whole     = 5,     # words for whole section
-    :$chapter   = 3,     # words for chapter section
-    :$phrases   = 4,     # words for phrases section
-    :$force     = 0,     # force data regeneration (and update JSON cache file)
+    :$material_label = undef, # material label/description
+    :$user_id        = undef, # user ID from application database
+    :$bible          = undef, # acronym for memorized Bible
+    :$reference      = 1,     # boolean; include reference section
+    :$whole          = 5,     # words for whole section
+    :$chapter        = 3,     # words for chapter section
+    :$phrases        = 4,     # words for phrases section
+    :$force          = 0,     # force data regeneration (and update JSON cache file)
 ) {
     croak('Not all required parameters provided')
-        unless ( $label and $bible and ( $reference or $whole or $chapter or $phrases ) );
+        unless ( $material_label and $bible and ( $reference or $whole or $chapter or $phrases ) );
 
     $bible = uc $bible;
 
     my $mlabel  = QuizSage::Model::Label->new( maybe user_id => $user_id );
-    my $parse  = $mlabel->parse( $label . ' ' . $bible );
+    my $parse  = $mlabel->parse( $material_label . ' ' . $bible );
     my %bibles = map { $_ => 1 } map { @$_ } values $parse->{bibles}->%*;
     $bible     = ( delete $bibles{ $bible } ) ? $bible : undef;
 

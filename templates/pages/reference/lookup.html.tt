@@ -6,6 +6,8 @@
 
     page.js.importmap = js_app_config.importmap;
     page.js.module    = page.js.module.merge( js_app_config.module );
+
+    page.js.defer.push('/js/util/cookies.js');
 %]
 
 <div id="lookup" v-cloak></div>

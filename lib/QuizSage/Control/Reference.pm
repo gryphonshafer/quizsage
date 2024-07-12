@@ -1,7 +1,6 @@
 package QuizSage::Control::Reference;
 
 use exact 'Mojolicious::Controller';
-# use Digest;
 use File::Path 'make_path';
 use Mojo::File 'path';
 use Omniframe;
@@ -11,38 +10,19 @@ use QuizSage::Util::Reference 'reference_data';
 class_has conf => Omniframe->with_roles('+Conf')->new->conf;
 
 sub lookup ($self) {
-    unless ( ( $self->stash('format') // '' ) eq 'json' ) {
-        $self->stash( js_app => Omniframe->with_roles('QuizSage::Role::JSApp')->new );
-    }
-    else {
-        my $user               = $self->stash('user');
-        my $quiz_defaults      = $user->conf->get('quiz_defaults');
-        my $user_settings      = $user->data->{settings}{lookup} // {};
-        my $material_label     = $user_settings->{material_label} // $quiz_defaults->{material_label};
-        my $material_json_info = material_json (
-            label => $material_label,
-            user  => $self->stash('user')->id,
-        );
+    return $self->redirect_to('/') unless ( -f join( '/',
+        $self->conf->get( qw( config_app root_dir ) ),
+        $self->conf->get( qw( material json location ) ),
+        $self->stash('material_json_id') . '.json',
+    ) );
 
-        $self->render( json => {
-            json_material_path => $self->url_for( $self->conf->get( qw( material json path ) ) ),
-            material           => $material_json_info,
-            label              => $material_label,
-        } );
-    }
+    $self->stash( js_app => Omniframe->with_roles('QuizSage::Role::JSApp')->new );
 }
 
 sub generator ($self) {
-    my $ref_gen_params = $self->session('ref_gen_params') // {};
-
     my $reference_data = reference_data(
-        label     => $ref_gen_params->{material_label},
-        bible     => $ref_gen_params->{bible},
-        user_id   => $self->stash('user')->id,
-        reference => ( ( $ref_gen_params->{reference} ) ? 1 : 0 ),
-        map {
-            $_ => ( $ref_gen_params->{$_} ) ? $ref_gen_params->{ $_ . '_number' } : 0
-        } qw( whole chapter phrases )
+        user_id => $self->stash('user')->id,
+        $self->stash('user')->{data}{settings}{ref_gen}->%*,
     );
 
     # remove any reference HTML files that haven't been accessed in the last N days
