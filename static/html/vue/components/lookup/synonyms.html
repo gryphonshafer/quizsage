@@ -1,0 +1,31 @@
+<div class="synonyms">
+    <label>
+        Term:
+        <input type="text" v-model="text" placeholder="Thesaurus Word">
+    </label>
+    <div class="material">
+        <span v-if="content" class="word">{{ content.term }}</span>
+        <ul v-if="content">
+            <li v-for="meaning in content.meanings">
+                <i>
+                    {{ meaning.type }} -
+                    <template v-if="! meaning.ignored">
+                        {{ meaning.word }}
+                    </template>
+                    <template v-else>
+                        ignored ({{ meaning.word }})
+                    </template>
+                </i>
+
+                <ul v-if="! meaning.ignored && meaning.type != 'pron.'">
+                    <li v-for="
+                        set in meaning.synonyms
+                            .sort( ( a, b ) => b.verity - a.verity )
+                    ">
+                        {{ set.verity }}: {{ set.words.join(', ') }}
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>

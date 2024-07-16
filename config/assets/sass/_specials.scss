@@ -71,12 +71,29 @@ fieldset.roster {
     margin-right: 1em;
 
     input[type='text'] {
-        width: 5em;
+        width: 5em !important;
     }
 
     textarea {
         width : 11em;
         height: 22em;
+    }
+}
+
+fieldset.ref_gen {
+    margin-right: 1em;
+    text-align  : left;
+
+    input[type='text'] {
+        width: 5em !important;
+    }
+
+    select {
+        padding: 0 0.25em;
+
+        @include theme.apply( themes.$styles, 'style' ) {
+            border-radius: calc( theme.get('radius') / 2 );
+        }
     }
 }
 

@@ -1,0 +1,137 @@
+[%
+    other_bibles = BLOCK;
+        IF bibles.size > 2;
+            FOR this_bible IN bibles;
+                UNLESS loop.last;
+                    this_bible _ ', ';
+                END;
+            END;
+            ' and ' _ bibles.-1;
+        ELSIF bibles.size == 2;
+            bibles.0 _ ' and ' _ bibles.1;
+        ELSIF bibles.size == 1;
+            bibles.0;
+        END;
+    END;
+
+    bibles_label = bible _ ( (other_bibles) ? ' with ' _ other_bibles : '' );
+    page.title   = description _ ' ' _ bibles_label;
+%]
+
+<h1>
+    <span class="description">[% description %]</span>
+    <span class="bibles">[% bibles_label %]</span>
+    [% IF sections.size > 1 %]
+        <ul class="sections">
+            [% FOR section IN sections %]
+                <li>[% section.header %]</li>
+            [% END %]
+        </ul>
+    [% END %]
+</h1>
+
+[% FOR section IN sections %]
+    <h2>[% section.header %]</h2>
+    [% FOR block IN section.blocks %]
+        <h3>[% block.header %]</h3>
+        <table>
+            [% FOR row IN block.rows %]
+                <tr>
+                    [% FOR cell IN row %]
+                        [% IF cell.text %]
+                            <td class="[% cell.class %]">[% cell.text %]</td>
+                        [% ELSE %]
+                            <td>[% cell %]</td>
+                        [% END %]
+                    [% END %]
+                </tr>
+            [% END %]
+        </table>
+    [% END %]
+[% END %]
+
+[% css = BLOCK %]
+    body {
+        font-family     : sans-serif;
+        font-size       : 13px;
+        background-color: white;
+        color           : black;
+    }
+
+    h1 {
+        font-size : 24px;
+        display   : block;
+        width     : fit-content;
+        margin    : 0 auto;
+        text-align: center;
+    }
+
+    h1 span.bibles {
+        display   : block;
+        font-size : 20px;
+        margin    : 0.5em auto 0 auto;
+    }
+
+    h1 ul.sections {
+        display   : block;
+        font-size : 16px;
+        width     : fit-content;
+        margin    : 1em auto 0 auto;
+        text-align: left;
+    }
+
+    h2 {
+        font-size  : 20px;
+        padding-top: 1rem;
+        margin     : 0 0 -1em 0;
+    }
+
+    h3 {
+        font-size : 18px;
+        text-align: right;
+    }
+
+    table {
+        border-collapse: collapse;
+    }
+
+    td {
+        font-family   : serif;
+        vertical-align: top;
+        font-size     : 16px;
+        line-height   : 16px;
+        border-top    : 1px solid #f0f0f0;
+        border-bottom : 1px solid #f0f0f0;
+        text-indent   : -1em;
+        padding-left  : 1em;
+        padding-bottom: 2px;
+    }
+
+    td.ref {
+        font-family: sans-serif;
+        width      : 6rem;
+        font-size  : 13px;
+        line-height: 19px;
+    }
+
+    @media print {
+        h1 {
+            padding-top: calc(30vh);
+            font-size  : 36px;
+        }
+
+        h1 span.bibles {
+            font-size : 30px;
+            margin-top: 2em;
+        }
+
+        h1 ul.sections {
+            margin-top: 4em;
+        }
+
+        h2 {
+            page-break-before: always;
+        }
+    }
+[% END %]
+[% page.style.push(css) %]

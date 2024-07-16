@@ -7,12 +7,10 @@
     # ]
 
     icons = {
-        # home          => 'home',
         create_user     => 'person_add',
         forgot_password => 'lock_reset',
         memorize        => 'sim_card_download',
         review          => 'sim_card',
-        # memory        => 'memory',
         drill           => 'tools_power_drill',
         pickup          => 'swords',
         edit_user       => 'person_edit',
@@ -21,8 +19,8 @@
         roster          => 'group',
         distribution    => 'scatter_plot',
         password        => 'key',
-        # logout        => 'logout',
-        # menu          => 'menu',
+        lookup          => 'dictionary',
+        reference       => 'library_books',
     };
 
     title   = '';

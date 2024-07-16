@@ -1,0 +1,166 @@
+[%
+    setup_name =
+        ( setup_label == 'pickup_quiz'   ) ? 'Pick-Up Quiz'   :
+        ( setup_label == 'queries_drill' ) ? 'Queries Drill'  :
+        ( setup_label == 'memorize'      ) ? 'Initial Mem.'   :
+        ( setup_label == 'lookup'        ) ? 'Lookup'         :
+        ( setup_label == 'ref_gen'       ) ? 'Ref. Generator' : '';
+
+    page.title = setup_name _ ' Setup';
+%]
+
+<details>
+    <summary>Instructions</summary>
+
+    <p>
+        Enter the [% setup_name.lower %]'s settings below.
+        Your settings will be saved for future [% setup_name.lower %] use.
+    </p>
+
+    [% IF setup_label == 'pickup_quiz' %]
+        <p>
+            The roster main field needs to have a single entry per line, with team
+            name first on a line, then each quizzer on a line. There needs to be at
+            least a single blank line between each team. All names can be single or
+            multiple words in length. You can optionally append a Bible translation to
+            a team name or quizzer name to specify the Bible translation for that team
+            or quizzer. The default Bible will be used for quizzers without a
+            quizzer-level Bible or team-level Bible defined.
+        </p>
+    [% END %]
+
+    [% IF setup_label == 'ref_gen' %]
+        <p>
+            The "memorized Bible" field requires the Bible acronym; it's used
+            to understand which Bible should be used to source verse content
+            from. This "memorized  Bible" doesn't necessarily need to be part
+            of the material label/description, but it's also fine if it is.
+        </p>
+        <p>
+            Check the boxes below that to indicate which sections you want in
+            the output. You can alter the number of words used in each section.
+        </p>
+        <p><b>
+            Keep in mind that depending on your settings, you can end up
+            generating an extremely large/long/big output.
+        </b></p>
+    [% END %]
+
+    <p>
+        The material label/description field must contain a valid, full material
+        label or description. For details about how these can be written,
+        consult the
+        <a href="[% c.url_for('/docs/material_labels.md') %]">material labels documentation</a>.
+    </p>
+
+    [% IF setup_label == 'memorize' %]
+        <p>
+            For initial memorization, it's recommended you enter a material
+            label/description that comprises a set of sequential verses you intent
+            to memorize in a single session. You can return here to alter your
+            material label/description for each memorization session.
+        </p>
+    [% END %]
+</details>
+
+<form method="post">
+    <input type="hidden" name="generate_queries" value="0">
+
+    [% submit_button_text = BLOCK %]
+        [% UNLESS setup_label == 'ref_gen' %]
+            Run [% setup_name %]
+        [% ELSE %]
+            Build Reference Document
+        [% END %]
+    [% END %]
+
+    <input type="submit"
+        value="[% submit_button_text | trim %]"
+        onclick="
+            this.form.elements.namedItem('generate_queries').value = 0;
+        ">
+
+    [% IF setup_label == 'pickup_quiz' %]
+        <input type="submit" value="Generate Queries to Print" onclick="
+            this.form.elements.namedItem('generate_queries').value = 1;
+        ">
+    [% END %]
+
+    <br>
+
+    [% IF setup_label == 'pickup_quiz' %]
+        <fieldset class="roster">
+            <legend>Roster</legend>
+            <label>
+                Default Bible:
+                <input type="text" name="bible" value="[% bible %]">
+            </label>
+            <textarea name="roster_data">[% c.param('roster') || roster_data %]</textarea>
+        </fieldset>
+    [% END %]
+
+    [% IF setup_label == 'ref_gen' %]
+        [% BLOCK pick_number %]
+            <select name="[% type %]_number">
+                [% FOR number IN [ 1 .. max ] %]
+                    <option[% IF number == default %] selected[% END %]>[% number %]</option>
+                [% END %]
+            </select>
+        [% END %]
+        <fieldset class="ref_gen">
+            <legend>Reference Generation Options</legend>
+            <label>
+                Memorized Bible:
+                <input type="text" name="bible" value="[% bible %]">
+            </label>
+            <label>
+                <input type="checkbox" name="reference" checked>
+                Reference Material
+            </label>
+            <label>
+                <input type="checkbox" name="whole" checked>
+                Alphabetical Material
+                from First [% PROCESS pick_number, type = 'whole', default = 5, max = 7 %] Words
+            </label>
+            <label>
+                <input type="checkbox" name="chapter">
+                [% PROCESS pick_number, type = 'chapter', default = 3, max = 7 %]-Word Key Phrases by Chapter
+            </label>
+            <label>
+                <input type="checkbox" name="phrases">
+                Global [% PROCESS pick_number, type = 'phrases', default = 4, max = 7 %]-Word Key Phrases
+            </label>
+        </fieldset>
+    [% END %]
+
+    <fieldset class="material_label">
+        <legend>Material Label/Description</legend>
+        <textarea name="material_label">[%
+            c.param('label') || material_label
+        %]</textarea>
+    </fieldset>
+</form>
+
+[% IF label_aliases AND label_aliases.size > 0 %]
+    <details>
+        <summary>Available Labels</summary>
+        <dl>
+            [% FOR alias IN label_aliases %]
+                <dt>[% alias.name %]</dt>
+                <dd>[% alias.label %]</dd>
+            [% END %]
+        </dl>
+    </details>
+[% END %]
+
+[% IF bibles AND bibles.size > 0 %]
+    <details>
+        <summary>Supported Bibles</summary>
+        <dl>
+            [% FOR item IN bibles %]
+                <dt>[% item.acronym %]</dt>
+                <dd>[% item.name %] ([% item.year %])</dd>
+            [% END %]
+        </dl>
+    </details>
+[% END %]

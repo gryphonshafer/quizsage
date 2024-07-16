@@ -1,6 +1,8 @@
 package QuizSage::Control;
 
 use exact 'Omniframe::Control';
+use MIME::Base64 'encode_base64';
+use Mojo::JSON 'encode_json';
 use QuizSage::Model::User;
 
 sub startup ($self) {
@@ -22,6 +24,16 @@ sub startup ($self) {
                         $c->session( $type => $c->stash('user')->data->{settings}{$type} )
                             if ( $c->stash('user')->data->{settings}{$type} );
                     }
+
+                    $c->res->cookies({
+                        name  => 'quizsage_info',
+                        value => encode_base64( encode_json( {
+                            material_json_path => $self->url_for(
+                                $c->stash('user')->conf->get( qw( material json path ) )
+                            ),
+                        } ), '' ),
+                        samesite => 'Strict',
+                    }) unless ( $c->req->cookie('quizsage_info') );
                 }
             }
             catch ($e) {
@@ -29,6 +41,7 @@ sub startup ($self) {
                 $c->notice( 'Failed user load based on session "user_id" value: "' . $user_id . '"' );
             }
         }
+
         return 1;
     } );
 
@@ -59,12 +72,14 @@ sub startup ($self) {
     );
 
     $users->any(
-        '/:practice_type' => [ practice_type => [ qw(
+        '/:setup_type' => [ setup_type => [ qw(
             memory/memorize/setup
             drill/setup
             quiz/pickup/setup
+            reference/lookup/setup
+            reference/generator/setup
         ) ] ]
-    )->to('quiz#practice');
+    )->to('main#setup');
 
     $users->any("/quiz/$_")->to("quiz#$_") for ( qw( teams build ) );
 
@@ -83,6 +98,9 @@ sub startup ($self) {
 
     $users->post('/quiz/save/:quiz_id'  )->to('quiz#save'  );
     $users->any ('/quiz/delete/:quiz_id')->to('quiz#delete');
+
+    $users->any('/reference/lookup/:material_json_id')->to( 'reference#lookup', material_json_id => undef );
+    $users->any('/reference/generator')->to('reference#generator');
 
     $all->any('/')->to('main#home');
     $all->any( '/set/:type/:name' => [ type => [ qw( theme style ) ] ] )->to('main#set');

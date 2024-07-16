@@ -1,0 +1,13 @@
+[%
+    page.title = 'Material Lookup';
+    page.vue   = 1;
+
+    js_app_config = js_app.js_app_config('lookup');
+
+    page.js.importmap = js_app_config.importmap;
+    page.js.module    = page.js.module.merge( js_app_config.module );
+
+    page.js.defer.push('/js/util/cookies.js');
+%]
+
+<div id="lookup" v-cloak></div>

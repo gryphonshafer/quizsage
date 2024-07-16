@@ -181,7 +181,7 @@
             [% ELSE %]
                 [% UNLESS meet_id %]
                     <li>
-                        Memorization
+                        <b>Memorization</b>
                         <ul>
                             [% FOR icon_link_data IN [
                                 [ ['Initial Memorization'], '/memory/memorize', 'memorize' ],
@@ -192,15 +192,31 @@
                             [% END %]
                         </ul>
                     </li>
-                    [% FOR icon_link_data IN [
-                        [ ['Queries Drill'], '/drill/setup', 'drill'  ],
-                        [ ['Pick-Up Quiz'],  '/quiz/pickup', 'pickup' ],
-                    ] %]
-                        <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
-                    [% END %]
+                    <li>
+                        <b>Practice</b>
+                        <ul>
+                            [% FOR icon_link_data IN [
+                                [ ['Queries Drill'], '/drill/setup', 'drill'  ],
+                                [ ['Pick-Up Quiz'],  '/quiz/pickup', 'pickup' ],
+                            ] %]
+                                <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
+                            [% END %]
+                        </ul>
+                    </li>
+                    <li>
+                        <b>Reference</b>
+                        <ul>
+                            [% FOR icon_link_data IN [
+                                [ ['Mat. &amp; Thes. Lookup'], '/reference/lookup/setup',    'lookup'    ],
+                                [ ['Reference Generator'],           '/reference/generator/setup', 'reference' ],
+                            ] %]
+                                <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
+                            [% END %]
+                        </ul>
+                    </li>
                 [% ELSE %]
                     <li>
-                        Meet
+                        <b>Meet</b>
                         <ul>
                             [% FOR icon_link_data IN [
                                 [ ['State'],        [ '/meet/', meet_id ],                  'meet_state'   ],
@@ -241,7 +257,7 @@
                 [ 'style', [ 'rounded', 'square' ] ],
             ] %]
                 <li>
-                    Set [% type.0 | ucfirst %]
+                    <b>Set [% type.0 | ucfirst %]</b>
                     <ul>
                         [% FOR item IN type.1 %]
                             <li><a
