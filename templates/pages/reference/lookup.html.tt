@@ -1,5 +1,5 @@
 [%
-    page.title = 'Material and Thesaurus Lookup';
+    page.title = 'Material Lookup';
     page.vue   = 1;
 
     js_app_config = js_app.js_app_config('lookup');

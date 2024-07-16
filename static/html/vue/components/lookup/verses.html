@@ -1,18 +1,40 @@
-<h2>Verses</h2>
+<div class="verses">
+    <div class="reference">
+        <button
+            v-for="bible in material.bibles"
+            :class="{ selected: selected.bible == bible.name }"
+            @click="selected.bible = bible.name"
+        >{{ bible.name + ( ( bible.type == 'auxiliary' ) ? '*' : '' ) }}</button>
 
-<p>Not yet fully implemented...</p>
+        <select v-model="selected.book">
+            <option
+                v-for="book in books"
+                :selected="book == selected.book"
+            >{{ book }}</option>
+        </select>
 
-<button
-    v-for="bible in material.bibles"
-    :class="{ selected: selected.bible == bible.name }"
-    @click="selected.bible = bible.name"
->{{ bible.name + ( ( bible.type == 'auxiliary' ) ? '*' : '' ) }}</button>
+        <select v-model="selected.chapter">
+            <option
+                v-for="chapter in chapters"
+                :selected="chapter == selected.chapter"
+            >{{ chapter }}</option>
+        </select>
 
-<h2>{{ selected.book }} {{ selected.chapter }}:{{ selected.verse }}</h2>
+        <select v-model="selected.verse">
+            <option
+                v-for="verse in verses"
+                :selected="verse == selected.verse"
+            >{{ verse }}</option>
+        </select>
+    </div>
 
-<select v-model="selected.book">
-    <option
-        v-for="book in references"
-        :selected="book.book == selected.book"
-    >{{ book.book }}</option>
-</select>
+    <div class="material">
+        <p
+            v-for="verse in content"
+            :class="{ selected: selected.verse == verse.verse }"
+        >
+            <sup>{{ verse.verse }}</sup>
+            {{ verse.text }}
+        </p>
+    </div>
+</div>

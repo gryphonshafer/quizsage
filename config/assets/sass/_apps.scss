@@ -394,3 +394,115 @@ div#queries {
        }
     }
 }
+
+div#lookup {
+    div.material {
+        margin-top: 0.5em;
+        padding   : 0.25em;
+        border    : 1px solid;
+        overflow-y: scroll;
+        height    : calc( 100vh - 10em);
+
+        @include theme.apply( themes.$themes ) {
+            background  : theme.get('form_elements_background');
+            border-color: theme.get('lines');
+        }
+
+        @include theme.apply( themes.$styles, 'style' ) {
+            border-radius: theme.get('radius');
+        }
+    }
+
+    div.verses {
+        width       : calc( 50vw );
+        margin-right: 1em;
+
+        button {
+            margin: 0 0.125em;
+
+            &.selected {
+                @include theme.apply( themes.$themes ) {
+                    background: theme.get('button_selected');
+                }
+            }
+        }
+
+        select {
+            margin : 0 0.125em;
+            padding: 0.125em 0.25em;
+
+            @include theme.apply( themes.$styles, 'style' ) {
+                border-radius: calc( theme.get('radius') / 2 );
+            }
+        }
+
+        div.material {
+            p {
+                margin      : 0;
+                padding     : 0.25em;
+                padding-left: 1.25em;
+                text-indent : -1em;
+
+                @include theme.apply( themes.$styles, 'style' ) {
+                    border-radius: calc( theme.get('radius') / 2 );
+                }
+
+                &.selected {
+                    @include theme.apply( themes.$themes ) {
+                        color     : theme.get('search_match_text');
+                        background: theme.get('search_is_current_query');
+                    }
+                }
+            }
+        }
+    }
+
+    div.synonyms {
+        width: calc( 50vw - 3.5em );
+
+        input {
+            margin-bottom: -0.125em;
+        }
+
+        span.word {
+            font-weight    : bold;
+            text-decoration: underline;
+        }
+
+        ul {
+            margin: 0 0 0 1em;
+        }
+
+        li {
+            list-style : none;
+        }
+    }
+
+    div.verses,
+    div.synonyms {
+        vertical-align: top;
+        display       : inline-block;
+    }
+
+    @media ( max-width: 800px ) {
+        div.verses,
+        div.synonyms {
+            display: block;
+            width  : auto;
+        }
+
+        div.synonyms {
+            margin-top: 1em;
+        }
+
+        div.material {
+            height: calc( 50vh - 7em);
+        }
+    }
+
+    @media ( max-width: 700px ) {
+        div.material {
+            height: calc( 50vh - 8.25em);
+        }
+    }
+}

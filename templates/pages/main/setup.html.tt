@@ -1,10 +1,10 @@
 [%
     setup_name =
-        ( setup_label == 'pickup_quiz'   ) ? 'Pick-Up Quiz'                  :
-        ( setup_label == 'queries_drill' ) ? 'Queries Drill'                 :
-        ( setup_label == 'memorize'      ) ? 'Initial Memorization'          :
-        ( setup_label == 'lookup'        ) ? 'Material and Thesaurus Lookup' :
-        ( setup_label == 'ref_gen'       ) ? 'Reference Generator'           : '';
+        ( setup_label == 'pickup_quiz'   ) ? 'Pick-Up Quiz'   :
+        ( setup_label == 'queries_drill' ) ? 'Queries Drill'  :
+        ( setup_label == 'memorize'      ) ? 'Initial Mem.'   :
+        ( setup_label == 'lookup'        ) ? 'Lookup'         :
+        ( setup_label == 'ref_gen'       ) ? 'Ref. Generator' : '';
 
     page.title = setup_name _ ' Setup';
 %]
