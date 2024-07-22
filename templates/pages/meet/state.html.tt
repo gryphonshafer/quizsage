@@ -53,12 +53,42 @@
     </li>
 </ul>
 
+[% last_rendered_event_index = -1 %]
 [% BLOCK event %]
-    [% FOR event IN events %]
-        [% IF
-            type == 'pre'  && event.stop  == row.start ||
-            type == 'post' && event.start == row.stop
-        %]
+    [%
+        included_indexes = [];
+        FOR event_index IN [ 0 .. events.max ];
+            IF (
+                type == 'pre'  && events.$event_index.stop  == row.start ||
+                type == 'post' && events.$event_index.start == row.stop
+            );
+                included_indexes.push(event_index);
+                WHILE 1;
+                    prev_event_index = event_index;
+                    event_index = event_index + ( ( type == 'pre' ) ? -1 : 1 );
+
+                    IF event_index < 0 OR event_index > events.max;
+                        BREAK;
+                    END;
+                    IF (
+                        type == 'pre'  && events.$event_index.stop  == events.$prev_event_index.start ||
+                        type == 'post' && events.$event_index.start == events.$prev_event_index.stop
+                    );
+                        included_indexes.push(event_index);
+                    ELSE;
+                        BREAK;
+                    END;
+                END;
+            END;
+        END;
+    %]
+
+    [% FOR event_index IN included_indexes.unique.nsort %]
+        [% UNLESS last_rendered_event_index == event_index %]
+            [%
+                last_rendered_event_index = event_index;
+                event                     = events.$event_index;
+            %]
             <div class="info_box">
                 <b>[% event.name %]</b>
                 [% event.date %]
@@ -76,13 +106,11 @@
     [% FOR set IN bracket.sets %]
         [% schedule = set.rooms.0.schedule %]
 
-        [% IF loop.first %]
-            [% PROCESS event
-                type   = 'pre',
-                events = state.events,
-                row    = schedule
-            %]
-        [% END %]
+        [% PROCESS event
+            type   = 'pre',
+            events = state.events,
+            row    = schedule,
+        %]
 
         <div class="schedule_row">
             [% IF schedule %]
@@ -188,7 +216,7 @@
         [% PROCESS event
             type   = 'post',
             events = state.events,
-            row    = schedule
+            row    = schedule,
         %]
     [% END %]
 [% END %]
