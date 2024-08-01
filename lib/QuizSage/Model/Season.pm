@@ -78,10 +78,10 @@ sub seasons ($self) {
 
 sub stats ($self) {
     my $meets = QuizSage::Model::Meet->new->every({ season_id => $self->id });
-    my $rules = $self->deepcopy( $self->data->{settings}{statistics} ) // [ map { +{
+    my $rules = $self->deepcopy( $self->data->{settings}{statistics} ) // { meets => [ map { +{
         name   => $_->data->{name},
         weight => 1,
-    } } @$meets ];
+    } } @$meets ] };
 
     my $stats = {
         meets => [
@@ -120,7 +120,7 @@ sub stats ($self) {
                     my $meet = $_;
 
                     my $meet_data = $quizzers_meet_data->{$quizzer_name}{ $meet->{name} };
-                    my ($meet_rule) = grep { $_->{name} eq $meet->{name} } @{ $rules->{meets} };
+                    my ($meet_rule) = grep { $_->{name} eq $meet->{name} } @{ $rules->{meets} // [] };
                     $meet_data->{weight} = ($meet_rule) ? $meet_rule->{weight} : 0;
 
                     my %tags = map { $_ => 1 } @$tags, @{ $meet_data->{tags} // [] };
