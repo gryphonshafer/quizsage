@@ -89,13 +89,13 @@ fun material_json (
     my @bibles = sort keys $data->{bibles}->%*;
     my %words;
     for my $range ( $data->{ranges}->@* ) {
-        for ( my $i = 0; $i < $range->{verses}->@*; $i++ ) {
+        for my $ref ( $range->{verses}->@* ) {
             next if (
                 $data->{bibles}{ $bibles[0] }{content} and
-                $data->{bibles}{ $bibles[0] }{content}{ $range->{verses}[$i] }
+                $data->{bibles}{ $bibles[0] }{content}{$ref}
             );
 
-            $range->{verses}[$i] =~ /^(?<book>.+)\s+(?<chapter>\d+):(?<verse>\d+)$/;
+            $ref =~ /^(?<book>.+)\s+(?<chapter>\d+):(?<verse>\d+)$/;
 
             my $material = $dq_material->get(
                 [
@@ -113,13 +113,13 @@ fun material_json (
             )->run->all({});
 
             unless ( @$material == @bibles ) {
-                splice( @{ $range->{verses} }, $i, 1 );
+                $range->{verses} = [ grep { $_ ne $ref } $range->{verses}->@* ];
                 next;
             }
 
             for my $verse (@$material) {
                 $words{$_} = 1 for ( @{ text2words( $verse->{text} ) } );
-                $data->{bibles}{ $verse->{bible} }{content}{ $range->{verses}[$i] } = {
+                $data->{bibles}{ $verse->{bible} }{content}{$ref} = {
                     text => $verse->{text},
                 };
             }
