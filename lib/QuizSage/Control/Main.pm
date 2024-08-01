@@ -7,8 +7,7 @@ use QuizSage::Model::Season;
 use QuizSage::Util::Material 'material_json';
 
 sub home ($self) {
-    $self->stash( active_seasons => QuizSage::Model::Season->new->active_seasons )
-        if ( $self->stash('user') );
+    $self->stash( seasons => QuizSage::Model::Season->new->seasons ) if ( $self->stash('user') );
 }
 
 sub set ($self) {

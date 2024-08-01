@@ -25,12 +25,12 @@ sub thaw ( $self, $data ) {
     return $data;
 }
 
-sub active_seasons ($self) {
+sub seasons ($self) {
     return [
         map {
             $_->{meets} = [
                 map {
-                    $_->{start} = $self->time
+                    $_->{start_stamp} = $self->time
                         ->parse( $_->{start} )
                         ->format('%a, %b %e, %Y at %l:%M %p %Z');
                     $_;
@@ -44,18 +44,33 @@ sub active_seasons ($self) {
                     { $self->id_name => $_->{season_id} },
                     { order_by => 'start' },
                 )->run->all({})->@*
-            ];
+            ] if ( $_->{active} );
+
+            $_->{start_stamp} = $self->time->parse( $_->{start} )->format('%a, %b %e, %Y');
+            $_->{stop_stamp}  = $self->time->parse( $_->{stop}  )->format('%a, %b %e, %Y');
+            $_->{start_year}  = $self->time->parse( $_->{start} )->format('%Y');
+            $_->{stop_year}   = $self->time->parse( $_->{stop}  )->format('%Y');
+
             $_;
         } $self->dq->get(
             $self->name,
-            [ qw( season_id name location ) ],
-            \q{
-                STRFTIME( '%s', 'NOW' )
-                    BETWEEN
-                        STRFTIME( '%s', start )
-                    AND
-                        STRFTIME( '%s', start, days || ' days' )
-            },
+            [
+                qw( season_id name location start ),
+                [ \q{ DATE( start, '+' || days || ' day' ) }, 'stop' ],
+                [
+                    \q{
+                        CASE WHEN
+                            STRFTIME( '%s', 'NOW' )
+                                BETWEEN
+                                    STRFTIME( '%s', start )
+                                AND
+                                    STRFTIME( '%s', start, days || ' days' )
+                        THEN 1 ELSE 0 END
+                    },
+                    'active',
+                ],
+            ],
+            {},
             { order_by => [ 'location', 'name' ] },
         )->run->all({})->@*
     ];
@@ -191,25 +206,13 @@ Likely not used directly, these method run data pre-save to and post-read from
 the database functions. C<freeze> will canonically format the C<start> datetime
 and encode C<settings> C<thaw> will decode C<settings>.
 
-=head2 active_seasons
+=head2 seasons
 
 This method will return a data structure of the current active seasons as
 defined by if now is between the season's database values for C<start> and
 C<start> plus C<days> duration.
 
-    my $active_seasons = $quiz->active_seasons;
-
-The data structure will be:
-
-    ---
-    - season_id: 1
-      name     : Season Name
-      location : Season Location
-      meets    :
-        - meet_id : 1,
-          name    : Meet Name
-          location: Meet Location
-          start   : Sat, Jan 13, 2024 at  8:00 AM PST
+    my $seasons = $quiz->seasons;
 
 =head2 stats
 

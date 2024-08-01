@@ -71,22 +71,38 @@
         </li>
     </ul>
 
+    [%
+        active_seasons   = [];
+        archived_seasons = [];
+
+        FOR season IN seasons;
+           IF season.active;
+               active_seasons.push(season);
+           ELSE;
+               archived_seasons.push(season);
+           END;
+       END;
+    %]
+
     <h2>Active Seasons</h2>
 
     [% IF active_seasons.size > 0 %]
-
         <ul><li class="no_bullet">[% PROCESS icon_link.html.tt
             data = [ ['Set Quiz Magistrate Password'], '/meet/passwd', 'password' ] %]</li></ul>
 
         [% FOR season IN active_seasons %]
-            <h3>[% IF season.location %][% season.location %]: [% END %][% season.name %]</h3>
+            <h3>
+                [% season.start_year %]-[% season.stop_year %]
+                [% IF season.location %][% season.location %]:[% END %]
+                [% season.name %]
+            </h3>
 
             <ul><li class="no_bullet">[%
                 PROCESS icon_link.html.tt
                     data = [ ['Season Statistics'], [ '/season/', season.season_id, '/stats' ], 'stats' ]
             %]</li></ul>
 
-            [% IF season.meets.size > 0 %]
+            [% IF season.meets AND season.meets.size > 0 %]
                 <table>
                     <thead>
                         <tr>
@@ -102,7 +118,7 @@
                                     c.url_for( '/meet/' _ meet.meet_id _ '/state' )
                                 %]">[% meet.name %]</a></td>
                                 <td>[% meet.location %]</td>
-                                <td>[% meet.start %]</td>
+                                <td>[% meet.start_stamp %]</td>
                             </tr>
                         [% END %]
                     </tbody>
@@ -112,6 +128,31 @@
             [% END %]
         [% END %]
     [% ELSE %]
-        <p>There are no active seasons.</p>
+        <p>There are currently no active seasons setup.</p>
+    [% END %]
+
+    [% IF archived_seasons.size > 0 %]
+        <h2>Archived Season Statistics</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Season</th>
+                    <th>Location</th>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                [% FOR season IN archived_seasons %]
+                    <tr>
+                        <td><a href="[%
+                            c.url_for( '/season/' _ season.season_id _ '/stats' )
+                        %]">[% season.start_year %]-[% season.stop_year %]</a></td>
+                        <td>[% season.location %]</td>
+                        <td>[% season.name %]</td>
+                    </tr>
+                [% END %]
+            </tbody>
+        </table>
     [% END %]
 [% END %]

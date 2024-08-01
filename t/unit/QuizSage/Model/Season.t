@@ -11,7 +11,7 @@ DOES_ok( $obj, $_ ) for ( qw(
 ) );
 can_ok( $obj, qw(
     create
-    freeze thaw active_seasons stats
+    freeze thaw seasons stats
 ) );
 
 $obj->dq->begin_work;
@@ -34,20 +34,27 @@ ok(
     q/create(...)/,
 ) or note $@;
 
-my $active_seasons = $obj->active_seasons;
+my $seasons = $obj->seasons;
 
 ok(
-    not( scalar( grep { $_->{name} eq $label . ' Name Old' } $active_seasons->@* ) ),
+    not( scalar( grep { $_->{name} eq $label . ' Name Old' and $_->{active} } $seasons->@* ) ),
     'Season "Name Old" not an active season',
 );
 
 is(
-    ( grep { $_->{name} eq $label . ' Name Current' } $active_seasons->@* )[0],
+    ( grep { $_->{name} eq $label . ' Name Current' } $seasons->@* )[0],
     {
-        season_id => T(),
-        name      => $label . ' Name Current',
-        location  => 'Location',
-        meets     => [],
+        season_id   => T(),
+        name        => $label . ' Name Current',
+        location    => 'Location',
+        meets       => [],
+        active      => 1,
+        start       => T(),
+        start_stamp => T(),
+        start_year  => T(),
+        stop        => T(),
+        stop_stamp  => T(),
+        stop_year   => T(),
     },
     'Season "Name Current" an active season',
 );
