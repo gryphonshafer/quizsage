@@ -45,6 +45,7 @@ roster:
 #             follow_bonus: 1
 #             nth_quizzer_bonus: 1
 #             open_book: 1
+#             open_book_team_max: 3
 #             synonymous: 2
 #             verbatim: 4
 #             with_reference: 1

@@ -12,6 +12,7 @@ export default class Scoring {
         ceiling_bonus       : 3,
         follow_bonus        : 1,
         nth_quizzer_bonus   : 1,
+        open_book_team_max  : 3,
     };
 
     constructor ( inputs = { scoring : {} } ) {
@@ -32,6 +33,7 @@ export default class Scoring {
                 first_correct: not_set,
                 first_trigger: not_set,
                 bonuses      : 0,
+                open_book    : 0,
             };
             team.quizzers.forEach( quizzer => quizzer.score = {
                 points     : 0,
@@ -60,7 +62,10 @@ export default class Scoring {
                 if ( team.score.first_trigger == not_set ) team.score.first_trigger = index;
                 if ( team.score.first_correct == not_set ) team.score.first_correct = index;
 
-                if ( event.type.indexOf('O') != -1 ) quizzer.score.open_book++;
+                if ( event.type.indexOf('O') != -1 ) {
+                    quizzer.score.open_book++;
+                    team.score.open_book++;
+                }
 
                 event.score       = {};
                 event.score.query =
@@ -95,6 +100,11 @@ export default class Scoring {
                     'Ceiling reached: ' + quizzer.name + '<br>'
                         + '<i>(' + quizzer.score.correct + ' correct '
                         + 'with ' + quizzer.score.open_book + ' open book)</i>';
+
+                if (
+                    event.type.indexOf('O') != -1 &&
+                    team.score.open_book >= this.open_book_team_max
+                ) message = ( (message) ? message + '<br>' : '' ) + 'Team open book maximum';
 
                 const preceding_numeric_id  = parseInt( scoring_events[index].id ) - 1;
                 event.score.follow_bonus = (

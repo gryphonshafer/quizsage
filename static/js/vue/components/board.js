@@ -25,8 +25,15 @@ export default {
                 this.$root.$refs.timer
             ) this.$root.$refs.timer.quizzer_selected();
 
-            if ( this.$root.$refs.controls && ! this.selected.type.synonymous_verbatim_open_book )
-                this.$root.$refs.controls.select_type('synonymous');
+            if ( this.$root.$refs.controls ) {
+                if ( ! this.selected.type.synonymous_verbatim_open_book )
+                    this.$root.$refs.controls.select_type('synonymous');
+
+                if (
+                    this.current.query.type == 'Q' &&
+                    this.selected.type.with_reference != true
+                ) this.$root.$refs.controls.select_type('with_reference');
+            }
         },
     },
 

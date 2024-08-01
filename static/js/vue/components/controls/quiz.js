@@ -15,6 +15,8 @@ export default {
         select_type(type) {
             if ( this.is_quiz_done() ) return;
 
+            if ( type == 'open_book' && this.current.query.type == 'Q' ) return;
+
             if ( type == 'synonymous' || type == 'verbatim' || type == 'open_book' ) {
                 this.selected.type.synonymous_verbatim_open_book = type;
 
@@ -24,6 +26,11 @@ export default {
                 }
             }
             else if ( type == 'with_reference' ) {
+                if ( this.current.query.type == 'Q' ) {
+                    this.selected.type.with_reference = true;
+                    return;
+                }
+
                 this.selected.type.with_reference = ! this.selected.type.with_reference;
 
                 if (
