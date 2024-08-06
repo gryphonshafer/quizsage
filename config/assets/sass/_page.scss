@@ -235,19 +235,19 @@ body {
             display: none;
         }
 
-        @media ( max-width: 810px ) {
+        @media ( max-width: 880px ) {
             span.hide_priority_1 {
                 display: none;
             }
         }
 
-        @media ( max-width: 690px ) {
+        @media ( max-width: 760px ) {
             span.hide_priority_2 {
                 display: none;
             }
         }
 
-        @media ( max-width: 570px ) {
+        @media ( max-width: 660px ) {
             span.hide_priority_3 {
                 display: none;
             }
@@ -257,13 +257,19 @@ body {
             }
         }
 
-        @media ( max-width: 420px ) {
+        @media ( max-width: 500px ) {
             span.hide_priority_4 {
                 display: none;
             }
 
             span.show_priority_4 {
                 display: inline;
+            }
+        }
+
+        @media ( max-width: 380px ) {
+            span.hide_priority_5 {
+                display: none;
             }
         }
     }
