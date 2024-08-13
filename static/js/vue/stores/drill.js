@@ -70,8 +70,9 @@ export default Pinia.defineStore( 'store', {
             next_query_bible: bibles[0],
             add_verse       : false,
             durations       : {
-                short   : 20,
+                trigger : 7,
                 standard: 40,
+                short   : 20,
                 long    : 60,
             },
             hidden_solution : true,
