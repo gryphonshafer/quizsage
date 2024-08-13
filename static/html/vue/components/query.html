@@ -9,15 +9,16 @@
             was
         </template>
         a<br>
-        <span>{{ current.query.type_name }}</span>
-        from the <span>{{ current.event.bible }}</span>.
+        <span>{{ current.query.type_name }}</span><template v-if="current.query.type != 'Q'">
+        from the <span>{{ current.event.bible }}</span></template>.
         Ready. Begin.
     </p>
 
     <p class="announcement" v-if="! eligible_teams">
         Query is a
-        <span>{{ current.query.type_name }}</span>
-        from the <span>{{ current.query.bible }}</span>.
+        <span>{{ current.query.type_name }}</span><template v-if="current.query.type != 'Q'">
+        from the <span>{{ current.query.bible }}</span></template>.
+        Ready. Begin.
     </p>
 
     <p

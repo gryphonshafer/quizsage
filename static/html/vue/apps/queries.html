@@ -6,8 +6,10 @@
 <div v-for="query in queries" class="query_id">
     <p class="announcement">
         Query <span>{{ query.id }}</span>
-        is a <span>{{ query.single.type_name }}</span>
-        from the <span>{{ query.single.bible }}</span>.
+        is a <span>{{ query.single.type_name }}</span><template v-if="query.single.type != 'Q'">
+        from the <span>{{ query.single.bible }}</span></template><template v-else>.
+        <i>({{ query.single.bible }} displayed)</i></template>.
+        Ready. Begin.
     </p>
 
     <div>
