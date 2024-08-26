@@ -14,6 +14,7 @@ fun reference_data (
     :$material_label = undef, # material label/description
     :$user_id        = undef, # user ID from application database
     :$bible          = undef, # acronym for memorized Bible
+    :$cover          = 1,     # boolean; include cover page
     :$reference      = 1,     # boolean; include reference section
     :$whole          = 5,     # words for whole section
     :$chapter        = 3,     # words for chapter section
@@ -37,6 +38,7 @@ fun reference_data (
     my $id          = substr( Digest->new('SHA-256')->add(
         join( '|',
             $description,
+            $cover,
             @$bibles,
             $reference,
             $whole,
@@ -97,6 +99,7 @@ fun reference_data (
 
     my $data = {
         description => $description,
+        cover       => $cover,
         bibles      => $bibles,
         id          => $id,
     };
@@ -260,6 +263,7 @@ QuizSage::Util::Reference
         label     => 'Luke ESV NIV', # material label/description
         user_id   => 42,             # user ID from application database
         bible     => 'NIV',          # acronym for memorized Bible
+        cover     => 1,              # boolean; include cover page
         reference => 1,              # boolean; include reference section
         whole     => 5,              # words for whole section
         chapter   => 3,              # words for chapter section
@@ -281,6 +285,7 @@ This function generates reference material.
         label     => 'Luke ESV NIV', # material label/description
         user_id   => 42,             # user ID from application database
         bible     => 'NIV',          # acronym for memorized Bible
+        cover     => 1,              # boolean; include cover page
         reference => 1,              # boolean; include reference section
         whole     => 5,              # words for whole section
         chapter   => 3,              # words for chapter section

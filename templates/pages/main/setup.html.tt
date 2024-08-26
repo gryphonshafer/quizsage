@@ -114,6 +114,10 @@
                 <input type="text" name="bible" value="[% bible %]">
             </label>
             <label>
+                <input type="checkbox" name="cover" checked>
+                Include Cover Page
+            </label>
+            <label>
                 <input type="checkbox" name="reference" checked>
                 Reference Material
             </label>

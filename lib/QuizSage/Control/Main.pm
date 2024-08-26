@@ -111,6 +111,7 @@ sub setup ($self) {
         $settings->{material_label} = $label->canonicalize( $settings->{material_label} );
 
         if ( $self->stash('setup_label') eq 'ref_gen' ) {
+            $settings->{cover}     = ( $self->req->param('cover')     ) ? 1 : 0;
             $settings->{reference} = ( $self->req->param('reference') ) ? 1 : 0;
             $settings->{$_}        = ( $self->req->param($_) ) ? 0 + $self->req->param( $_ . '_number' ) : 0
                 for ( qw( whole chapter phrases ) );
