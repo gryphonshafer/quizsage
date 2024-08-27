@@ -1,5 +1,9 @@
 [% page.title = 'Initial Memorization' %]
 
+[% IF c.session.become %]
+    [% PROCESS become_note.html.tt %]
+[% END %]
+
 [% IF to_memorize.size > 0 %]
     <details>
         <summary>Instructions</summary>

@@ -4,6 +4,7 @@ use exact 'Mojolicious::Controller';
 use GD;
 use Mojo::File 'path';
 use QuizSage::Model::Season;
+use QuizSage::Model::User;
 use QuizSage::Util::Material 'material_json';
 
 sub home ($self) {
@@ -73,7 +74,12 @@ sub setup ($self) {
         ( $self->param('setup_type') eq 'reference/generator/setup' ) ? 'ref_gen'       : undef
     );
 
-    my $user          = $self->stash('user');
+    my $user = $self->stash('user');
+    if ( $self->stash('setup_label') eq 'memorize' and $self->session('become') ) {
+        $user = QuizSage::Model::User->new->load( $self->session('become') );
+        $self->stash( become_user => $user );
+    }
+
     my $label         = QuizSage::Model::Label->new( user_id => $user->id );
     my $quiz_defaults = $label->conf->get('quiz_defaults');
     my $user_settings = $user->data->{settings}{ $self->stash('setup_label') }  // {};
@@ -127,7 +133,7 @@ sub setup ($self) {
             ( $self->stash('setup_label') eq 'ref_gen'       ) ? '/reference/generator' :
             ( $self->stash('setup_label') eq 'lookup'        ) ? '/reference/lookup/' . material_json (
                 label => $settings->{material_label},
-                user  => $self->stash('user')->id,
+                user  => $user->id,
             )->{id} : '/'
         );
     }

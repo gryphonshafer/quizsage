@@ -1,0 +1,9 @@
+<p><i>
+    <b>Note:</b> You are currently operating as the user
+    [% user.data.first_name %]
+    [% user.data.last_name %].
+    <a href="[%
+        c.url_for('/memory/state').query({ action => 'unbecome' })
+    %]">Revert to your own account</a>
+    to enter data as yourself.
+</i></p>

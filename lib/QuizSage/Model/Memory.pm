@@ -143,18 +143,22 @@ sub state ( $self, $user ) {
                     }),
                 };
             }
-            $self->dq->sql(q{
-                SELECT
-                    u.user_id,
-                    u.first_name,
-                    u.last_name,
-                    u.email
-                FROM shared_memory AS sm
-                JOIN user AS u ON sm.memorizer_user_id = u.user_id
-                WHERE sm.shared_user_id = ?
-            })->run( $user->id )->all({})->@*,
+            $self->shared_from_users($user)->@*,
         ],
     };
+}
+
+sub shared_from_users ( $self, $user ) {
+    return $self->dq->sql(q{
+        SELECT
+            u.user_id,
+            u.first_name,
+            u.last_name,
+            u.email
+        FROM shared_memory AS sm
+        JOIN user AS u ON sm.memorizer_user_id = u.user_id
+        WHERE sm.shared_user_id = ?
+    })->run( $user->id )->all({});
 }
 
 sub tiles ( $self, $user_id ) {
@@ -351,6 +355,11 @@ C<tiles> (from the C<tiles> method), C<report> (from the C<report> method),
 C<shared_to> containing user information the state is shared to, and
 C<shared_from> containing user, tiles, and report data of users shared to this
 user.
+
+=head2 shared_from_users
+
+Requires a loaded L<QuizSage::Model::User> object. Will return an arrayref of
+users shared to the provided user as hashrefs with basic user information.
 
 =head2 tiles
 

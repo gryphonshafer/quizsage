@@ -1,5 +1,9 @@
 [% page.title = 'Memorization Review' %]
 
+[% IF c.session.become %]
+    [% PROCESS become_note.html.tt %]
+[% END %]
+
 [% IF verse AND verse.words > 0 %]
     <details>
         <summary>Instructions</summary>

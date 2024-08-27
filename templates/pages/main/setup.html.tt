@@ -9,6 +9,10 @@
     page.title = setup_name _ ' Setup';
 %]
 
+[% IF setup_label == 'memorize' AND c.session.become %]
+    [% PROCESS become_note.html.tt %]
+[% END %]
+
 <details>
     <summary>Instructions</summary>
 

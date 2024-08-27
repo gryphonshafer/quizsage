@@ -7,13 +7,19 @@ use Mojo::JSON 'decode_json';
 
 sub memorize ($self) {
     my $memory = QuizSage::Model::Memory->new;
+    my $user   = ( $self->session('become') )
+        ? QuizSage::Model::User->new->load( $self->session('become') )
+        : $self->stash('user');
 
     unless ( $self->req->json ) {
-        $self->stash( to_memorize => $memory->to_memorize( $self->stash('user') ) );
+        $self->stash(
+            to_memorize => $memory->to_memorize($user),
+            user        => $user,
+        );
     }
     else {
         my $data = $self->req->json;
-        $data->{user_id} = $self->stash('user')->id,
+        $data->{user_id} = $user->id,
         $memory->memorized($data);
         $self->render( json => { memorize_saved => 1 } );
     }
@@ -21,21 +27,64 @@ sub memorize ($self) {
 
 sub review ($self) {
     my $memory = QuizSage::Model::Memory->new;
+    my $user   = ( $self->session('become') )
+        ? QuizSage::Model::User->new->load( $self->session('become') )
+        : $self->stash('user');
 
     $memory->reviewed(
         $self->param('memory_id'),
         $self->param('level'),
-        $self->stash('user')->id,
+        $user->id,
     ) if ( $self->param('memory_id') and $self->param('level') );
 
-    $self->stash( verse => $memory->review_verse( $self->stash('user') ) );
+    $self->stash(
+        verse => $memory->review_verse($user),
+        user  => $user,
+    );
 }
 
 sub state ($self) {
     unless ( ( $self->stash('format') // '' ) eq 'json' ) {
         my $memory = QuizSage::Model::Memory->new;
 
-        if ( $self->param('user_id') ) {
+        if ( ( $self->param('action') // '' ) eq 'become' ) {
+            my ($shared_from_user) =
+                grep { $_->{user_id} == $self->param('user_id') }
+                $memory->shared_from_users( $self->stash('user') )->@*;
+
+            if ($shared_from_user) {
+                $self->session( become => $self->param('user_id') );
+                $self->flash( message => {
+                    type => 'success',
+                    text => join( ' ',
+                        q{You have temporarily "become"},
+                        $shared_from_user->{first_name},
+                        $shared_from_user->{last_name},
+                        q{for the purpose of updating that account's memorization.},
+                    ),
+                } );
+                return $self->redirect_to('/memory/memorize/setup');
+            }
+        }
+        elsif ( ( $self->param('action') // '' ) eq 'unbecome' ) {
+            if ( $self->session('become') ) {
+                $self->session( become => undef );
+                $self->flash( message => {
+                    type => 'success',
+                    text => 'You have reverted to your own user account.',
+                } );
+            }
+            return $self->redirect_to('/memory/state');
+        }
+        elsif ( ( $self->param('action') // '' ) eq 'unfollow' ) {
+            $memory->sharing({
+                action            => 'remove',
+                memorizer_user_id => $self->param('user_id'),
+                shared_user_id    => $self->stash('user')->id,
+            });
+            return $self->redirect_to('/memory/state');
+        }
+        elsif ( $self->param('user_id') ) {
             $memory->sharing({
                 action            => $self->param('action'),
                 memorizer_user_id => $self->stash('user')->id,
