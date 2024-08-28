@@ -13,7 +13,15 @@ with qw( Omniframe::Role::Model QuizSage::Role::JSApp );
 class_has socket => Omniframe::Mojo::Socket->new;
 
 after [ qw( create save delete ) ] => sub ( $self, @params ) {
-    return unless ( $self->data->{meet_id} and defined $self->data->{settings}{room} );
+    return unless ( $self->data->{meet_id} );
+
+    my $season_id = $self->dq
+        ->sql('SELECT season_id FROM meet WHERE meet_id = ?')
+        ->run( $self->data->{meet_id} )->value;
+    $self->dq->sql('UPDATE meet SET stats = NULL WHERE meet_id = ?')->run( $self->data->{meet_id} );
+    $self->dq->sql('UPDATE season SET stats = NULL WHERE season_id = ?')->run($season_id);
+
+    return unless ( defined $self->data->{settings}{room} );
 
     $self->socket->message(
         encode_json( {

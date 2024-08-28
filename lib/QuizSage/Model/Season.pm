@@ -14,14 +14,16 @@ sub freeze ( $self, $data ) {
     $data->{start} = $self->time->parse( $data->{start} )->format('sqlite_min')
         if ( $self->is_dirty( 'start', $data ) );
 
-    $data->{settings} = encode_json( $data->{settings} );
-    undef $data->{settings} if ( $data->{settings} eq '{}' or $data->{settings} eq 'null' );
+    for ( qw( settings stats ) ) {
+        $data->{$_} = encode_json( $data->{$_} );
+        undef $data->{$_} if ( $data->{$_} eq '{}' or $data->{$_} eq 'null' );
+    }
 
     return $data;
 }
 
 sub thaw ( $self, $data ) {
-    $data->{settings} = ( defined $data->{settings} ) ? decode_json( $data->{settings} ) : {};
+    $data->{$_} = ( defined $data->{$_} ) ? decode_json( $data->{$_} ) : {} for ( qw( settings stats ) );
     return $data;
 }
 
@@ -77,6 +79,8 @@ sub seasons ($self) {
 }
 
 sub stats ($self) {
+    return $self->data->{stats} if ( $self->data->{stats}->%* );
+
     my $meets = QuizSage::Model::Meet->new->every({ season_id => $self->id });
     my $rules = $self->deepcopy( $self->data->{settings}{statistics} ) // { meets => [ map { +{
         name   => $_->data->{name},
@@ -172,6 +176,9 @@ sub stats ($self) {
         grep { $_->{vra_sum} }
         $stats->{quizzers}->@*
     ];
+
+    $self->data->{stats} = $stats;
+    $self->save;
 
     return $stats;
 }

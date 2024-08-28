@@ -29,7 +29,7 @@ sub freeze ( $self, $data ) {
         $data->{passwd} = $self->bcrypt( $data->{passwd} );
     }
 
-    for ( qw( settings build ) ) {
+    for ( qw( settings build stats ) ) {
         $data->{$_} = encode_json( $data->{$_} );
         undef $data->{$_} if ( $data->{$_} eq '{}' or $data->{$_} eq 'null' );
     }
@@ -38,7 +38,8 @@ sub freeze ( $self, $data ) {
 }
 
 sub thaw ( $self, $data ) {
-    $data->{$_} = ( defined $data->{$_} ) ? decode_json( $data->{$_} ) : {} for ( qw( settings build ) );
+    $data->{$_} = ( defined $data->{$_} ) ? decode_json( $data->{$_} ) : {}
+        for ( qw( settings build stats ) );
     return $data;
 }
 
@@ -280,6 +281,8 @@ sub quiz_settings ( $self, $bracket_name, $quiz_name ) {
 }
 
 sub stats ($self) {
+    return $self->data->{stats} if ( $self->data->{stats}->%* );
+
     my $build        = $self->deepcopy( $self->data->{build} );
     my $quizzes_data = QuizSage::Model::Quiz->new->every_data({ meet_id => $self->id });
 
@@ -525,6 +528,9 @@ sub stats ($self) {
             $quizzer;
         } $stats->{quizzers}->@*
     ];
+
+    $self->data->{stats} = $stats;
+    $self->save;
 
     return $stats;
 }
