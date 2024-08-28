@@ -51,19 +51,18 @@
 
     [%
         size       = 7;
-        skip       = 1;
+        shift      = 1;
         start      = 1;
+        end        = 7;
         iterations = [];
 
-        WHILE start < verse.words.size - 1;
+        WHILE start < verse.words.size - end;
             to = ( start + size < verse.words.size ) ? start + size : verse.words.size;
             iterations.push( [ start, to ] );
-            start = start + skip;
+            start = start + shift;
         END;
 
-        drop_first_iteration = iterations.shift;
-        drop_last_iteration  = iterations.pop;
-        iterations           = iterations.randomize.slice( 0, 2 );
+        iterations = iterations.randomize.slice( 0, 2 );
     %]
     [% FOR iteration IN iterations %]
         <details>
