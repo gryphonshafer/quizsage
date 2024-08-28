@@ -2,6 +2,29 @@
 
 <h2>[% season.data.location %]: [% season.data.name %]</h2>
 
+[% IF stats.meets AND stats.meets.size %]
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Start</th>
+            </tr>
+        </thead>
+        <tbody>
+            [% FOR meet IN stats.meets %]
+                <tr>
+                    <td><a href="[%
+                        c.url_for( '/meet/' _ meet.meet_id _ '/stats' )
+                    %]">[% meet.name %]</a></td>
+                    <td>[% meet.location %]</td>
+                    <td>[% meet.start_stamp %]</td>
+                </tr>
+            [% END %]
+        </tbody>
+    </table>
+[% END %]
+
 [%
     PROCESS by_points_average type = 'quizzers', filter_tag = undef;
     FOR tag IN stats.tags;

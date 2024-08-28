@@ -90,7 +90,10 @@ sub stats ($self) {
             }
             map {
                 my $meet = $_;
-                +{ map { $_ => $meet->data->{$_} } qw( meet_id name location start days ) };
+                +{
+                    start_stamp => $self->time->parse( $meet->data->{start} )->format('%a, %b %e, %Y'),
+                    map { $_ => $meet->data->{$_} } qw( meet_id name location start days ),
+                };
             } @$meets
         ],
     };

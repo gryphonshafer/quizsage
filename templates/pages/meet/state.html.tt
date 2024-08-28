@@ -16,7 +16,8 @@
 <h2>
     [% meet.data.name %]
     at
-    [% meet.data.location %]
+    [% meet.data.location %];
+    [% meet.start_stamp %]
 </h2>
 
 <ul class="column no_print">
