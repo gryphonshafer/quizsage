@@ -3,12 +3,12 @@ import template from 'modules/template';
 
 export default {
     computed: {
-        ...Pinia.mapState( store, [ 'query_types', 'bibles', 'next_query_bible', 'add_verse' ] ),
+        ...Pinia.mapState( store, [ 'query_types', 'bibles', 'next_query_bible', 'add_verse', 'auto_hide' ] ),
     },
 
     methods: {
         ...Pinia.mapActions( store, [
-            'create_query', 'set_next_query_bible', 'toggle_add_verse', 'exit_drill',
+            'create_query', 'toggle_auto_hide', 'set_next_query_bible', 'toggle_add_verse', 'exit_drill',
         ] ),
 
         reset_create_query(query_type_key) {

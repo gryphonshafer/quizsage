@@ -6,6 +6,13 @@
         @click="toggle_add_verse"
     >Add Verse</button>
 
+    <p>
+        <label>
+            <input type="checkbox" :checked="auto_hide" @change="toggle_auto_hide">
+            Auto-Hide
+        </label>
+    </p>
+
     <p><b>Next Query's Bible:</b></p>
 
     <button

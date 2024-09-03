@@ -77,6 +77,7 @@ export default Pinia.defineStore( 'store', {
             },
             hidden_solution : true,
             is_drill        : true,
+            auto_hide       : true,
         };
     },
 
@@ -84,14 +85,19 @@ export default Pinia.defineStore( 'store', {
         replace_query() {
             this.current         = get_current( this.current.query.type, this.next_query_bible );
             this.add_verse       = false;
-            this.hidden_solution = true;
+            this.hidden_solution = this.auto_hide;
         },
 
         create_query(type) {
             this.current         = get_current( type, this.next_query_bible );
             this.selected.bible  = this.current.query.bible;
             this.add_verse       = false;
-            this.hidden_solution = true;
+            this.hidden_solution = this.auto_hide;
+        },
+
+        toggle_auto_hide() {
+            this.auto_hide       = ! this.auto_hide;
+            this.hidden_solution = this.auto_hide;
         },
 
         set_next_query_bible(bible) {
