@@ -210,3 +210,26 @@ label.smart_search {
         }
     }
 }
+
+form.admin {
+    p {
+        text-align: left;
+    }
+
+    textarea {
+        font-family: monospace;
+        width      : 17em;
+        height     : 20em;
+    }
+
+    @media ( min-width: 535px ) {
+        input[type=text] {
+            width: 24em !important;
+        }
+
+        textarea {
+            width : 28em;
+            height: 20em;
+        }
+    }
+}

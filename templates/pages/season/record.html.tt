@@ -1,0 +1,74 @@
+[%
+    page.title = ( NOT season ) ? 'Create New Season' : 'Edit Season';
+    USE date;
+%]
+
+<details>
+    <summary>Instructions</summary>
+    <p>
+        To [% IF NOT season %]create[% ELSE %]edit[% END %] a season,
+        ensure all the following:
+    </p>
+    <ul>
+        <li>
+            <b>Name</b> should be a descriptor of the season, typically a
+            simplified <i>material label</i>.
+        </li>
+        <li>
+            <b>Location</b> should ideally be the <i>region</i> within which the
+            season will take place. This should match the locations of any
+            previous seasons from the same <i>region</i>.
+        </li>
+        <li>
+            <b>Start</b> is the date when the season starts, which should
+            preceed the first meet by a wide margin but not overlap with a prior
+            season. Typically, this is August 1 of the season's start year.
+        </li>
+        <li>
+            <b>Days</b> is the length in days the season runs. This is typically
+            365.
+        </li>
+        <li>
+            <b>Settings</b> is a <a href="https://yaml.org">YAML</a> text block
+            consisting of season-level settings.
+        </li>
+    </ul>
+</details>
+
+<form method="post" class="admin">
+    <fieldset>
+        <legend>[% page.title %]</legend>
+
+        <label>
+            Name:
+            <input type="text" name="name" value="[% name OR season.data.name %]" placeholder="Name">
+        </label>
+        <label>
+            Location:
+            <input type="text" name="location" value="[% location OR season.data.location %]" placeholder="Location">
+        </label>
+        <label>
+            Start:
+            <input type="text" name="start" value="[%
+                this_start = start OR season.data.start;
+                IF this_start;
+                    date.format( this_start, '%b %e, %Y' ).replace( '\s{2,}', ' ' );
+                ELSE;
+                    '';
+                END;
+            %]" placeholder="Start">
+        </label>
+        <label>
+            Days:
+            <input type="text" name="days" value="[% days OR season.data.days %]" placeholder="Days">
+        </label>
+
+        <p>
+            Settings:<br>
+            <textarea name="settings">[% settings OR season_settings | trim %]</textarea>
+        </p>
+
+        <input type="submit"
+            value="[% IF NOT season %]Create New Season[% ELSE %]Save Season Data[% END %]">
+    </fieldset>
+</form>

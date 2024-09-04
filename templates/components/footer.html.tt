@@ -1,0 +1,34 @@
+<footer>
+    <span class="hide_priority_3">
+        &copy; <a href="https://cbqz.org">Christian Bible Quizzing</a> (CBQ)
+    </span>
+    <span class="show_priority_3">
+        &copy; <a href="https://cbqz.org">CBQ</a>
+    </span>
+
+    <span class="separator">|</span>
+    <a href="https://cbqz.org/rules">Rule Book</a>
+
+    <span class="hide_priority_5">
+        <span class="separator">|</span>
+        <a href="https://github.com/gryphonshafer/quizsage">GitHub Project</a>
+    </span>
+
+    <span class="hide_priority_1">
+        <span class="separator">|</span>
+        <a href="https://github.com/gryphonshafer/quizsage/commits/master">Revision History</a>
+    </span>
+
+    <span class="hide_priority_2">
+        <span class="separator">|</span>
+        <a href="https://github.com/gryphonshafer/quizsage/issues">Report Issue</a>
+    </span>
+
+    <span class="separator">|</span>
+    <span class="hide_priority_4">
+        Version [% version %] [% c.app.mode.ucfirst %]
+    </span>
+    <span class="show_priority_4">
+        v[% version %]
+    </span>
+</footer>

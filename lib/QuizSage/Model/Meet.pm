@@ -535,6 +535,22 @@ sub stats ($self) {
     return $stats;
 }
 
+sub admin_auth ( $self, $user ) {
+    return (
+        $self->dq->sql(q{
+            SELECT COUNT(*)
+            FROM season
+            WHERE season_id = ? AND user_id = ?
+        })->run( $self->data->{season_id}, $user->id )->value
+        or
+        $self->dq->sql(q{
+            SELECT COUNT(*)
+            FROM administrator
+            WHERE meet_id = ? AND user_id = ?
+        })->run( $self->id, $user->id )->value
+    ) ? 1 : 0;
+}
+
 1;
 
 =head1 NAME
@@ -646,6 +662,11 @@ This method returns a data structure containing meet statistics.
 
 The statistics hashref returned will contain keys for at least but perhaps not
 limited to: C<quizzers>, C<teams>, C<rankings>, C<meta>.
+
+=head2 admin_auth
+
+Requires a loaded user object and will return a boolean of whether the user is
+authorized as an administrator of the meet.
 
 =head1 WITH ROLES
 

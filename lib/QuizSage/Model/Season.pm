@@ -6,6 +6,8 @@ use QuizSage::Model::Meet;
 
 with qw( Omniframe::Role::Model Omniframe::Role::Time QuizSage::Role::Data );
 
+class_has active => 1;
+
 before 'create' => sub ( $self, $params ) {
     $params->{settings} //= $self->dataload('config/meets/defaults/season.yaml');
 };
@@ -72,7 +74,7 @@ sub seasons ($self) {
                     'active',
                 ],
             ],
-            {},
+            { active => 1 },
             { order_by => [ 'location', 'name' ] },
         )->run->all({})->@*
     ];
@@ -183,6 +185,17 @@ sub stats ($self) {
     return $stats;
 }
 
+sub admin_auth ( $self, $user ) {
+    return (
+        ( $self->data->{user_id} // 0 ) == $user->id or
+        $self->dq->sql(q{
+            SELECT COUNT(*)
+            FROM administrator
+            WHERE season_id = ? AND user_id = ?
+        })->run( $self->id, $user->id )->value
+    ) ? 1 : 0;
+}
+
 1;
 
 =head1 NAME
@@ -232,6 +245,11 @@ This method returns a data structure containing season statistics.
 
 The statistics hashref returned will contain keys for at least but perhaps not
 limited to: C<quizzers>, C<meets>.
+
+=head2 admin_auth
+
+Requires a loaded user object and will return a boolean of whether the user is
+authorized as an administrator of the season.
 
 =head1 WITH ROLES
 
