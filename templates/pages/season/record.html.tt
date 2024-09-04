@@ -45,7 +45,8 @@
         </label>
         <label>
             Location:
-            <input type="text" name="location" value="[% location OR season.data.location %]" placeholder="Location">
+            <input type="text" name="location"
+                value="[% location OR season.data.location %]" placeholder="Location">
         </label>
         <label>
             Start:
@@ -74,28 +75,59 @@
 </form>
 
 [% IF season %]
+    <div class="column" style="width: 1em"></div>
     <div class="column">
-        <a href="[% c.url_for( '/season/' _ season.id _ '/delete' ) %]"
-            class="button confirm">Delete Season</a>
-    </div>
-[% END %]
+        <p><a href="[% c.url_for( '/season/' _ season.id _ '/delete' ) %]"
+            class="button confirm">Delete Season</a></p>
 
-[% confirm_js = BLOCK %]
-    window.addEventListener( 'load', () => {
-        window.document.querySelectorAll('a.confirm').forEach( a => {
-            a.onclick = () => {
-                notice(
-                    'Are you sure? This will delete the season,<br>' +
-                        'all its meets, and all its quizzes.',
-                    [ 'Yes, delete', 'No, keep' ],
-                    event => {
-                        if ( event.target.textContent == 'Yes, delete' )
-                            window.location.href = a.href;
-                    },
-                );
-                return false;
-            };
+        [% IF meets.size > 0 %]
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Start</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    [% FOR meet IN meets %]
+                        <tr>
+                            <td><a href="[%
+                                c.url_for( '/season/' _ meet.data.season_id _ '/meet/' _ meet.id _ '/edit' )
+                            %]">[% meet.data.name %]</a></td>
+                            <td>[% meet.data.location %]</td>
+                            <td>[%
+                                date
+                                    .format( meet.data.start, '%a, %b %e, %Y' )
+                                    .replace( '\s{2,}', ' ' )
+                            %]</td>
+                        </tr>
+                    [% END %]
+                </tbody>
+            </table>
+        [% END %]
+
+        <p><a href="[% c.url_for( '/season/' _ season.id _ '/meet/add' ) %]"
+            class="button">Add Meet to Season</a></p>
+    </div>
+
+    [% confirm_js = BLOCK %]
+        window.addEventListener( 'load', () => {
+            window.document.querySelectorAll('a.confirm').forEach( a => {
+                a.onclick = () => {
+                    notice(
+                        'Are you sure? This will delete the season,<br>' +
+                            'all its meets, and all their quizzes. Everything.',
+                        [ 'Yes, delete', 'No, keep' ],
+                        event => {
+                            if ( event.target.textContent == 'Yes, delete' )
+                                window.location.href = a.href;
+                        },
+                    );
+                    return false;
+                };
+            } );
         } );
-    } );
+    [% END %]
+    [% page.js.inline.push(confirm_js) %]
 [% END %]
-[% page.js.inline.push(confirm_js) %]

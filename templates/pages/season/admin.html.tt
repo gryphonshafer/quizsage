@@ -49,7 +49,7 @@
             [% FOR meet IN meets %]
                 <tr>
                     <td><a href="[%
-                        c.url_for( '/meet/' _ meet.id _ '/edit' )
+                        c.url_for( '/season/' _ meet.data.season_id _ '/meet/' _ meet.id _ '/edit' )
                     %]">[% meet.data.name %]</a></td>
                     <td>[% meet.data.location %]</td>
                     <td>[% date.format( meet.data.start, '%a, %b %e, %Y' ).replace( '\s{2,}', ' ' ) %]</td>

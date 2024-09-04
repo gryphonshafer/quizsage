@@ -2,30 +2,39 @@ package QuizSage::Control::Season;
 
 use exact 'Mojolicious::Controller';
 use Mojo::File 'path';
+use Omniframe::Util::Text 'deat';
 use QuizSage::Model::Meet;
 use QuizSage::Model::Season;
 use YAML::XS qw( LoadFile Load Dump );
 
-sub admin ($self) {
-    my $filter_and_sort = sub {
-        return [
-            sort {
-                $b->data->{start} cmp $a->data->{start} or
-                $a->data->{location} cmp $b->data->{location} or
-                $a->data->{name} cmp $b->data->{name}
-            }
-            grep { $_->admin_auth( $self->stash('user') ) }
-            @_
-        ];
-    };
+sub stats ($self) {
+    my $season = QuizSage::Model::Season->new->load( $self->param('season_id') );
+    $self->stash(
+        stats  => $season->stats,
+        season => $season,
+    );
+}
 
-    my $seasons = $filter_and_sort->( QuizSage::Model::Season->new->every );
+sub _filter_and_sort ( $self, @records ) {
+    return [
+        sort {
+            $b->data->{start} cmp $a->data->{start} or
+            $a->data->{location} cmp $b->data->{location} or
+            $a->data->{name} cmp $b->data->{name}
+        }
+        grep { $_->admin_auth( $self->stash('user') ) }
+        @records
+    ];
+}
+
+sub admin ($self) {
+    my $seasons = $self->_filter_and_sort( QuizSage::Model::Season->new->every );
     my $meets   = [
         grep {
             my $meet_season_id = $_->data->{season_id};
             not grep { $meet_season_id == $_->data->{season_id} } @$seasons;
         }
-        @{ $filter_and_sort->( QuizSage::Model::Meet->new->every ) }
+        @{ $self->_filter_and_sort( QuizSage::Model::Meet->new->every ) }
     ];
 
     $self->stash(
@@ -53,6 +62,9 @@ sub record ($self) {
                 $self->stash(
                     season          => $season,
                     season_settings => $yaml,
+                    meets           => $self->_filter_and_sort(
+                        QuizSage::Model::Meet->new->every({ season_id => $self->param('season_id') })
+                    ),
                 );
             }
         }
@@ -78,16 +90,105 @@ sub record ($self) {
 }
 
 sub delete ($self) {
-    QuizSage::Model::Season->new->load( $self->param('season_id' ) )->delete;
+    QuizSage::Model::Season->new->load( $self->param('season_id') )->delete;
     return $self->redirect_to('/season/admin');
 }
 
-sub stats ($self) {
-    my $season = QuizSage::Model::Season->new->load( $self->param('season_id') );
-    $self->stash(
-        stats  => $season->stats,
-        season => $season,
-    );
+sub meet ($self) {
+    my $meet = QuizSage::Model::Meet->new;
+    $self->stash( default_bible => $meet->conf->get( qw( quiz_defaults bible ) ) );
+
+    if ( $self->param('meet_action_type') eq 'add' ) {
+        unless ( $self->param('settings') ) {
+            ( my $yaml = path(
+                $meet->conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/meet.yaml'
+            )->slurp ) =~ s/^\-+//;
+            my $roster_data = Load($yaml)->{roster}{data};
+            $yaml =~ s/\nroster\s*:.*(?=\n\w)//ms;
+
+            $self->stash(
+                meet_settings => $yaml,
+                roster_data   => $roster_data,
+            );
+        }
+        else {
+            try {
+                die 'User account not authorized for this action' unless (
+                    QuizSage::Model::Season->new
+                        ->load( $self->param('season_id') )
+                        ->admin_auth( $self->stash('user') )
+                );
+
+                my $settings = Load( $self->param('settings') );
+                $settings->{roster}{data} = $self->param('roster_data');
+
+                $meet->create({
+                    season_id => $self->param('season_id'),
+                    settings  => $settings,
+                    map { $_ => $self->param($_) } qw( name location start days passwd ),
+                })->build( $self->stash('user')->id );
+
+                $self->flash( message => {
+                    type => 'success',
+                    text => 'New meet created and built',
+                } );
+
+                return $self->redirect_to('/season/admin');
+            }
+            catch ($e) {
+                $self->warn($e);
+                $self->stash( message => deat($e) );
+            }
+        }
+    }
+    else {
+        unless ( $meet->load( $self->param('meet_id') )->admin_auth( $self->stash('user') ) ) {
+            $self->flash( message => 'User account not authorized for this action' );
+            return $self->redirect_to('/season/admin');
+        }
+        elsif ( $self->param('meet_action_type') eq 'edit' ) {
+            unless ( $self->param('settings') ) {
+                my $roster_data = delete $meet->data->{settings}{roster}{data};
+                delete $meet->data->{settings}{roster} unless ( $meet->data->{settings}{roster}->%* );
+
+                ( my $yaml = Dump( $meet->data->{settings} ) ) =~ s/^\-+//;
+
+                $self->stash(
+                    meet          => $meet,
+                    meet_settings => $yaml,
+                    roster_data   => $roster_data,
+                );
+            }
+            else {
+                my $settings = Load( $self->param('settings') );
+                $settings->{roster}{data} = $self->param('roster_data');
+
+                $meet->data->{settings} = $settings;
+                $meet->data->{$_} = $self->param($_)
+                    for ( grep { $self->param($_) } qw( name location start days passwd ) );
+
+                $meet->save;
+                $meet->build( $self->stash('user')->id );
+
+                $self->flash( message => {
+                    type => 'success',
+                    text => 'Meet edited and rebuilt',
+                } );
+
+                return $self->redirect_to('/season/admin');
+            }
+        }
+        elsif ( $self->param('meet_action_type') eq 'delete' ) {
+            $meet->delete;
+
+            $self->flash( message => {
+                type => 'success',
+                text => 'Meet deleted',
+            } );
+
+            return $self->redirect_to('/season/admin');
+        }
+    }
 }
 
 1;
@@ -103,6 +204,11 @@ for "Season" actions.
 
 =head1 METHODS
 
+=head2 stats
+
+This controller handles meet statistics display by setting the C<stats> stash
+value based on L<QuizSage::Model::Season>'s C<stats>.
+
 =head2 admin
 
 This controller handles the season administration page.
@@ -115,10 +221,9 @@ This controller handles season creation and editing display and functionality.
 
 This controller handles season deletion.
 
-=head2 stats
+=head2 meet
 
-This controller handles meet statistics display by setting the C<stats> stash
-value based on L<QuizSage::Model::Season>'s C<stats>.
+This controller handles meet creation, editing, and deleting.
 
 =head1 INHERITANCE
 

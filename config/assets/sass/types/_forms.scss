@@ -216,7 +216,7 @@ form.admin {
         text-align: left;
     }
 
-    textarea {
+    textarea[name="settings"] {
         font-family: monospace;
         width      : 17em;
         height     : 20em;
@@ -227,9 +227,12 @@ form.admin {
             width: 24em !important;
         }
 
-        textarea {
-            width : 28em;
-            height: 20em;
+        textarea[name="settings"] {
+            width: 28em;
         }
+    }
+
+    fieldset.roster textarea {
+        height: 31.75em;
     }
 }
