@@ -162,43 +162,20 @@
                         [% IF quiz.id %]
                             <a
                                 class="qm_auth"
-                                onclick="
-                                    notice(
-                                        'Are you absolutely sure you want to do this?<br>'
-                                            + 'This will delete all data for this quiz.<br>'
-                                            + 'There is no undo...',
-                                        [ 'Yes, I\'m sure!', 'Nevermind' ],
-                                        event => {
-                                            if ( event.target.textContent == 'Yes, I\'m sure!' )
-                                                document.location.href =
-                                                '[% c.url_for('/quiz/delete/' _ quiz.id ) %]';
-                                        },
-                                    );
-                                    return false;
+                                data-confirm="
+                                    Are you absolutely sure you want to do this?<br>
+                                    This will delete all data for this quiz.<br>
+                                    There is no undo...
                                 "
                                 href="[% c.url_for('/quiz/delete/' _ quiz.id ) %]"
                             >Delete Data</a>
                         [% ELSIF NOT teams_resolved %]
                             <a
                                 class="qm_auth"
-                                onclick="
-                                    notice(
-                                        'Are you absolutely sure you want to do this?<br>'
-                                            + 'This is likely not needed. Teams should<br>'
-                                            + 'automatically populate.'
-                                        [ 'Yes, I\'m sure!', 'Nevermind' ],
-                                        event => {
-                                            if ( event.target.textContent == 'Yes, I\'m sure!' )
-                                                document.location.href = '[%
-                                                    c.url_for('/quiz/teams').query(
-                                                        meet    => c.param('meet_id'),
-                                                        bracket => bracket.name,
-                                                        quiz    => quiz.name,
-                                                    )
-                                                %]';
-                                        },
-                                    );
-                                    return false;
+                                data-confirm="
+                                    Are you absolutely sure you want to do this?<br>
+                                    This is likely not needed. Teams should<br>
+                                    automatically populate.
                                 "
                                 href="[%
                                     c.url_for('/quiz/teams').query(
@@ -209,6 +186,25 @@
                                 %]"
                             >Set Teams</a>
                         [% END %]
+
+                        [% confirm_js = BLOCK %]
+                            window.addEventListener( 'load', () => {
+                                window.document.querySelectorAll('a.qm_auth').forEach( a => {
+                                    a.onclick = () => {
+                                        notice(
+                                            a.attributes.getNamedItem('data-confirm').textContent,
+                                            [ 'Yes, I am sure!', 'Nevermind' ],
+                                            event => {
+                                                if ( event.target.textContent == 'Yes, I am sure!' )
+                                                    window.location.href = a.href;
+                                            },
+                                        );
+                                        return false;
+                                    };
+                                } );
+                            } );
+                        [% END %]
+                        [% page.js.inline.push(confirm_js) %]
                     [% END %]
                 </div>
             [% END %]

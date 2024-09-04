@@ -77,6 +77,11 @@ sub record ($self) {
     }
 }
 
+sub delete ($self) {
+    QuizSage::Model::Season->new->load( $self->param('season_id' ) )->delete;
+    return $self->redirect_to('/season/admin');
+}
+
 sub stats ($self) {
     my $season = QuizSage::Model::Season->new->load( $self->param('season_id') );
     $self->stash(
@@ -105,6 +110,10 @@ This controller handles the season administration page.
 =head2 record
 
 This controller handles season creation and editing display and functionality.
+
+=head2 delete
+
+This controller handles season deletion.
 
 =head2 stats
 

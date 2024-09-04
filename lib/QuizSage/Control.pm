@@ -67,7 +67,7 @@ sub startup ($self) {
         ->to( 'meet#board', format => undef );
     $users->any( '/meet/:meet_id/' . $_ )->to( 'meet#' . $_ ) for ( qw( state roster distribution stats ) );
 
-    $users->any('/season/:season_id/stats')->to('season#stats');
+    $users->any( '/season/:season_id/' . $_ )->to( 'season#' . $_ ) for ( qw( delete stats ) );
     $users->any($_)->to('season#record') for (
         '/season/:season_id/edit',
         '/season/create',

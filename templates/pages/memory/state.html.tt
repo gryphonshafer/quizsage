@@ -278,7 +278,7 @@
 
         window.document.querySelectorAll('form#shared_from_labels a.unfollow').forEach( a => {
             a.onclick = () => {
-                const choice = notice(
+                notice(
                     'Are you sure you want to unfollow the memory state of this person?<br>' +
                         'There is no option to undo this without ' +
                         'the person resharing their memory state with you.',
@@ -287,7 +287,7 @@
                         if ( event.target.textContent == 'Yes, unfollow' )
                             window.location.href = a.href;
                     },
-                )
+                );
                 return false;
             };
         } );

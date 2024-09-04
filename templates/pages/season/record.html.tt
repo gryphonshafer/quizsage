@@ -35,7 +35,7 @@
     </ul>
 </details>
 
-<form method="post" class="admin">
+<form method="post" class="admin column">
     <fieldset>
         <legend>[% page.title %]</legend>
 
@@ -72,3 +72,30 @@
             value="[% IF NOT season %]Create New Season[% ELSE %]Save Season Data[% END %]">
     </fieldset>
 </form>
+
+[% IF season %]
+    <div class="column">
+        <a href="[% c.url_for( '/season/' _ season.id _ '/delete' ) %]"
+            class="button confirm">Delete Season</a>
+    </div>
+[% END %]
+
+[% confirm_js = BLOCK %]
+    window.addEventListener( 'load', () => {
+        window.document.querySelectorAll('a.confirm').forEach( a => {
+            a.onclick = () => {
+                notice(
+                    'Are you sure? This will delete the season,<br>' +
+                        'all its meets, and all its quizzes.',
+                    [ 'Yes, delete', 'No, keep' ],
+                    event => {
+                        if ( event.target.textContent == 'Yes, delete' )
+                            window.location.href = a.href;
+                    },
+                );
+                return false;
+            };
+        } );
+    } );
+[% END %]
+[% page.js.inline.push(confirm_js) %]
