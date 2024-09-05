@@ -48,8 +48,13 @@ sub record ($self) {
 
     if ( $self->param('season_id') ) {
         my $season = $season->load( $self->param('season_id') );
+
         if ( $season->admin_auth( $self->stash('user') ) ) {
-            if ( $self->param('name') ) {
+            if ( $self->param('action') and $self->param('user_id') ) {
+                $season->admin( $self->param('action'), $self->param('user_id') );
+                return $self->redirect_to( '/season/' . $self->param('season_id') . '/edit' );
+            }
+            elsif ( $self->param('name') ) {
                 $season->data->{settings} = Load( $self->param('settings') ) if ( $self->param('settings') );
                 $season->data->{$_} = $self->param($_) for ( qw( name location start days ) );
                 $season->save;
@@ -145,6 +150,12 @@ sub meet ($self) {
         unless ( $meet->load( $self->param('meet_id') )->admin_auth( $self->stash('user') ) ) {
             $self->flash( message => 'User account not authorized for this action' );
             return $self->redirect_to('/season/admin');
+        }
+        elsif ( $self->param('action') and $self->param('user_id') ) {
+            $meet->admin( $self->param('action'), $self->param('user_id') );
+            return $self->redirect_to(
+                '/season/' . $meet->data->{season_id} . '/meet/' . $meet->id . '/edit'
+            );
         }
         elsif ( $self->param('meet_action_type') eq 'edit' ) {
             unless ( $self->param('settings') ) {

@@ -3,6 +3,8 @@
     USE date;
 %]
 
+<a href="[% c.url_for('/season/admin') %]" style="float: right">Season Administration</a>
+
 <details>
     <summary>Instructions</summary>
     <p>
@@ -130,4 +132,32 @@
         } );
     [% END %]
     [% page.js.inline.push(confirm_js) %]
+
+    [%
+        PROCESS user_select.html.tt,
+            title  = 'Add Season Administrator',
+            params = {
+                season_id = season.id,
+                action    = 'add',
+            };
+    %]
+
+    [% admins = season.admins %]
+    [% IF admins AND admins.size %]
+        <h2>Season Administrators</h2>
+
+        <ul>
+            [% FOR admin IN admins %]
+                <li>
+                    [% admin.first_name %] [% admin.last_name %]
+                    ([% admin.email %])
+                    <a href="[% c.url_for.query(
+                        action    => 'remove',
+                        season_id => season.id,
+                        user_id   => admin.user_id,
+                    ) %]">Remove</a>
+                </li>
+            [% END %]
+        </ul>
+    [% END %]
 [% END %]
