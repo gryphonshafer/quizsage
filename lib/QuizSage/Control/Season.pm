@@ -163,7 +163,6 @@ sub meet ($self) {
             catch ($e) {
                 $self->notice($e);
                 my $message = deat($e);
-
                 $self->flash(
                     message => ( length($message) < 1024 )
                         ? $message
@@ -224,7 +223,6 @@ sub meet ($self) {
                 }
                 catch ($e) {
                     $self->notice($e);
-
                     $self->flash(
                         message => deat($e),
                         map { $_ => $self->param($_) } qw(

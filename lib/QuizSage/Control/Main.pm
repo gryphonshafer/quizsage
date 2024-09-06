@@ -144,7 +144,7 @@ sub setup ($self) {
             return $self->redirect_to( '/quiz/pickup/' . $quiz_id );
         }
         catch ($e) {
-            $self->info( 'Pickup quiz error: ' . $e );
+            $self->notice( 'Pickup quiz error: ' . $e );
             $self->flash( message => 'Pickup quiz settings error: ' . $e );
             return $self->redirect_to('/quiz/pickup/setup');
         }

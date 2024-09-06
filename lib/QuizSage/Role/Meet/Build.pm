@@ -490,7 +490,7 @@ sub _schedule_integration( $self, $build_settings ) {
                 $quiz_2_start >= $quiz_1_start and $quiz_2_start < $quiz_1_stop  or
                 $quiz_2_stop  <= $quiz_1_stop  and $quiz_2_stop  > $quiz_1_start
             ) {
-                $self->notice(
+                $self->warn(
                     $quiz_1->{bracket} . ' Quiz ' . $quiz_1->{name} . ' (room ' . $quiz_1->{room} . ')' .
                     ' happens at the same time as ' .
                     $quiz_2->{bracket} . ' Quiz ' . $quiz_2->{name} . ' (room ' . $quiz_1->{room} . ')' . "\n"
@@ -503,7 +503,7 @@ sub _schedule_integration( $self, $build_settings ) {
                 for my $team_quiz_2 ( grep { length > 1 } map {
                     $_->{name} // ( $_->{bracket} // $_->{quiz} // '' ) . ' ' . ( $_->{position} // '' )
                 } $quiz_2->{roster}->@* ) {
-                    $self->notice(
+                    $self->warn(
                         $team_quiz_2 . ' is in ' .
                         $quiz_1->{bracket} . ' Quiz ' . $quiz_1->{name} . ' (room ' . $quiz_1->{room} . ')' .
                         ' and ' .

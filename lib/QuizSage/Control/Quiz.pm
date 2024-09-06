@@ -35,7 +35,7 @@ sub teams ($self) {
         ];
 
         if ( @$roster != $quiz->{roster}->@* ) {
-            $self->info( 'Failed to parse teams: ' . $self->param('teams') );
+            $self->notice( 'Failed to parse teams: ' . $self->param('teams') );
             $self->flash( message => 'Teams seemingly not entered correctly' );
             return $self->redirect_to(
                 $self
