@@ -3,26 +3,24 @@
     USE date;
 %]
 
-[% IF seasons.size == 0 AND meets.size == 0 %]
-    <details open>
-        <summary>Instructions</summary>
+<details [% IF seasons.size == 0 AND meets.size == 0 %]open[% END %]>
+    <summary>Instructions</summary>
 
-        <p>
-            This <b>Season Administration</b> interface is for the creation and
-            management of seasons and the meets within them, which result in
-            seasons and meets that are <b><i>universally viewable</i></b>.
-        </p>
-        <p>
-            Unless you are a regional coordinator or season administration
-            delegate,
-            <b><i>you almost certainly do not want to use this page</i></b>.
-            <span style="color: red; font-weight: bold">
-                Unauthorized or otherwise improper use of this page will result
-                in disciplinary action.
-            </span>
-        </p>
-    </details>
-[% END %]
+    <p>
+        This <b>Season Administration</b> interface is for the creation and
+        management of seasons and the meets within them, which result in
+        seasons and meets that are <b><i>universally viewable</i></b>.
+    </p>
+    <p>
+        Unless you are a regional coordinator or season administration
+        delegate,
+        <b><i>you almost certainly do not want to use this page</i></b>.
+        <span style="color: red; font-weight: bold">
+            Unauthorized or otherwise improper use of this page may result
+            in account deactivation.
+        </span>
+    </p>
+</details>
 
 <p><a class="button" href="[% c.url_for('/season/create') %]">Create New Season</a></p>
 

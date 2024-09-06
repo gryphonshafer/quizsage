@@ -55,19 +55,30 @@ sub record ($self) {
                 return $self->redirect_to( '/season/' . $self->param('season_id') . '/edit' );
             }
             elsif ( $self->param('name') ) {
-                $season->data->{settings} = Load( $self->param('settings') ) if ( $self->param('settings') );
-                $season->data->{$_} = $self->param($_) for ( qw( name location start days ) );
-                $season->save;
-                return $self->redirect_to('/season/admin');
+                try {
+                    $season->data->{settings} = Load( $self->param('settings') )
+                        if ( $self->param('settings') );
+                    $season->data->{$_} = $self->param($_) for ( qw( name location start days ) );
+                    $season->save;
+                    return $self->redirect_to('/season/admin');
+                }
+                catch ($e) {
+                    $self->notice($e);
+                    $self->flash(
+                        message => 'There was an unexpected error in editing the season.',
+                        map { $_ => $self->param($_) } qw( name location start days settings ),
+                    );
+                    return $self->redirect_to( '/season/' . $self->param('season_id') . '/edit' );
+                }
             }
             else {
                 my $yaml = Dump( $season->data->{settings} // '' );
                 $yaml =~ s/^\-+//;
 
                 $self->stash(
-                    season          => $season,
-                    season_settings => $yaml,
-                    meets           => $self->_filter_and_sort(
+                    season   => $season,
+                    settings => $yaml,
+                    meets    => $self->_filter_and_sort(
                         QuizSage::Model::Meet->new->every({ season_id => $self->param('season_id') })
                     ),
                 );
@@ -75,22 +86,32 @@ sub record ($self) {
         }
     }
     elsif ( $self->param('name') ) {
-        $season->create({
-            user_id        => $self->stash('user')->id,
-            name           => $self->param('name'),
-            maybe location => $self->param('location'),
-            maybe start    => $self->param('start'),
-            maybe days     => $self->param('days'),
-            maybe settings => ( ( $self->param('settings') ) ? Load( $self->param('settings') ) : undef ),
-        });
-        return $self->redirect_to('/season/admin');
+        try {
+            $season->create({
+                user_id        => $self->stash('user')->id,
+                name           => $self->param('name'),
+                maybe location => $self->param('location') || undef,
+                maybe start    => $self->param('start')    || undef,
+                maybe days     => $self->param('days')     || undef,
+                maybe settings => ( ( $self->param('settings') ) ? Load( $self->param('settings') ) : undef ),
+            });
+            return $self->redirect_to('/season/admin');
+        }
+        catch ($e) {
+            $self->notice($e);
+            $self->flash(
+                message => 'There was an unexpected error in creating the season.',
+                map { $_ => $self->param($_) } qw( name location start days settings ),
+            );
+            return $self->redirect_to('/season/create');
+        }
     }
     else {
         ( my $yaml = path(
             $season->conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/season.yaml'
         )->slurp ) =~ s/^\-+//;
 
-        $self->stash( season_settings => $yaml );
+        $self->stash( settings => $yaml );
     }
 }
 
@@ -101,7 +122,6 @@ sub delete ($self) {
 
 sub meet ($self) {
     my $meet = QuizSage::Model::Meet->new;
-    $self->stash( default_bible => $meet->conf->get( qw( quiz_defaults bible ) ) );
 
     if ( $self->param('meet_action_type') eq 'add' ) {
         unless ( $self->param('settings') ) {
@@ -112,8 +132,8 @@ sub meet ($self) {
             $yaml =~ s/\nroster\s*:.*(?=\n\w)//ms;
 
             $self->stash(
-                meet_settings => $yaml,
-                roster_data   => $roster_data,
+                settings    => $yaml,
+                roster_data => $roster_data,
             );
         }
         else {
@@ -141,8 +161,16 @@ sub meet ($self) {
                 return $self->redirect_to('/season/admin');
             }
             catch ($e) {
-                $self->warn($e);
-                $self->stash( message => deat($e) );
+                $self->notice($e);
+                my $message = deat($e);
+
+                $self->flash(
+                    message => ( length($message) < 1024 )
+                        ? $message
+                        : 'There was an unexpected error in creating the meet.',
+                    map { $_ => $self->param($_) } qw( name location start days passwd settings ),
+                );
+                return $self->redirect_to( '/season/' . $self->param('season_id') . '/meet/add' );
             }
         }
     }
@@ -159,34 +187,54 @@ sub meet ($self) {
         }
         elsif ( $self->param('meet_action_type') eq 'edit' ) {
             unless ( $self->param('settings') ) {
-                my $roster_data = delete $meet->data->{settings}{roster}{data};
+                my $roster_data   = delete $meet->data->{settings}{roster}{data};
+                my $default_bible = delete $meet->data->{settings}{roster}{default_bible};
+
                 delete $meet->data->{settings}{roster} unless ( $meet->data->{settings}{roster}->%* );
 
                 ( my $yaml = Dump( $meet->data->{settings} ) ) =~ s/^\-+//;
 
                 $self->stash(
                     meet          => $meet,
-                    meet_settings => $yaml,
+                    settings      => $yaml,
+                    default_bible => $default_bible // $meet->conf->get( qw( quiz_defaults bible ) ),
                     roster_data   => $roster_data,
                 );
             }
             else {
-                my $settings = Load( $self->param('settings') );
-                $settings->{roster}{data} = $self->param('roster_data');
+                try {
+                    my $settings = Load( $self->param('settings') );
 
-                $meet->data->{settings} = $settings;
-                $meet->data->{$_} = $self->param($_)
-                    for ( grep { $self->param($_) } qw( name location start days passwd ) );
+                    $settings->{roster}{data}          = $self->param('roster_data');
+                    $settings->{roster}{default_bible} = $self->param('default_bible');
 
-                $meet->save;
-                $meet->build( $self->stash('user')->id );
+                    $meet->data->{settings} = $settings;
+                    $meet->data->{$_} = $self->param($_)
+                        for ( grep { $self->param($_) } qw( name location start days passwd ) );
 
-                $self->flash( message => {
-                    type => 'success',
-                    text => 'Meet edited and rebuilt',
-                } );
+                    $meet->save;
+                    $meet->build( $self->stash('user')->id );
 
-                return $self->redirect_to('/season/admin');
+                    $self->flash( message => {
+                        type => 'success',
+                        text => 'Meet edited and rebuilt',
+                    } );
+
+                    return $self->redirect_to('/season/admin');
+                }
+                catch ($e) {
+                    $self->notice($e);
+
+                    $self->flash(
+                        message => deat($e),
+                        map { $_ => $self->param($_) } qw(
+                            name location start days passwd settings default_bible roster_data
+                        ),
+                    );
+                    return $self->redirect_to(
+                        '/season/' . $self->param('season_id') . '/meet/' . $self->param('meet_id') . '/edit'
+                    );
+                }
             }
         }
         elsif ( $self->param('meet_action_type') eq 'delete' ) {

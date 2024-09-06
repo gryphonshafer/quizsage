@@ -144,7 +144,7 @@ sub queries ($self) {
 
         if ( $self->stash('action_type') eq 'queries' ) {
             my $roster         = {
-                maybe default_bible => $user_settings->{bible},
+                maybe default_bible => $user_settings->{bible} || undef,
                 data                => $user_settings->{roster_data},
             };
 

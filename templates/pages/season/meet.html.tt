@@ -36,23 +36,25 @@
     </ul>
 </details>
 
+[% MACRO value(key) GET $key OR c.session.flash.$key OR meet.data.$key %]
+
 <form method="post" class="admin column">
     <fieldset>
         <legend>[% page.title %]</legend>
 
         <label>
             Name:
-            <input type="text" name="name" value="[% name OR meet.data.name %]" placeholder="Name">
+            <input type="text" name="name" value="[% value('name') %]" placeholder="Name">
         </label>
         <label>
             Location:
             <input type="text" name="location"
-                value="[% location OR meet.data.location %]" placeholder="Location">
+                value="[% value('location') %]" placeholder="Location">
         </label>
         <label>
             Start:
             <input type="text" name="start" value="[%
-                this_start = start OR meet.data.start;
+                this_start = value('start');
                 IF this_start;
                     date.format( this_start, '%b %e, %Y' ).replace( '\s{2,}', ' ' );
                 ELSE;
@@ -62,16 +64,16 @@
         </label>
         <label>
             Days:
-            <input type="text" name="days" value="[% days OR meet.data.days %]" placeholder="Days">
+            <input type="text" name="days" value="[% value('days') %]" placeholder="Days">
         </label>
         <label>
             QM Password:
-            <input type="text" name="passwd" value="[% passwd %]" placeholder="QM Password">
+            <input type="text" name="passwd" value="" placeholder="QM Password">
         </label>
 
         <p>
             Settings:<br>
-            <textarea name="settings">[% settings OR meet_settings | trim %]</textarea>
+            <textarea name="settings">[% value('settings') | trim %]</textarea>
         </p>
 
         <input type="submit"
@@ -82,17 +84,18 @@
         <legend>Roster</legend>
         <label>
             Default Bible:
-            <input type="text" name="bible" value="[% bible OR default_bible %]">
+            <input type="text" name="default_bible" value="[% value('default_bible') %]">
         </label>
-        <textarea name="roster_data">[% roster_data | trim %]</textarea>
+        <textarea name="roster_data">[% value('roster_data') | trim %]</textarea>
     </fieldset>
 </form>
 
 [% IF meet %]
     <div class="column" style="width: 1em"></div>
     <div class="column">
-        <p class="column"><a href="[% c.url_for( '/season/' _ meet.data.season_id _ '/meet/' _ meet.id _ '/delete' ) %]"
-            class="button confirm">Delete Meet</a></p>
+        <p class="column"><a href="[%
+            c.url_for( '/season/' _ meet.data.season_id _ '/meet/' _ meet.id _ '/delete' )
+        %]" class="button confirm">Delete Meet</a></p>
 
         [% confirm_js = BLOCK %]
             window.addEventListener( 'load', () => {
@@ -114,6 +117,7 @@
         [% END %]
         [% page.js.inline.push(confirm_js) %]
     </div>
+    <div class="column" style="width: 1em"></div>
 
     [%
         PROCESS user_select.html.tt,
