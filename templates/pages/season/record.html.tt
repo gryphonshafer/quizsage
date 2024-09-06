@@ -1,9 +1,6 @@
-[%
-    page.title = ( NOT season ) ? 'Create New Season' : 'Edit Season';
-    USE date;
-%]
+[% page.title = ( NOT season ) ? 'Create New Season' : 'Edit Season' %]
 
-<a href="[% c.url_for('/season/admin') %]" style="float: right">Season Administration</a>
+<a href="[% c.url_for('/season/admin') %]" class="right">Season Administration</a>
 
 <details>
     <summary>Instructions</summary>
@@ -37,11 +34,13 @@
     </ul>
 </details>
 
-[% MACRO value(key) GET $key OR c.session.flash.$key OR season.data.$key %]
+[% USE date %]
 
 <form method="post" class="admin column">
     <fieldset>
         <legend>[% page.title %]</legend>
+
+        [% MACRO value(key) GET $key OR c.session.flash.$key OR season.data.$key %]
 
         <label>
             Name:
@@ -78,10 +77,29 @@
 </form>
 
 [% IF season %]
-    <div class="column" style="width: 1em"></div>
-    <div class="column">
+    <div class="admin column">
         <p><a href="[% c.url_for( '/season/' _ season.id _ '/delete' ) %]"
             class="button confirm">Delete Season</a></p>
+
+        [% confirm_js = BLOCK %]
+            window.addEventListener( 'load', () => {
+                window.document.querySelectorAll('a.confirm').forEach( a => {
+                    a.onclick = () => {
+                        notice(
+                            'Are you sure? This will delete the season,<br>' +
+                                'all its meets, and all their quizzes. Everything.',
+                            [ 'Yes, delete', 'No, keep' ],
+                            event => {
+                                if ( event.target.textContent == 'Yes, delete' )
+                                    window.location.href = a.href;
+                            },
+                        );
+                        return false;
+                    };
+                } );
+            } );
+        [% END %]
+        [% page.js.inline.push(confirm_js) %]
 
         [% IF meets.size > 0 %]
             <table>
@@ -112,54 +130,33 @@
 
         <p><a href="[% c.url_for( '/season/' _ season.id _ '/meet/add' ) %]"
             class="button">Add Meet to Season</a></p>
-    </div>
-    <div class="column" style="width: 1em"></div>
 
-    [% confirm_js = BLOCK %]
-        window.addEventListener( 'load', () => {
-            window.document.querySelectorAll('a.confirm').forEach( a => {
-                a.onclick = () => {
-                    notice(
-                        'Are you sure? This will delete the season,<br>' +
-                            'all its meets, and all their quizzes. Everything.',
-                        [ 'Yes, delete', 'No, keep' ],
-                        event => {
-                            if ( event.target.textContent == 'Yes, delete' )
-                                window.location.href = a.href;
-                        },
-                    );
-                    return false;
+        [%
+            PROCESS user_select.html.tt,
+                title  = 'Add Season Administrator',
+                params = {
+                    season_id = season.id,
+                    action    = 'add',
                 };
-            } );
-        } );
-    [% END %]
-    [% page.js.inline.push(confirm_js) %]
+        %]
 
-    [%
-        PROCESS user_select.html.tt,
-            title  = 'Add Season Administrator',
-            params = {
-                season_id = season.id,
-                action    = 'add',
-            };
-    %]
+        [% admins = season.admins %]
+        [% IF admins AND admins.size %]
+            <h2>Season Administrators</h2>
 
-    [% admins = season.admins %]
-    [% IF admins AND admins.size %]
-        <h2>Season Administrators</h2>
-
-        <ul>
-            [% FOR admin IN admins %]
-                <li>
-                    [% admin.first_name %] [% admin.last_name %]
-                    ([% admin.email %])
-                    <a href="[% c.url_for.query(
-                        action    => 'remove',
-                        season_id => season.id,
-                        user_id   => admin.user_id,
-                    ) %]">Remove</a>
-                </li>
-            [% END %]
-        </ul>
-    [% END %]
+            <ul>
+                [% FOR admin IN admins %]
+                    <li>
+                        [% admin.first_name %] [% admin.last_name %]
+                        ([% admin.email %])
+                        <a href="[% c.url_for.query(
+                            action    => 'remove',
+                            season_id => season.id,
+                            user_id   => admin.user_id,
+                        ) %]">Remove</a>
+                    </li>
+                [% END %]
+            </ul>
+        [% END %]
+    </div>
 [% END %]

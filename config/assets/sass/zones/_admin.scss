@@ -1,0 +1,41 @@
+form.admin {
+    margin-right: 1em;
+
+    p {
+        text-align: left;
+    }
+
+    textarea[name="settings"] {
+        font-family: monospace;
+        width      : 17em;
+        height     : 20em;
+    }
+
+    @media ( min-width: 535px ) {
+        input[type=text] {
+            width: 24em !important;
+        }
+
+        textarea[name="settings"] {
+            width: 28em;
+        }
+    }
+
+
+    fieldset.edit_meet {
+        margin-right: 1em;
+    }
+
+
+    fieldset.roster {
+        margin-right: 0;
+
+        textarea {
+            height: 31.75em;
+        }
+    }
+}
+
+div.admin {
+    margin-top: 1em;
+}

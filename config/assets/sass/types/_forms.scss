@@ -210,29 +210,3 @@ label.smart_search {
         }
     }
 }
-
-form.admin {
-    p {
-        text-align: left;
-    }
-
-    textarea[name="settings"] {
-        font-family: monospace;
-        width      : 17em;
-        height     : 20em;
-    }
-
-    @media ( min-width: 535px ) {
-        input[type=text] {
-            width: 24em !important;
-        }
-
-        textarea[name="settings"] {
-            width: 28em;
-        }
-    }
-
-    fieldset.roster textarea {
-        height: 31.75em;
-    }
-}
