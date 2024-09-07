@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS __NEW__season (
     days      INTEGER NOT NULL DEFAULT 365,
     settings  TEXT
 );
-
 INSERT INTO __NEW__season (
     season_id,
     name,
@@ -25,8 +24,6 @@ SELECT
     days,
     settings
 FROM season;
-
 DROP TABLE season;
 ALTER TABLE __NEW__season RENAME TO season;
-
 CREATE UNIQUE INDEX IF NOT EXISTS season_name_location ON season ( name, location );

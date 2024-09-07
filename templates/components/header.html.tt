@@ -1,0 +1,49 @@
+<header>
+    <a href="[% c.url_for('/') %]"><img
+        src="[% c.url_for('/logo/source.svg') %]" alt="QuizSage" width="32" height="32"></a>
+    <h1>[% IF base_title != 'QuizSage'
+        %]<span class="hide_priority_1">QuizSage: </span>[% END %][% base_title %]</h1>
+    <div>
+        [%
+            UNLESS user;
+                icon_link_data_set = [
+                    [ 'Create New User', '/user/create',          'create_user'     ],
+                    [ 'Forgot Password', '/user/forgot_password', 'forgot_password' ],
+                ];
+            ELSE;
+                UNLESS meet_id;
+                    icon_link_data_set = [
+                        [ 'Initial Memorization', '/memory/memorize/setup', 'memorize' ],
+                        [ 'Memorization Review',  '/memory/review',         'review'   ],
+                        [ 'Memory State',         '/memory/state',          'memory'   ],
+
+                        [ 'Queries Drill', '/drill/setup',       'drill'  ],
+                        [ 'Pick-Up Quiz',  '/quiz/pickup/setup', 'pickup' ],
+
+                        [ 'Edit Profile',  '/user/profile', 'edit_user' ],
+                    ];
+                ELSE;
+                    icon_link_data_set = [
+                        [ 'Meet State',        [ '/meet/', meet_id, '/state'        ], 'meet_state'   ],
+                        [ 'Meet Statistics',   [ '/meet/', meet_id, '/stats'        ], 'stats'        ],
+                        [ 'Meet Roster',       [ '/meet/', meet_id, '/roster'       ], 'roster'       ],
+                        [ 'Meet Distribution', [ '/meet/', meet_id, '/distribution' ], 'distribution' ],
+
+                        [ 'Set QM Password', '/meet/passwd', 'password'  ],
+                    ];
+                END;
+
+                icon_link_data_set.push(
+                    [ 'Logout', '/user/logout', 'logout' ],
+                );
+            END;
+
+            icon_link_data_set.unshift( [ 'Home', '/', 'home' ] );
+
+            FOR icon_link_data IN icon_link_data_set;
+                PROCESS icon_link.html.tt, data = icon_link_data;
+            END;
+        %]
+    </div>
+    [% PROCESS icon_link.html.tt, data = [ 'Navigation Menu', '#menu', 'menu', 'toggle_menu' ] %]
+</header>

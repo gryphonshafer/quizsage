@@ -6,6 +6,8 @@ use QuizSage::Model::Meet;
 
 with qw( Omniframe::Role::Model Omniframe::Role::Time QuizSage::Role::Data );
 
+class_has active => 1;
+
 before 'create' => sub ( $self, $params ) {
     $params->{settings} //= $self->dataload('config/meets/defaults/season.yaml');
 };
@@ -72,7 +74,7 @@ sub seasons ($self) {
                     'active',
                 ],
             ],
-            {},
+            { active => 1 },
             { order_by => [ 'location', 'name' ] },
         )->run->all({})->@*
     ];
@@ -183,6 +185,37 @@ sub stats ($self) {
     return $stats;
 }
 
+sub admin_auth ( $self, $user ) {
+    return (
+        ( $self->data->{user_id} // 0 ) == $user->id or
+        $self->dq->sql(q{
+            SELECT COUNT(*)
+            FROM administrator
+            WHERE season_id = ? AND user_id = ?
+        })->run( $self->id, $user->id )->value
+    ) ? 1 : 0;
+}
+
+sub admin ( $self, $action, $user_id ) {
+    $self->dq->sql(
+        ( $action eq 'add' )
+            ? 'INSERT INTO administrator ( user_id, season_id ) VALUES ( ?, ? )'
+            : 'DELETE FROM administrator WHERE user_id = ? AND season_id = ?'
+    )->run( $user_id, $self->id );
+
+    return $self;
+}
+
+sub admins ($self) {
+    return $self->dq->sql(q{
+        SELECT u.first_name, u.last_name, u.email, u.user_id
+        FROM user AS u
+        JOIN administrator AS a USING (user_id)
+        WHERE a.season_id = ?
+        ORDER BY 1, 2, 3
+    })->run( $self->id )->all({});
+}
+
 1;
 
 =head1 NAME
@@ -232,6 +265,20 @@ This method returns a data structure containing season statistics.
 
 The statistics hashref returned will contain keys for at least but perhaps not
 limited to: C<quizzers>, C<meets>.
+
+=head2 admin_auth
+
+Requires a loaded user object and will return a boolean of whether the user is
+authorized as an administrator of the season.
+
+=head2 admin
+
+Requires either "add" or "remove" followed by a user ID. Will then either add
+or remove that user to/from the list of administrators of the season.
+
+=head2 admins
+
+Returns an arrayref of hashrefs of users who are administrators of the season.
 
 =head1 WITH ROLES
 

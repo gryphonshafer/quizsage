@@ -1,0 +1,152 @@
+@use 'theme';
+@use 'themes';
+
+.warning {
+    color      : red;
+    font-weight: bold;
+}
+
+.right {
+    float: right;
+}
+
+.column {
+    display       : inline-block;
+    vertical-align: top;
+}
+
+.relative {
+    position: relative;
+}
+
+.no_wrap {
+    white-space: nowrap;
+}
+
+.blank_cell {
+    @include theme.apply( themes.$themes ) {
+        background: theme.get('blank_cell');
+    }
+}
+
+.bottom th,
+.bottom td {
+    vertical-align: bottom;
+}
+
+.small {
+    font-size  : 75%;
+    line-height: 1.5em;
+}
+
+.tie {
+    font-style: italic;
+
+    @include theme.apply( themes.$themes ) {
+        color: theme.get('lines');
+    }
+}
+
+p.buttons {
+    margin-top   : 0;
+    margin-bottom: 2em;
+    line-height  : 0;
+
+    span {
+        display: inline-block;
+    }
+
+    button {
+        margin-bottom: -1em;
+    }
+}
+
+img.captcha {
+    border: solid 1px;
+    width : 13.5em;
+
+    @include theme.apply( themes.$themes ) {
+        border-color: theme.get('lines');
+    }
+
+    @include theme.apply( themes.$styles, 'style' ) {
+        border-radius: theme.get('radius');
+    }
+}
+
+fieldset.roster {
+    margin-right: 1em;
+
+    input[type='text'] {
+        width: 5em !important;
+    }
+
+    textarea {
+        width : 11em;
+        height: 22em;
+    }
+}
+
+fieldset.ref_gen {
+    margin-right: 1em;
+    text-align  : left;
+
+    input[type='text'] {
+        width: 5em !important;
+    }
+
+    select {
+        padding: 0 0.25em;
+
+        @include theme.apply( themes.$styles, 'style' ) {
+            border-radius: calc( theme.get('radius') / 2 );
+        }
+    }
+}
+
+fieldset.material_label {
+    text-align: left;
+
+    textarea {
+        width : calc( 100vw - 21em );
+        height: 10em;
+    }
+
+    @media ( max-width: 700px ) {
+        display: block;
+
+        textarea {
+            width : calc( 100vw - 5em );
+        }
+    }
+}
+
+fieldset.teams {
+    text-align: left;
+
+    textarea {
+        width : 10em;
+        height: 5em;
+    }
+}
+
+div.teams_column {
+    display       : inline-block;
+    vertical-align: top;
+    margin-left   : 3em;
+    margin-top    : 1em;
+}
+
+span.query {
+    position: absolute;
+    top     : 0.5em;
+    right   : 0.75em;
+}
+
+a.qm_auth {
+    font-style     : italic;
+    position       : absolute;
+    bottom         : 0.5em;
+    right          : 0.75em;
+    text-decoration: none;
+}

@@ -1,0 +1,162 @@
+[% page.title = ( NOT season ) ? 'Create New Season' : 'Edit Season' %]
+
+<a href="[% c.url_for('/season/admin') %]" class="right">Season Administration</a>
+
+<details>
+    <summary>Instructions</summary>
+    <p>
+        To [% IF NOT season %]create[% ELSE %]edit[% END %] a season,
+        ensure all the following:
+    </p>
+    <ul>
+        <li>
+            <b>Name</b> should be a descriptor of the season, typically a
+            simplified <i>material label</i>.
+        </li>
+        <li>
+            <b>Location</b> should ideally be the <i>region</i> within which the
+            season will take place. This should match the locations of any
+            previous seasons from the same <i>region</i>.
+        </li>
+        <li>
+            <b>Start</b> is the date when the season starts, which should
+            preceed the first meet by a wide margin but not overlap with a prior
+            season. Typically, this is August 1 of the season's start year.
+        </li>
+        <li>
+            <b>Days</b> is the length in days the season runs. This is typically
+            365.
+        </li>
+        <li>
+            <b>Settings</b> is a <a href="https://yaml.org">YAML</a> text block
+            consisting of season-level settings.
+        </li>
+    </ul>
+</details>
+
+[% USE date %]
+
+<form method="post" class="admin column">
+    <fieldset>
+        <legend>[% page.title %]</legend>
+
+        [% MACRO value(key) GET $key OR c.session.flash.$key OR season.data.$key %]
+
+        <label>
+            Name:
+            <input type="text" name="name" value="[% value('name') %]" placeholder="Name">
+        </label>
+        <label>
+            Location:
+            <input type="text" name="location" value="[% value('location') %]" placeholder="Location">
+        </label>
+        <label>
+            Start:
+            <input type="text" name="start" value="[%
+                this_start = value('start');
+                IF this_start;
+                    date.format( this_start, '%b %e, %Y' ).replace( '\s{2,}', ' ' );
+                ELSE;
+                    '';
+                END;
+            %]" placeholder="Start">
+        </label>
+        <label>
+            Days:
+            <input type="text" name="days" value="[% value('days') %]" placeholder="Days">
+        </label>
+
+        <p>
+            Settings:<br>
+            <textarea name="settings">[% value('settings') | trim %]</textarea>
+        </p>
+
+        <input type="submit"
+            value="[% IF NOT season %]Create New Season[% ELSE %]Save Season Data[% END %]">
+    </fieldset>
+</form>
+
+[% IF season %]
+    <div class="admin column">
+        <p><a href="[% c.url_for( '/season/' _ season.id _ '/delete' ) %]"
+            class="button confirm">Delete Season</a></p>
+
+        [% confirm_js = BLOCK %]
+            window.addEventListener( 'load', () => {
+                window.document.querySelectorAll('a.confirm').forEach( a => {
+                    a.onclick = () => {
+                        notice(
+                            'Are you sure? This will delete the season,<br>' +
+                                'all its meets, and all their quizzes. Everything.',
+                            [ 'Yes, delete', 'No, keep' ],
+                            event => {
+                                if ( event.target.textContent == 'Yes, delete' )
+                                    window.location.href = a.href;
+                            },
+                        );
+                        return false;
+                    };
+                } );
+            } );
+        [% END %]
+        [% page.js.inline.push(confirm_js) %]
+
+        [% IF meets.size > 0 %]
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Start</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    [% FOR meet IN meets %]
+                        <tr>
+                            <td><a href="[%
+                                c.url_for( '/season/' _ meet.data.season_id _ '/meet/' _ meet.id _ '/edit' )
+                            %]">[% meet.data.name %]</a></td>
+                            <td>[% meet.data.location %]</td>
+                            <td>[%
+                                date
+                                    .format( meet.data.start, '%a, %b %e, %Y' )
+                                    .replace( '\s{2,}', ' ' )
+                            %]</td>
+                        </tr>
+                    [% END %]
+                </tbody>
+            </table>
+        [% END %]
+
+        <p><a href="[% c.url_for( '/season/' _ season.id _ '/meet/add' ) %]"
+            class="button">Add Meet to Season</a></p>
+
+        [%
+            PROCESS user_select.html.tt,
+                title  = 'Add Season Administrator',
+                params = {
+                    season_id = season.id,
+                    action    = 'add',
+                };
+        %]
+
+        [% admins = season.admins %]
+        [% IF admins AND admins.size %]
+            <h2>Season Administrators</h2>
+
+            <ul>
+                [% FOR admin IN admins %]
+                    <li>
+                        [% admin.first_name %] [% admin.last_name %]
+                        ([% admin.email %])
+                        <a href="[% c.url_for.query(
+                            action    => 'remove',
+                            season_id => season.id,
+                            user_id   => admin.user_id,
+                        ) %]">Remove</a>
+                    </li>
+                [% END %]
+            </ul>
+        [% END %]
+    </div>
+[% END %]

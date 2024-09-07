@@ -1,0 +1,97 @@
+<form id="user_select" method="get" class="column">
+    <fieldset>
+        <legend>[% title %]</legend>
+
+        <label class="smart_search">
+            Person's Name
+            <input type="text" name="user_full_name" value=""
+                placeholder="Person's Name" autocomplete="off">
+            <select></select>
+        </label>
+
+        [% FOR key IN params.keys %]
+            <input type="hidden" name="[% key %]" value="[% params.$key %]">
+        [% END %]
+
+        <input type="hidden" name="user_id" value="">
+    </fieldset>
+</form>
+
+[% user_select = BLOCK %]
+    window.addEventListener( 'load', () => {
+        const form  = window.document.querySelector('form#user_select');
+        const id    = form.querySelector('input[name="user_id"]');
+        const name  = form.querySelector('input[name="user_full_name"]');
+        const names = form.querySelector('select');
+
+        name.value     = '';
+        let last_value = '';
+
+        const submit = () => {
+            id.value = names.selectedOptions[0].value;
+            form.submit();
+        };
+
+        name.addEventListener( 'keyup', event => {
+            if ( ! ( event.key == 'ArrowDown' && names.options.length > 0 ) ) {
+                if ( ! name.value || name.value.length < 2 ) {
+                    names.style.visibility = 'hidden';
+                    names.options.length   = 0;
+                }
+                else {
+                    if ( last_value != name.value ) {
+                        fetch(
+                            "[% c.url_for('/user_select') %]?" + new URLSearchParams({ name: name.value })
+                        )
+                            .then( reply => reply.json() )
+                            .then( data => {
+                                if ( data.length == 0 ) {
+                                    names.style.visibility = 'hidden';
+                                    names.options.length   = 0;
+                                }
+                                else {
+                                    names.style.visibility = 'visible';
+                                    names.options.length   = 0;
+                                    names.append(
+                                        ...data.map( user => {
+                                            return new Option(
+                                                [
+                                                    user.first_name,
+                                                    user.last_name,
+                                                    '(' + user.email + ')',
+                                                ].join(' '),
+                                                user.user_id,
+                                            );
+                                        } )
+                                    );
+                                    names.size =
+                                        ( data.length > 7 ) ? 7 :
+                                        ( data.length < 2 ) ? 2 : data.length;
+                                }
+                            } );
+                    }
+                }
+            }
+            else {
+                names.focus();
+                names.options[0].selected = true;
+            }
+            last_value = name.value;
+        } );
+
+        names.addEventListener( 'keydown', event => {
+            if ( event.key == 'ArrowUp' && names.options[0].selected ) {
+                names.options[0].selected = false;
+                name.focus();
+            }
+            else if ( event.key == 'Enter' ) {
+                submit();
+            }
+        } );
+
+        names.addEventListener( 'click', event => {
+            submit();
+        } );
+    } );
+[% END %]
+[% page.js.inline.push(user_select) %]

@@ -1,0 +1,146 @@
+[% page.title = ( NOT meet ) ? 'Add Meet to Season' : 'Edit Meet' %]
+
+<a href="[% c.url_for('/season/admin') %]" class="right">Season Administration</a>
+
+<details>
+    <summary>Instructions</summary>
+    <p>
+        To [% IF NOT meet %]create[% ELSE %]edit[% END %] a meet,
+        ensure all the following:
+    </p>
+    <ul>
+        <li>
+            <b>Name</b> should be a descriptor of the meet.
+        </li>
+        <li>
+            <b>Location</b> should ideally be the name of the location like
+            church or city name.
+        </li>
+        <li>
+            <b>Start</b> is the date of the first day of the meet.
+        </li>
+        <li>
+            <b>Days</b> is the length in days the meet runs. This is typically 1.
+        </li>
+        <li>
+            <b>QM Password</b> is passwords QMs will need to set in order to
+            be able to operate quizzes as official QMs.
+        </li>
+        <li>
+            <b>Settings</b> is a <a href="https://yaml.org">YAML</a> text block
+            consisting of meet-level settings.
+        </li>
+    </ul>
+</details>
+
+[% USE date %]
+
+<form method="post" class="admin column">
+    <fieldset class="edit_meet">
+        <legend>[% page.title %]</legend>
+
+        [% MACRO value(key) GET $key OR c.session.flash.$key OR meet.data.$key %]
+
+        <label>
+            Name:
+            <input type="text" name="name" value="[% value('name') %]" placeholder="Name">
+        </label>
+        <label>
+            Location:
+            <input type="text" name="location"
+                value="[% value('location') %]" placeholder="Location">
+        </label>
+        <label>
+            Start:
+            <input type="text" name="start" value="[%
+                this_start = value('start');
+                IF this_start;
+                    date.format( this_start, '%b %e, %Y' ).replace( '\s{2,}', ' ' );
+                ELSE;
+                    '';
+                END;
+            %]" placeholder="Start">
+        </label>
+        <label>
+            Days:
+            <input type="text" name="days" value="[% value('days') %]" placeholder="Days">
+        </label>
+        <label>
+            QM Password:
+            <input type="text" name="passwd" value="" placeholder="QM Password">
+        </label>
+
+        <p>
+            Settings:<br>
+            <textarea name="settings">[% value('settings') | trim %]</textarea>
+        </p>
+
+        <input type="submit"
+            value="[% IF NOT meet %]Create New Meet[% ELSE %]Save Meet Data[% END %]">
+    </fieldset>
+
+    <fieldset class="roster">
+        <legend>Roster</legend>
+        <label>
+            Default Bible:
+            <input type="text" name="default_bible" value="[% value('default_bible') %]">
+        </label>
+        <textarea name="roster_data">[% value('roster_data') | trim %]</textarea>
+    </fieldset>
+</form>
+
+[% IF meet %]
+    <div class="admin column">
+        <p><a href="[%
+            c.url_for( '/season/' _ meet.data.season_id _ '/meet/' _ meet.id _ '/delete' )
+        %]" class="button confirm">Delete Meet</a></p>
+
+        [% confirm_js = BLOCK %]
+            window.addEventListener( 'load', () => {
+                window.document.querySelectorAll('a.confirm').forEach( a => {
+                    a.onclick = () => {
+                        notice(
+                            'Are you sure? This will delete the meet<br>' +
+                                'and all its quizzes. Everything.',
+                            [ 'Yes, delete', 'No, keep' ],
+                            event => {
+                                if ( event.target.textContent == 'Yes, delete' )
+                                    window.location.href = a.href;
+                            },
+                        );
+                        return false;
+                    };
+                } );
+            } );
+        [% END %]
+        [% page.js.inline.push(confirm_js) %]
+
+        [%
+            PROCESS user_select.html.tt,
+                title  = 'Add Meet Administrator',
+                params = {
+                    meet_id = meet.id,
+                    action  = 'add',
+                };
+        %]
+
+        [% admins = meet.admins %]
+        [% IF admins AND admins.size %]
+            <h2>Meet Administrators</h2>
+
+            <ul>
+                [% FOR admin IN admins %]
+                    <li>
+                        [% admin.first_name %] [% admin.last_name %]
+                        ([% admin.email %])
+                        <a href="[% c.url_for.query(
+                            action => 'remove',
+                            meet_id => meet.id,
+                            user_id => admin.user_id,
+                        ) %]">Remove</a>
+                    </li>
+                [% END %]
+            </ul>
+        [% END %]
+    </div>
+[% END %]

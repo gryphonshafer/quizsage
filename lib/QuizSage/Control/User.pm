@@ -59,7 +59,7 @@ sub account ($self) {
                 $e = "Value in $1 field is already registered under an existing user account."
                     if ( $e =~ /UNIQUE constraint failed/ );
 
-                $self->info("User create failure: $e");
+                $self->notice("User create failure: $e");
                 $self->stash( message => $e, %params );
             }
         }
@@ -98,7 +98,7 @@ sub account ($self) {
             $e = "Value in $1 field is already registered under an existing user account."
                 if ( $e =~ /UNIQUE constraint failed/ );
 
-            $self->info("User profile edit failure: $e");
+            $self->notice("User profile edit failure: $e");
             $self->stash( message => $e, %params );
         }
     }
@@ -210,7 +210,7 @@ sub login ($self) {
             $self->flash( message => $e );
         }
         else {
-            $self->info( 'Login failure for ' . $self->param('email') );
+            $self->notice( 'Login failure for ' . $self->param('email') );
             $self->flash( message =>
                 'Login failed. Please try again, or try the ' .
                 '<a href="' . $self->url_for('/user/reset_password') . '">Reset Password page</a>.'

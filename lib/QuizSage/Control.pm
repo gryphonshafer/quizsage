@@ -47,7 +47,7 @@ sub startup ($self) {
 
     my $users = $all->under( sub ($c) {
         return 1 if ( $c->stash('user') );
-        $c->info('Login required but not yet met');
+        $c->notice('Login required but not yet met');
         $c->flash( message => 'Login required for the previously requested resource.' );
         $c->redirect_to('/');
         return 0;
@@ -56,10 +56,7 @@ sub startup ($self) {
     $users->any('/user/profile')->to( 'user#account', account_action_type => 'profile' );
     $users->any('/user/logout')->to('user#logout');
 
-    $users->any( '/memory/' . $_ )->to( 'memory#' . $_ ) for ( qw( memorize review ) );
-    $users
-        ->any( '/memory/state' => [ format => ['json'] ] )
-        ->to( 'memory#state', format => undef );
+    $users->any( '/memory/' . $_ )->to( 'memory#' . $_ ) for ( qw( memorize review state ) );
 
     $users->any('/meet/passwd')->to('meet#passwd');
     $users
@@ -67,9 +64,18 @@ sub startup ($self) {
         ->to( 'meet#board', format => undef );
     $users->any( '/meet/:meet_id/' . $_ )->to( 'meet#' . $_ ) for ( qw( state roster distribution stats ) );
 
-    $users->any( '/season/:season_id' . $_->[0] )->to( 'season#' . $_->[1] ) for (
-        [ '/stats', 'stats' ],
+    $users->any(
+        '/season/:season_id/meet/:meet_id/:meet_action_type',
+        [ meet_action_type => [ qw( edit delete ) ] ],
+    )->to('season#meet');
+    $users->any('/season/:season_id/meet/add')->to( 'season#meet', meet_action_type => 'add' );
+
+    $users->any( '/season/:season_id/' . $_ )->to( 'season#' . $_ ) for ( qw( delete stats ) );
+    $users->any($_)->to('season#record') for (
+        '/season/:season_id/edit',
+        '/season/create',
     );
+    $users->any('/season/admin')->to('season#admin');
 
     $users->any(
         '/:setup_type' => [ setup_type => [ qw(
@@ -80,6 +86,8 @@ sub startup ($self) {
             reference/generator/setup
         ) ] ]
     )->to('main#setup');
+
+    $users->any('/user_select')->to('main#user_select');
 
     $users->any("/quiz/$_")->to("quiz#$_") for ( qw( teams build ) );
 

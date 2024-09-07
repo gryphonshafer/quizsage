@@ -144,11 +144,15 @@ sub setup ($self) {
             return $self->redirect_to( '/quiz/pickup/' . $quiz_id );
         }
         catch ($e) {
-            $self->info( 'Pickup quiz error: ' . $e );
+            $self->notice( 'Pickup quiz error: ' . $e );
             $self->flash( message => 'Pickup quiz settings error: ' . $e );
             return $self->redirect_to('/quiz/pickup/setup');
         }
     }
+}
+
+sub user_select ($self) {
+    $self->render( json => QuizSage::Model::User->new->by_full_name( $self->param('name') ) );
 }
 
 1;
@@ -186,6 +190,11 @@ the name C<captcha>.
 =head2 setup
 
 This method handles setting up settings for various other parts of QuizSage.
+
+=head2 user_select
+
+This method expects a C<name> parameter and provides JSON data of users that
+match the input.
 
 =head1 INHERITANCE
 

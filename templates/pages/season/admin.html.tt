@@ -1,0 +1,79 @@
+[%
+    page.title = 'Season Administration';
+    USE date;
+%]
+
+<details [% IF seasons.size == 0 AND meets.size == 0 %]open[% END %]>
+    <summary>Instructions</summary>
+
+    <p>
+        This <b>Season Administration</b> interface is for the creation and
+        management of seasons and the meets within them, which result in
+        seasons and meets that are <b><i>universally viewable</i></b>.
+    </p>
+    <p>
+        Unless you are a regional coordinator or season administration
+        delegate,
+        <b><i>you almost certainly do not want to use this page</i></b>.
+        <span class="warning">
+            Unauthorized or otherwise improper use of this page may result
+            in account deactivation.
+        </span>
+    </p>
+</details>
+
+<p><a class="button" href="[% c.url_for('/season/create') %]">Create New Season</a></p>
+
+[% IF seasons.size > 0 %]
+    <h2>Seasons Authorized to Administrate</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Season</th>
+                <th>Location</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            [% FOR season IN seasons %]
+                <tr>
+                    <td><a href="[% c.url_for( '/season/' _ season.id _ '/edit' ) %]">[%
+                        date.format( season.data.start, '%Y' ) _ '-' _
+                        date.format(
+                            date.format( season.data.start, '%s' ) + season.data.days * 60 * 60 * 24,
+                            '%Y',
+                        )
+                    %]</a></td>
+                    <td>[% season.data.location %]</td>
+                    <td>[% season.data.name %]</td>
+                </tr>
+            [% END %]
+        </tbody>
+    </table>
+[% END %]
+
+[% IF meets.size > 0 %]
+    <h2>Meets Authorized to Administrate</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Start</th>
+            </tr>
+        </thead>
+        <tbody>
+            [% FOR meet IN meets %]
+                <tr>
+                    <td><a href="[%
+                        c.url_for( '/season/' _ meet.data.season_id _ '/meet/' _ meet.id _ '/edit' )
+                    %]">[% meet.data.name %]</a></td>
+                    <td>[% meet.data.location %]</td>
+                    <td>[% date.format( meet.data.start, '%a, %b %e, %Y' ).replace( '\s{2,}', ' ' ) %]</td>
+                </tr>
+            [% END %]
+        </tbody>
+    </table>
+[% END %]

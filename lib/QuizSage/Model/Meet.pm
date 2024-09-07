@@ -535,6 +535,43 @@ sub stats ($self) {
     return $stats;
 }
 
+sub admin_auth ( $self, $user ) {
+    return (
+        $self->dq->sql(q{
+            SELECT COUNT(*)
+            FROM season
+            WHERE season_id = ? AND user_id = ?
+        })->run( $self->data->{season_id}, $user->id )->value
+        or
+        $self->dq->sql(q{
+            SELECT COUNT(*)
+            FROM administrator
+            WHERE meet_id = ? AND user_id = ?
+        })->run( $self->id, $user->id )->value
+    ) ? 1 : 0;
+}
+
+
+sub admin ( $self, $action, $user_id ) {
+    $self->dq->sql(
+        ( $action eq 'add' )
+            ? 'INSERT INTO administrator ( user_id, meet_id ) VALUES ( ?, ? )'
+            : 'DELETE FROM administrator WHERE user_id = ? AND meet_id = ?'
+    )->run( $user_id, $self->id );
+
+    return $self;
+}
+
+sub admins ($self) {
+    return $self->dq->sql(q{
+        SELECT u.first_name, u.last_name, u.email, u.user_id
+        FROM user AS u
+        JOIN administrator AS a USING (user_id)
+        WHERE a.meet_id = ?
+        ORDER BY 1, 2, 3
+    })->run( $self->id )->all({});
+}
+
 1;
 
 =head1 NAME
@@ -646,6 +683,20 @@ This method returns a data structure containing meet statistics.
 
 The statistics hashref returned will contain keys for at least but perhaps not
 limited to: C<quizzers>, C<teams>, C<rankings>, C<meta>.
+
+=head2 admin_auth
+
+Requires a loaded user object and will return a boolean of whether the user is
+authorized as an administrator of the meet.
+
+=head2 admins
+
+Requires either "add" or "remove" followed by a user ID. Will then either add
+or remove that user to/from the list of administrators of the meet.
+
+=head2 admin
+
+Returns an arrayref of hashrefs of users who are administrators of the meet.
 
 =head1 WITH ROLES
 

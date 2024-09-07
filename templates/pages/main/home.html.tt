@@ -11,7 +11,7 @@
             </label>
             <label>
                 Password:
-                <input type="password" name="passwd" value="[% passwd %]" placeholder="Password">
+                <input type="password" name="passwd" value="" placeholder="Password">
             </label>
 
             <input type="submit" value="Login">
