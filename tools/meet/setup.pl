@@ -49,7 +49,7 @@ try {
     })->id if ( $opt->{context} eq 'meet' and $opt->{season} );
 }
 catch ($e) {
-    die $object->deat($e) . "\n";
+    die deat $e;
 }
 
 my $data = {

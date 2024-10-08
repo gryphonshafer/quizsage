@@ -2,7 +2,6 @@ package QuizSage::Control::Season;
 
 use exact 'Mojolicious::Controller';
 use Mojo::File 'path';
-use Omniframe::Util::Text 'deat';
 use QuizSage::Model::Meet;
 use QuizSage::Model::Season;
 use YAML::XS qw( LoadFile Load Dump );
@@ -162,7 +161,8 @@ sub meet ($self) {
             }
             catch ($e) {
                 $self->notice($e);
-                my $message = deat($e);
+                my $message = deat $e;
+                chomp $message;
                 $self->flash(
                     message => ( length($message) < 1024 )
                         ? $message
