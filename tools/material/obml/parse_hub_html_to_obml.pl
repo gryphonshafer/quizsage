@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 use exact -cli;
 use Bible::OBML;
+use Bible::Reference;
 use File::Path 'make_path';
 use Mojo::ByteStream;
 use Mojo::Collection 'c';
