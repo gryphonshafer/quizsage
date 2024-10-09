@@ -6,7 +6,7 @@
     font-weight: bold;
 }
 
-.right {
+:not( tr, td ).right {
     float: right;
 }
 
