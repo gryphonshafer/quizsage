@@ -146,29 +146,21 @@
         <textarea name="material_label">[%
             c.param('label') || material_label
         %]</textarea>
+
+        <p class="fieldset_base_buttons">
+            <a href="[% c.url_for('/label/tester') %]" class="button" onclick="
+                const form = window.document.querySelector('form#label_tester');
+                form.elements.namedItem('label').value =
+                    window.document.querySelector('textarea[name=material_label]').value;
+                form.submit();
+                return false;
+            ">Material Label/Description Tester</a>
+        </p>
     </fieldset>
 </form>
 
-[% IF label_aliases AND label_aliases.size > 0 %]
-    <details>
-        <summary>Available Labels</summary>
-        <dl>
-            [% FOR alias IN label_aliases %]
-                <dt>[% alias.name %]</dt>
-                <dd>[% alias.label %]</dd>
-            [% END %]
-        </dl>
-    </details>
-[% END %]
+<form class="hidden" id="label_tester" method="post" action="[% c.url_for('/label/tester') %]">
+    <input type="hidden" name="label" value="">
+</form>
 
-[% IF bibles AND bibles.size > 0 %]
-    <details>
-        <summary>Supported Bibles</summary>
-        <dl>
-            [% FOR item IN bibles %]
-                <dt>[% item.acronym %]</dt>
-                <dd>[% item.name %] ([% item.year %])</dd>
-            [% END %]
-        </dl>
-    </details>
-[% END %]
+[% PROCESS labels_bibles.html.tt %]

@@ -26,6 +26,10 @@ form {
             }
         }
     }
+
+    &.hidden {
+        display: none;
+    }
 }
 
 button {

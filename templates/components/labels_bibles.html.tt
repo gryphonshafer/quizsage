@@ -1,0 +1,27 @@
+[% IF label_aliases AND label_aliases.size > 0 %]
+    <details>
+        <summary>Available Labels</summary>
+        <dl>
+            [% FOR alias IN label_aliases %]
+                <dt>[% alias.name %]</dt>
+                <dd>[% alias.label %]</dd>
+            [% END %]
+        </dl>
+
+        <p>
+            <a href="[% c.url_for('/label/editor') %]" class="button">Material Label Editor</a>
+        </p>
+    </details>
+[% END %]
+
+[% IF bibles AND bibles.size > 0 %]
+    <details>
+        <summary>Supported Bibles</summary>
+        <dl>
+            [% FOR item IN bibles %]
+                <dt>[% item.acronym %]</dt>
+                <dd>[% item.name %] ([% item.year %])</dd>
+            [% END %]
+        </dl>
+    </details>
+[% END %]

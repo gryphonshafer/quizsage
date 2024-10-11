@@ -1,0 +1,46 @@
+[% page.title = 'Label/Description Tester' %]
+
+<details>
+    <summary>Instructions</summary>
+
+    <p>
+        Enter a test material label or description into the label/description
+        input field, then run a label/description test.
+        For details about how label and description can be written, consult the
+        <a href="[% c.url_for('/docs/material_labels.md') %]">material labels documentation</a>.
+    </p>
+</details>
+
+<form method="post">
+    <input type="hidden" name="referrer" value="[% referrer || c.req.headers.referrer %]">
+
+    <fieldset class="material_label">
+        <legend>Material Label/Description <b>Input</b></legend>
+        <textarea name="label">[% c.param('label') %]</textarea>
+        <br>
+        <input type="submit" value="Run Label/Description Test">
+    </fieldset>
+
+    [% FOR output IN [ 'Label', 'Description' ] %]
+        [% data = 'canonical_' _ output.lower %]
+        <fieldset class="material_label">
+            <legend>Material <b>[% output %]</b> Output</legend>
+            <textarea name="[% data %]">[% $data %]</textarea>
+            <p class="fieldset_base_buttons">
+                <a href="[% referrer || c.req.headers.referrer %]" class="button" onclick="
+                    const form = window.document.querySelector('form#label_tester');
+                    form.elements.namedItem('label').value =
+                        window.document.querySelector('textarea[name=[% data %]]').value;
+                    form.submit();
+                    return false;
+                ">Use <b>[% output.0 %]</b> Output in Previous Setup</a>
+            </p>
+        </fieldset>
+    [% END %]
+</form>
+
+<form class="hidden" id="label_tester" method="post" action="[% referrer || c.req.headers.referrer %]">
+    <input type="hidden" name="label" value="">
+</form>
+
+[% PROCESS labels_bibles.html.tt %]
