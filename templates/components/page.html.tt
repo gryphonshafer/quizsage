@@ -13,22 +13,7 @@
     );
 %]
 
-[% IF message OR c.session.flash.message %]
-    [% fv = (message) ? message : c.session.flash.message %]
-    <dialog id="message" open autofocus class="[% fv.type || 'error' %]">
-        [% UNLESS fv.ref %]
-            [% fv %]
-        [% ELSIF fv.ref == 'HASH' %]
-            [% IF fv.text %][% fv.text %][% END %]
-            [% IF fv.errors %]
-                There [% IF fv.errors.size > 1 %]were[% ELSE %]was[% END %]
-                [% fv.errors.size %] form error[% IF fv.errors.size > 1 %]s[% END %].
-            [% END %]
-            [% FOR message IN fv.messages %][% message.text %][% END %]
-        [% END %]
-        <form method="dialog"><button>OK</button></form>
-    </dialog>
-[% END %]
+[% PROCESS message.html.tt %]
 
 <dialog id="notice" class="notice">
     <div></div>

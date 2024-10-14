@@ -161,11 +161,9 @@ sub meet ($self) {
             }
             catch ($e) {
                 $self->notice($e);
-                my $message = deat $e;
-                chomp $message;
                 $self->flash(
-                    message => ( length($message) < 1024 )
-                        ? $message
+                    message => ( length $e < 1024 )
+                        ? deat $e
                         : 'There was an unexpected error in creating the meet.',
                     map { $_ => $self->param($_) } qw( name location start days passwd settings ),
                 );
@@ -224,7 +222,7 @@ sub meet ($self) {
                 catch ($e) {
                     $self->notice($e);
                     $self->flash(
-                        message => deat($e),
+                        message => deat $e,
                         map { $_ => $self->param($_) } qw(
                             name location start days passwd settings default_bible roster_data
                         ),
