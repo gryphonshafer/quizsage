@@ -20,11 +20,11 @@ sub build ( $self, $user_id = undef ) {
     $self->parse_and_structure_roster_text( \$build_settings->{roster} );
     $self->_create_material_json( $build_settings, $user_id );
     $self->_build_bracket_data($build_settings);
-    $self->_schedule_integration($build_settings);
+    my $schedule_integration_warnings = $self->_schedule_integration($build_settings);
     $self->_add_distributions($build_settings);
     $self->_build_settings_cleanup($build_settings);
     $self->save({ build => $build_settings });
-    return;
+    return $schedule_integration_warnings;
 }
 
 sub _merge_meet_and_season_settings ($self) {
@@ -440,6 +440,23 @@ sub _schedule_integration( $self, $build_settings ) {
         }
     }
 
+    # merge sets in the same bracket that have the same start
+    for my $bracket ( $build_settings->{brackets}->@* ) {
+        my $i = 1;
+        while ( $i < $bracket->{sets}->@* ) {
+            if (
+                $bracket->{sets}[$i]{rooms}[0]{schedule}{start} eq
+                $bracket->{sets}[ $i - 1 ]{rooms}[0]{schedule}{start}
+            ) {
+                push( $bracket->{sets}[ $i - 1 ]{rooms}->@*, $bracket->{sets}[$i]{rooms}->@* );
+                splice( $bracket->{sets}->@*, $i, 1 );
+            }
+            else {
+                $i++;
+            }
+        }
+    }
+
     # data formatting
     for my $bracket ( $build_settings->{brackets}->@* ) {
         for my $set ( $bracket->{sets}->@* ) {
@@ -475,6 +492,7 @@ sub _schedule_integration( $self, $build_settings ) {
         map { +{ %$_, bracket => $bracket } } map { $_->{rooms}->@* } $_->{sets}->@*;
     } $build_settings->{brackets}->@*;
 
+    my $warnings = [];
     while ( my $quiz_1 = shift @quizzes ) {
         for my $quiz_2 (@quizzes) {
             my ( $quiz_1_start, $quiz_1_stop, $quiz_2_start, $quiz_2_stop ) = (
@@ -490,11 +508,16 @@ sub _schedule_integration( $self, $build_settings ) {
                 $quiz_2_start >= $quiz_1_start and $quiz_2_start < $quiz_1_stop  or
                 $quiz_2_stop  <= $quiz_1_stop  and $quiz_2_stop  > $quiz_1_start
             ) {
-                $self->warn(
-                    $quiz_1->{bracket} . ' Quiz ' . $quiz_1->{name} . ' (room ' . $quiz_1->{room} . ')' .
-                    ' happens at the same time as ' .
-                    $quiz_2->{bracket} . ' Quiz ' . $quiz_2->{name} . ' (room ' . $quiz_1->{room} . ')' . "\n"
-                ) if ( $quiz_1->{room} == $quiz_2->{room} );
+                if ( $quiz_1->{room} == $quiz_2->{room} ) {
+                    my $warning =
+                        $quiz_1->{bracket} . ' Quiz ' . $quiz_1->{name} .
+                        ' (room ' . $quiz_1->{room} . ')' .
+                        ' happens at the same time as ' .
+                        $quiz_2->{bracket} . ' Quiz ' . $quiz_2->{name} .
+                        ' (room ' . $quiz_1->{room} . ')';
+                    $self->warn( $warning . "\n" );
+                    push( @$warnings, $warning );
+                }
 
                 my @teams_quiz_1 = grep { length > 1 } map {
                     $_->{name} // ( $_->{bracket} // $_->{quiz} // '' ) . ' ' . ( $_->{position} // '' )
@@ -503,19 +526,24 @@ sub _schedule_integration( $self, $build_settings ) {
                 for my $team_quiz_2 ( grep { length > 1 } map {
                     $_->{name} // ( $_->{bracket} // $_->{quiz} // '' ) . ' ' . ( $_->{position} // '' )
                 } $quiz_2->{roster}->@* ) {
-                    $self->warn(
-                        $team_quiz_2 . ' is in ' .
-                        $quiz_1->{bracket} . ' Quiz ' . $quiz_1->{name} . ' (room ' . $quiz_1->{room} . ')' .
-                        ' and ' .
-                        $quiz_2->{bracket} . ' Quiz ' . $quiz_2->{name} . ' (room ' . $quiz_1->{room} . ')' .
-                        ', which are at the same time' . "\n"
-                    ) if ( grep { $team_quiz_2 eq $_ } @teams_quiz_1 );
+                    if ( grep { $team_quiz_2 eq $_ } @teams_quiz_1 ) {
+                        my $warning =
+                            $team_quiz_2 . ' is in ' .
+                            $quiz_1->{bracket} . ' Quiz ' . $quiz_1->{name} .
+                            ' (room ' . $quiz_1->{room} . ')' .
+                            ' and ' .
+                            $quiz_2->{bracket} . ' Quiz ' . $quiz_2->{name} .
+                            ' (room ' . $quiz_1->{room} . ')' .
+                            ', which are at the same time';
+                        $self->warn( $warning . "\n" );
+                        push( @$warnings, $warning );
+                    }
                 }
             }
         }
     }
 
-    return;
+    return $warnings;
 }
 
 sub _build_score_sum_draw (

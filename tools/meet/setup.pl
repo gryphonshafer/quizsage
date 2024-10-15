@@ -67,8 +67,9 @@ try {
         ( $opt->{id} )
             ? $opt->{id}
             : {
-                name           => $opt->{ ( $opt->{context} eq 'season' ) ? 'season' : 'name'     },
-                maybe location => $opt->{ ( $opt->{context} eq 'season' ) ? 'region' : 'location' },
+                name            => $opt->{ ( $opt->{context} eq 'season' ) ? 'season' : 'name'     },
+                maybe location  => $opt->{ ( $opt->{context} eq 'season' ) ? 'region' : 'location' },
+                maybe season_id => $season_id,
             }
     )->save($data);
 }

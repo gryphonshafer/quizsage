@@ -146,15 +146,17 @@ sub meet ($self) {
                 my $settings = Load( $self->param('settings') );
                 $settings->{roster}{data} = $self->param('roster_data');
 
-                $meet->create({
+                my $warnings = $meet->create({
                     season_id => $self->param('season_id'),
                     settings  => $settings,
                     map { $_ => $self->param($_) } qw( name location start days passwd ),
                 })->build( $self->stash('user')->id );
 
                 $self->flash( message => {
-                    type => 'success',
-                    text => 'New meet created and built',
+                    type => ( (@$warnings) ? 'notice' : 'success' ),
+                    text => 'New meet created and built' .
+                        ( (@$warnings) ? ', but with the following warnings:' : '' ),
+                    maybe bullets => ( (@$warnings) ? $warnings : undef ),
                 } );
 
                 return $self->redirect_to('/season/admin');
@@ -210,11 +212,13 @@ sub meet ($self) {
                         for ( grep { $self->param($_) } qw( name location start days passwd ) );
 
                     $meet->save;
-                    $meet->build( $self->stash('user')->id );
+                    my $warnings = $meet->build( $self->stash('user')->id );
 
                     $self->flash( message => {
-                        type => 'success',
-                        text => 'Meet edited and rebuilt',
+                        type => ( (@$warnings) ? 'notice' : 'success' ),
+                        text => 'Meet edited and rebuilt' .
+                            ( (@$warnings) ? ', but with the following warnings:' : '' ),
+                        maybe bullets => ( (@$warnings) ? $warnings : undef ),
                     } );
 
                     return $self->redirect_to('/season/admin');

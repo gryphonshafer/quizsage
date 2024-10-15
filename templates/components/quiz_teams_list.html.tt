@@ -13,7 +13,7 @@
                     team.score.points;
                     ' pts.</i>';
                 END;
-            ELSIF team.quiz AND team.bracket;
+            ELSIF team.position AND ( team.quiz OR team.bracket );
                 '<i>';
                 PROCESS st_ing.html.tt position = team.position;
                 IF team.quiz;
