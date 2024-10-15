@@ -23,7 +23,62 @@ sub tester ($self) {
 }
 
 sub editor ($self) {
-    $self->redirect_to('/');
+    my $label = QuizSage::Model::Label->new( user_id => $self->stash('user')->id );
+
+    if ( $self->param('id') and ( $self->param('action') // '' ) eq 'delete' ) {
+        $label->load({
+            label_id => $self->param('id'),
+            user_id  => $self->stash('user')->id,
+        })->delete;
+
+        $self->redirect_to('/label/editor');
+    }
+    elsif ( $self->param('name') and $self->param('label') ) {
+        my $parsed = $label->parse( $self->param('label') );
+        delete $parsed->{bibles};
+
+        my $data = {
+            user_id => $self->stash('user')->id,
+            public  => ( $self->param('public') ) ? 1 : 0,
+            name    => $self->param('name'),
+            label   => $label->format($parsed),
+        };
+
+        if ( not $data->{label} ) {
+            $self->flash( message => 'Unable to parse the material label' );
+        }
+        elsif ( not $self->param('id') ) {
+            $label->create($data);
+        }
+        else {
+            $label->load({
+                label_id => $self->param('id'),
+                user_id  => $self->stash('user')->id,
+            })->save($data);
+        }
+        $self->redirect_to('/label/editor');
+    }
+    else {
+        $self->stash(
+            $label->load({
+                label_id => $self->param('id'),
+                user_id  => $self->stash('user')->id,
+            })->{data}
+        ) if ( $self->param('id') );
+
+        $self->stash(
+            label_aliases => [
+                sort {
+                    $a->{sort_name} cmp $b->{sort_name}
+                }
+                map {
+                    $_->{sort_name} = lc $_->{name};
+                    $_;
+                }
+                $label->every_data({ user_id => $self->stash('user')->id })->@*
+            ],
+        );
+    }
 }
 
 1;

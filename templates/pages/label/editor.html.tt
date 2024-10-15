@@ -1,0 +1,56 @@
+[% page.title = 'Label Editor' %]
+
+<details>
+    <summary>Instructions</summary>
+    <p>
+        For details about how label and description can be written, consult the
+        <a href="[% c.url_for('/docs/material_labels.md') %]">material labels documentation</a>.
+    </p>
+</details>
+
+<form method="post">
+    <fieldset class="material_label">
+        <legend>Material Label</legend>
+
+        <label>
+            Name:
+            <input type="text" name="name" value="[% name %]" placeholder="Name">
+        </label>
+
+        <textarea name="label" placeholder="Material Label">[% label %]</textarea>
+
+        <label>
+            <input type="checkbox" name="public">
+            Public
+            <i>(Make universally public/viewable to all users, versus private for only you to see.)</i>
+        </label>
+
+        <input type="hidden" name="id" value="[% id %]">
+        <input type="submit" value="Save Label">
+    </fieldset>
+</form>
+
+<h2>[% user.data.first_name %]'s Labels</h2>
+
+[% IF label_aliases AND label_aliases.size > 0 %]
+    <dl>
+        [% FOR alias IN label_aliases %]
+            <dt>
+                [% alias.name %]
+                <i>([% IF alias.public %]Public[% ELSE %]Private[% END %])</i>
+            </dt>
+            <dd>
+                [% alias.label %]
+                <p>
+                    <a href="[%
+                        c.url_for.query( id => alias.label_id, action => 'edit' )
+                    %]" class="button">Edit</a>
+
+                    <a href="[%
+                        c.url_for.query( id => alias.label_id, action => 'delete' )
+                    %]" class="button">Delete</a>
+                </p>
+            </dd>
+        [% END %]
+    </dl>
+[% END %]
