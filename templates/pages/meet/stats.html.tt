@@ -14,7 +14,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>Position</th>
+                    <th>Place</th>
                     <th>Name</th>
                     <th>Based On</th>
                 </tr>
@@ -60,7 +60,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>Position</th>
+                    <th>Place</th>
                     <th>Quizzer</th>
                     <th>Team</th>
                     <th>VRAs</th>
@@ -125,10 +125,10 @@
             <table class="stats">
                 <thead>
                     <tr>
-                        <th>Position</th>
+                        <th>Place</th>
                         <th>Name</th>
-                        <th>Points Avg.</th>
-                        <th>Points Sum</th>
+                        <th>Avg./Sum</th>
+                        <th>Brackets</th>
                         [% FOR i IN [ 1 .. stats.meta.$type.quizzes_max ] %]
                             <th>Quiz [% i %]</th>
                         [% END %]
@@ -163,8 +163,21 @@
                                         [% item.team_name %]
                                     [% END %]
                                 </td>
-                                <td class="right">[% item.points_avg | format('%0.2f') %]</td>
-                                <td class="right">[% item.points_sum | format('%0.1f') %]</td>
+                                <td class="right">
+                                    [% item.points_avg | format('%0.2f') %]<br>
+                                    [% item.points_sum | format('%0.1f') %]
+                                </td>
+                                <td>
+                                    [%
+                                        brackets = [];
+                                        FOR quiz IN item.quizzes;
+                                            brackets.push( quiz.bracket );
+                                        END;
+                                    %]
+                                    [% FOR bracket IN brackets.unique %]
+                                        [% bracket %][% IF NOT loop.last %]<br>[% END %]
+                                    [% END %]
+                                </td>
                                 [% FOR quiz IN item.quizzes %]
                                     <td>
                                         [% quiz.points %] pts. <i>(at [% quiz.weight %])</i>
