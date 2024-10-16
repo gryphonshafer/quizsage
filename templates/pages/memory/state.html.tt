@@ -23,7 +23,7 @@
                     <div>[% week.0.month %]</div>
                     [% FOR day IN week %]
                         <div
-                            class="tile_[%
+                            class="tile tile_[%
                                 ( day.verses == 0 ) ? 0 :
                                 ( day.verses + step_shift > max_steps ) ? max_steps : day.verses + step_shift
                             %]"
@@ -36,7 +36,7 @@
     </div>
 [% END %]
 
-[% tiles_scroll_right = BLOCK %]
+[% tiles = BLOCK %]
     let h_scrollers;
 
     window.addEventListener( 'load', () => {
@@ -53,9 +53,13 @@
                 h_scrollers.forEach( h_scroller => h_scroller.scrollLeft = h_scroller.scrollLeftMax );
             } );
         } );
+
+        window.document.querySelectorAll('div.tile').forEach( tile => {
+            tile.onclick = () => notice( tile.title );
+        } );
     } );
 [% END %]
-[% page.js.inline.push(tiles_scroll_right) %]
+[% page.js.inline.push(tiles) %]
 
 [% BLOCK report %]
     [% IF data AND data.size %]
