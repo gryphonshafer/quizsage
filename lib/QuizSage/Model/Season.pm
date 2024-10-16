@@ -251,9 +251,9 @@ and encode C<settings> C<thaw> will decode C<settings>.
 
 =head2 seasons
 
-This method will return a data structure of the current active seasons as
-defined by if now is between the season's database values for C<start> and
-C<start> plus C<days> duration.
+This method will return a data structure of all seasons, with C<active> being
+if the season is a current active season as defined by if now is between the
+season's database values for C<start> and C<start> plus C<days> duration.
 
     my $seasons = $quiz->seasons;
 

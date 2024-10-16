@@ -5,6 +5,7 @@ use Bible::Reference;
 use DateTime;
 use Mojo::JSON 'encode_json';
 use QuizSage::Model::Label;
+use QuizSage::Model::Season;
 use QuizSage::Model::User;
 use QuizSage::Util::Material 'text2words';
 
@@ -117,9 +118,8 @@ sub reviewed ( $self, $memory_id, $level, $user_id ) {
 
 sub state ( $self, $user ) {
     return {
-        tiles  => $self->tiles( $user->id ),
-        report => $self->report( $user->id ),
-
+        $self->report( $user->id )->%*,
+        tiles     => $self->tiles( $user->id ),
         shared_to => $self->dq->sql(q{
             SELECT
                 u.user_id,
@@ -134,9 +134,9 @@ sub state ( $self, $user ) {
         shared_from => [
             map {
                 +{
+                    $self->report( $_->{user_id} )->%*,
                     user   => $_,
                     tiles  => $self->tiles( $_->{user_id} ),
-                    report => $self->report( $_->{user_id} ),
                     json   => encode_json({
                         id   => $_->{user_id},
                         name => $_->{first_name} . ' ' . $_->{last_name},
@@ -210,8 +210,25 @@ sub tiles ( $self, $user_id ) {
 }
 
 sub report ( $self, $user_id ) {
-    my $data;
+    my $earliest_active_season_start;
+    my $season  = QuizSage::Model::Season->new;
+    my @seasons = sort { $a->{start} cmp $b->{start} } grep { $_->{active} } $season->seasons->@*;
+    if (@seasons) {
+        $earliest_active_season_start = $seasons[0]{start};
+    }
+    else {
+        my $dt = DateTime->new(
+            year      => DateTime->now->year + 1,
+            month     => 8,
+            day       => 1,
+            time_zone => 'local',
+        );
+        $dt->set_year( $dt->year - 1 ) if ( $dt->epoch > time );
+        $season->time->datetime($dt);
+        $earliest_active_season_start = $season->time->format('sqlite_min');
+    }
 
+    my $data;
     push( @{ $data->{ $_->{level} } }, $_ ) for (
         _make_runs( $self->dq->sql(q{
             SELECT
@@ -225,21 +242,27 @@ sub report ( $self, $user_id ) {
             WHERE
                 user_id = ? AND
                 level > 0 AND
-                last_modified >= DATETIME( 'NOW', '-1 year' )
+                last_modified >= ?
             GROUP BY 1, 2, 3, 4
             ORDER BY 1 DESC, 2, 3, 4
-        } )->run($user_id)->all({}) )->@*
+        } )->run( $user_id, $earliest_active_season_start )->all({}) )->@*
     );
 
-    return [ map {
-        my $number;
-        $number += $_->{number} for ( $data->{$_}->@* );
-        +{
-            level  => $_,
-            number => $number,
-            data   => $data->{$_},
-        };
-    } sort { $b <=> $a } keys %$data ];
+    return {
+        report => [
+            map {
+                my $number;
+                $number += $_->{number} for ( $data->{$_}->@* );
+                +{
+                    level  => $_,
+                    number => $number,
+                    data   => $data->{$_},
+                };
+            } sort { $b <=> $a } keys %$data
+        ],
+        earliest_active_season_start =>
+            $season->time->parse($earliest_active_season_start)->format('%b %e, %Y'),
+    };
 }
 
 sub sharing ( $self, $data ) {

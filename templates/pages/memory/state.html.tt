@@ -59,6 +59,11 @@
 
 [% BLOCK report %]
     [% IF data AND data.size %]
+        <p>
+            Report of memorization levels of verses last modified since:
+            [% state.earliest_active_season_start %]
+        </p>
+
         [% FOR section IN data %]
             <details>
                 <summary>
