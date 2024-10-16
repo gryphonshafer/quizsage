@@ -9,20 +9,20 @@ form.admin {
         font-family: monospace;
         font-size  : 75%;
         line-height: 1em;
-        width      : calc( 17em / 0.75 );
+        width      : 26em;
         height     : 20em;
     }
 
-    @media ( min-width: 550px ) {
+    @media ( min-width: 735px ) {
         input[type=text] {
-            width: 24em !important;
+            width: 20em !important;
         }
 
         textarea[name="settings"] {
-            width: calc( 28em / 0.75 );
+            width : 55em;
+            height: 40em;
         }
     }
-
 
     fieldset.edit_meet {
         margin-right: 1em;

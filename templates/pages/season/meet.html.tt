@@ -55,7 +55,7 @@
             <input type="text" name="start" value="[%
                 this_start = value('start');
                 IF this_start;
-                    date.format( this_start, '%b %e, %Y' ).replace( '\s{2,}', ' ' );
+                    date.format( this_start, '%b %e, %Y %-I:%M %p' ).replace( '\s{2,}', ' ' );
                 ELSE;
                     '';
                 END;

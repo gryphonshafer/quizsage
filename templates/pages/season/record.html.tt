@@ -119,7 +119,7 @@
                             <td>[% meet.data.location %]</td>
                             <td>[%
                                 date
-                                    .format( meet.data.start, '%a, %b %e, %Y' )
+                                    .format( meet.data.start, '%a, %b %e, %Y %-I:%M %p' )
                                     .replace( '\s{2,}', ' ' )
                             %]</td>
                         </tr>
