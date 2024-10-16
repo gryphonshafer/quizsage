@@ -7,17 +7,19 @@ form.admin {
 
     textarea[name="settings"] {
         font-family: monospace;
-        width      : 17em;
+        font-size  : 75%;
+        line-height: 1em;
+        width      : calc( 17em / 0.75 );
         height     : 20em;
     }
 
-    @media ( min-width: 535px ) {
+    @media ( min-width: 550px ) {
         input[type=text] {
             width: 24em !important;
         }
 
         textarea[name="settings"] {
-            width: 28em;
+            width: calc( 28em / 0.75 );
         }
     }
 
