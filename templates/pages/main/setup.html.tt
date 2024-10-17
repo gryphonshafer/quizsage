@@ -1,4 +1,6 @@
 [%
+    USE date;
+
     setup_name =
         ( setup_label == 'pickup_quiz'   ) ? 'Pick-Up Quiz'   :
         ( setup_label == 'queries_drill' ) ? 'Queries Drill'  :
@@ -164,3 +166,38 @@
 </form>
 
 [% PROCESS labels_bibles.html.tt %]
+
+[% IF setup_label == 'pickup_quiz' AND recent_pickup_quizzes AND recent_pickup_quizzes.size > 0 %]
+    <details>
+        <summary>[% c.stash.user.data.first_name %]'s Recent Pick-Up Quizzes</summary>
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th style="min-width: 10em">Created</th>
+                    <th style="min-width: 10em">Teams</th>
+                    <th>Query</th>
+                    <th>Material Label</th>
+                </tr>
+            </thead>
+            <tbody>
+                [% number = 0 %]
+                [% FOR quiz IN recent_pickup_quizzes %]
+                    [% number = number + 1 %]
+                    <tr>
+                        <td class="right">[% number %]</td>
+                        <td><a href="[% c.url_for( '/quiz/pickup/' _ quiz.quiz_id ) %]"
+                            >[% date.format( quiz.created, '%a, %b %-d %-I:%M %p' ) %]</a></td>
+                        <td>
+                            [% FOR team IN quiz.teams %]
+                                [% team.name %][% UNLESS loop.last %], [% END %]
+                            [% END %]
+                        </td>
+                        <td>[% quiz.current_query %]</td>
+                        <td>[% quiz.label %]</td>
+                    </tr>
+                [% END %]
+            </tbody>
+        </table>
+    </details>
+[% END %]

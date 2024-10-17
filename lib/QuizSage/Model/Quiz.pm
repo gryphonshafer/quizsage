@@ -180,6 +180,40 @@ sub create_material_json_from_label ( $self, $label, $user = undef ) {
     };
 }
 
+sub recent_pickup_quizzes ( $self, $user_id, $ctime_life = undef ) {
+    $self->dq
+        ->sql(q{DELETE FROM quiz WHERE JULIANDAY('NOW') - JULIANDAY(created) > ?})
+        ->run( $ctime_life // $self->conf->get('pickup_quiz_ctime_life') );
+
+    return [
+        sort { $b->{created} cmp $a->{created} }
+        map {
+            my $quiz = $_;
+
+            my $current_query;
+            if (
+                $quiz->{data}{state} and
+                $quiz->{data}{state}{board} and
+                $quiz->{data}{state}{board}->@*
+            ) {
+                my ($current) = grep { $_->{current} } $quiz->{data}{state}{board}->@*;
+                $current_query = ($current) ? $current->{id} : 'Done';
+            }
+            else {
+                $current_query = '1A';
+            }
+
+            +{
+                quiz_id       => $quiz->{data}{quiz_id},
+                created       => $quiz->{data}{created},
+                teams         => $quiz->{data}{settings}{teams},
+                current_query => $current_query,
+                label         => $quiz->{data}{settings}{material}{label},
+            };
+        } $self->every({ user_id => $user_id })->@*
+    ];
+}
+
 1;
 
 =head1 NAME
@@ -283,7 +317,7 @@ doesn't exist, it'll be created.
 
 =head2 create_material_json_from_label
 
-Thie method will create a material JSON file from a material label (and
+This method will create a material JSON file from a material label (and
 optionally a loaded user object).
 
     my $material_metadata = $quiz->create_material_json_from_label(
@@ -292,6 +326,13 @@ optionally a loaded user object).
     );
 
 The hashref returned will contains keys for C<label>, C<description>, and C<id>.
+
+=head2 recent_pickup_quizzes
+
+This method requires a user ID and an optional integer. It will delete all
+pickup quizzes created older in days than the integer or
+C<pickup_quiz_mtime_life> configuration value. It will then return a list of
+remaining pickup quizzes.
 
 =head1 WITH ROLES
 

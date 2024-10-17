@@ -47,10 +47,11 @@ default:
         location  :
             json: local/reference/json
             html: local/reference/html
+    pickup_quiz_ctime_life: 274
     quiz_defaults:
         bible         : NIV
         duration      : 30
-        material_label: Galatians; Ephesians; Philippians; Colossians NASB* NASB5 NIV
+        material_label: Luke 1-2; 3:1-23; 4-24 ESV NIV NIV84*
         roster_data   : |
             Team 1
             Alpha Bravo

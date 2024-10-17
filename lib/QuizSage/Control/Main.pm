@@ -3,6 +3,7 @@ package QuizSage::Control::Main;
 use exact 'Mojolicious::Controller';
 use GD;
 use Mojo::File 'path';
+use QuizSage::Model::Quiz;
 use QuizSage::Model::Season;
 use QuizSage::Model::User;
 use QuizSage::Util::Material 'material_json';
@@ -79,6 +80,10 @@ sub setup ($self) {
         $user = QuizSage::Model::User->new->load( $self->session('become') );
         $self->stash( become_user => $user );
     }
+
+    $self->stash(
+        recent_pickup_quizzes => QuizSage::Model::Quiz->new->recent_pickup_quizzes( $user->id ),
+    ) if ( $self->stash('setup_label') eq 'pickup_quiz' );
 
     my $label         = QuizSage::Model::Label->new( user_id => $user->id );
     my $quiz_defaults = $label->conf->get('quiz_defaults');
