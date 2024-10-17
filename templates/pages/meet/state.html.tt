@@ -1,4 +1,5 @@
 [%
+    USE date;
     page.title = 'Meet State';
     page.body_classes.push('state');
 %]
@@ -17,7 +18,7 @@
     [% meet.data.name %]
     at
     [% meet.data.location %];
-    [% meet.start_stamp %]
+    <time datetime="[% meet.data.start %]">[% date.format( meet.data.start, '%a, %b %-d, %Y' ) %]</time>
 </h2>
 
 <ul class="column no_print">

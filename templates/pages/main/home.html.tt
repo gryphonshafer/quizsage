@@ -1,3 +1,4 @@
+[% USE date %]
 [% UNLESS user %]
     [% PROCESS icon_link.html.tt data = [ ['Create New User'], '/user/create', 'create_user' ] %]
 
@@ -92,7 +93,9 @@
 
         [% FOR season IN active_seasons %]
             <h3>
-                [% season.start_year %]-[% season.stop_year %]
+                <time
+                    datetime="[% season.start %]">[% date.format( season.start, '%Y' ) %]-<time
+                    datetime="[% season.stop  %]">[% date.format( season.stop,  '%Y' ) %]
                 [% IF season.location %][% season.location %]:[% END %]
                 [% season.name %]
             </h3>
@@ -118,7 +121,9 @@
                                     c.url_for( '/meet/' _ meet.meet_id _ '/state' )
                                 %]">[% meet.name %]</a></td>
                                 <td>[% meet.location %]</td>
-                                <td>[% meet.start_stamp %]</td>
+                                <td><time datetime="[% meet.start %]">[%
+                                    date.format( meet.start, '%a, %b %-d, %Y at %-I:%M %p %Z' )
+                                %]</time></td>
                             </tr>
                         [% END %]
                     </tbody>
@@ -147,7 +152,11 @@
                     <tr>
                         <td><a href="[%
                             c.url_for( '/season/' _ season.season_id _ '/stats' )
-                        %]">[% season.start_year %]-[% season.stop_year %]</a></td>
+                        %]">
+                            <time
+                                datetime="[% season.start %]">[% date.format( season.start, '%Y' ) %]-<time
+                                datetime="[% season.stop  %]">[% date.format( season.stop,  '%Y' ) %]
+                        </td>
                         <td>[% season.location %]</td>
                         <td>[% season.name %]</td>
                     </tr>
