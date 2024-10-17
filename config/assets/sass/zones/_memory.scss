@@ -70,7 +70,7 @@ div.tiles {
     @for $i from 1 through $max_steps {
         & > div > div.tile_#{$i} {
             @include theme.apply( themes.$themes ) {
-                $this_step_color: mix(
+                $this_step_color: color.mix(
                     theme.get('tiles_start_color'),
                     theme.get('tiles_end_color'),
                     math.div( $i, $max_steps ) * 100%
