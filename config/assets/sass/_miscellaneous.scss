@@ -108,6 +108,18 @@ fieldset.ref_gen {
     }
 }
 
+fieldset.ref_gen_print {
+    div {
+        font-weight: bold;
+        text-align: left;
+    }
+
+    input[type='text'] {
+        width: 2em !important;
+        text-align: right;
+    }
+}
+
 fieldset.material_label {
     text-align: left;
 

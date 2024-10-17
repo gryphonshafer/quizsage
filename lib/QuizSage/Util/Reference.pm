@@ -20,6 +20,17 @@ fun reference_data (
     :$chapter        = 3,     # words for chapter section
     :$phrases        = 4,     # words for phrases section
     :$force          = 0,     # force data regeneration (and update JSON cache file)
+
+    :$page_width               = 8.5,
+    :$page_height              = 11,
+    :$page_right_margin_left   = 1,
+    :$page_right_margin_right  = 0.5,
+    :$page_right_margin_top    = 0.5,
+    :$page_right_margin_bottom = 0.5,
+    :$page_left_margin_left    = 0.5,
+    :$page_left_margin_right   = 1,
+    :$page_left_margin_top     = 0.5,
+    :$page_left_margin_bottom  = 0.5,
 ) {
     croak('Not all required parameters provided')
         unless ( $material_label and $bible and ( $reference or $whole or $chapter or $phrases ) );
@@ -38,12 +49,22 @@ fun reference_data (
     my $id          = substr( Digest->new('SHA-256')->add(
         join( '|',
             $description,
+            join( ',', @$bibles ),
             $cover,
-            @$bibles,
             $reference,
             $whole,
             $chapter,
             $phrases,
+            $page_width,
+            $page_height,
+            $page_right_margin_left,
+            $page_right_margin_right,
+            $page_right_margin_top,
+            $page_right_margin_bottom,
+            $page_left_margin_left,
+            $page_left_margin_right,
+            $page_left_margin_top,
+            $page_left_margin_bottom,
         )
     )->hexdigest, 0, 16 );
 
@@ -102,6 +123,17 @@ fun reference_data (
         cover       => $cover,
         bibles      => $bibles,
         id          => $id,
+
+        page_width               => $page_width,
+        page_height              => $page_height,
+        page_right_margin_left   => $page_right_margin_left,
+        page_right_margin_right  => $page_right_margin_right,
+        page_right_margin_top    => $page_right_margin_top,
+        page_right_margin_bottom => $page_right_margin_bottom,
+        page_left_margin_left    => $page_left_margin_left,
+        page_left_margin_right   => $page_left_margin_right,
+        page_left_margin_top     => $page_left_margin_top,
+        page_left_margin_bottom  => $page_left_margin_bottom,
     };
 
     push( $data->{sections}->@*, {
@@ -137,7 +169,10 @@ fun reference_data (
                                     $this_data->[1]{text},
                                 )
                                 : (
-                                    join( ' ', @{ $this_data->[1]{words} }[ 0 .. $whole - 1 ] ),
+                                    join(
+                                        ' ',
+                                        grep { defined } @{ $this_data->[1]{words} }[ 0 .. $whole - 1 ]
+                                    ),
                                     {
                                         class => 'ref',
                                         text  => $this_bible . ' ' . $this_data->[0],
@@ -148,7 +183,7 @@ fun reference_data (
                                 ),
                         ],
                     }
-                    sort { $a->[1]{string} cmp $b->[1]{string} }
+                    sort { ( $a->[1]{string} || '' ) cmp ( $b->[1]{string} || '' ) }
                     map { [
                         $_->{ref_short},
                         $_->{bibles}{$this_bible},

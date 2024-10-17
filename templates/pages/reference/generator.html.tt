@@ -14,8 +14,9 @@
         END;
     END;
 
-    bibles_label = bible _ ( (other_bibles) ? ' with ' _ other_bibles : '' );
-    page.title   = description _ ' ' _ bibles_label;
+    bibles_label  = bible _ ( (other_bibles) ? ' with ' _ other_bibles : '' );
+    page.title    = description _ ' ' _ bibles_label;
+    page.viewport = 0;
 %]
 
 [% IF cover %]
@@ -52,9 +53,19 @@
     [% END %]
 [% END %]
 
+[% page.header_html = BLOCK %]
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&family=PT+Serif&display=swap">
+[% END %]
+
 [% css = BLOCK %]
     body {
-        font-family     : sans-serif;
+        font-family        : "Inter", sans-serif;
+        font-optical-sizing: auto;
+        font-weight        : 400;
+        font-style         : normal;
+
         font-size       : 13px;
         background-color: white;
         color           : black;
@@ -98,7 +109,10 @@
     }
 
     td {
-        font-family   : serif;
+        font-family: "PT Serif", serif;
+        font-weight: 400;
+        font-style : normal;
+
         vertical-align: top;
         font-size     : 16px;
         line-height   : 16px;
@@ -110,7 +124,11 @@
     }
 
     td.ref {
-        font-family: sans-serif;
+        font-family        : "Inter", sans-serif;
+        font-optical-sizing: auto;
+        font-weight        : 400;
+        font-style         : normal;
+
         width      : 6rem;
         font-size  : 13px;
         line-height: 19px;
@@ -136,6 +154,24 @@
                 page-break-before: always;
             }
         [% END %]
+
+        @page {
+            size: [% page_width %]in [% page_height %]in;
+        }
+
+        @page :right {
+            margin-left  : [% page_right_margin_left   %]in;
+            margin-right : [% page_right_margin_right  %]in;
+            margin-top   : [% page_right_margin_top    %]in;
+            margin-bottom: [% page_right_margin_bottom %]in;
+        }
+
+        @page :left {
+            margin-left  : [% page_left_margin_left   %]in;
+            margin-right : [% page_left_margin_right  %]in;
+            margin-top   : [% page_left_margin_top    %]in;
+            margin-bottom: [% page_left_margin_bottom %]in;
+        }
     }
 [% END %]
 [% page.style.push(css) %]
