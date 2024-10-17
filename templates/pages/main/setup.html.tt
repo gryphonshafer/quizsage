@@ -36,20 +36,38 @@
     [% END %]
 
     [% IF setup_label == 'ref_gen' %]
+        <p><b>Reference Generation Options</b></p>
         <p>
             The "memorized Bible" field requires the Bible acronym; it's used
             to understand which Bible should be used to source verse content
-            from. This "memorized  Bible" doesn't necessarily need to be part
+            from. This "memorized Bible" doesn't necessarily need to be part
             of the material label/description, but it's also fine if it is.
         </p>
         <p>
             Check the boxes below that to indicate which sections you want in
             the output. You can alter the number of words used in each section.
         </p>
-        <p><b>
+        <p><i>
             Keep in mind that depending on your settings, you can end up
             generating an extremely large/long/big output.
-        </b></p>
+        </i></p>
+
+        <p><b>Page Print Options</b></p>
+
+        <p>
+            The page print options allow you to customize how the page will be
+            printed in a modern, standards-compliant browser. The defaults are
+            set to render a print to normal letter-sized paper, double-sided
+            print, with binding-side margin alternating each page.
+        </p>
+
+        <p><i>
+            If you'd like to print to a booklet, try a page size of 5.5 inches
+            by 8.5 inches, with page margins of 0 inches except for 0.5 inches
+            for both odd/right left margin and even/left right margin.
+        </i></p>
+
+        <p><b>Material Label/Description</b></p>
     [% END %]
 
     <p>
