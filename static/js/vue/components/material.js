@@ -8,7 +8,7 @@ export default {
     },
 
     computed: {
-        ...Pinia.mapState( store, [ 'current', 'selected', 'hidden_solution', 'toggle_hidden_solution' ] ),
+        ...Pinia.mapState( store, [ 'current', 'selected', 'hidden_solution', 'toggle_hidden_solution', 'material' ] ),
 
         buffer() {
             return this.current.materials
@@ -28,6 +28,10 @@ export default {
                 this.$root.$refs.timer.reset();
             }
             this.replace_query();
+        },
+
+        display_description() {
+            notice( this.material.data.description );
         },
     },
 
