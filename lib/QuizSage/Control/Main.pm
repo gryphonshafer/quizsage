@@ -23,13 +23,14 @@ sub set ($self) {
     $self->redirect_to( $self->req->headers->referer );
 }
 
+my $conf     = QuizSage::Model::Season->new->conf;
+my $root_dir = $conf->get( qw( config_app root_dir ) );
+my $base     = path($root_dir);
+
 {
-    my $conf     = QuizSage::Model::Season->new->conf;
-    my $captcha  = $conf->get('captcha');
-    my $root_dir = $conf->get( qw( config_app root_dir ) );
-    my $base     = path($root_dir);
-    my ($ttf)    = glob( $base->to_string . '/' . $captcha->{ttf} );
-    ($ttf)       = glob( $base->child( $conf->get('omniframe') )->to_string . '/' . $captcha->{ttf} )
+    my $captcha = $conf->get('captcha');
+    my ($ttf)   = glob( $base->to_string . '/' . $captcha->{ttf} );
+    ($ttf)      = glob( $base->child( $conf->get('omniframe') )->to_string . '/' . $captcha->{ttf} )
         unless ($ttf);
 
     sub captcha ($self) {
@@ -173,6 +174,21 @@ sub user_select ($self) {
     $self->render( json => QuizSage::Model::User->new->by_full_name( $self->param('name') ) );
 }
 
+sub download ($self) {
+    $self->stash( shards => $conf->get( qw( database shards ) ) );
+    if ( my $shard = $self->param('shard') ) {
+        my $file = $base->child( $conf->get( qw( database shards ), $shard, 'file' ) );
+
+        $self->res->headers->header(@$_) for (
+            [ 'Content-Type'        => 'application/x-sqlite'                           ],
+            [ 'Content-Disposition' => 'attachment; filename="' . $file->basename . '"' ],
+        );
+
+        $self->res->body( $file->slurp );
+        $self->rendered;
+    }
+}
+
 1;
 
 =head1 NAME
@@ -213,6 +229,10 @@ This method handles setting up settings for various other parts of QuizSage.
 
 This method expects a C<name> parameter and provides JSON data of users that
 match the input.
+
+=head2 download
+
+This method supports the download page.
 
 =head1 INHERITANCE
 

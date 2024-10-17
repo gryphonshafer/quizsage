@@ -1,0 +1,19 @@
+[% page.title = 'Download Databases' %]
+
+<details open>
+    <summary>Instructions</summary>
+
+    <p>
+        On this page, you can download QuizSage databases as
+        <a href="https://sqlite.org">SQLite</a> files. Together, these files
+        contain all data QuizSage uses.
+    </p>
+</details>
+
+[% FOR shard IN shards.keys.sort %]
+    <h2>[% shard.ucfirst %]</h2>
+    <p>
+        <a href="[% c.url_for( '/download/' _ shard ) %]"
+            class="button">Download the "[% shard.ucfirst %]" Database</a>
+    </p>
+[% END %]

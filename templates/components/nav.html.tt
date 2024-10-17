@@ -130,6 +130,7 @@
             [% END %]
 
             <li><a href="[% c.url_for('/season/admin') %]">Season Admin.</a></li>
+            <li><a href="[% c.url_for('/download') %]">Download Databases</a></li>
 
             <li>[% PROCESS icon_link.html.tt,
                 data = [ ['Logout'], '/user/logout', 'logout' ] %]</li>
