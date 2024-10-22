@@ -33,34 +33,19 @@ sub seasons ($self) {
     return [
         map {
             $_->{meets} = [
-                map {
-                    $_->{start_stamp} = $self->time
-                        ->parse( $_->{start} )
-                        ->format('%a, %b %e, %Y at %l:%M %p %Z');
-                    $_;
-                }
                 $self->dq->get(
                     'meet',
-                    [
-                        qw( meet_id name location ),
-                        [ \q{ STRFTIME( '%s', start ) } => 'start' ],
-                    ],
+                    [ qw( meet_id name location start ) ],
                     { $self->id_name => $_->{season_id} },
                     { order_by => 'start' },
                 )->run->all({})->@*
             ] if ( $_->{active} );
-
-            $_->{start_stamp} = $self->time->parse( $_->{start} )->format('%a, %b %e, %Y');
-            $_->{stop_stamp}  = $self->time->parse( $_->{stop}  )->format('%a, %b %e, %Y');
-            $_->{start_year}  = $self->time->parse( $_->{start} )->format('%Y');
-            $_->{stop_year}   = $self->time->parse( $_->{stop}  )->format('%Y');
-
             $_;
         } $self->dq->get(
             $self->name,
             [
                 qw( season_id name location start ),
-                [ \q{ DATE( start, '+' || days || ' day' ) }, 'stop' ],
+                [ \q{ DATETIME( start, '+' || days || ' day' ) }, 'stop' ],
                 [
                     \q{
                         CASE WHEN
@@ -96,10 +81,7 @@ sub stats ($self) {
             }
             map {
                 my $meet = $_;
-                +{
-                    start_stamp => $self->time->parse( $meet->data->{start} )->format('%a, %b %e, %Y'),
-                    map { $_ => $meet->data->{$_} } qw( meet_id name location start days ),
-                };
+                +{ map { $_ => $meet->data->{$_} } qw( meet_id name location start days ) };
             } @$meets
         ],
     };

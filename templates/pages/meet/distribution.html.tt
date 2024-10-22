@@ -1,10 +1,13 @@
-[% page.title = 'Meet Distribution' %]
+[%
+    USE date;
+    page.title = 'Meet Distribution';
+%]
 
 <h2>
     [% meet.data.name %]
     at
     [% meet.data.location %];
-    [% meet.start_stamp %]
+    <time datetime="[% meet.data.start %]">[% date.format( meet.data.start, '%a, %b %-d, %Y' ) %]</time>
 </h2>
 
 [% IF per_quiz AND per_quiz.material %]<p>Material: [% per_quiz.material.label %]</p>[% END %]

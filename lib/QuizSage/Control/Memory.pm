@@ -38,7 +38,7 @@ sub review ($self) {
     ) if ( $self->param('memory_id') and $self->param('level') );
 
     $self->stash(
-        verse => $memory->review_verse($user),
+        verse => $memory->review_verse($user) // undef,
         user  => $user,
     );
 }

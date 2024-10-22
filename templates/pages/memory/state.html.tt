@@ -1,4 +1,7 @@
-[% page.title = 'Memory State' %]
+[%
+    USE date;
+    page.title = 'Memory State';
+%]
 
 [% BLOCK tiles %]
     <div class="horizontal_scroller">
@@ -28,7 +31,8 @@
                                 ( day.verses + step_shift > max_steps ) ? max_steps : day.verses + step_shift
                             %]"
                             title="[% day.verses
-                                %] verse[% IF day.verses != 1 %]s[% END %] on [% day.strftime %]"></div>
+                                %] verse[% IF day.verses != 1 %]s[% END %] on [%
+                                date.format( day.date, '%a, %b %-d' ) %]"></div>
                     [% END %]
                 </div>
             [% END %]
@@ -65,7 +69,8 @@
     [% IF data AND data.size %]
         <p>
             Report of memorization levels of verses last modified since:
-            [% state.earliest_active_season_start %]
+            <time datetime="[% state.earliest_active_season_start %]">[%
+                date.format( state.earliest_active_season_start, '%b %e, %Y' ) %]</time>
         </p>
 
         [% FOR section IN data %]

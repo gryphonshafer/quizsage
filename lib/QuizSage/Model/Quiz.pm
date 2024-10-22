@@ -192,11 +192,11 @@ sub recent_pickup_quizzes ( $self, $user_id, $ctime_life = undef ) {
 
             my $current_query;
             if (
-                $quiz->{data}{state} and
-                $quiz->{data}{state}{board} and
-                $quiz->{data}{state}{board}->@*
+                $quiz->{state} and
+                $quiz->{state}{board} and
+                $quiz->{state}{board}->@*
             ) {
-                my ($current) = grep { $_->{current} } $quiz->{data}{state}{board}->@*;
+                my ($current) = grep { $_->{current} } $quiz->{state}{board}->@*;
                 $current_query = ($current) ? $current->{id} : 'Done';
             }
             else {
@@ -204,13 +204,13 @@ sub recent_pickup_quizzes ( $self, $user_id, $ctime_life = undef ) {
             }
 
             +{
-                quiz_id       => $quiz->{data}{quiz_id},
-                created       => $quiz->{data}{created},
-                teams         => $quiz->{data}{settings}{teams},
+                quiz_id       => $quiz->{quiz_id},
+                created       => $quiz->{created},
+                teams         => $quiz->{settings}{teams},
                 current_query => $current_query,
-                label         => $quiz->{data}{settings}{material}{label},
+                label         => $quiz->{settings}{material}{label},
             };
-        } $self->every({ user_id => $user_id })->@*
+        } $self->every_data({ user_id => $user_id })->@*
     ];
 }
 

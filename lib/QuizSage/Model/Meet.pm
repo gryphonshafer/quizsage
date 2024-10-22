@@ -43,10 +43,6 @@ sub thaw ( $self, $data ) {
     return $data;
 }
 
-sub start_stamp ($self) {
-    return $self->time->parse( $self->data->{start} )->format('%a, %b %e, %Y');
-}
-
 sub from_season_meet ( $self, $season_name, $meet_name ) {
     my $season = QuizSage::Model::Season->new->load({ name => $season_name })
         or croak qq{Unable to locate season based on name: "$season_name"};
@@ -610,11 +606,6 @@ hashref and the C<build> hashref.
 Also, it will C<bcrypt> passwords before storing them in the database. It
 expects a hashref of values and will return a hashref of values with the
 C<passwd> crypted.
-
-=head2 start_stamp
-
-Returns a formatted time stamp based on the C<start> data value that's suitable
-for display on various pages.
 
 =head2 from_season_meet
 

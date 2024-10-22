@@ -4,7 +4,7 @@
     [% PROCESS become_note.html.tt %]
 [% END %]
 
-[% IF verse AND verse.words > 0 %]
+[% IF verse AND verse.words AND verse.words.size > 0 %]
     <details>
         <summary>Instructions</summary>
         <p>
