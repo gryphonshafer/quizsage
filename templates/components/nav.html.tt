@@ -50,8 +50,8 @@
                     <b>Practice</b>
                     <ul>
                         [% FOR icon_link_data IN [
-                            [ ['Queries Drill'], '/drill/setup', 'drill'  ],
-                            [ ['Pick-Up Quiz'],  '/quiz/pickup', 'pickup' ],
+                            [ ['Queries Drill'], '/drill/setup',       'drill'  ],
+                            [ ['Pick-Up Quiz'],  '/quiz/pickup/setup', 'pickup' ],
                         ] %]
                             <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
                         [% END %]
