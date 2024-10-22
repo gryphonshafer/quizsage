@@ -457,34 +457,6 @@ sub _schedule_integration( $self, $build_settings ) {
         }
     }
 
-    # data formatting
-    for my $bracket ( $build_settings->{brackets}->@* ) {
-        for my $set ( $bracket->{sets}->@* ) {
-            for my $quiz ( $set->{rooms}->@* ) {
-                $quiz->{schedule}{date} = trim( $quiz->{schedule}{start}->strftime('%a, %b %e') );
-                for ( qw( start stop ) ) {
-                    $quiz->{schedule}{ $_ . '_time' } = trim( $quiz->{schedule}{$_}->strftime('%l:%M %p') );
-                    $quiz->{schedule}{$_} = $quiz->{schedule}{$_}->epoch;
-                }
-            }
-        }
-    }
-    if ( $events->@* ) {
-        for my $event ( $events->@* ) {
-            $event->{date} = trim( ( $event->{start} // $event->{stop} )->strftime('%a, %b %e') )
-                if ( $event->{start} or $event->{stop} );
-            if ( $event->{start} ) {
-                $event->{start_time} = trim( $event->{start}->strftime('%l:%M %p') );
-                $event->{start}      = $event->{start}->epoch;
-            }
-            if ( $event->{stop} ) {
-                $event->{stop_time} = trim( $event->{stop}->strftime('%l:%M %p') );
-                $event->{stop}      = $event->{stop}->epoch;
-            }
-        }
-        $build_settings->{events} = $events;
-    }
-
     # check that no 2 quizzes are happening at the same time in the same location
     # and check that no teams are quizzing in 2 places at the same time
     my @quizzes = map {
@@ -541,6 +513,31 @@ sub _schedule_integration( $self, $build_settings ) {
                 }
             }
         }
+    }
+
+    # datetime formatting
+    for my $bracket ( $build_settings->{brackets}->@* ) {
+        for my $set ( $bracket->{sets}->@* ) {
+            for my $quiz ( $set->{rooms}->@* ) {
+                for ( qw( start stop ) ) {
+                    if ( $quiz->{schedule}{$_} ) {
+                        $self->time->datetime( $quiz->{schedule}{$_} );
+                        $quiz->{schedule}{$_} = $self->time->format('sqlite_min');
+                    }
+                }
+            }
+        }
+    }
+    if ( $events->@* ) {
+        for my $event ( $events->@* ) {
+            for ( qw( start stop ) ) {
+                if ( $event->{$_} ) {
+                    $self->time->datetime( $event->{$_} );
+                    $event->{$_} = $self->time->format('sqlite_min');
+                }
+            }
+        }
+        $build_settings->{events} = $events;
     }
 
     return $warnings;

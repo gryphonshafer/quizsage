@@ -55,7 +55,7 @@
             <input type="text" name="start" value="[%
                 this_start = value('start');
                 IF this_start;
-                    date.format( this_start, '%b %e, %Y' ).replace( '\s{2,}', ' ' );
+                    date.format( this_start, '%b %-e, %Y' );
                 ELSE;
                     '';
                 END;
@@ -117,11 +117,8 @@
                                 c.url_for( '/season/' _ meet.data.season_id _ '/meet/' _ meet.id _ '/edit' )
                             %]">[% meet.data.name %]</a></td>
                             <td>[% meet.data.location %]</td>
-                            <td>[%
-                                date
-                                    .format( meet.data.start, '%a, %b %e, %Y %-I:%M %p' )
-                                    .replace( '\s{2,}', ' ' )
-                            %]</td>
+                            <td><time datetime="[% meet.date.start %]">[%
+                                date.format( meet.data.start, '%a, %b %-e, %Y %-I:%M %p %Z' ) %]</time></td>
                         </tr>
                     [% END %]
                 </tbody>

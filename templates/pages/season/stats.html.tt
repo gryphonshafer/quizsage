@@ -1,4 +1,7 @@
-[% page.title = 'Season Statistics' %]
+[%
+    USE date;
+    page.title = 'Season Statistics';
+%]
 
 <h2>[% season.data.location %]: [% season.data.name %]</h2>
 
@@ -18,7 +21,8 @@
                         c.url_for( '/meet/' _ meet.meet_id _ '/stats' )
                     %]">[% meet.name %]</a></td>
                     <td>[% meet.location %]</td>
-                    <td>[% meet.start_stamp %]</td>
+                    <td><time datetime="[% meet.start %]">[%
+                        date.format( meet.start, '%a, %b %-d, %Y at %-I:%M %p %Z' ) %]</time></td>
                 </tr>
             [% END %]
         </tbody>

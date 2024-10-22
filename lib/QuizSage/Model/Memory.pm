@@ -188,8 +188,8 @@ sub tiles ( $self, $user_id ) {
         $date = $dt->ymd;
 
         push( @days, {
-            strftime => $dt->strftime('%a %b %d'),
-            verses   => $studying{$date} // 0,
+            date   => $date . ' 00:00:00',
+            verses => $studying{$date} // 0,
         } );
 
         if ( $month ne $dt->month_abbr ) {
@@ -260,8 +260,7 @@ sub report ( $self, $user_id ) {
                 };
             } sort { $b <=> $a } keys %$data
         ],
-        earliest_active_season_start =>
-            $season->time->parse($earliest_active_season_start)->format('%b %e, %Y'),
+        earliest_active_season_start => $earliest_active_season_start,
     };
 }
 

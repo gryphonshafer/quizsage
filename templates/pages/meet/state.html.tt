@@ -2,14 +2,28 @@
     USE date;
     page.title = 'Meet State';
     page.body_classes.push('state');
-%]
 
-[%
     FOR bracket IN state.brackets;
         FOR set IN bracket.sets;
             FOR quiz IN set.rooms;
                 room_numbers.${ quiz.room } = 1;
+
+                IF quiz.schedule.start;
+                    quiz.schedule.start_time = date.format( quiz.schedule.start, '%s' );
+                END;
+                IF quiz.schedule.stop;
+                    quiz.schedule.stop_time = date.format( quiz.schedule.stop, '%s' );
+                END;
             END;
+        END;
+    END;
+
+    FOR event IN state.events;
+        IF event.start;
+            event.start_time = date.format( event.start, '%s' );
+        END;
+        IF event.stop;
+            event.stop_time = date.format( event.stop, '%s' );
         END;
     END;
 %]
@@ -61,8 +75,8 @@
         included_indexes = [];
         FOR event_index IN [ 0 .. events.max ];
             IF (
-                type == 'pre'  && events.$event_index.stop  == row.start ||
-                type == 'post' && events.$event_index.start == row.stop
+                type == 'pre'  && events.$event_index.stop_time  == row.start_time ||
+                type == 'post' && events.$event_index.start_time == row.stop_time
             );
                 included_indexes.push(event_index);
                 WHILE 1;
@@ -73,8 +87,8 @@
                         BREAK;
                     END;
                     IF (
-                        type == 'pre'  && events.$event_index.stop  == events.$prev_event_index.start ||
-                        type == 'post' && events.$event_index.start == events.$prev_event_index.stop
+                        type == 'pre'  && events.$event_index.stop_time  == events.$prev_event_index.start_time ||
+                        type == 'post' && events.$event_index.start_time == events.$prev_event_index.stop_time
                     );
                         included_indexes.push(event_index);
                     ELSE;
@@ -93,9 +107,9 @@
             %]
             <div class="info_box">
                 <b>[% event.name %]</b>
-                [% event.date %]
-                from [% event.start_time %]
-                to [% event.stop_time %]
+                <time datetime="[% event.start %]">[% date.format( event.start, '%a, %b %-d' ) %]</time>
+                from <time datetime="[% event.start %]">[% date.format( event.start, '%-I:%M %p' ) %]</time>
+                to <time datetime="[% event.stop %]">[% date.format( event.stop, '%-I:%M %p' ) %]</time>
                 ([% event.duration %] minutes)
             </div>
         [% END %]
@@ -117,9 +131,12 @@
         <div class="schedule_row">
             [% IF schedule %]
                 <div class="summary_box schedule_row_lead">
-                    [% schedule.date %]<br>
-                    [% schedule.start_time %]<br>
-                    [% schedule.stop_time %]<br>
+                    <time datetime="[% schedule.start %]">[%
+                        date.format( schedule.start, '%a, %b %-d' ) %]</time><br>
+                    <time datetime="[% schedule.start %]">[%
+                        date.format( schedule.start, '%-I:%M %p' ) %]</time><br>
+                    <time datetime="[% schedule.stop %]">[%
+                        date.format( schedule.stop, '%-I:%M %p' ) %]</time><br>
                     [% schedule.duration %] minutes
                 </div>
             [% END %]

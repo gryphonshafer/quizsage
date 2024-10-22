@@ -38,13 +38,15 @@
         <tbody>
             [% FOR season IN seasons %]
                 <tr>
-                    <td><a href="[% c.url_for( '/season/' _ season.id _ '/edit' ) %]">[%
-                        date.format( season.data.start, '%Y' ) _ '-' _
-                        date.format(
-                            date.format( season.data.start, '%s' ) + season.data.days * 60 * 60 * 24,
-                            '%Y',
-                        )
-                    %]</a></td>
+                    <td>
+                        [%
+                            start = season.data.start;
+                            stop  = date.format( season.data.start, '%s' ) + season.data.days * 60 * 60 * 24;
+                        %]
+                        <a href="[% c.url_for( '/season/' _ season.id _ '/edit' ) %]"><time
+                            datetime="[% start %]">[% date.format( start, '%Y' ) %]-<time
+                            datetime="[% stop  %]">[% date.format( stop,  '%Y' ) %]</a>
+                    </td>
                     <td>[% season.data.location %]</td>
                     <td>[% season.data.name %]</td>
                 </tr>
@@ -71,7 +73,8 @@
                         c.url_for( '/season/' _ meet.data.season_id _ '/meet/' _ meet.id _ '/edit' )
                     %]">[% meet.data.name %]</a></td>
                     <td>[% meet.data.location %]</td>
-                    <td>[% date.format( meet.data.start, '%a, %b %e, %Y' ).replace( '\s{2,}', ' ' ) %]</td>
+                    <td><time datetime="[% meet.data.start %]">[%
+                        date.format( meet.data.start, '%a, %b %-e, %Y' ) %]</time></td>
                 </tr>
             [% END %]
         </tbody>
