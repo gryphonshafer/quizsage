@@ -6,6 +6,18 @@
         For details about how label and description can be written, consult the
         <a href="[% c.url_for('/docs/material_labels.md') %]">material labels documentation</a>.
     </p>
+    <p>
+        Note that by selecting the "Public" checkbox, you'll make the label
+        universally public/viewable to all users, versus private where only you
+        will see.
+
+        Unless you are a regional coordinator or season administration delegate,
+        <b><i>you almost certainly do not want to select "Public"</i></b>.
+        <span class="warning">
+            Unauthorized or otherwise improper use of this feature may result
+            in account deactivation.
+        </span>
+    </p>
 </details>
 
 <form method="post">
@@ -22,7 +34,16 @@
         <label>
             <input type="checkbox" name="public">
             Public
-            <i>(Make universally public/viewable to all users, versus private for only you to see.)</i>
+            <br>
+            <i>(i.e.
+                make universally public/viewable to all users, versus private where only you will see.
+                Unless you are a regional coordinator or season administration delegate,
+                <b>you almost certainly do not want to select "Public"</b>.
+                <span class="warning">
+                    Unauthorized or otherwise improper use of this feature may result
+                    in account deactivation.
+                </span>
+            )</i>
         </label>
 
         <input type="hidden" name="id" value="[% id %]">
