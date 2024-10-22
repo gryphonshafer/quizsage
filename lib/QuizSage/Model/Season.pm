@@ -163,9 +163,15 @@ sub stats ($self) {
 
             +{
                 name    => $_,
-                meets   => $quizzer_meets,
-                ytd_avg => $quizzer_stats->{total_avg} / $quizzer_stats->{total_weight},
                 tags    => $tags,
+                meets   => $quizzer_meets,
+                ytd_avg => (
+                    $quizzer_stats->{total_avg} / (
+                        ( $quizzer_stats->{total_weight} )
+                            ? $quizzer_stats->{total_weight}
+                            : scalar(@$quizzer_meets)
+                    )
+                ),
                 %$quizzer_stats,
             };
         }
