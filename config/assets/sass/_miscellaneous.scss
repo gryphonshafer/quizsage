@@ -166,3 +166,17 @@ a.qm_auth {
     right          : 0.75em;
     text-decoration: none;
 }
+
+table.recent_pickup_quizzes {
+    @media ( min-width: 800px ) {
+        th:nth-of-type(2),
+        th:nth-of-type(3) {
+            min-width: 10em;
+        }
+    }
+
+    @media ( max-width: 800px ) {
+        font-size: 66%;
+        line-height: 1.5em;
+    }
+}

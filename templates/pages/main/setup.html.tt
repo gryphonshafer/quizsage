@@ -210,12 +210,12 @@
 [% IF setup_label == 'pickup_quiz' AND recent_pickup_quizzes AND recent_pickup_quizzes.size > 0 %]
     <details>
         <summary>[% c.stash.user.data.first_name %]'s Recent Pick-Up Quizzes</summary>
-        <table>
+        <table class="recent_pickup_quizzes">
             <thead>
                 <tr>
                     <th></th>
-                    <th style="min-width: 10em">Created</th>
-                    <th style="min-width: 10em">Teams</th>
+                    <th>Created</th>
+                    <th>Teams</th>
                     <th>Query</th>
                     <th>Material Label</th>
                 </tr>
