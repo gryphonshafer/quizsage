@@ -63,7 +63,7 @@ sub editor ($self) {
             $label->load({
                 label_id => $self->param('id'),
                 user_id  => $self->stash('user')->id,
-            })->{data}
+            })->data
         ) if ( $self->param('id') );
 
         $self->stash(

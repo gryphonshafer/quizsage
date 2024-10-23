@@ -22,7 +22,7 @@ sub lookup ($self) {
 sub generator ($self) {
     my $reference_data = reference_data(
         user_id => $self->stash('user')->id,
-        $self->stash('user')->{data}{settings}{ref_gen}->%*,
+        $self->stash('user')->data->{settings}{ref_gen}->%*,
     );
 
     # remove any reference HTML files that haven't been accessed in the last N days
