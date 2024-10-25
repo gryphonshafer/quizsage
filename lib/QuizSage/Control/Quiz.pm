@@ -143,14 +143,11 @@ sub queries ($self) {
         };
 
         if ( $self->stash('action_type') eq 'queries' ) {
-            my $roster         = {
-                maybe default_bible => $user_settings->{bible} || undef,
-                data                => $user_settings->{roster_data},
-            };
-
-            QuizSage::Model::Meet->parse_and_structure_roster_text( \$roster );
-
-            $settings->{teams} = $roster;
+            $settings->{teams} = QuizSage::Model::Meet->thaw_roster_data(
+                $user_settings->{roster_data},
+                $user_settings->{bible},
+                {},
+            )->{roster};
         }
 
         $self->render( json => {

@@ -5,17 +5,18 @@ use Omniframe;
 my $obj;
 
 ok(
-    lives { $obj = Omniframe->with_roles('QuizSage::Role::Meet::Build')->new },
-    q{with_roles('QuizSage::Role::Meet::Build')->new},
+    lives { $obj = Omniframe->with_roles('QuizSage::Role::Meet::Settings')->new },
+    q{with_roles('QuizSage::Role::Meet::Settings')->new},
 ) or note $@;
 
-DOES_ok( $obj, $_ ) for ( qw(
-    Omniframe::Role::Database
-    Omniframe::Role::Time
-    QuizSage::Role::Data
-    QuizSage::Role::JSApp
+DOES_ok( $obj, 'QuizSage::Role::Data' );
+can_ok( $obj, $_ ) for ( qw(
+    merged_settings
+    build_settings
+    canonical_settings
+    thaw_roster_data
+    freeze_roster_data
 ) );
-can_ok( $obj, qw( build parse_and_structure_roster_text ) );
 
 $obj->dq('material')->begin_work;
 
@@ -51,8 +52,14 @@ my $roster_data = {
 };
 
 ok(
-    lives { $obj->parse_and_structure_roster_text( \$roster_data ) },
-    'parse_and_structure_roster_text',
+    lives {
+        $roster_data = $obj->thaw_roster_data(
+            $roster_data->{data},
+            $roster_data->{default_bible},
+            $roster_data->{tags},
+        )->{roster};
+    },
+    'thaw_roster_data',
 ) or note $@;
 
 ref_ok( $roster_data, 'ARRAY', 'roster data is an arrayref' );

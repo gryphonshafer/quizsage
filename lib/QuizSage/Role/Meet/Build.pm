@@ -3,8 +3,6 @@ package QuizSage::Role::Meet::Build;
 use exact -role;
 use Mojo::JSON 'decode_json';
 use Omniframe::Class::Javascript;
-use Omniframe::Util::Text 'trim';
-use QuizSage::Model::Season;
 use QuizSage::Util::Material 'material_json';
 use YAML::XS 'Dump';
 
@@ -16,8 +14,7 @@ with qw(
 );
 
 sub build ( $self, $user_id = undef ) {
-    my $build_settings = $self->_merge_meet_and_season_settings;
-    $self->parse_and_structure_roster_text( \$build_settings->{roster} );
+    my ($build_settings) = $self->build_settings;
     $self->_create_material_json( $build_settings, $user_id );
     $self->_build_bracket_data($build_settings);
     my $schedule_integration_warnings = $self->_schedule_integration($build_settings);
@@ -25,98 +22,6 @@ sub build ( $self, $user_id = undef ) {
     $self->_build_settings_cleanup($build_settings);
     $self->save({ build => $build_settings });
     return $schedule_integration_warnings;
-}
-
-sub _merge_meet_and_season_settings ($self) {
-    my $meet_settings   = $self->deepcopy( $self->data->{settings} // {} );
-    my $season_settings =
-        QuizSage::Model::Season->new->load( $self->data->{season_id} )->data->{settings} // {};
-
-    my $build_settings;
-
-    ( $build_settings->{brackets} ) = grep { defined }
-        delete $meet_settings->{brackets}, delete $season_settings->{brackets}, [];
-
-    for my $set ( $season_settings, $meet_settings ) {
-        for ( keys %{ $set->{roster} } ) {
-            ( $build_settings->{roster}{$_} ) = delete $set->{roster}{$_}
-                if ( $set->{roster}{$_} );
-        }
-        delete $set->{roster};
-        for my $name ( qw( schedule per_quiz material ) ) {
-            $build_settings->{$name} = delete $set->{$name} if ( $set->{$name} );
-        }
-    }
-
-    if ( my $material = delete $build_settings->{material} ) {
-        $_->{material} //= $material for ( $build_settings->{brackets}->@* );
-    }
-
-    return $build_settings;
-}
-
-sub parse_and_structure_roster_text ( $self, $roster_ref ) {
-    my $default_bible = delete $$roster_ref->{default_bible} // $self->conf->get( qw( quiz_defaults bible ) );
-
-    my @bible_acronyms = $self->dq('material')->get(
-        'bible',
-        ['acronym'],
-        undef,
-        { order_by => [ { -desc => { -length => 'acronym' } }, 'acronym' ] },
-    )->run->column;
-
-    my $bibles_re = '\b(?:' . join( '|', @bible_acronyms ) . ')\b';
-
-    my $tags    = delete $$roster_ref->{tags} // {};
-    $tags->{$_} = ( ref $tags->{$_} ) ? $tags->{$_} : [ $tags->{$_} ] for ( qw( append default ) );
-
-    my $parse_out_bibles_and_tags = sub ($text_ref) {
-        $$text_ref =~ s/\s+/ /g;
-
-        my $bible;
-        if (@bible_acronyms) {
-            $bible //= $1 while ( $$text_ref =~ s/($bibles_re)//i );
-        }
-
-        my @tags;
-        push( @tags, split( /\s*[,;]+\s*/, $1 ) ) while ( $$text_ref =~ s/\(([^\)]*)\)//i );
-
-        $$text_ref =~ s/\s+/ /g;
-        $$text_ref =~ s/^\s|\s$//g;
-
-        return $bible, (@tags) ? \@tags : undef;
-    };
-
-    $$roster_ref = [
-        map {
-            my ( $team_name,  @quizzers  ) = split(/\r?\n\s*/);
-            my ( $team_bible, $team_tags ) = $parse_out_bibles_and_tags->( \$team_name );
-
-            +{
-                name     => $team_name,
-                quizzers => [
-                    map {
-                        my $quizzer = $_;
-                        my ( $quizzer_bible, $quizzer_tags ) = $parse_out_bibles_and_tags->( \$quizzer );
-
-                        $quizzer_tags //= $team_tags // $tags->{default} // [];
-                        $quizzer_tags = [@$quizzer_tags];
-                        push( @$quizzer_tags, $tags->{append}->@* );
-                        my %quizzer_tags = map { $_ => 1 } grep { defined } @$quizzer_tags;
-                        $quizzer_tags = [ sort keys %quizzer_tags ];
-
-                        +{
-                            name       => $quizzer,
-                            bible      => $quizzer_bible // $team_bible // $default_bible,
-                            maybe tags => ( (@$quizzer_tags) ? $quizzer_tags : undef ),
-                        };
-                    } @quizzers
-                ],
-            };
-        } split( /\n\s*\n/, delete $$roster_ref->{data} )
-    ];
-
-    return;
 }
 
 sub _create_material_json ( $self, $build_settings, $user_id = undef ) {
@@ -869,6 +774,7 @@ pointing to a hashref to pointing to an array with the following structure:
           name:  Kilo Lima
           tags:  [ 'Rookie', 'Youth' ]
 
-=head1 WITH ROLE
+=head1 WITH ROLES
 
-L<Omniframe::Role::Time>, L<QuizSage::Role::Data>, L<QuizSage::Role::JSApp>.
+L<Omniframe::Role::Database>, L<Omniframe::Role::Time>, L<QuizSage::Role::Data>,
+L<QuizSage::Role::JSApp>.

@@ -9,8 +9,9 @@ with qw(
     Omniframe::Role::Bcrypt
     Omniframe::Role::Model
     Omniframe::Role::Time
-    QuizSage::Role::Meet::Build
     QuizSage::Role::Data
+    QuizSage::Role::Meet::Build
+    QuizSage::Role::Meet::Settings
 );
 
 my $min_passwd_length = 8;
@@ -692,4 +693,5 @@ Returns an arrayref of hashrefs of users who are administrators of the meet.
 =head1 WITH ROLES
 
 L<Omniframe::Role::Bcrypt>, L<Omniframe::Role::Model>, L<Omniframe::Role::Time>,
-L<QuizSage::Role::Meet::Build>, L<QuizSage::Role::Data>.
+L<QuizSage::Role::Data>, L<QuizSage::Role::Meet::Build>,
+L<QuizSage::Role::Meet::Settings>.

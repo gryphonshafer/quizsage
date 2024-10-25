@@ -63,17 +63,15 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
     # canonicalize roster and save in quiz settings
 
     $pickup_settings->{roster_data} //= $quiz_defaults->{roster_data};
-
-    my $roster = {
-        default_bible => $pickup_settings->{bible},
-        data          => $pickup_settings->{roster_data},
-    };
-    QuizSage::Model::Meet->parse_and_structure_roster_text( \$roster );
-    $quiz_settings->{teams} = $roster;
+    $quiz_settings->{teams} = QuizSage::Model::Meet->thaw_roster_data(
+        $pickup_settings->{roster_data},
+        $pickup_settings->{bible},
+        {},
+    )->{roster};
 
     # parse material label, append missing bibles, and build material JSON
 
-    my $roster_bibles = { map { $_->{bible} => 1 } map { $_->{quizzers}->@* } @$roster };
+    my $roster_bibles = { map { $_->{bible} => 1 } map { $_->{quizzers}->@* } @{ $quiz_settings->{teams} } };
     my $label         = QuizSage::Model::Label->new( maybe user_id => $user->id );
     my $label_data    = $label->parse(
         $pickup_settings->{material_label} // $quiz_defaults->{material_label}
