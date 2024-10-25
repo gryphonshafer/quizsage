@@ -53,7 +53,7 @@ sub build_settings ($self) {
     return $settings, $default_bible, $tags;
 }
 
-sub canonical_settings ($self) {
+sub canonical_settings ( $self, $user_id = undef ) {
     my ( $settings, $default_bible, $tags ) = $self->build_settings;
 
     $settings->{roster} = {
@@ -66,7 +66,7 @@ sub canonical_settings ($self) {
         maybe tags => ( $tags and keys %$tags ) ? $tags : undef,
     };
 
-    my $label = QuizSage::Model::Label->new;
+    my $label = QuizSage::Model::Label->new( maybe user_id => $user_id );
     for ( $settings, $settings->{brackets}->@* ) {
         $_->{material} = $label->canonicalize( $_->{material} ) if ( $_->{material} );
     }
@@ -304,11 +304,14 @@ translation acronym, and a tags data structure.
 =head2 canonical_settings
 
 Gets data from C<build_settings>, then canonicalizes C<roster.data> via
-C<freeze_roster_data>. It also canonicalizes material labels; however, note that
-material label canonicalism here does not include any private user labels, only
-public labels.
+C<freeze_roster_data>. It also canonicalizes material labels.
 
     my $canonical_settings = $self->canonical_settings;
+
+The method can optionally be provided with a user ID to inform label
+canonicalization.
+
+    my $canonical_settings = $self->canonical_settings($user_id);
 
 =head2 thaw_roster_data
 
