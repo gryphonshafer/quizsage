@@ -208,18 +208,24 @@ sub meet ($self) {
                     $settings->{roster}{default_bible} = $self->param('default_bible');
 
                     $meet->data->{settings} = $settings;
+                    $meet->data->{settings} = $meet->canonical_settings( $self->stash('user')->id );
+
                     $meet->data->{$_} = $self->param($_)
                         for ( grep { $self->param($_) } qw( name location start days passwd ) );
 
-                    $meet->save;
-                    my $warnings = $meet->build( $self->stash('user')->id );
+                    my ( $result, $warnings ) = $meet->save_and_maybe_rebuild( $self->stash('user')->id );
 
-                    $self->flash( message => {
-                        type => ( (@$warnings) ? 'notice' : 'success' ),
-                        text => 'Meet edited and rebuilt' .
-                            ( (@$warnings) ? ', but with the following warnings:' : '' ),
-                        maybe bullets => ( (@$warnings) ? $warnings : undef ),
-                    } );
+                    if ( $result eq 'rebuilt' ) {
+                        $self->flash( message => {
+                            type => ( (@$warnings) ? 'notice' : 'success' ),
+                            text => 'Meet edited and rebuilt' .
+                                ( (@$warnings) ? ', but with the following warnings:' : '' ),
+                            maybe bullets => ( (@$warnings) ? $warnings : undef ),
+                        } );
+                    }
+                    elsif ($result) {
+                        $self->flash( message => $result );
+                    }
 
                     return $self->redirect_to('/season/admin');
                 }

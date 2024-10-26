@@ -569,6 +569,50 @@ sub admins ($self) {
     })->run( $self->id )->all({});
 }
 
+sub save_and_maybe_rebuild ( $self, $user_id = undef ) {
+
+    # What has changed?
+        # name, location, days, passwd := meet->save
+        # some quizzes exist
+            # start := reject change
+            # deep comparison of old settings versus new settings
+                # roster changes
+                    # if same number of teams + same number of quizzers + all quizzers maintain their bibles
+                        # := change parts of build.roster + change any existing quiz.roster + null saved stats
+                    # else := reject change
+                # schedule changes := reject change
+                # bracket
+                    # material := reject change
+                    # weight := null saved stats
+        # no quizzes exist
+            # start := rebuild: events, brackets.*.sets.*.rooms.*.schedule.{start,stop}
+            # deep comparison of old settings versus new settings
+                # roster changes
+                    # not same number of teams := rebuild: all
+                    # same number of teams := change parts of build.roster
+                # schedule changes := rebuild: events, brackets.*.sets.*.rooms.*.schedule.{start,stop}
+                # bracket
+                    # material := canonicalize label + save
+                    # weight := null saved stats
+
+    # ##########################################################################################
+
+    # my $data = $meet->thaw( $meet->freeze( $meet->data ) );
+    # for my $name ( qw( name location start days passwd settings ) ) {
+    #     if ( $meet->is_dirty( $name, $data ) ) {
+    #         $self->warn(
+    #             $name . ' = ' . $data->{$name}
+    #         );
+    #     }
+    # }
+
+    return 'This is a specific (example) error message';
+
+    $self->save;
+    my $warnings = $self->build($user_id);
+    return 'rebuilt', $warnings;
+}
+
 1;
 
 =head1 NAME
@@ -681,14 +725,23 @@ limited to: C<quizzers>, C<teams>, C<rankings>, C<meta>.
 Requires a loaded user object and will return a boolean of whether the user is
 authorized as an administrator of the meet.
 
+=head2 admin
+
+Returns an arrayref of hashrefs of users who are administrators of the meet.
+
 =head2 admins
 
 Requires either "add" or "remove" followed by a user ID. Will then either add
 or remove that user to/from the list of administrators of the meet.
 
-=head2 admin
+=head2 save_and_maybe_rebuild
 
-Returns an arrayref of hashrefs of users who are administrators of the meet.
+This method will look at C<data> that's changed (but not yet saved) in the object,
+and based on what data has changed, potentially save it, and based on what data
+was changed, potentially thereafter rebuild the meet's C<build>.
+
+It'll return either "rebuilt" and an arrayref of any warnings from the build,
+or it'll return a text message of any error as to why the save was rejected.
 
 =head1 WITH ROLES
 
