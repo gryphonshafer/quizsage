@@ -43,7 +43,10 @@
         <table>
             <thead>
                 <tr class="bottom">
-                    <th>Position</th>
+                    <th>
+                        Position
+                        <sub class="count">#</sub>
+                    </th>
                     <th>Quizzer</th>
                     <th>Total</th>
                     [% FOR meet IN stats.meets %]
@@ -69,7 +72,10 @@
                     <tr>
                         <td class="[%
                             ( last_position != this_position ) ? 'right' : 'right tie'
-                        %]">[% this_position %]</td>
+                        %]">
+                            [% this_position %]
+                            <sub class="count">[% row_position %]</sub>
+                        </td>
                         <td>
                             [% quizzer.name %][% IF
                                 quizzer.tags AND quizzer.tags.grep('^Rookie$').size %]*[% END %]
@@ -119,7 +125,10 @@
             <table class="stats">
                 <thead>
                     <tr>
-                        <th>Position</th>
+                        <th>
+                            Position
+                            <sub class="count">#</sub>
+                        </th>
                         <th>Name</th>
                         <th>YTD Avg.</th>
                         <th>Total Avg.</th>
@@ -153,7 +162,10 @@
                             <tr>
                                 <td class="[%
                                     ( last_position != this_position ) ? 'right' : 'right tie'
-                                %]">[% this_position %]</td>
+                                %]">
+                                    [% this_position %]
+                                    <sub class="count">[% row_position %]</sub>
+                                </td>
                                 <td>
                                     [% item.name %][%
                                         IF item.tags AND item.tags.grep('^Rookie$').size %]*[% END %]

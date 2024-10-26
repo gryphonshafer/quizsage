@@ -39,12 +39,24 @@
     line-height: 1.5em;
 }
 
-.tie {
+.tie,
+.count {
     font-style: italic;
 
     @include theme.apply( themes.$themes ) {
         color: theme.get('lines');
     }
+}
+
+th .count {
+    @include theme.apply( themes.$themes ) {
+        color: theme.get('header_text');
+    }
+}
+
+td .count {
+    display: inline-block;
+    width  : 1.25em;
 }
 
 p.buttons {
