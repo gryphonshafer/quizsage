@@ -215,16 +215,23 @@ sub meet ($self) {
 
                     my ( $result, $warnings ) = $meet->save_and_maybe_rebuild( $self->stash('user')->id );
 
-                    if ( $result eq 'rebuilt' ) {
+############################################################################################################## TODO: remove
+
+$self->warn( $result, $warnings );
+return $self->redirect_to('/season/3/meet/8/edit');
+
+##############################################################################################################
+
+                    if ( $result eq 'success' ) {
                         $self->flash( message => {
                             type => ( (@$warnings) ? 'notice' : 'success' ),
-                            text => 'Meet edited and rebuilt' .
+                            text => 'Meet changes saved' .
                                 ( (@$warnings) ? ', but with the following warnings:' : '' ),
                             maybe bullets => ( (@$warnings) ? $warnings : undef ),
                         } );
                     }
                     elsif ($result) {
-                        $self->flash( message => $result );
+                        $self->flash( message => 'Changes rejected: ' . $result );
                     }
 
                     return $self->redirect_to('/season/admin');
