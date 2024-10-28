@@ -57,13 +57,17 @@ sub canonical_settings ( $self, $user_id = undef ) {
     my ( $settings, $default_bible, $tags ) = $self->build_settings;
 
     $settings->{roster} = {
-        default_bible => $default_bible,
-        data          => $self->freeze_roster_data(
+        data => $self->freeze_roster_data(
             $settings->{roster},
             $default_bible,
             $tags,
         ),
-        maybe tags => ( $tags and keys %$tags ) ? $tags : undef,
+        maybe tags          => $self->data->{settings}{roster}{tags},
+        maybe default_bible => (
+            ( $default_bible ne $self->conf->get( qw( quiz_defaults bible ) ) )
+                ? $default_bible
+                : undef
+        ),
     };
 
     my $label = QuizSage::Model::Label->new( maybe user_id => $user_id );
@@ -73,7 +77,7 @@ sub canonical_settings ( $self, $user_id = undef ) {
 
     my @all_labels = grep { $_->{material} } $settings, $settings->{brackets}->@*;
     my %unique_labels;
-    $unique_labels{material}++ for (@all_labels);
+    $unique_labels{$_}++ for (@all_labels);
     if ( @all_labels != keys %unique_labels ) {
         # if no meet label, create a meet label of the most common backet label
         ( $settings->{material} ) =
