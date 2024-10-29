@@ -215,13 +215,6 @@ sub meet ($self) {
 
                     my ( $result, $warnings ) = $meet->save_and_maybe_rebuild( $self->stash('user')->id );
 
-############################################################################################################## TODO: remove
-
-$self->warn( $result, $warnings );
-return $self->redirect_to('/season/3/meet/8/edit');
-
-##############################################################################################################
-
                     if ( $result eq 'success' ) {
                         $self->flash( message => {
                             type => ( (@$warnings) ? 'notice' : 'success' ),

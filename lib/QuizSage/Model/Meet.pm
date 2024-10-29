@@ -4,7 +4,6 @@ use exact -class;
 use Mojo::JSON qw( encode_json decode_json );
 use QuizSage::Model::Quiz;
 use QuizSage::Model::Season;
-use YAML::XS qw( Dump Load );
 
 with qw(
     Omniframe::Role::Bcrypt
@@ -13,6 +12,7 @@ with qw(
     QuizSage::Role::Data
     QuizSage::Role::Meet::Build
     QuizSage::Role::Meet::Settings
+    QuizSage::Role::Meet::Editing
 );
 
 my $min_passwd_length = 8;
@@ -570,149 +570,6 @@ sub admins ($self) {
     })->run( $self->id )->all({});
 }
 
-sub save_and_maybe_rebuild ( $self, $user_id = undef ) {
-
-    # ########################################################################################## TODO: remove
-
-    # What has changed?
-        # name, location, days, passwd := meet->save
-        # some quizzes exist
-            # start := reject change
-            # deep comparison of old settings versus new settings
-                # roster changes
-                    # if same number of teams + same number of quizzers + all quizzers maintain their bibles
-                        # := change parts of build.roster + change any existing quiz.roster + null saved stats
-                    # else := reject change
-                # schedule changes := reject change
-                # bracket
-                    # material := reject change
-                    # weight := null saved stats
-        # no quizzes exist
-            # start := rebuild: events, brackets.*.sets.*.rooms.*.schedule.{start,stop}
-            # deep comparison of old settings versus new settings
-                # roster changes
-                    # not same number of teams := rebuild: all
-                    # same number of teams := change parts of build.roster
-                # schedule changes := rebuild: events, brackets.*.sets.*.rooms.*.schedule.{start,stop}
-                # bracket
-                    # material := canonicalize label + save
-                    # weight := null saved stats
-
-    # ##########################################################################################
-
-    my $meet_quizzes = QuizSage::Model::Quiz->new->every({ meet_id => $self->id });
-    my $meet_data    = $self->thaw( $self->freeze( $self->data ) );
-
-    my $get_settings = sub {
-        return {
-            new => $self->data->{settings},
-            old => decode_json $self->saved_data->{settings},
-        };
-    };
-
-    my $get_rosters = sub ( $settings = undef ) {
-        $settings //= $get_settings->();
-        return {
-            map {
-                $_ => $self->thaw_roster_data(
-                    @{ $settings->{$_}{roster} }{ qw( data default_bible tags ) }
-                )->{roster},
-            } keys $settings->%*
-        };
-    };
-
-    my @actions;
-
-    if ( not @$meet_quizzes ) {
-
-        # ########################################################################################## TODO
-
-        # start := rebuild: events, brackets.*.sets.*.rooms.*.schedule.{start,stop}
-        # deep comparison of old settings versus new settings
-            # roster changes
-                # not same number of teams := rebuild: all
-                # same number of teams := change parts of build.roster
-            # schedule changes := rebuild: events, brackets.*.sets.*.rooms.*.schedule.{start,stop}
-            # bracket
-                # material := canonicalize label + save
-                # weight := null saved stats
-
-        # ##########################################################################################
-
-    }
-    else {
-        if ( $self->is_dirty( 'start', $meet_data ) ) {
-            return 'Start cannot be changed after a meet has quizzes';
-        }
-        if ( $self->is_dirty( 'settings', $meet_data ) ) {
-            my $settings = $get_settings->();
-
-            return 'Schedule and overrides cannot be changed after a meet has quizzes' if (
-                Dump( $settings->{old}{schedule}  ) ne Dump( $settings->{new}{schedule}  ) or
-                Dump( $settings->{old}{overrides} ) ne Dump( $settings->{new}{overrides} )
-            );
-
-            if ( Dump( $settings->{old}{brackets} ) ne Dump( $settings->{new}{brackets} ) ) {
-                my $old = Load( Dump( $settings->{old}{brackets} ) );
-                my $new = Load( Dump( $settings->{new}{brackets} ) );
-
-                for my $bracket ( $old->{brackets}->@*, $new->{brackets}->@* ) {
-                    delete $bracket->{weight};
-                    delete $_->{weight} for ( $bracket->{quizzes}->@* );
-                }
-
-                if ( Dump($old) ne Dump($new) ) {
-                    return 'Bracket settings (other than weights) cannot be changed after a meet has quizzes';
-                }
-                else {
-                    push( @actions, 'null_saved_stats', 'save' );
-                }
-            }
-
-            my $rosters = $get_rosters->($settings);
-            if ( Dump( $rosters->{old} ) ne Dump( $rosters->{new} ) ) {
-                my $quizzers = { map { $_ => [
-                    map { $_->{quizzers}->@* } $rosters->{$_}->@*
-                ] } qw( old new ) };
-
-                if (
-                    $rosters->{old}->@* != $rosters->{new}->@* or
-                    $quizzers->{old}->@* != $quizzers->{new}->@* or
-                    join( ', ', map { $_->{bible} } $quizzers->{old}->@* ) ne
-                    join( ', ', map { $_->{bible} } $quizzers->{new}->@* )
-                ) {
-                    return 'Team counts, quizzer counts, and quizzer bibles ' .
-                        'cannot be changed after a meet has quizzes';
-                }
-                else {
-                    push( @actions, 'null_saved_stats', 'save', 'propagate_roster' );
-                }
-            }
-        }
-    }
-
-    push( @actions, 'save' )
-        if ( grep { $self->is_dirty( $_, $meet_data ) } qw( name location days passwd ) );
-
-    # ########################################################################################## TODO
-
-    # @actions
-        # 'null_saved_stats'
-        # 'save'
-        # 'propagate_roster' := change parts of build.roster + change any existing quiz.roster
-
-    # ########################################################################################## TODO: remove
-
-return 'Technically... this WORKED...'; # TODO: remove
-my $warnings = [ 'This is an example build warning message', 'This is a second build warning message' ];
-
-    # ########################################################################################## TODO: uncomment
-
-    # $self->save;
-    # my $warnings = $self->build($user_id);
-    return 'success', $warnings // [];
-}
-
 1;
 
 =head1 NAME
@@ -834,17 +691,8 @@ Returns an arrayref of hashrefs of users who are administrators of the meet.
 Requires either "add" or "remove" followed by a user ID. Will then either add
 or remove that user to/from the list of administrators of the meet.
 
-=head2 save_and_maybe_rebuild
-
-This method will look at C<data> that's changed (but not yet saved) in the object,
-and based on what data has changed, potentially save it, and based on what data
-was changed, potentially thereafter rebuild the meet's C<build>.
-
-It'll return either "rebuilt" and an arrayref of any warnings from the build,
-or it'll return a text message of any error as to why the save was rejected.
-
 =head1 WITH ROLES
 
 L<Omniframe::Role::Bcrypt>, L<Omniframe::Role::Model>, L<Omniframe::Role::Time>,
 L<QuizSage::Role::Data>, L<QuizSage::Role::Meet::Build>,
-L<QuizSage::Role::Meet::Settings>.
+L<QuizSage::Role::Meet::Settings>, L<QuizSage::Role::Meet::Editing>.

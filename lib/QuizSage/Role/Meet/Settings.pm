@@ -5,7 +5,7 @@ use QuizSage::Model::Label;
 use QuizSage::Model::Season;
 
 with qw(
-    Omniframe::Role::Database
+    Omniframe::Role::Model
     QuizSage::Role::Data
 );
 
@@ -397,4 +397,4 @@ quizzers). For example:
 
 =head1 WITH ROLE
 
-L<Omniframe::Role::Database>, L<QuizSage::Role::Data>.
+L<Omniframe::Role::Model>, L<QuizSage::Role::Data>.

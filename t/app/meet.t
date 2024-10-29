@@ -63,9 +63,9 @@ $bible_insert->run( $user->conf->get( qw( quiz_defaults bible ) ) );
 $bible_insert->run($_) for ( qw( BSB ESV NASB NIV ) );
 
 my $mock = mock $meet => ( override => [
-    _create_material_json   => 1,
-    _add_distributions      => 1,
-    _build_settings_cleanup => 1,
+    create_material_json   => 1,
+    add_distributions      => 1,
+    build_settings_cleanup => 1,
 ] );
 
 $meet->build;
