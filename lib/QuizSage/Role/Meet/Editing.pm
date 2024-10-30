@@ -2,6 +2,7 @@ package QuizSage::Role::Meet::Editing;
 
 use exact -role;
 use Mojo::JSON 'decode_json';
+use QuizSage::Model::Label;
 use QuizSage::Model::Quiz;
 use YAML::XS qw( Dump Load );
 
@@ -14,11 +15,17 @@ with qw(
 sub save_and_maybe_rebuild ( $self, $user_id = undef ) {
     my $meet_quizzes = QuizSage::Model::Quiz->new->every({ meet_id => $self->id });
     my $meet_data    = $self->thaw( $self->freeze( $self->data ) );
+    my $label        = QuizSage::Model::Label->new( maybe user_id => $user_id );
 
     my $get_settings = sub {
+        my $settings = decode_json $self->saved_data->{settings};
+        for ( $settings, $settings->{brackets}->@* ) {
+            $_->{material} = $label->canonicalize( $_->{material} ) if ( $_->{material} );
+        }
+
         return {
             new => $self->data->{settings},
-            old => decode_json $self->saved_data->{settings},
+            old => $settings,
         };
     };
 
@@ -52,30 +59,32 @@ sub save_and_maybe_rebuild ( $self, $user_id = undef ) {
                 if ( $settings->{old}{material} // '' ne $settings->{new}{material} // '' );
 
             if ( Dump( $settings->{old}{brackets} ) ne Dump( $settings->{new}{brackets} ) ) {
-                my $old = Load( Dump( $settings->{old}{brackets} ) );
-                my $new = Load( Dump( $settings->{new}{brackets} ) );
-                for my $bracket ( $old->{brackets}->@*, $new->{brackets}->@* ) {
+                my $old_brackets = Load( Dump( $settings->{old}{brackets} ) );
+                my $new_brackets = Load( Dump( $settings->{new}{brackets} ) );
+                for my $bracket ( $old_brackets->@*, $new_brackets->@* ) {
                     delete $bracket->{material};
                     delete $bracket->{weight};
                     delete $_->{weight} for ( $bracket->{quizzes}->@* );
                 }
 
-                if ( Dump($old) ne Dump($new) ) {
+                if ( Dump($old_brackets) ne Dump($new_brackets) ) {
                     push( @actions, 'save', 'build' );
                 }
                 else {
-                    $old = Load( Dump( $settings->{old}{brackets} ) );
-                    $new = Load( Dump( $settings->{new}{brackets} ) );
-                    for my $bracket ( $old->{brackets}->@*, $new->{brackets}->@* ) {
+                    $old_brackets = Load( Dump( $settings->{old}{brackets} ) );
+                    $new_brackets = Load( Dump( $settings->{new}{brackets} ) );
+                    for my $bracket ( $old_brackets->@*, $new_brackets->@* ) {
                         delete $bracket->{weight};
                         delete $_->{weight} for ( $bracket->{quizzes}->@* );
                     }
-                    push( @actions, 'create_material_json', 'save' ) if ( Dump($old) eq Dump($new) );
+                    push( @actions, 'create_material_json', 'save' )
+                        if ( Dump($old_brackets) eq Dump($new_brackets) );
 
-                    $old = Load( Dump( $settings->{old}{brackets} ) );
-                    $new = Load( Dump( $settings->{new}{brackets} ) );
-                    delete $_->{material} for ( $old->{brackets}->@*, $new->{brackets}->@* );
-                    push( @actions, 'null_saved_stats', 'save' ) if ( Dump($old) ne Dump($new) );
+                    $old_brackets = Load( Dump( $settings->{old}{brackets} ) );
+                    $new_brackets = Load( Dump( $settings->{new}{brackets} ) );
+                    delete $_->{material} for ( $old_brackets->@*, $new_brackets->@* );
+                    push( @actions, 'null_saved_stats', 'save' )
+                        if ( Dump($old_brackets) ne Dump($new_brackets) );
                 }
             }
 
@@ -103,14 +112,15 @@ sub save_and_maybe_rebuild ( $self, $user_id = undef ) {
             );
 
             if ( Dump( $settings->{old}{brackets} ) ne Dump( $settings->{new}{brackets} ) ) {
-                my $old = Load( Dump( $settings->{old}{brackets} ) );
-                my $new = Load( Dump( $settings->{new}{brackets} ) );
-                for my $bracket ( $old->{brackets}->@*, $new->{brackets}->@* ) {
+                my $old_brackets = Load( Dump( $settings->{old}{brackets} ) );
+                my $new_brackets = Load( Dump( $settings->{new}{brackets} ) );
+
+                for my $bracket ( $old_brackets->@*, $new_brackets->@* ) {
                     delete $bracket->{weight};
                     delete $_->{weight} for ( $bracket->{quizzes}->@* );
                 }
 
-                if ( Dump($old) ne Dump($new) ) {
+                if ( Dump($old_brackets) ne Dump($new_brackets) ) {
                     return 'Bracket settings (other than weights) cannot be changed after a meet has quizzes';
                 }
                 else {
@@ -161,7 +171,7 @@ sub save_and_maybe_rebuild ( $self, $user_id = undef ) {
 
     if ( grep { $_ eq 'null_saved_stats' } @actions ) {
         $self->notice( 'Meet ' . $self->id . ' editing: null_saved_stats' );
-        $self->dq->sql('UPDATE meet SET stats = NULL WHERE meet_id = ?')->run( $self->id );
+        $self->data->{stats} = undef;
         $self->dq->sql('UPDATE season SET stats = NULL WHERE season_id = ?')->run( $self->data->{season_id} );
     }
 
@@ -197,6 +207,8 @@ sub save_and_maybe_rebuild ( $self, $user_id = undef ) {
                         }
                     }
                 }
+
+                $quiz->save;
             }
         }
     }
