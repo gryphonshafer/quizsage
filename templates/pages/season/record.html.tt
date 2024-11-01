@@ -40,7 +40,7 @@
     <fieldset>
         <legend>[% page.title %]</legend>
 
-        [% MACRO value(key) GET $key OR c.session.flash.$key OR season.data.$key %]
+        [% MACRO value(key) GET $key OR meet.data.$key %]
 
         <label>
             Name:

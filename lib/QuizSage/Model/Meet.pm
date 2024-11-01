@@ -12,6 +12,7 @@ with qw(
     QuizSage::Role::Data
     QuizSage::Role::Meet::Build
     QuizSage::Role::Meet::Settings
+    QuizSage::Role::Meet::Editing
 );
 
 my $min_passwd_length = 8;
@@ -681,17 +682,17 @@ limited to: C<quizzers>, C<teams>, C<rankings>, C<meta>.
 Requires a loaded user object and will return a boolean of whether the user is
 authorized as an administrator of the meet.
 
+=head2 admin
+
+Returns an arrayref of hashrefs of users who are administrators of the meet.
+
 =head2 admins
 
 Requires either "add" or "remove" followed by a user ID. Will then either add
 or remove that user to/from the list of administrators of the meet.
 
-=head2 admin
-
-Returns an arrayref of hashrefs of users who are administrators of the meet.
-
 =head1 WITH ROLES
 
 L<Omniframe::Role::Bcrypt>, L<Omniframe::Role::Model>, L<Omniframe::Role::Time>,
 L<QuizSage::Role::Data>, L<QuizSage::Role::Meet::Build>,
-L<QuizSage::Role::Meet::Settings>.
+L<QuizSage::Role::Meet::Settings>, L<QuizSage::Role::Meet::Editing>.

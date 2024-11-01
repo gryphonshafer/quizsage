@@ -11,20 +11,21 @@ with qw(
     Omniframe::Role::Time
     QuizSage::Role::Data
     QuizSage::Role::JSApp
+    QuizSage::Role::Meet::Settings
 );
 
 sub build ( $self, $user_id = undef ) {
     my ($build_settings) = $self->build_settings;
-    $self->_create_material_json( $build_settings, $user_id );
-    $self->_build_bracket_data($build_settings);
-    my $schedule_integration_warnings = $self->_schedule_integration($build_settings);
-    $self->_add_distributions($build_settings);
-    $self->_build_settings_cleanup($build_settings);
+    $self->create_material_json( $build_settings, $user_id );
+    $self->build_bracket_data($build_settings);
+    my $schedule_integration_warnings = $self->schedule_integration($build_settings);
+    $self->add_distributions($build_settings);
+    $self->build_settings_cleanup($build_settings);
     $self->save({ build => $build_settings });
     return $schedule_integration_warnings;
 }
 
-sub _create_material_json ( $self, $build_settings, $user_id = undef ) {
+sub create_material_json ( $self, $build_settings, $user_id = undef ) {
     for my $set (
         ( $build_settings->{per_quiz} // undef ),
         $build_settings->{brackets}->@*,
@@ -40,7 +41,7 @@ sub _create_material_json ( $self, $build_settings, $user_id = undef ) {
     }
 }
 
-sub _build_bracket_data ( $self, $build_settings ) {
+sub build_bracket_data ( $self, $build_settings ) {
     my $bracket_names;
     $bracket_names->{ $_->{name} }++ for ( $build_settings->{brackets}->@* );
     die "Duplicate bracket names\n" if ( grep { $_ > 1 } values %$bracket_names );
@@ -94,7 +95,7 @@ sub _build_bracket_data ( $self, $build_settings ) {
         }
 
         if ( $bracket->{type} eq 'score_sum' ) {
-            my ($meet) = $self->_build_score_sum_draw(
+            my ($meet) = $self->build_score_sum_draw(
                 $teams,
                 $bracket->{rooms},
                 $bracket->{quizzes_per_team},
@@ -182,7 +183,7 @@ sub _build_bracket_data ( $self, $build_settings ) {
     return;
 }
 
-sub _schedule_integration( $self, $build_settings ) {
+sub schedule_integration( $self, $build_settings ) {
     my $schedule          = delete $build_settings->{schedule} // {};
     my $schedule_duration = $schedule->{duration} // $self->conf->get( qw( quiz_defaults duration ) );
 
@@ -448,7 +449,7 @@ sub _schedule_integration( $self, $build_settings ) {
     return $warnings;
 }
 
-sub _build_score_sum_draw (
+sub build_score_sum_draw (
     $self,
     $teams,
     $rooms            = 1,
@@ -602,7 +603,7 @@ sub _build_score_sum_draw (
     return $meet, $team_stats, $quiz_stats;
 }
 
-sub _add_distributions ( $self, $build_settings ) {
+sub add_distributions ( $self, $build_settings ) {
     my ( $material_json_bibles, $importmap_js );
 
     my $root_dir = $self->conf->get( qw( config_app root_dir ) );
@@ -650,7 +651,7 @@ sub _add_distributions ( $self, $build_settings ) {
     return;
 }
 
-sub _build_settings_cleanup( $self, $build_settings ) {
+sub build_settings_cleanup( $self, $build_settings ) {
     delete $build_settings->{per_quiz}{material}{json_file}
         if ( ( $build_settings->{per_quiz} // {} )->{material} );
     for my $bracket ( $build_settings->{brackets}->@* ) {
@@ -714,67 +715,52 @@ C<parse_and_structure_roster_text>)
 
 =back
 
-=head2 parse_and_structure_roster_text
+=head2 create_material_json
 
-This method requires a reference to a hashref. (Yes, a reference to a
-reference.) The hashref itself must have a C<data> key, which is a string of
-text. The hashref may also have C<default_bible> and C<tags> keys/values.
+This method requires build settings (as provided by C<build_settings> from
+L<QuizSage::Role::Meet::Settings>) and an optional user ID. It will then run
+C<material_json> from L<QuizSage::Util::Material> to build material JSON. In
+doing so, it'll replace bracket C<material> nodes with the C<material> result
+returned from C<material_json>.
 
-    my $roster_data = {
-        data          => '...',
-        default_bible => 'NIV',
-        tags          => {},
-    };
-    $obj->parse_and_structure_roster_text( \$roster_data );
+    my ($build_settings) = $self->build_settings;
+    $self->create_material_json( $build_settings, 42 );
 
-The C<tags> hashref may have keys of C<default> (to represent any default tags
-to apply to all quizzers) and/or C<append> (to contain any tags to append to all
-quizzers). For example:
+=head2 build_bracket_data
 
-    ---
-    default:
-      - Veteran
-    append:
-      - Youth
+This method will build bracket data. It requires build settings and returns
+nothing.
 
-The required C<data> string is a single string with line breaks between teams,
-each team's name being the first item in a paragraph, and each quizzer being a
-line following a team's name. It's possible to optionally add a Bible
-translation after either a team or quizzer. Specific tags for quizzers can be
-appended in parentheses. For example:
+=head2 schedule_integration
 
-    Team 1
-    Alpha Bravo
-    Charlie Delta
-    Echo Foxtrox
+This method requires build settings, and it will use and remove C<schedule> node
+data, integrating it into brackets. It will return an arrayref of any warnings
+derived from the integration process (i.e. time conflicts).
 
-    Team 2 NASB5
-    Gulf Hotel
-    Juliet India NASB (Rookie)
-    Kilo Lima (Rookie)
+=head2 build_score_sum_draw
 
-    Team 3
-    Mike November
-    Oscar Papa (Rookie)
-    Romeo Quebec
+This method is more of a function. It requires an arrayref of team names plus
+optionally number of rooms, quizzes per team, and a boolean as to whether to
+randomize the draw. The method then builds the draw and returns the meet draw
+along with team and quiz statistics about the draw.
 
-The method will parse and structure the roster text, changing the reference from
-pointing to a hashref to pointing to an array with the following structure:
+    my ( $meet, $team_stats, $quiz_stats ) = $self->build_score_sum_draw(
+        [ qw( team1 team2 team3 ... ) ],
+        4, # 4 rooms at the meet
+        6, # 6 quizzes per team
+        1, # randomize
+    );
 
-    ---
-    - name: Team 2
-      quizzers:
-        - bible: NASB5
-          name:  Gulf Hotel
-          tags:  [ 'Veteran', 'Youth' ]
-        - bible: NASB
-          name:  uliet India
-          tags:  [ 'Rookie', 'Youth' ]
-        - bible: NASB5
-          name:  Kilo Lima
-          tags:  [ 'Rookie', 'Youth' ]
+=head2 add_distributions
+
+This method adds distributions into build settings. It requires build settings
+and returns nothing.
+
+=head2 build_settings_cleanup
+
+This method cleans up build settings.
 
 =head1 WITH ROLES
 
 L<Omniframe::Role::Database>, L<Omniframe::Role::Time>, L<QuizSage::Role::Data>,
-L<QuizSage::Role::JSApp>.
+L<QuizSage::Role::JSApp>, L<QuizSage::Role::Meet::Settings>.

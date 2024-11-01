@@ -39,7 +39,7 @@
     <fieldset class="edit_meet">
         <legend>[% page.title %]</legend>
 
-        [% MACRO value(key) GET $key OR c.session.flash.$key OR meet.data.$key %]
+        [% MACRO value(key) GET $key OR meet.data.$key %]
 
         <label>
             Name:

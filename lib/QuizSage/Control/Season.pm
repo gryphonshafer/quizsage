@@ -63,10 +63,7 @@ sub record ($self) {
                 }
                 catch ($e) {
                     $self->notice($e);
-                    $self->flash(
-                        message => 'There was an unexpected error in editing the season.',
-                        map { $_ => $self->param($_) } qw( name location start days settings ),
-                    );
+                    $self->flash( message => 'There was an unexpected error in editing the season.' );
                     return $self->redirect_to( '/season/' . $self->param('season_id') . '/edit' );
                 }
             }
@@ -98,10 +95,7 @@ sub record ($self) {
         }
         catch ($e) {
             $self->notice($e);
-            $self->flash(
-                message => 'There was an unexpected error in creating the season.',
-                map { $_ => $self->param($_) } qw( name location start days settings ),
-            );
+            $self->flash( message => 'There was an unexpected error in creating the season.' );
             return $self->redirect_to('/season/create');
         }
     }
@@ -146,11 +140,14 @@ sub meet ($self) {
                 my $settings = Load( $self->param('settings') );
                 $settings->{roster}{data} = $self->param('roster_data');
 
-                my $warnings = $meet->create({
+                $meet->create({
                     season_id => $self->param('season_id'),
                     settings  => $settings,
                     map { $_ => $self->param($_) } qw( name location start days passwd ),
-                })->build( $self->stash('user')->id );
+                });
+                $meet->data->{settings} = $meet->canonical_settings( $self->param('user_id') );
+                $meet->save;
+                my $warnings = $meet->build( $self->stash('user')->id );
 
                 $self->flash( message => {
                     type => ( (@$warnings) ? 'notice' : 'success' ),
@@ -167,7 +164,6 @@ sub meet ($self) {
                     message => ( length $e < 1024 )
                         ? deat $e
                         : 'There was an unexpected error in creating the meet.',
-                    map { $_ => $self->param($_) } qw( name location start days passwd settings ),
                 );
                 return $self->redirect_to( '/season/' . $self->param('season_id') . '/meet/add' );
             }
@@ -208,29 +204,29 @@ sub meet ($self) {
                     $settings->{roster}{default_bible} = $self->param('default_bible');
 
                     $meet->data->{settings} = $settings;
-                    $meet->data->{$_} = $self->param($_)
+                    $meet->data->{$_}       = $self->param($_)
                         for ( grep { $self->param($_) } qw( name location start days passwd ) );
 
-                    $meet->save;
-                    my $warnings = $meet->build( $self->stash('user')->id );
+                    my ( $result, $warnings ) = $meet->save_after_edit( $self->stash('user')->id );
 
-                    $self->flash( message => {
-                        type => ( (@$warnings) ? 'notice' : 'success' ),
-                        text => 'Meet edited and rebuilt' .
-                            ( (@$warnings) ? ', but with the following warnings:' : '' ),
-                        maybe bullets => ( (@$warnings) ? $warnings : undef ),
-                    } );
+                    if ( $result eq 'success' ) {
+                        $self->flash( message => {
+                            type => ( (@$warnings) ? 'notice' : 'success' ),
+                            text => 'Meet changes saved' .
+                                ( (@$warnings) ? ', but with the following warnings:' : '' ),
+                            maybe bullets => ( (@$warnings) ? $warnings : undef ),
+                        } );
+                    }
+                    elsif ($result) {
+                        $self->notice( 'Season/meet admin: ' . $result );
+                        $self->flash( message => 'Changes rejected: ' . $result );
+                    }
 
-                    return $self->redirect_to('/season/admin');
+                    return $self->redirect_to( '/season/' . $meet->data->{season_id} . '/edit' );
                 }
                 catch ($e) {
                     $self->notice($e);
-                    $self->flash(
-                        message => deat $e,
-                        map { $_ => $self->param($_) } qw(
-                            name location start days passwd settings default_bible roster_data
-                        ),
-                    );
+                    $self->flash( message => 'An error happened: ' . deat $e );
                     return $self->redirect_to(
                         '/season/' . $self->param('season_id') . '/meet/' . $self->param('meet_id') . '/edit'
                     );

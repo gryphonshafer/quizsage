@@ -5,7 +5,7 @@ use QuizSage::Model::Label;
 use QuizSage::Model::Season;
 
 with qw(
-    Omniframe::Role::Database
+    Omniframe::Role::Model
     QuizSage::Role::Data
 );
 
@@ -21,13 +21,13 @@ sub merged_settings ($self) {
         delete $season_settings->{brackets},
         [];
 
-    for my $set ( $season_settings, $meet_settings ) {
-        for ( keys %{ $set->{roster} } ) {
-            ( $settings->{roster}{$_} ) = delete $set->{roster}{$_} if ( $set->{roster}{$_} );
+    for my $source ( $season_settings, $meet_settings ) {
+        for ( keys %{ $source->{roster} } ) {
+            $settings->{roster}{$_} = delete $source->{roster}{$_} if ( $source->{roster}{$_} );
         }
-        delete $set->{roster};
+        delete $source->{roster};
         for my $name ( qw( schedule per_quiz material ) ) {
-            $settings->{$name} = delete $set->{$name} if ( $set->{$name} );
+            $settings->{$name} = delete $source->{$name} if ( $source->{$name} );
         }
     }
 
@@ -209,42 +209,42 @@ sub freeze_roster_data (
             if ( join( ', ', $quizzer->{tags}->@* ) eq join( ', ', $tags->{default}->@* ) );
     }
 
+    my $format_line = sub ( $obj = undef ) {
+        return join( ' ',
+            grep { defined }
+            $obj->{name},
+            $obj->{bible},
+            ( $obj->{tags} and $obj->{tags}->@* )
+                ? '(' . join( ', ', sort $obj->{tags}->@* ) . ')'
+                : undef
+        );
+    };
+
     return join( "\n\n",
         map {
-            my $team;
-            my @quizzers = map {
-                my $bible = $_->{bible};
-                push( @{ $team->{bible} }, $bible )
-                    if ( $bible and not grep { $_ eq $bible } @{ $team->{bible} } );
+            my $team = $_;
+            my $counts;
 
-                my $tags = (
-                    ( $_->{tags} and $_->{tags}->@* )
-                        ? '(' . join( ', ', sort $_->{tags}->@* ) . ')'
-                        : undef
-                );
-                push( @{ $team->{tags}  }, $tags )
-                    if ( $tags and not grep { $_ eq $tags } @{ $team->{tags} } );
+            for my $quizzer ( $team->{quizzers}->@* ) {
+                $counts->{bible}{ $quizzer->{bible} }++ if ( $quizzer->{bible} );
+                $counts->{tags}{$_}++ for ( $quizzer->{tags}->@* );
+            }
 
-                +{
-                    name        => $_->{name},
-                    maybe bible => $bible,
-                    maybe tags  => $tags,
-                };
-            } $_->{quizzers}->@*;
+            for my $bible ( keys $counts->{bible}->%* ) {
+                next unless ( $team->{quizzers}->@* == $counts->{bible}{$bible} );
+                delete $_->{bible} for ( $team->{quizzers}->@* );
+                $team->{bible} = $bible;
+            }
+
+            for my $tag ( keys $counts->{tags}->%* ) {
+                next unless ( $team->{quizzers}->@* == ( $counts->{tags}{$tag} // 0 ) );
+                $_->{tags} = [ grep { $_ ne $tag } $_->{tags}->@* ] for ( $team->{quizzers}->@* );
+                push( @{ $team->{tags} }, $tag );
+            }
 
             join( "\n",
-                join( ' ',
-                    grep { defined }
-                    $_->{name},
-                    ( ( $team->{bible} and $team->{bible}->@* == 1 ) ? $team->{bible}[0] : undef ),
-                    ( ( $team->{tags}  and $team->{tags} ->@* == 1 ) ? $team->{tags} [0] : undef ),
-                ),
-                map {
-                    delete $_->{bible} if ( $team->{bible} and $team->{bible}->@* == 1 );
-                    delete $_->{tags}  if ( $team->{tags}  and $team->{tags} ->@* == 1 );
-                    join( ' ', grep { defined } @$_{ qw( name bible tags ) } );
-                }
-                @quizzers
+                $format_line->($team),
+                map { $format_line->($_) } $team->{quizzers}->@*
             );
         } @$roster
     );
@@ -397,4 +397,4 @@ quizzers). For example:
 
 =head1 WITH ROLE
 
-L<Omniframe::Role::Database>, L<QuizSage::Role::Data>.
+L<Omniframe::Role::Model>, L<QuizSage::Role::Data>.
