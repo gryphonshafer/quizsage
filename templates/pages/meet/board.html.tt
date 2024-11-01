@@ -80,7 +80,7 @@
     [% click_events = BLOCK %]
         let html_class_list;
         let settings;
-        const themes = [ 'light', 'dark', 'sand', 'midnight' ];
+        const themes = [ 'light', 'dark', 'forest', 'sand', 'midnight' ];
 
         window.addEventListener( 'load', () => {
             html_class_list = window.document.querySelector('html').classList;

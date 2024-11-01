@@ -1,11 +1,13 @@
 @use 'light';
 @use 'dark';
+@use 'forest';
 @use 'sand';
 @use 'midnight';
 
 $themes: (
     light   : light.$theme,
     dark    : dark.$theme,
+    forest  : forest.$theme,
     sand    : sand.$theme,
     midnight: midnight.$theme,
 ) !default;

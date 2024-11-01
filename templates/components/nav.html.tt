@@ -107,7 +107,7 @@
         [% END %]
 
         [% FOR type IN [
-            [ 'theme', [ 'light', 'dark', 'sand', 'midnight' ] ],
+            [ 'theme', [ 'light', 'dark', 'forest', 'sand', 'midnight' ] ],
             [ 'style', [ 'rounded', 'square' ] ],
         ] %]
             <li>
