@@ -1,6 +1,6 @@
 [%
-    page.title = 'Season Administration';
     USE date;
+    page.title = 'Season Administration';
 %]
 
 <details [% IF seasons.size == 0 AND meets.size == 0 %]open[% END %]>
@@ -21,8 +21,6 @@
         </span>
     </p>
 </details>
-
-<p><a class="button" href="[% c.url_for('/season/create') %]">Create New Season</a></p>
 
 [% IF seasons.size > 0 %]
     <h2>Seasons Authorized to Administrate</h2>
@@ -80,3 +78,5 @@
         </tbody>
     </table>
 [% END %]
+
+<p><a class="button" href="[% c.url_for('/season/create') %]">Create New Season</a></p>

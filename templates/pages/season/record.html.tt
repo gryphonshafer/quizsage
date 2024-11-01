@@ -1,6 +1,9 @@
-[% page.title = ( NOT season ) ? 'Create New Season' : 'Edit Season' %]
+[%
+    USE date;
+    page.title = ( NOT season ) ? 'Create New Season' : 'Edit Season';
+%]
 
-<a href="[% c.url_for('/season/admin') %]" class="right">Season Administration</a>
+<a href="[% c.url_for('/season/admin') %]" class="button right admin">Season Administration</a>
 
 <details>
     <summary>Instructions</summary>
@@ -34,53 +37,8 @@
     </ul>
 </details>
 
-[% USE date %]
-
-<form method="post" class="admin column">
-    <fieldset>
-        <legend>[% page.title %]</legend>
-
-        [% MACRO value(key) GET $key OR meet.data.$key %]
-
-        <label>
-            Name:
-            <input type="text" name="name" value="[% value('name') %]" placeholder="Name">
-        </label>
-        <label>
-            Location:
-            <input type="text" name="location" value="[% value('location') %]" placeholder="Location">
-        </label>
-        <label>
-            Start:
-            <input type="text" name="start" value="[%
-                this_start = value('start');
-                IF this_start;
-                    date.format( this_start, '%b %-e, %Y' );
-                ELSE;
-                    '';
-                END;
-            %]" placeholder="Start">
-        </label>
-        <label>
-            Days:
-            <input type="text" name="days" value="[% value('days') %]" placeholder="Days">
-        </label>
-
-        <p>
-            Settings:<br>
-            <textarea name="settings">[% value('settings') | trim %]</textarea>
-        </p>
-
-        <input type="submit"
-            value="[% IF NOT season %]Create New Season[% ELSE %]Save Season Data[% END %]">
-    </fieldset>
-</form>
-
 [% IF season %]
     <div class="admin column">
-        <p><a href="[% c.url_for( '/season/' _ season.id _ '/delete' ) %]"
-            class="button confirm">Delete Season</a></p>
-
         [% confirm_js = BLOCK %]
             window.addEventListener( 'load', () => {
                 window.document.querySelectorAll('a.confirm').forEach( a => {
@@ -105,7 +63,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Name</th>
+                        <th>Meet</th>
                         <th>Location</th>
                         <th>Start</th>
                     </tr>
@@ -157,3 +115,48 @@
         [% END %]
     </div>
 [% END %]
+
+<form method="post" class="admin column">
+    <fieldset>
+        <legend>[% page.title %]</legend>
+
+        [% MACRO value(key) GET $key OR meet.data.$key %]
+
+        <label>
+            Name:
+            <input type="text" name="name" value="[% value('name') %]" placeholder="Name">
+        </label>
+        <label>
+            Location:
+            <input type="text" name="location" value="[% value('location') %]" placeholder="Location">
+        </label>
+        <label>
+            Start:
+            <input type="text" name="start" value="[%
+                this_start = value('start');
+                IF this_start;
+                    date.format( this_start, '%b %-e, %Y' );
+                ELSE;
+                    '';
+                END;
+            %]" placeholder="Start">
+        </label>
+        <label>
+            Days:
+            <input type="text" name="days" value="[% value('days') %]" placeholder="Days">
+        </label>
+
+        <p>
+            Settings:<br>
+            <textarea name="settings">[% value('settings') | trim %]</textarea>
+        </p>
+
+        <input type="submit"
+            value="[% IF NOT season %]Create New Season[% ELSE %]Save Season Data[% END %]">
+
+        [% IF season %]
+            <a href="[% c.url_for( '/season/' _ season.id _ '/delete' ) %]"
+                class="button confirm">Delete Season</a>
+        [% END %]
+    </fieldset>
+</form>

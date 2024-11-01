@@ -9,7 +9,7 @@ form.admin {
         font-family: monospace;
         font-size  : 75%;
         line-height: 1em;
-        width      : 26em;
+        width      : 25em;
         height     : 20em;
     }
 
@@ -40,4 +40,9 @@ form.admin {
 
 div.admin {
     margin-top: 1em;
+}
+
+a.admin {
+    margin-top  : 0.5em;
+    margin-right: 0.5em;
 }

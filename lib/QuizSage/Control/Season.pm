@@ -104,7 +104,12 @@ sub record ($self) {
             $season->conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/season.yaml'
         )->slurp ) =~ s/^\-+//;
 
-        $self->stash( settings => $yaml );
+        $self->stash(
+            name     => ( ( localtime() )[5] + 1900 ) . '-' . ( ( localtime() )[5] + 1901 ),
+            start    => '0:0:0 01:08:' . ( ( localtime() )[5] + 1900 ),
+            days     => 365,
+            settings => $yaml,
+        );
     }
 }
 
@@ -124,9 +129,16 @@ sub meet ($self) {
             my $roster_data = Load($yaml)->{roster}{data};
             $yaml =~ s/\nroster\s*:.*(?=\n\w)//ms;
 
+            my $meet_count = QuizSage::Model::Meet->new
+                ->every_data({ season_id => $self->param('season_id') })->@*;
+
             $self->stash(
-                settings    => $yaml,
-                roster_data => $roster_data,
+                name          => 'Meet ' . ( 1 + $meet_count ),
+                start         => $meet->time->set->format('sqlite_min'),
+                days          => 1,
+                settings      => $yaml,
+                default_bible => $meet->conf->get( qw( quiz_defaults bible ) ),
+                roster_data   => $roster_data,
             );
         }
         else {

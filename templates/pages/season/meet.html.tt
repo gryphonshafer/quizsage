@@ -1,6 +1,9 @@
-[% page.title = ( NOT meet ) ? 'Add Meet to Season' : 'Edit Meet' %]
+[%
+    USE date;
+    page.title = ( NOT meet ) ? 'Add Meet to Season' : 'Edit Meet';
+%]
 
-<a href="[% c.url_for('/season/admin') %]" class="right">Season Administration</a>
+<a href="[% c.url_for('/season/admin') %]" class="button right admin">Season Administration</a>
 
 <details>
     <summary>Instructions</summary>
@@ -32,8 +35,6 @@
         </li>
     </ul>
 </details>
-
-[% USE date %]
 
 <form method="post" class="admin column">
     <fieldset class="edit_meet">
@@ -77,6 +78,12 @@
 
         <input type="submit"
             value="[% IF NOT meet %]Create New Meet[% ELSE %]Save Meet Data[% END %]">
+
+        [% IF meet %]
+            <a href="[%
+                c.url_for( '/season/' _ meet.data.season_id _ '/meet/' _ meet.id _ '/delete' )
+            %]" class="button confirm">Delete Meet</a>
+        [% END %]
     </fieldset>
 
     <fieldset class="roster">
@@ -91,10 +98,6 @@
 
 [% IF meet %]
     <div class="admin column">
-        <p><a href="[%
-            c.url_for( '/season/' _ meet.data.season_id _ '/meet/' _ meet.id _ '/delete' )
-        %]" class="button confirm">Delete Meet</a></p>
-
         [% confirm_js = BLOCK %]
             window.addEventListener( 'load', () => {
                 window.document.querySelectorAll('a.confirm').forEach( a => {
