@@ -12,7 +12,9 @@ with qw(
     QuizSage::Role::Meet::Settings
 );
 
-sub save_and_maybe_rebuild ( $self, $user_id = undef ) {
+sub save_after_edit ( $self, $user_id = undef ) {
+    $self->data->{settings} = $self->canonical_settings($user_id);
+
     my $meet_quizzes = QuizSage::Model::Quiz->new->every({ meet_id => $self->id });
     my $meet_data    = $self->thaw( $self->freeze( $self->data ) );
     my $label        = QuizSage::Model::Label->new( maybe user_id => $user_id );
@@ -192,18 +194,21 @@ sub save_and_maybe_rebuild ( $self, $user_id = undef ) {
 
             for my $quiz (@$meet_quizzes) {
                 for my $i ( 0 .. @{ $quiz->data->{settings}{teams} } - 1 ) {
-                    my ($team_map) = grep {
+                    ( $quiz->data->{settings}{teams}[$i] ) = map { $_->{new} } grep {
                         $_->{old}{name} eq $quiz->data->{settings}{teams}[$i]{name}
                     } @team_map;
 
-                    $quiz->data->{settings}{teams}[$i]    = $team_map->{new};
-                    $quiz->data->{state}{teams}[$i]{name} = $team_map->{new}{name};
+                    if ( $quiz->data->{state} ) {
+                        my $settings_team = $quiz->data->{settings}{teams}[$i];
+                        my $state_team    = $quiz->data->{state}{teams}[$i];
 
-                    for my $j ( 0 .. @{ $quiz->data->{state}{teams}[$i]{quizzers} } - 1 ) {
-                        for ( qw( name bible tags ) ) {
-                            $quiz->data->{state}{teams}[$i]{quizzers}[$j]{$_} =
-                                $team_map->{new}{quizzers}[$j]{$_}
-                                if ( defined $team_map->{new}{quizzers}[$j]{$_} );
+                        $state_team->{name} = $settings_team->{name};
+
+                        for my $j ( 0 .. @{ $settings_team->{quizzers} } - 1 ) {
+                            $state_team->{quizzers}[$j]{name}  = $settings_team->{quizzers}[$j]{name};
+                            $state_team->{quizzers}[$j]{bible} = $settings_team->{quizzers}[$j]{bible};
+                            $state_team->{quizzers}[$j]{tags}  = $settings_team->{quizzers}[$j]{tags}
+                                if ( $settings_team->{quizzers}[$j]{tags} );
                         }
                     }
                 }
@@ -263,14 +268,14 @@ QuizSage::Role::Meet::Editing
     with 'QuizSage::Role::Meet::Editing';
 
     sub method ( $self, $user_id = undef ) {
-        my ( $result, $warnings ) = $self->save_and_maybe_rebuild($user_id);
+        my ( $result, $warnings ) = $self->save_after_edit($user_id);
     }
 
 =head1 DESCRIPTION
 
 This role provides meet editing capability.
 
-=head2 save_and_maybe_rebuild
+=head2 save_after_edit
 
 This method will look at C<data> that's changed (but not yet saved) in the object,
 and based on what data has changed, potentially save it, and based on what data

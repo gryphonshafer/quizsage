@@ -140,11 +140,14 @@ sub meet ($self) {
                 my $settings = Load( $self->param('settings') );
                 $settings->{roster}{data} = $self->param('roster_data');
 
-                my $warnings = $meet->create({
+                $meet->create({
                     season_id => $self->param('season_id'),
                     settings  => $settings,
                     map { $_ => $self->param($_) } qw( name location start days passwd ),
-                })->build( $self->stash('user')->id );
+                });
+                $meet->data->{settings} = $meet->canonical_settings( $self->param('user_id') );
+                $meet->save;
+                my $warnings = $meet->build( $self->stash('user')->id );
 
                 $self->flash( message => {
                     type => ( (@$warnings) ? 'notice' : 'success' ),
@@ -201,12 +204,10 @@ sub meet ($self) {
                     $settings->{roster}{default_bible} = $self->param('default_bible');
 
                     $meet->data->{settings} = $settings;
-                    $meet->data->{settings} = $meet->canonical_settings( $self->stash('user')->id );
-
-                    $meet->data->{$_} = $self->param($_)
+                    $meet->data->{$_}       = $self->param($_)
                         for ( grep { $self->param($_) } qw( name location start days passwd ) );
 
-                    my ( $result, $warnings ) = $meet->save_and_maybe_rebuild( $self->stash('user')->id );
+                    my ( $result, $warnings ) = $meet->save_after_edit( $self->stash('user')->id );
 
                     if ( $result eq 'success' ) {
                         $self->flash( message => {
