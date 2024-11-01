@@ -38,9 +38,9 @@
                     <b>Memorization</b>
                     <ul>
                         [% FOR icon_link_data IN [
-                            [ ['Initial Memorization'], '/memory/memorize', 'memorize' ],
-                            [ ['Memorization Review'],  '/memory/review',   'review'   ],
-                            [ ['Memory State'],         '/memory/state',    'memory'   ],
+                            [ ['Initial Memorization'], '/memory/memorize/setup', 'memorize' ],
+                            [ ['Memorization Review'],  '/memory/review',         'review'   ],
+                            [ ['Memory State'],         '/memory/state',          'memory'   ],
                         ] %]
                             <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
                         [% END %]
