@@ -165,20 +165,6 @@ div.teams_column {
     margin-top    : 1em;
 }
 
-span.query {
-    position: absolute;
-    top     : 0.5em;
-    right   : 0.75em;
-}
-
-a.qm_auth {
-    font-style     : italic;
-    position       : absolute;
-    bottom         : 0.5em;
-    right          : 0.75em;
-    text-decoration: none;
-}
-
 table.recent_pickup_quizzes {
     @media ( min-width: 800px ) {
         th:nth-of-type(2),

@@ -23,7 +23,7 @@
         [% END %]
 
         [% FOR set IN bracket.sets %]
-            <div>
+            <div class="distribution_box_container">
                 [% FOR quiz IN set.rooms %]
                     <div class="summary_box distribution_box">
                         <b>Quiz: [% quiz.name %]</b>

@@ -106,11 +106,11 @@
                 event                     = events.$event_index;
             %]
             <div class="info_box">
-                <b>[% event.name %]</b>
+                <b>[% event.name %]</b> —
                 <time datetime="[% event.start %]">[% date.format( event.start, '%a, %b %-d' ) %]</time>
-                from <time datetime="[% event.start %]">[% date.format( event.start, '%-I:%M %p' ) %]</time>
+                from <time datetime="[% event.start %]"><b>[% date.format( event.start, '%-I:%M %p' ) %]</b></time>
                 to <time datetime="[% event.stop %]">[% date.format( event.stop, '%-I:%M %p' ) %]</time>
-                ([% event.duration %] minutes)
+                ([% event.duration %] min.)
             </div>
         [% END %]
     [% END %]
@@ -132,17 +132,19 @@
             [% IF schedule %]
                 <div class="summary_box schedule_row_lead">
                     <time datetime="[% schedule.start %]">[%
-                        date.format( schedule.start, '%a, %b %-d' ) %]</time><br>
-                    <time datetime="[% schedule.start %]">[%
-                        date.format( schedule.start, '%-I:%M %p' ) %]</time><br>
+                        date.format( schedule.start, '%a, %b %-d' ) %]</time>
+                    <span class="time_preposition">from</span>
+                    <time datetime="[% schedule.start %]"><b>[%
+                        date.format( schedule.start, '%-I:%M %p' ) %]</b></time>
+                    <span class="time_preposition">to</span>
                     <time datetime="[% schedule.stop %]">[%
-                        date.format( schedule.stop, '%-I:%M %p' ) %]</time><br>
-                    [% schedule.duration %] minutes
+                        date.format( schedule.stop, '%-I:%M %p' ) %]</time>
+                    ([% schedule.duration %] min.)
                 </div>
             [% END %]
 
             [% FOR quiz IN set.rooms %]
-                <div class="summary_box relative">
+                <div class="summary_box schedule_row_cell relative">
                     [%
                         resolved_teams = 0;
                         teams_names    = [];
