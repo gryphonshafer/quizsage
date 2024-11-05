@@ -197,6 +197,22 @@ select#team_highlight {
     padding: 0 0.25em;
 }
 
+b.team_highlight {
+    cursor: pointer;
+
+    &:hover {
+        @include theme.apply( themes.$themes ) {
+            color: theme.get('a_hover');
+        }
+    }
+
+    &:active {
+        @include theme.apply( themes.$themes ) {
+            color: theme.get('a_active');
+        }
+    }
+}
+
 b.team_highlight_on {
     @include theme.apply( themes.$themes ) {
         color           : theme.get('selection_color');

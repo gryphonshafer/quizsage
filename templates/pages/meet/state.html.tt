@@ -84,7 +84,8 @@
 [% highlight_js = BLOCK %]
     window.addEventListener( 'load', () => {
         const highlight_select = window.document.querySelector('select#team_highlight');
-        const team_highlight   = function () {
+
+        const team_highlight = function () {
             window.document.querySelectorAll('.team_highlight').forEach( element => {
                 element.classList.remove('team_highlight_on');
                 if (
@@ -94,6 +95,20 @@
             } );
         };
         highlight_select.onchange = team_highlight;
+
+        window.document.querySelectorAll('b.team_highlight').forEach( b => {
+            b.onclick = () => {
+                const team_code = b.textContent.toLowerCase().replace( /\s/g, '' );
+                for (let i = 0; i < highlight_select.options.length; i++) {
+                    if ( highlight_select.options[i].value === team_code ) {
+                        highlight_select.options[i].selected = true;
+                        break;
+                    }
+                }
+                team_highlight();
+            };
+        } );
+
         team_highlight();
     } );
 [% END %]
