@@ -196,21 +196,3 @@ a.button {
         }
     }
 }
-
-label.smart_search {
-    position: relative;
-
-    select {
-        position              : absolute;
-        top                   : 100%;
-        right                 : -10em;
-        width                 : 23em;
-        border-top-left-radius: 0;
-        visibility            : hidden;
-        overflow-y            : auto;
-
-        option {
-            padding: 0.25em 0.5em;
-        }
-    }
-}

@@ -124,7 +124,10 @@ sub state ($self) {
         );
     }
 
-    $self->stash( state => $memory->state( $self->stash('user') ) );
+    $self->stash(
+        state      => $memory->state( $self->stash('user') ),
+        users_list => $self->stash('user')->active_users_list,
+    );
 }
 
 1;

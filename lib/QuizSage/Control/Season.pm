@@ -77,6 +77,7 @@ sub record ($self) {
                     meets    => $self->_filter_and_sort(
                         QuizSage::Model::Meet->new->every({ season_id => $self->param('season_id') })
                     ),
+                    users_list => $self->stash('user')->active_users_list,
                 );
             }
         }
@@ -206,6 +207,7 @@ sub meet ($self) {
                     settings      => $yaml,
                     default_bible => $default_bible // $meet->conf->get( qw( quiz_defaults bible ) ),
                     roster_data   => $roster_data,
+                    users_list    => $self->stash('user')->active_users_list,
                 );
             }
             else {

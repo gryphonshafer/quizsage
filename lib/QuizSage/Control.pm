@@ -89,8 +89,6 @@ sub startup ($self) {
 
     $users->any("/label/$_")->to("label#$_") for ( qw( tester editor ) );
 
-    $users->any('/user_select')->to('main#user_select');
-
     $users->any("/quiz/$_")->to("quiz#$_") for ( qw( teams build ) );
 
     $users

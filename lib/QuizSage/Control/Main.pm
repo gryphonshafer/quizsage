@@ -170,10 +170,6 @@ sub setup ($self) {
     }
 }
 
-sub user_select ($self) {
-    $self->render( json => QuizSage::Model::User->new->by_full_name( $self->param('name') ) );
-}
-
 sub download ($self) {
     $self->stash( shards => $conf->get( qw( database shards ) ) );
     if ( my $shard = $self->param('shard') ) {
@@ -224,11 +220,6 @@ the name C<captcha>.
 =head2 setup
 
 This method handles setting up settings for various other parts of QuizSage.
-
-=head2 user_select
-
-This method expects a C<name> parameter and provides JSON data of users that
-match the input.
 
 =head2 download
 
