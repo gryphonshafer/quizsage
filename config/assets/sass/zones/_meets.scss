@@ -19,7 +19,7 @@ div.info_box {
 div.summary_box {
     border          : 1px solid;
     display         : inline-block;
-    margin          : 0.5em;
+    margin          : 0.5em 0.5em 0.25em 0;
     padding         : 0.5em;
     width           : 13em;
     height          : 15em;
@@ -31,12 +31,8 @@ div.summary_box {
     }
 
     @include theme.apply( themes.$styles, 'style' ) {
-        border-radius: calc( theme.get('radius') * 2 );
+        border-radius: theme.get('radius');
     }
-}
-
-div.schedule_row_lead {
-    width: 6em;
 }
 
 div.roster_box {
@@ -53,13 +49,97 @@ div.distribution_box {
     }
 }
 
+div.distribution_box_container:last-of-type {
+    padding-bottom: 1em;
+}
+
 body.state div.schedule_row {
-    font-size   : 75%;
-    line-height : 1.5em;
-    padding-left: 8em;
+    font-size  : 75%;
+    line-height: 1.5em;
+    margin-left: calc( 7em - 1px );
+
+    div.summary_box {
+        padding: 0.125em 0.5em;
+    }
 
     div.schedule_row_lead {
-        margin-left: calc( -8em + 1px );
+        width      : 5em;
+        height     : 6.125em;
+        margin-left: calc( -7em + 1px );
+
+        time {
+            display: block;
+        }
+
+        span.time_preposition {
+            display: none;
+        }
+    }
+
+    div.schedule_row_cell {
+        width: 10em;
+
+        span.query {
+            position: absolute;
+            top     : 0.125em;
+            right   : 0.5em;
+        }
+
+        ul {
+            margin-left: 1em;
+        }
+
+        a.qm_auth {
+            font-style     : italic;
+            position       : absolute;
+            bottom         : 0.25em;
+            right          : 0.5em;
+            text-decoration: none;
+        }
+    }
+
+    @media only screen and ( min-width: 1000px ) {
+        font-size  : 100%;
+        line-height: 1.5em;
+
+        div.summary_box {
+            padding: 0.5em 0.75em;
+        }
+
+        div.schedule_row_cell {
+            span.query {
+                top: 0.5em;
+            }
+        }
+    }
+
+    @media ( max-width: 430px ) {
+        margin-left: 0;
+        text-align : right;
+
+        div.schedule_row_lead {
+            text-align  : left;
+            width       : auto;
+            height      : min-content;
+            display     : block;
+            margin-left : 0;
+            margin-right: 0;
+
+            time,
+            span.time_preposition {
+                display: inline;
+            }
+        }
+
+        div.schedule_row_cell {
+            text-align: left;
+        }
+    }
+
+    @media print {
+        a.qm_auth {
+            display: none;
+        }
     }
 }
 
@@ -110,5 +190,51 @@ table.stats {
     @media ( max-width: 550px ) {
         font-size  : 30%;
         line-height: 1.5em;
+    }
+}
+
+select#team_highlight {
+    padding: 0 0.25em;
+}
+
+b.team_highlight {
+    cursor: pointer;
+
+    &:hover {
+        @include theme.apply( themes.$themes ) {
+            color: theme.get('a_hover');
+        }
+    }
+
+    &:active {
+        @include theme.apply( themes.$themes ) {
+            color: theme.get('a_active');
+        }
+    }
+}
+
+b.team_highlight_on {
+    @include theme.apply( themes.$themes ) {
+        color           : theme.get('selection_color');
+        background-color: theme.get('selection_background');
+    }
+
+    padding-left : 0.25em;
+    padding-right: 0.25em;
+
+    @include theme.apply( themes.$styles, 'style' ) {
+        border-radius: calc( theme.get('radius') / 2 );
+    }
+}
+
+div.team_highlight_on {
+    @include theme.apply( themes.$themes ) {
+        background-color: theme.get('td_selected_background');
+    }
+}
+
+div.active_quiz {
+    @include theme.apply( themes.$themes ) {
+        background-color: theme.get('form_active_background');
     }
 }

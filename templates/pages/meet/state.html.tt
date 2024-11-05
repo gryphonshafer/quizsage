@@ -69,6 +69,51 @@
     </li>
 </ul>
 
+<ul class="column no_print">
+    <li>
+        Team Highlight:
+        <select id="team_highlight">
+            <option value="">None</option>
+            [% FOR team IN state.roster %]
+                <option value="[% team.name.lower.replace( '\s', '' ) %]">[% team.name %]</option>
+            [% END %]
+        </select>
+    </li>
+</ul>
+
+[% highlight_js = BLOCK %]
+    window.addEventListener( 'load', () => {
+        const highlight_select = window.document.querySelector('select#team_highlight');
+
+        const team_highlight = function () {
+            window.document.querySelectorAll('.team_highlight').forEach( element => {
+                element.classList.remove('team_highlight_on');
+                if (
+                    highlight_select.value &&
+                    element.classList.contains( 'team_highlight_' + highlight_select.value )
+                ) element.classList.add('team_highlight_on');
+            } );
+        };
+        highlight_select.onchange = team_highlight;
+
+        window.document.querySelectorAll('b.team_highlight').forEach( b => {
+            b.onclick = () => {
+                const team_code = b.textContent.toLowerCase().replace( /\s/g, '' );
+                for (let i = 0; i < highlight_select.options.length; i++) {
+                    if ( highlight_select.options[i].value === team_code ) {
+                        highlight_select.options[i].selected = true;
+                        break;
+                    }
+                }
+                team_highlight();
+            };
+        } );
+
+        team_highlight();
+    } );
+[% END %]
+[% page.js.inline.push(highlight_js) %]
+
 [% last_rendered_event_index = -1 %]
 [% BLOCK event %]
     [%
@@ -106,11 +151,11 @@
                 event                     = events.$event_index;
             %]
             <div class="info_box">
-                <b>[% event.name %]</b>
+                <b>[% event.name %]</b> —
                 <time datetime="[% event.start %]">[% date.format( event.start, '%a, %b %-d' ) %]</time>
-                from <time datetime="[% event.start %]">[% date.format( event.start, '%-I:%M %p' ) %]</time>
+                from <time datetime="[% event.start %]"><b>[% date.format( event.start, '%-I:%M %p' ) %]</b></time>
                 to <time datetime="[% event.stop %]">[% date.format( event.stop, '%-I:%M %p' ) %]</time>
-                ([% event.duration %] minutes)
+                ([% event.duration %] min.)
             </div>
         [% END %]
     [% END %]
@@ -129,39 +174,63 @@
         %]
 
         <div class="schedule_row">
+            [%
+                row_has_active_quiz = 0;
+                FOR quiz IN set.rooms;
+                    IF quiz.current_query_id;
+                        row_has_active_quiz = 1;
+                    END;
+                END;
+            %]
+
             [% IF schedule %]
-                <div class="summary_box schedule_row_lead">
+                <div class="
+                    summary_box
+                    schedule_row_lead
+                    [% IF row_has_active_quiz %]active_quiz[% END %]
+                ">
                     <time datetime="[% schedule.start %]">[%
-                        date.format( schedule.start, '%a, %b %-d' ) %]</time><br>
-                    <time datetime="[% schedule.start %]">[%
-                        date.format( schedule.start, '%-I:%M %p' ) %]</time><br>
+                        date.format( schedule.start, '%a, %b %-d' ) %]</time>
+                    <span class="time_preposition">from</span>
+                    <time datetime="[% schedule.start %]"><b>[%
+                        date.format( schedule.start, '%-I:%M %p' ) %]</b></time>
+                    <span class="time_preposition">to</span>
                     <time datetime="[% schedule.stop %]">[%
-                        date.format( schedule.stop, '%-I:%M %p' ) %]</time><br>
-                    [% schedule.duration %] minutes
+                        date.format( schedule.stop, '%-I:%M %p' ) %]</time>
+                    ([% schedule.duration %] min.)
                 </div>
             [% END %]
 
             [% FOR quiz IN set.rooms %]
-                <div class="summary_box relative">
-                    [%
-                        resolved_teams = 0;
-                        teams_names    = [];
-                        FOR team IN quiz.roster;
-                            resolved_teams = resolved_teams + 1 IF team.name;
-                            teams_names.push( team.name );
-                        END;
-                        teams_resolved = ( resolved_teams == quiz.roster.size ) ? 1 : 0;
+                [%
+                    resolved_teams = 0;
+                    teams_names    = [];
+                    teams_codes    = [];
+                    FOR team IN quiz.roster;
+                        resolved_teams = resolved_teams + 1 IF team.name;
+                        teams_names.push( team.name );
+                        teams_codes.push( 'team_highlight_' _ team.name.lower.replace( '\s', '' ) );
+                    END;
+                    teams_resolved = ( resolved_teams == quiz.roster.size ) ? 1 : 0;
 
-                        href =
-                            ( quiz.id ) ? c.url_for( '/quiz/' _ quiz.id ) :
-                            ( qm_auth AND teams_resolved ) ? c.url_for('/quiz/build').query(
-                                meet    => c.param('meet_id'),
-                                bracket => bracket.name,
-                                quiz    => quiz.name,
-                                team    => teams_names,
-                            ) :
-                            undef;
-                    %]
+                    href =
+                        ( quiz.id ) ? c.url_for( '/quiz/' _ quiz.id ) :
+                        ( qm_auth AND teams_resolved ) ? c.url_for('/quiz/build').query(
+                            meet    => c.param('meet_id'),
+                            bracket => bracket.name,
+                            quiz    => quiz.name,
+                            team    => teams_names,
+                        ) :
+                        undef;
+                %]
+
+                <div class="
+                    summary_box
+                    schedule_row_cell
+                    team_highlight [% teams_codes.join(' ') %]
+                    relative
+                    [% IF quiz.current_query_id %]active_quiz[% END %]
+                ">
                     [% IF href %]<a href="[% href %]">[% END %]<b>Quiz: [%
                         quiz.name
                     %]</b>[% IF href %]</a>[% END %]<br>
