@@ -232,3 +232,9 @@ div.team_highlight_on {
         background-color: theme.get('td_selected_background');
     }
 }
+
+div.active_quiz {
+    @include theme.apply( themes.$themes ) {
+        background-color: theme.get('form_active_background');
+    }
+}

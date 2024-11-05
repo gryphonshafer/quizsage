@@ -174,8 +174,21 @@
         %]
 
         <div class="schedule_row">
+            [%
+                row_has_active_quiz = 0;
+                FOR quiz IN set.rooms;
+                    IF quiz.current_query_id;
+                        row_has_active_quiz = 1;
+                    END;
+                END;
+            %]
+
             [% IF schedule %]
-                <div class="summary_box schedule_row_lead">
+                <div class="
+                    summary_box
+                    schedule_row_lead
+                    [% IF row_has_active_quiz %]active_quiz[% END %]
+                ">
                     <time datetime="[% schedule.start %]">[%
                         date.format( schedule.start, '%a, %b %-d' ) %]</time>
                     <span class="time_preposition">from</span>
@@ -211,7 +224,13 @@
                         undef;
                 %]
 
-                <div class="summary_box schedule_row_cell team_highlight [% teams_codes.join(' ') %] relative">
+                <div class="
+                    summary_box
+                    schedule_row_cell
+                    team_highlight [% teams_codes.join(' ') %]
+                    relative
+                    [% IF quiz.current_query_id %]active_quiz[% END %]
+                ">
                     [% IF href %]<a href="[% href %]">[% END %]<b>Quiz: [%
                         quiz.name
                     %]</b>[% IF href %]</a>[% END %]<br>
