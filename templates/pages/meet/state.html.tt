@@ -191,10 +191,10 @@
                 ">
                     <time datetime="[% schedule.start %]">[%
                         date.format( schedule.start, '%a, %b %-d' ) %]</time>
-                    <span class="time_preposition">from</span>
+                    <span class="time_preposition"> from </span>
                     <time datetime="[% schedule.start %]"><b>[%
                         date.format( schedule.start, '%-I:%M %p' ) %]</b></time>
-                    <span class="time_preposition">to</span>
+                    <span class="time_preposition"> to </span>
                     <time datetime="[% schedule.stop %]">[%
                         date.format( schedule.stop, '%-I:%M %p' ) %]</time>
                     ([% schedule.duration %] min.)
