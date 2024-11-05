@@ -2,7 +2,9 @@
     [% FOR team IN roster %]
         <li>[%
             IF team.name;
-                '<b>' _ team.name _ '</b>';
+                '<b class="team_highlight ' _
+                    'team_highlight_' _ team.name.lower.replace( '\s', '' ) _ '">' _
+                    team.name _ '</b>';
 
                 IF team.score;
                     '<br><i>';

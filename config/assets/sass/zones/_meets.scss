@@ -81,7 +81,7 @@ body.state div.schedule_row {
 
         span.query {
             position: absolute;
-            top     : 0.25em;
+            top     : 0.125em;
             right   : 0.5em;
         }
 
@@ -104,6 +104,12 @@ body.state div.schedule_row {
 
         div.summary_box {
             padding: 0.5em 0.75em;
+        }
+
+        div.schedule_row_cell {
+            span.query {
+                top: 0.5em;
+            }
         }
     }
 
@@ -184,5 +190,29 @@ table.stats {
     @media ( max-width: 550px ) {
         font-size  : 30%;
         line-height: 1.5em;
+    }
+}
+
+select#team_highlight {
+    padding: 0 0.25em;
+}
+
+b.team_highlight_on {
+    @include theme.apply( themes.$themes ) {
+        color           : theme.get('selection_color');
+        background-color: theme.get('selection_background');
+    }
+
+    padding-left : 0.25em;
+    padding-right: 0.25em;
+
+    @include theme.apply( themes.$styles, 'style' ) {
+        border-radius: calc( theme.get('radius') / 2 );
+    }
+}
+
+div.team_highlight_on {
+    @include theme.apply( themes.$themes ) {
+        background-color: theme.get('td_selected_background');
     }
 }
