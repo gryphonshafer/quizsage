@@ -1,5 +1,5 @@
 <header>
-    <a href="[% c.url_for('/') %]"><img
+    <a href="[% c.url_for('/') %]" title="Home Page"><img
         src="[% c.url_for('/logo/source.svg') %]" alt="QuizSage" width="32" height="32"></a>
     <h1>[% IF base_title != 'QuizSage'
         %]<span class="hide_priority_1">QuizSage: </span>[% END %][% base_title %]</h1>
@@ -33,12 +33,11 @@
                     ];
                 END;
 
-                icon_link_data_set.push(
-                    [ 'Logout', '/user/logout', 'logout' ],
-                );
+                icon_link_data_set.push( [ 'Logout', '/user/logout', 'logout' ] );
             END;
 
-            icon_link_data_set.unshift( [ 'Home', '/', 'home' ] );
+            icon_link_data_set.unshift( [ 'Documentation', '/docs', 'docs' ] );
+            icon_link_data_set.unshift( [ 'Home Page', '/', 'home' ] );
 
             FOR icon_link_data IN icon_link_data_set;
                 PROCESS icon_link.html.tt, data = icon_link_data;

@@ -21,6 +21,7 @@
         password        => 'key',
         lookup          => 'dictionary',
         reference       => 'library_books',
+        docs            => 'description',
     };
 
     title   = '';

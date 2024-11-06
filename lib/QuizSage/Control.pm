@@ -121,9 +121,9 @@ sub startup ($self) {
     $all->any('/user/create')->to( 'user#account', account_action_type => 'create' );
     $all->any("/user/$_/:user_id/:user_hash")->to("user#$_") for ( qw( verify reset_password ) );
 
-    $all->any( '/docs/*name' => sub ($c) {
+    $all->any( '/docs/*name' => { name => 'index.md' } => sub ($c) {
         $c->document( 'docs/' . $c->stash('name') );
-        $c->stash( docs_nav => $c->docs_nav('docs') );
+        $c->stash( docs_nav => $c->docs_nav( 'docs', 'md', 'Documentation' ) );
 
         if ( $c->stash('html') ) {
             $c->render( template => 'docs' );

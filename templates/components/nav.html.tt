@@ -25,6 +25,7 @@
     [% PROCESS icon_link.html.tt, data = [ 'Navigation Menu', '#', 'menu', [ 'toggle_menu', 'current' ] ] %]
     <ul>
         <li>[% PROCESS icon_link.html.tt, data = [ ['Home Page'], '/', 'home' ] %]</li>
+        <li>[% PROCESS icon_link.html.tt, data = [ ['Documentation'], '/docs', 'docs' ] %]</li>
         [% UNLESS user %]
             [% FOR icon_link_data IN [
                 [ ['Create New User'], '/user/create',          'create_user'     ],
@@ -124,13 +125,13 @@
         [% END %]
 
         [% IF user %]
+            <li><a href="[% c.url_for('/season/admin') %]">Season Admin.</a></li>
+            <li><a href="[% c.url_for('/download') %]">Download Databases</a></li>
+
             [% UNLESS meet_id %]
                 <li>[% PROCESS icon_link.html.tt,
                     data = [ ['Edit Profile'], '/user/profile', 'edit_user' ] %]</li>
             [% END %]
-
-            <li><a href="[% c.url_for('/season/admin') %]">Season Admin.</a></li>
-            <li><a href="[% c.url_for('/download') %]">Download Databases</a></li>
 
             <li>[% PROCESS icon_link.html.tt,
                 data = [ ['Logout'], '/user/logout', 'logout' ] %]</li>

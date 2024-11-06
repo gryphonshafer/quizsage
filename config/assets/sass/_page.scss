@@ -37,6 +37,10 @@ body {
         img {
             vertical-align: middle;
             margin-right  : 0.25em;
+
+            &:hover {
+                filter: invert(1);
+            }
         }
 
         h1 {
@@ -306,25 +310,25 @@ body {
         }
     }
 
-    @media ( max-width: 380px ) {
+    @media ( ( ( max-width: 735px ) and ( min-width: 700px ) ) or ( max-width: 415px ) ) {
         header div a:first-child {
             display: none;
         }
     }
 
-    @media ( max-width: 345px ) {
+    @media ( max-width: 380px ) {
         header div a {
             margin-right: 0.5em;
         }
     }
 
-    @media ( max-width: 300px ) {
+    @media ( max-width: 325px ) {
         header div a {
             margin-right: 0em;
         }
     }
 
-    @media ( max-width: 250px ) {
+    @media ( max-width: 275px ) {
         header div {
             display: none;
         }

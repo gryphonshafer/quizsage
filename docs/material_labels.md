@@ -1,11 +1,11 @@
 # Material Labels
 
-This explains how material labels (and material descriptions) are interpreted,
+This explains how material labels *(and material descriptions)* are interpreted,
 parsed, canonicalized, and descriptionalized.
 
 A material label is a string of a restricted syntax that defines how verses are
 selected in a quiz for query generation. A label may be associated with a name
-(or “alias”), and that alias maybe nested in another label. For example,
+*(or “alias”)*, and that alias maybe nested in another label. For example,
 `James 1:5` could be a simple label. If named `Wisdom`, it could be used in
 another label. For example, `James 1:2; Wisdom` would be equivalent to
 `James 1:2, 5`.
@@ -38,7 +38,7 @@ Reference
 : String representing 1 or more verses
 
 Weight
-: Number (displayed in parentheses)
+: Number *(displayed in parentheses)*
 
 Range
 : Reference set optionally with weight
@@ -98,8 +98,8 @@ Label canonicalization means altering the label to be uniform.
   example, `Romans (25%) James (75%)” becomes “Romans (1) James (3)`
 - Any range without a weight in a range set with more than 1 range is defaulted
   to a weight of 1
-- Translations are upper-cased, deduplicated (with a duplicate that’s both
-  primary and auxiliary becoming a deduplicated primary), and sorted
+- Translations are upper-cased, deduplicated *(with a duplicate that’s both
+  primary and auxiliary becoming a deduplicated primary)*, and sorted
   alphanumerically
 - Any content that remains unidentified is removed
 - Intersections and filters are canonicalized in the same way as above except
@@ -111,7 +111,7 @@ Label canonicalization means altering the label to be uniform.
 ## Descriptionalization
 
 Label descriptionalization means converting the label to a description
-(replacing all nested aliases with their associated content recursively), then
+*(replacing all nested aliases with their associated content recursively)*, then
 canonicalizing the description. A label may contain a label, which itself may
 contain a label; thus, a label may be parsed into a tree of nodes. A label is
 invalid if an embedded label therein refers to a parent label thereof or would

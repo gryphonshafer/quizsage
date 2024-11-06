@@ -1,0 +1,51 @@
+@use 'theme';
+@use 'themes';
+
+div#docs {
+    div#doc_nav {
+        border       : 1px solid;
+        padding      : 0.5em;
+        margin-right : 1em;
+        margin-bottom: 1em;
+        width        : fit-content;
+
+        @include theme.apply( themes.$themes ) {
+            border-color: theme.get('lines');
+            background-color  : theme.get('fieldset_background');
+        }
+
+        @include theme.apply( themes.$styles, 'style' ) {
+            border-radius: theme.get('radius');
+        }
+
+        ul {
+            margin: 0 0 0 1em;
+        }
+
+        a.current {
+            font-weight: bold;
+        }
+    }
+}
+
+@media ( min-width: 700px ) {
+    div#docs {
+        display: flex;
+
+        div#doc_nav {
+            flex-shrink: 0;
+            white-space: nowrap;
+            height     : fit-content;
+        }
+
+        div#doc_content {
+            flex-grow: 1;
+        }
+    }
+}
+
+@media print {
+    div#doc_nav {
+        display: none;
+    }
+}

@@ -2,11 +2,11 @@
     USE date;
 
     setup_name =
-        ( setup_label == 'pickup_quiz'   ) ? 'Pick-Up Quiz'   :
-        ( setup_label == 'queries_drill' ) ? 'Queries Drill'  :
-        ( setup_label == 'memorize'      ) ? 'Initial Mem.'   :
-        ( setup_label == 'lookup'        ) ? 'Lookup'         :
-        ( setup_label == 'ref_gen'       ) ? 'Ref. Generator' : '';
+        ( setup_label == 'pickup_quiz'   ) ? 'Pick-Up'      :
+        ( setup_label == 'queries_drill' ) ? 'Drill'        :
+        ( setup_label == 'memorize'      ) ? 'Initial Mem.' :
+        ( setup_label == 'lookup'        ) ? 'Lookup'       :
+        ( setup_label == 'ref_gen'       ) ? 'Ref. Gen.'    : '';
 
     page.title = setup_name _ ' Setup';
 %]

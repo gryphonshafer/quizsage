@@ -27,6 +27,8 @@
         ([% PROCESS icon_link.html.tt data = [ ['Edit Profile'], '/user/profile', 'edit_user' ] %]
         or
         [% PROCESS icon_link.html.tt data = [ ['Logout'], '/user/logout', 'logout' ] %])
+        —
+        [% PROCESS icon_link.html.tt, data = [ ['Documentation'], '/docs', 'docs' ] %]
     </p>
 
     <ul class="column">

@@ -1,26 +1,35 @@
-<div id="nav">
-    [% BLOCK nav %]
-        <ul>
-            [% FOREACH node IN docs %]
-                <li>
-                    [% IF node.folder OR node.name %]
-                        [% IF node.href %]<a href="[% c.url_for( '/docs' _ node.href ) %]"
-                            title="[% node.title OR node.folder OR node.name %]"
-                            [% IF c.url_for( node.href ) == c.req.url.to_abs.path %]
-                                class="current"
-                            [% END %]
-                        >[% END %][%
-                            node.folder OR node.name
-                        %][% IF node.href %]</a>[% END %]
-                    [% END %]
-                    [% IF node.nodes %]
-                        [% PROCESS nav docs = node.nodes %]
-                    [% END %]
-                </li>
-            [% END %]
-        </ul>
-    [% END %]
-    [% PROCESS nav docs = docs_nav %]
-</div>
+[% page.title = 'Documentation' %]
 
-[% html %]
+<div id="docs">
+    <div id="doc_nav">
+        [% BLOCK nav %]
+            <ul>
+                [% FOREACH node IN docs %]
+                    <li>
+                        [% IF node.folder OR node.name %]
+                            [% IF node.href %]<a href="[% c.url_for( '/docs' _ node.href ) %]"
+                                title="[% node.title OR node.folder OR node.name %]"
+                                [% IF
+                                    c.url_for( '/docs' _ node.href ) == c.req.url.to_abs.path OR
+                                    c.url_for( '/docs' _ node.href ) == c.req.url.to_abs.path _ '/'
+                                %]
+                                    class="current"
+                                [% END %]
+                            >[% END %][%
+                                node.folder OR node.name
+                            %][% IF node.href %]</a>[% END %]
+                        [% END %]
+                        [% IF node.nodes %]
+                            [% PROCESS nav docs = node.nodes %]
+                        [% END %]
+                    </li>
+                [% END %]
+            </ul>
+        [% END %]
+        [% PROCESS nav docs = docs_nav %]
+    </div>
+
+    <div id="doc_content">
+        [% html %]
+    </div>
+</div>
