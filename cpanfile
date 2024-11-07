@@ -9,3 +9,4 @@ requires 'Math::Prime::Util', '0.73';
 requires 'Parallel::ForkManager', '2.03';
 requires 'Text::Unidecode', '1.30';
 requires 'exact::fun', '1.01';
+requires 'exact::me', '1.05';
