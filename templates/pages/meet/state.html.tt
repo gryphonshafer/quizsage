@@ -155,7 +155,7 @@
                 <time datetime="[% event.start %]">[% date.format( event.start, '%a, %b %-d' ) %]</time>
                 from <time datetime="[% event.start %]"><b>[% date.format( event.start, '%-I:%M %p' ) %]</b></time>
                 to <time datetime="[% event.stop %]">[% date.format( event.stop, '%-I:%M %p' ) %]</time>
-                ([% event.duration %] min.)
+                <i>([% event.duration %] min.)</i>
             </div>
         [% END %]
     [% END %]
@@ -189,15 +189,20 @@
                     schedule_row_lead
                     [% IF row_has_active_quiz %]active_quiz[% END %]
                 ">
+                    [% UNLESS qm_auth %]
+                        <b>Set [% loop.count %]</b>
+                    [% END %]
                     <time datetime="[% schedule.start %]">[%
                         date.format( schedule.start, '%a, %b %-d' ) %]</time>
-                    <span class="time_preposition"> from </span>
-                    <time datetime="[% schedule.start %]"><b>[%
-                        date.format( schedule.start, '%-I:%M %p' ) %]</b></time>
-                    <span class="time_preposition"> to </span>
-                    <time datetime="[% schedule.stop %]">[%
-                        date.format( schedule.stop, '%-I:%M %p' ) %]</time>
-                    ([% schedule.duration %] min.)
+                    [% IF qm_auth %]
+                        <span class="time_preposition"> from </span>
+                        <time datetime="[% schedule.start %]"><b>[%
+                            date.format( schedule.start, '%-I:%M %p' ) %]</b></time>
+                        <span class="time_preposition"> to </span>
+                        <time datetime="[% schedule.stop %]">[%
+                            date.format( schedule.stop, '%-I:%M %p' ) %]</time>
+                    [% END %]
+                    <i>([% UNLESS qm_auth %]~[% END %][% schedule.duration %] min.)</i>
                 </div>
             [% END %]
 
