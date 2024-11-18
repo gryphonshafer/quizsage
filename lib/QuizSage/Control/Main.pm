@@ -3,13 +3,17 @@ package QuizSage::Control::Main;
 use exact 'Mojolicious::Controller';
 use GD;
 use Mojo::File 'path';
+use QuizSage::Model::Memory;
 use QuizSage::Model::Quiz;
 use QuizSage::Model::Season;
 use QuizSage::Model::User;
 use QuizSage::Util::Material 'material_json';
 
 sub home ($self) {
-    $self->stash( seasons => QuizSage::Model::Season->new->seasons ) if ( $self->stash('user') );
+    $self->stash(
+        seasons => QuizSage::Model::Season->new->seasons,
+        usage   => QuizSage::Model::Memory->new->usage,
+    ) if ( $self->stash('user') );
 }
 
 sub set ($self) {

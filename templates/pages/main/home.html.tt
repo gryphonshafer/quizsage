@@ -138,6 +138,43 @@
         <p>There are currently no active seasons setup.</p>
     [% END %]
 
+    [% IF usage.size > 0 %]
+        <h2>Global Usage Metrics</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric/Label</th>
+                    <th>Month</th>
+                    <th>Quarter</th>
+                    <th>Year</th>
+                    <th>Ever</th>
+                </tr>
+            </thead>
+            <tbody>
+                [% FOR metric IN usage %]
+                    <tr>
+                        <td>[% metric.name %]</td>
+                        [% FOR label IN [
+                            'month',
+                            'quarter',
+                            'year',
+                            'ever',
+                        ] %]
+                            <td[% IF metric.right %] class="right"[% END %]>[%
+                                IF metric.right;
+                                    metric.$label.commify;
+                                ELSE;
+                                    metric.$label;
+                                END;
+                            %]</td>
+                        [% END %]
+                    </tr>
+                [% END %]
+            </tbody>
+        </table>
+    [% END %]
+
     [% IF archived_seasons.size > 0 %]
         <h2>Archived Season Statistics</h2>
 

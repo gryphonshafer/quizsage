@@ -311,6 +311,75 @@ sub shared_labels ( $self, $user_id, $user_ids ) {
     );
 }
 
+sub usage ($self) {
+    my $ranges = [
+        { label => 'month',   divisor => 12 },
+        { label => 'quarter', divisor =>  4 },
+        { label => 'year',    divisor =>  1 },
+        { label => 'ever',    divisor =>  0 },
+    ];
+
+    return [
+        (
+            map {
+                my $row = $_;
+                $self->dq->sql(
+                    q{SELECT '} . $row->{metric} . q{' AS name, 1 AS right, * FROM (} . join( ',',
+                        map { '(' . join( "\n",
+                            'SELECT COUNT(*) AS ' . $_->{label},
+                            'FROM ' . $row->{table},
+                            'WHERE ' . join( ' AND ', grep { defined }
+                                ( ( $row->{table} eq 'memory' ) ? 'level > 0' : undef ),
+                                (
+                                    ( $_->{divisor} )
+                                        ? q{JULIANDAY('NOW') - JULIANDAY(created) <= 365.25 / } . $_->{divisor}
+                                        : 1
+                                ),
+                            ),
+                        ) . ')' } @$ranges
+                    ) . ')'
+                )->run->first({}),
+            }
+            (
+                { table => 'memory', metric => 'Verses Initially Memorized' },
+                { table => 'quiz',   metric => 'Quizzes (Practice + Meet)'  },
+                { table => 'user',   metric => 'New User Accounts'          },
+            )
+        ),
+
+        $self->dq->sql(
+            q{SELECT 'Users Memorizing' AS name, 1 AS right, * FROM (} . join( ',',
+                map { '(' . join( "\n",
+                    q{SELECT COUNT( DISTINCT user_id ) AS } . $_->{label},
+                    'FROM memory',
+                    'WHERE level > 0' . (
+                        ( $_->{divisor} )
+                            ? q{ AND JULIANDAY('NOW') - JULIANDAY(created) <= 365.25 / } . $_->{divisor}
+                            : ''
+                    ),
+                ) . ')' } @$ranges
+            ) . ')'
+        )->run->first({}),
+
+        $self->dq->sql(
+            q{SELECT 'Most Memorized Verse' AS name, * FROM (} . join( ',',
+                map { '(' . join( "\n",
+                    q{SELECT book || ' ' || chapter  || ':' || verse AS } . $_->{label},
+                    'FROM memory',
+                    'WHERE level > 0' . (
+                        ( $_->{divisor} )
+                            ? q{ AND JULIANDAY('NOW') - JULIANDAY(created) <= 365.25 / } . $_->{divisor}
+                            : ''
+                    ),
+                    'GROUP BY 1',
+                    q{ORDER BY COUNT( book || ' ' || chapter  || ':' || verse ) DESC},
+                    'LIMIT 1',
+                ) . ')' } @$ranges
+            ) . ')'
+        )->run->first({}),
+    ];
+}
+
 sub _make_runs ($data) {
     return [ map {
         my @verses;
@@ -406,6 +475,10 @@ in the C<shared_memory> database table.
 Requires a user ID (assumed to be a user making the request) and an arrayref of
 user IDs (assumed to be user IDs shared with the user making the request). The
 method will return a string where each line is a chapter reference label.
+
+=head2 usage
+
+This method returns some usage statistics, mostly about memorization.
 
 =head1 WITH ROLE
 
