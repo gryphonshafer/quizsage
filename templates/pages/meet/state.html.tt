@@ -189,9 +189,7 @@
                     schedule_row_lead
                     [% IF row_has_active_quiz %]active_quiz[% END %]
                 ">
-                    [% UNLESS qm_auth %]
-                        <b>Set [% loop.count %]</b>
-                    [% END %]
+                    <b>Set [% loop.count %]<span class="time_preposition"> — </span></b>
                     <time datetime="[% schedule.start %]">[%
                         date.format( schedule.start, '%a, %b %-d' ) %]</time>
                     [% IF qm_auth %]

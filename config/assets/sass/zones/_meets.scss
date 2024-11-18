@@ -17,13 +17,12 @@ div.info_box {
 }
 
 div.summary_box {
-    border          : 1px solid;
-    display         : inline-block;
-    margin          : 0.5em 0.5em 0.25em 0;
-    padding         : 0.5em;
-    width           : 13em;
-    height          : 15em;
-    vertical-align  : top;
+    border        : 1px solid;
+    display       : inline-block;
+    margin        : 0.5em 0.5em 0.25em 0;
+    padding       : 0.5em;
+    width         : 13em;
+    vertical-align: top;
 
     @include theme.apply( themes.$themes ) {
         border-color: theme.get('lines');
@@ -33,10 +32,6 @@ div.summary_box {
     @include theme.apply( themes.$styles, 'style' ) {
         border-radius: theme.get('radius');
     }
-}
-
-div.roster_box {
-    min-height: 16em;
 }
 
 div.distribution_box {
@@ -56,16 +51,15 @@ div.distribution_box_container:last-of-type {
 body.state div.schedule_row {
     font-size  : 75%;
     line-height: 1.5em;
-    margin-left: calc( 7em - 1px );
+    margin-left: calc( 8em - 1px );
 
     div.summary_box {
         padding: 0.125em 0.5em;
     }
 
     div.schedule_row_lead {
-        width      : 5em;
-        height     : 6.125em;
-        margin-left: calc( -7em + 1px );
+        width      : 6em;
+        margin-left: calc( -8em + 1px );
 
         time {
             display: block;
@@ -92,7 +86,7 @@ body.state div.schedule_row {
         a.qm_auth {
             font-style     : italic;
             position       : absolute;
-            bottom         : 0.25em;
+            bottom         : 0em;
             right          : 0.5em;
             text-decoration: none;
         }
