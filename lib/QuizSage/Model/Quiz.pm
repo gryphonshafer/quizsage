@@ -180,7 +180,7 @@ sub create_material_json_from_label ( $self, $label, $user = undef ) {
 
 sub recent_pickup_quizzes ( $self, $user_id, $ctime_life = undef ) {
     $self->dq
-        ->sql(q{DELETE FROM quiz WHERE JULIANDAY('NOW') - JULIANDAY(created) > ?})
+        ->sql(q{DELETE FROM quiz WHERE meet_id IS NULL AND JULIANDAY('NOW') - JULIANDAY(created) > ?})
         ->run( $ctime_life // $self->conf->get('pickup_quiz_ctime_life') );
 
     return [
