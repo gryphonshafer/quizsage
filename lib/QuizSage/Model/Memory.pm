@@ -86,7 +86,7 @@ sub review_verse( $self, $user ) {
             JULIANDAY('NOW') - JULIANDAY(last_modified) AS last_studied
         FROM memory
         WHERE user_id = ? AND level > 0
-        ORDER BY level * 4 - last_studied, RANDOM()
+        ORDER BY level * 4 - ( JULIANDAY('NOW') - JULIANDAY(last_modified) ) + RANDOM() / 1000000000000000000
     })->run( $user->id )->first({});
 
     return unless ($review_verse);
