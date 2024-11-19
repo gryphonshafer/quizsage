@@ -128,10 +128,9 @@ sub stats ($self) {
                     my ($lowest) =
                         sort { ( $a->{points_avg} // 0 ) <=> ( $b->{points_avg} // 0 ) }
                         @$quizzer_meets[ map { $_ - 1 } $rules->{drop}{meets}->@* ];
-                    delete $lowest->{weight} if ($lowest);
+                    $lowest->{weight} = 0 if ($lowest);
                 }
             }
-            $quizzer_meets = [ grep { keys %$_ } @$quizzer_meets ];
 
             my $quizzer_stats = { map { $_ => 0 } qw( total_avg total_weight vra_sum total_points ) };
             for (@$quizzer_meets) {

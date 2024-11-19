@@ -54,15 +54,15 @@ statistics:
         type : lowest
         meets: [ 1, 2, 3 ]
     meets:
-        - name  : District Meet 1
+        - name  : Meet 1
           weight: 2
-        - name  : District Meet 2
+        - name  : Meet 2
           weight: 2
-        - name  : District Meet 3
+        - name  : Meet 3
           weight: 2
-        - name  : District Meet 4
+        - name  : Meet 4
           weight: 4
-        - name  : District Meet 5
+        - name  : Meet 5
           weight: 5
-        - name  : District Championships
+        - name  : Championships
           weight: 7
