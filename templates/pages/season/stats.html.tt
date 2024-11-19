@@ -87,6 +87,7 @@
                             [% ELSE %]
                                 <td class="blank_cell"></td>
                             [% END %]
+                            [% LAST IF loop.count >= stats.meets.size %]
                         [% END %]
                     </tr>
                     [%
@@ -186,6 +187,7 @@
                                     [% ELSE %]
                                         <td class="blank_cell"></td>
                                     [% END %]
+                                    [% LAST IF loop.count >= stats.meets.size %]
                                 [% END %]
                             </tr>
                             [%
