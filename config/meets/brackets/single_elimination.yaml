@@ -1,0 +1,48 @@
+---
+quizzes:
+  - name: A
+  - name: B
+  - name: C
+  - name: D
+    roster:
+      - position: 2
+        quiz: A
+      - position: 2
+        quiz: B
+      - position: 2
+        quiz: C
+  - name: E
+    roster:
+      - position: 3
+        quiz: A
+      - position: 3
+        quiz: B
+      - position: 3
+        quiz: C
+  - name: F
+    roster:
+      - position: 1
+        quiz: A
+      - position: 1
+        quiz: B
+      - position: 1
+        quiz: C
+rankings:
+  - position: 1
+    quiz: F
+  - position: 2
+    quiz: F
+  - position: 3
+    quiz: F
+  - position: 1
+    quiz: D
+  - position: 2
+    quiz: D
+  - position: 3
+    quiz: D
+  - position: 1
+    quiz: E
+  - position: 2
+    quiz: E
+  - position: 3
+    quiz: E
