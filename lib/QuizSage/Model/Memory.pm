@@ -82,11 +82,20 @@ sub review_verse( $self, $user ) {
     my $review_verse = $self->dq->sql(q{
         SELECT
             memory_id, book, chapter, verse, bible, level,
-            JULIANDAY('NOW') - JULIANDAY(created) AS first_memorized,
-            JULIANDAY('NOW') - JULIANDAY(last_modified) AS last_studied
+            JULIANDAY('NOW') - JULIANDAY(created)           AS first_memorized,
+            JULIANDAY('NOW') - JULIANDAY(last_modified)     AS last_studied,
+            ABS( CAST( RANDOM() % 10000 AS REAL ) ) / 10000 AS randomize
         FROM memory
         WHERE user_id = ? AND level > 0
-        ORDER BY level * 40 + last_studied + RANDOM() / 1000000000000000000
+        ORDER BY
+            CASE
+                WHEN level = 1 AND last_studied <= 7  THEN 1 + randomize
+                WHEN level = 1                        THEN 2 + randomize
+                WHEN
+                    level >= 2 AND level <= 5 OR
+                    level <= 7 AND last_studied <= 14 THEN 3 + randomize
+                                                      ELSE 4 + randomize
+            END
         LIMIT 1
     })->run( $user->id )->first({});
 
@@ -176,7 +185,7 @@ sub tiles ( $self, $user_id ) {
         ORDER BY 1
     })->run($user_id)->all->@*;
 
-    my $dt    = DateTime->now;
+    my $dt    = DateTime->now( time_zone => 'local' );
     my $today = $dt->ymd;
 
     $dt->subtract( years => 1 );
@@ -207,7 +216,6 @@ sub tiles ( $self, $user_id ) {
     }
 
     push( @$weeks, [@days] ) if (@days);
-    pop( $weeks->[-1]->@* );
     return $weeks;
 }
 
@@ -220,7 +228,7 @@ sub report ( $self, $user_id ) {
     }
     else {
         my $dt = DateTime->new(
-            year      => DateTime->now->year + 1,
+            year      => DateTime->now( time_zone => 'local' )->year + 1,
             month     => 8,
             day       => 1,
             time_zone => 'local',
