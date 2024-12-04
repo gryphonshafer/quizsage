@@ -207,6 +207,7 @@ sub tiles ( $self, $user_id ) {
     }
 
     push( @$weeks, [@days] ) if (@days);
+    pop( $weeks->[-1]->@* );
     return $weeks;
 }
 
