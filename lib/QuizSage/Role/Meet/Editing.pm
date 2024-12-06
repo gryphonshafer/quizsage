@@ -58,7 +58,7 @@ sub save_after_edit ( $self, $user_id = undef ) {
             );
 
             push( @actions, 'create_material_json', 'save' )
-                if ( $settings->{old}{material} // '' ne $settings->{new}{material} // '' );
+                if ( ( $settings->{old}{material} // '' ) ne ( $settings->{new}{material} // '' ) );
 
             if ( Dump( $settings->{old}{brackets} ) ne Dump( $settings->{new}{brackets} ) ) {
                 my $old_brackets = Load( Dump( $settings->{old}{brackets} ) );
