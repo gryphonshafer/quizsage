@@ -209,6 +209,15 @@ sub save_after_edit ( $self, $user_id = undef ) {
                             $state_team->{quizzers}[$j]{bible} = $settings_team->{quizzers}[$j]{bible};
                             $state_team->{quizzers}[$j]{tags}  = $settings_team->{quizzers}[$j]{tags}
                                 if ( $settings_team->{quizzers}[$j]{tags} );
+
+                            $state_team->{quizzers}[$j]{id}    //= '_' . $i . $j;
+                            $state_team->{quizzers}[$j]{score} //= { map { $_ => 0 } qw(
+                                correct
+                                incorrect
+                                open_book
+                                points
+                                team_points
+                            ) };
                         }
                     }
                 }
