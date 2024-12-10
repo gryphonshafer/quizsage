@@ -207,18 +207,46 @@ sub state ($self) {
             } @state_quizzes
         );
 
-        # determine score sum ranking
-        my $teams_points;
-        $teams_points->{ $_->{name} } += $_->{score}{points} for (
+        # determine team sort ranking via the following tie breaking sequence:
+        #     1. points average for the bracket
+        #     2. points sum for the bracket
+        #     3. highest cumulative positions (i.e. 1st + 3nd > 3rd + 2nd )
+        #     4. total bonus team points
+        #     5. more total # of quizzes > fewer total # of quizzes
+        #     6. fewer total # of quizzers > more total # of quizzers
+        #     7. reverse of team name (i.e. MAD 1 > GIG 1 and MAD 1 > ELK 2 and ELK 2 > KIT 2)
+        my $bracket_team_sorting_data;
+        for my $team (
             map { $_->{state}{teams}->@* }
             grep { $_->{state}{teams} }
-            grep { $_->{bracket} eq $bracket->{name} } @$quizzes_done
-        );
+            grep { $_->{bracket} eq $bracket->{name} }
+            @$quizzes_done
+        ) {
+            $bracket_team_sorting_data->{ $team->{name} }->{points_sum}      += $team->{score}{points};
+            $bracket_team_sorting_data->{ $team->{name} }->{positions_sum}   += $team->{score}{position};
+            $bracket_team_sorting_data->{ $team->{name} }->{team_points_sum} += $team->{score}{bonuses};
+
+            $bracket_team_sorting_data->{ $team->{name} }->{total_quizzes}++;
+            $bracket_team_sorting_data->{ $team->{name} }->{total_quizzers} //= $team->{quizzers}->@*;
+            $bracket_team_sorting_data->{ $team->{name} }->{reverse_name}   //= reverse $team->{name};
+        }
         $brackets_done->{ $bracket->{name} } = [
             map { $_->[0] }
-            sort { $b->[1] <=> $a->[1] }
-            map { [ $_, $teams_points->{$_} // 0 ] }
-            keys %$teams_points
+            sort {
+                $b->[1]{points_avg} <=> $a->[1]{points_avg} or
+                $b->[1]{points_sum} <=> $a->[1]{points_sum} or
+                $b->[1]{positions_sum} <=> $a->[1]{positions_sum} or
+                $b->[1]{team_points_sum} <=> $a->[1]{team_points_sum} or
+                $b->[1]{total_quizzes} <=> $a->[1]{total_quizzes} or
+                $a->[1]{total_quizzers} <=> $b->[1]{total_quizzers} or
+                $a->[1]{reverse_name} cmp $b->[1]{reverse_name}
+            }
+            map {
+                my $data = $bracket_team_sorting_data->{$_};
+                $data->{points_avg} = $data->{points_sum} / $data->{total_quizzes};
+                [ $_, $data ];
+            }
+            keys %$bracket_team_sorting_data
         ];
     }
 
