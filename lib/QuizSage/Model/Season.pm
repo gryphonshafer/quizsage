@@ -169,6 +169,7 @@ sub stats ($self) {
 
     $self->data->{stats} = $stats;
     $self->save;
+    $self->info( 'Season stats generated for: ' . $self->id );
 
     return $stats;
 }

@@ -557,6 +557,7 @@ sub stats ($self) {
 
     $self->data->{stats} = $stats;
     $self->save;
+    $self->info( 'Meet stats generated for: ' . $self->id );
 
     return $stats;
 }

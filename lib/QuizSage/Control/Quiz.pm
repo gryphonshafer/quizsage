@@ -106,7 +106,7 @@ sub quiz ($self) {
         $self->flash(
             message => deat($e) . '. ' .
             'This error can occur when trying to load a quiz that does not exist. ' .
-            'This may be a temporary error, so try again.'
+            'This may be a temporary error, so try again'
         );
         return $self->redirect_to( $self->req->headers->referrer );
     }
