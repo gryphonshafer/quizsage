@@ -97,7 +97,19 @@ sub build ($self) {
 }
 
 sub quiz ($self) {
-    my $quiz = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
+    my $quiz;
+    try {
+        $quiz = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
+    }
+    catch ($e) {
+        $self->warn( deat $e );
+        $self->flash(
+            message => deat($e) . '. ' .
+            'This error can occur when trying to load a quiz that does not exist. ' .
+            'This may be a temporary error, so try again.'
+        );
+        return $self->redirect_to( $self->req->headers->referrer );
+    }
 
     if (
         not $quiz->data->{meet_id} and
