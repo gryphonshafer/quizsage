@@ -115,7 +115,7 @@ sub verify ($self) {
         );
     }
     else {
-        $self->flash( message => 'Unable to verify user account using the link provided.' );
+        $self->flash( message => 'Unable to verify user account using the link provided' );
     }
 
     $self->redirect_to('/');

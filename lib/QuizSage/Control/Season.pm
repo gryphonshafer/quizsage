@@ -63,7 +63,7 @@ sub record ($self) {
                 }
                 catch ($e) {
                     $self->notice($e);
-                    $self->flash( message => 'There was an unexpected error in editing the season.' );
+                    $self->flash( message => 'There was an unexpected error in editing the season' );
                     return $self->redirect_to( '/season/' . $self->param('season_id') . '/edit' );
                 }
             }
@@ -96,7 +96,7 @@ sub record ($self) {
         }
         catch ($e) {
             $self->notice($e);
-            $self->flash( message => 'There was an unexpected error in creating the season.' );
+            $self->flash( message => 'There was an unexpected error in creating the season' );
             return $self->redirect_to('/season/create');
         }
     }
