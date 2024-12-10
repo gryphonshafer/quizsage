@@ -259,13 +259,14 @@
                                 "
                                 href="[% c.url_for('/quiz/delete/' _ quiz.id ) %]"
                             >Delete Data</a>
-                        [% ELSIF NOT teams_resolved %]
+                        [% ELSE %]
                             <a
                                 class="qm_auth"
                                 data-confirm="
                                     Are you absolutely sure you want to do this?<br>
-                                    This is likely not needed. Teams should<br>
-                                    automatically populate.
+                                    This is likely not needed as teams should<br>
+                                    auto-populate when prerequist quizzes are<br>
+                                    all complete. There is no undo...
                                 "
                                 href="[%
                                     c.url_for('/quiz/teams').query(
@@ -274,7 +275,7 @@
                                         quiz    => quiz.name,
                                     )
                                 %]"
-                            >Set Teams</a>
+                            >[% IF NOT teams_resolved %]Set[% ELSE %]Override[% END %] Teams</a>
                         [% END %]
 
                         [% confirm_js = BLOCK %]
