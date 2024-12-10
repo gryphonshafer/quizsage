@@ -176,7 +176,7 @@
                                 <td class="right">[% item.total_points %]</td>
                                 <td class="right">[% item.vra_sum      %]</td>
                                 [% FOR meet IN item.meets %]
-                                    [% IF meet.points_avg %]
+                                    [% IF meet.points_avg.defined %]
                                         <td>
                                             [% meet.points_avg | format('%0.2f') %] pts.
                                             <i>(at [% meet.weight || 0 %])</i>
