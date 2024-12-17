@@ -110,6 +110,61 @@
     [% END %]
 </details>
 
+<details>
+    <summary>Organizations by Average Points Per Team</summary>
+
+    [% IF stats.orgs.size > 0 %]
+        <table>
+            <thead>
+                <tr>
+                    <th>
+                        Place
+                        <sub class="count">#</sub>
+                    </th>
+                    <th>Name</th>
+                    <th>Avg.</th>
+                    <th>Sum</th>
+                    <th>Teams</th>
+                    <th>Quizzes</th>
+                </tr>
+            </thead>
+            <tbody>
+                [%
+                    row_position  = 0;
+                    last_position = undef;
+                    last_item     = undef;
+                %]
+                [% FOR org IN stats.orgs %]
+                    [%
+                        row_position  = row_position + 1;
+                        this_position =
+                            ( NOT last_item OR last_item != org.points_avg ) ? row_position : last_position;
+                    %]
+                    <tr>
+                        <td class="[%
+                            ( last_position != this_position ) ? 'right' : 'right tie'
+                        %]">
+                            [% this_position %]
+                            <sub class="count">[% loop.count %]</sub>
+                        </td>
+                        <td>[% org.name %]</td>
+                        <td class="right">[% org.points_avg | format('%0.2f') %]</td>
+                        <td class="right">[% org.points_sum | format('%0.1f') %]</td>
+                        <td class="right">[% org.teams %]</td>
+                        <td class="right">[% org.quizzes %]</td>
+                    </tr>
+                    [%
+                        last_position = this_position;
+                        last_item     = org.points_avg;
+                    %]
+                [% END %]
+            </tbody>
+        </table>
+    [% ELSE %]
+        <p>No statistics currently available.</p>
+    [% END %]
+</details>
+
 <p>*Indicates a rookie quizzer.</p>
 
 [% BLOCK by_points_average %]

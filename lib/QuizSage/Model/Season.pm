@@ -66,7 +66,11 @@ sub seasons ($self) {
 }
 
 sub stats ($self) {
-    return $self->data->{stats} if ( $self->data->{stats}->%* );
+    return $self->data->{stats} if (
+        $self->data->{stats}->%* and
+        $self->time->parse( $self->data->{last_modified} )->{datetime}->epoch >
+        $self->time->parse( $self->conf->get('rebuild_stats_before') )->{datetime}->epoch
+    );
 
     my $meets = QuizSage::Model::Meet->new->every({ season_id => $self->id });
     my $rules = $self->deepcopy( $self->data->{settings}{statistics} ) // { meets => [ map { +{
@@ -167,7 +171,8 @@ sub stats ($self) {
         $stats->{quizzers}->@*
     ];
 
-    $self->data->{stats} = $stats;
+    $self->data->{stats}         = $stats;
+    $self->data->{last_modified} = \q{ STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) },
     $self->save;
     $self->info( 'Season stats generated for: ' . $self->id );
 

@@ -67,6 +67,7 @@ default:
             Mike November
             Oscar Papa
             Romeo Quebec
+    rebuild_stats_before: 2024-12-16 17:00
 www:
     logging:
         filter: ~

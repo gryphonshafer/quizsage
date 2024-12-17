@@ -95,7 +95,7 @@ mojo->get_ok( '/meet/' . $meet->id . '/stats' )
     ->status_is(200)
     ->text_is( 'details:nth-of-type(1) summary', 'Top 9 Rankings' )
     ->text_like( 'details:nth-of-type(2) summary', qr/^\s*All\s*Quizzers\s*by\s*Points\s*Average\s*$/ )
-    ->text_is( 'details:last-of-type summary', 'Quizzers with VRAs' );
+    ->text_is( 'details:last-of-type summary', 'Organizations by Average Points Per Team' );
 
 mojo->get_ok( '/meet/' . $meet->id . '/board/1' )
     ->status_is(200)

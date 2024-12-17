@@ -307,7 +307,11 @@ sub quiz_settings ( $self, $bracket_name, $quiz_name ) {
 }
 
 sub stats ($self) {
-    return $self->data->{stats} if ( $self->data->{stats}->%* );
+    return $self->data->{stats} if (
+        $self->data->{stats}->%* and
+        $self->time->parse( $self->data->{last_modified} )->{datetime}->epoch >
+        $self->time->parse( $self->conf->get('rebuild_stats_before') )->{datetime}->epoch
+    );
 
     my $build        = $self->deepcopy( $self->data->{build} );
     my $quizzes_data = QuizSage::Model::Quiz->new->every_data({ meet_id => $self->id });
@@ -555,7 +559,41 @@ sub stats ($self) {
         } $stats->{quizzers}->@*
     ];
 
-    $self->data->{stats} = $stats;
+    my $orgs;
+    for my $team ( $stats->{teams}->@* ) {
+        my ( $org, $name_suffix ) = split( /\s(?=\S+$)/, $team->{name} );
+        push( $orgs->{$org}{teams}->@*, $team );
+    }
+    $stats->{orgs} = [
+        sort {
+            $b->{points_avg} <=> $a->{points_avg} or
+            $a->{name} cmp $b->{name}
+        }
+        map {
+            my $org_name = $_;
+            my $org_data = {
+                name       => $org_name,
+                points_sum => 0,
+                quizzes    => 0,
+                teams      => scalar( $orgs->{$org_name}{teams}->@* ),
+            };
+
+            for my $team ( $orgs->{$org_name}{teams}->@* ) {
+                $org_data->{points_sum} += $team->{points_sum};
+                $org_data->{quizzes}    += scalar( $team->{quizzes}->@* )
+            }
+
+            $org_data->{points_avg} = ( $org_data->{quizzes} )
+                ? $org_data->{points_sum} / $org_data->{quizzes}
+                : 0;
+
+            $org_data;
+        }
+        keys %$orgs
+    ];
+
+    $self->data->{stats}         = $stats;
+    $self->data->{last_modified} = \q{ STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) },
     $self->save;
     $self->info( 'Meet stats generated for: ' . $self->id );
 
