@@ -84,6 +84,10 @@ fun reference_data (
 
     my $dq      = $mlabel->dq('material');
     my $content = [
+        grep {
+            my $verse = $_;
+            @$bibles == grep { $verse->{bibles}{$_} } @$bibles
+        }
         map {
             /^(?<book>.+)\s+(?<chapter>\d+):(?<verse>\d+)$/;
             +{
