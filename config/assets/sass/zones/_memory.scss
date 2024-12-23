@@ -113,3 +113,9 @@ form#shared_from_labels {
         }
     }
 }
+
+div#memorize form fieldset {
+    @include theme.apply( themes.$themes ) {
+        background: theme.get('main_background');
+    }
+}

@@ -27,7 +27,7 @@
 
     <form method="post">
         <fieldset>
-            <legend>Memorization Self-Assessment Level</legend>
+            <legend>Memorization Quality Self-Assessment</legend>
             <input name="level" type="range" min="1" max="10" value="[% verse.level %]">
             <input type="hidden" name="memory_id" value="[% verse.memory_id %]">
             <input type="submit" value="Continue">

@@ -35,7 +35,7 @@ sub to_memorize ( $self, $user ) {
     });
 
     my $sth_level = $self->dq->sql(q{
-        SELECT level
+        SELECT memory_id, level
         FROM memory
         WHERE
             user_id = ? AND
@@ -55,12 +55,11 @@ sub to_memorize ( $self, $user ) {
                     verse   => $verse,
                     bible   => $_,
                 };
-
                 +{
                     %$reference,
                     text      => $sth_text->run( $book, $chapter, $verse, $_ )->value,
                     reference => encode_json($reference),
-                    memorized => $sth_level->run( $user->id, $book, $chapter, $verse, $_ )->value // 0,
+                    ( $sth_level->run( $user->id, $book, $chapter, $verse, $_ )->first({}) // {} )->%*,
                 };
             } @bibles;
         } $self->bible_ref->clear->acronyms(0)->sorting(1)->add_detail(1)->in(

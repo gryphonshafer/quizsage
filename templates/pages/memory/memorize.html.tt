@@ -34,11 +34,22 @@
             <details>
                 <summary>
                     <input type="checkbox"
-                        [% IF verse.memorized %]checked[% END %]
+                        [% IF verse.level %]checked[% END %]
                         value="[% verse.reference | html %]">
                     [% verse.book %] [% verse.chapter %]:[% verse.verse %] [% verse.bible %]
                 </summary>
                 <p>[% verse.text %]</p>
+
+                [% IF verse.level AND verse.memory_id %]
+                    <form>
+                        <fieldset>
+                            <legend>Memorization Quality Self-Assessment</legend>
+                            <input name="level" type="range" min="1" max="10" value="[% verse.level %]">
+                            <input type="hidden" name="memory_id" value="[% verse.memory_id %]">
+                            <button>Save Level</button>
+                        </fieldset>
+                    </form>
+                [% END %]
             </details>
         [% END %]
     </div>
@@ -75,6 +86,23 @@
                             body  : JSON.stringify(data),
                         },
                     );
+                };
+            } );
+
+            const review_url = new URL( 'review', new URL( window.document.location.href ) );
+            window.document.querySelectorAll('div#memorize form').forEach( form => {
+                form.querySelector('button').onclick = () => {
+                    form.style.display = 'none';
+
+                    fetch(
+                        review_url.toString(),
+                        {
+                            method: 'POST',
+                            body  : new FormData(form),
+                        },
+                    );
+
+                    return false;
                 };
             } );
         } );
