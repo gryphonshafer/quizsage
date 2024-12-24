@@ -1,6 +1,8 @@
 package QuizSage::Control::Memory;
 
 use exact 'Mojolicious::Controller';
+use DateTime;
+use QuizSage::Model::Label;
 use QuizSage::Model::Memory;
 use QuizSage::Model::User;
 use Mojo::JSON 'decode_json';
@@ -23,6 +25,54 @@ sub memorize ($self) {
         $memory->memorized($data);
         $self->render( json => { memorize_saved => 1 } );
     }
+}
+
+sub review_setup ($self) {
+    my $user = ( $self->session('become') )
+        ? QuizSage::Model::User->new->load( $self->session('become') )
+        : $self->stash('user');
+
+    if ( $self->param('start_date') ) {
+        $user->data->{settings}{review} = {
+            start_date           => $self->param('start_date'),
+            stop_date            => $self->param('stop_date'),
+            use_date_range       => ( ( $self->param('use_date_range')     ) ? 1 : 0 ),
+            use_material_label   => ( ( $self->param('use_material_label') ) ? 1 : 0 ),
+            maybe material_label => ( ( $self->param('material_label') )
+                ? QuizSage::Model::Label
+                    ->new( user_id => $user->id )
+                    ->canonicalize( $self->param('material_label') )
+                : undef ),
+        };
+        $user->save;
+        return $self->redirect_to('/memory/review');
+    }
+
+    my $review = $user->data->{settings}{review};
+    unless ($review) {
+        my $now = DateTime->now( time_zone => 'local' );
+        my ( $month, $day ) = split( /\D+/, QuizSage::Model::Memory->conf->get('season_start') );
+        my $season_start = DateTime->new(
+            month     => $month,
+            day       => $day,
+            year      => $now->year,
+            time_zone => 'local'
+        );
+        $season_start->subtract( years => 1 ) if ( $now < $season_start );
+
+        $review->{start_date}         = $season_start->ymd;
+        $review->{stop_date}          = $now->ymd;
+        $review->{use_date_range}     = 1;
+        $review->{use_material_label} = 0;
+        $review->{material_label}     = '';
+
+        $user->save;
+    }
+
+    $self->stash(
+        user => $user,
+        %$review,
+    );
 }
 
 sub review ($self) {
@@ -148,6 +198,10 @@ for "Memory" actions.
 This controller handles the initial memorization page by setting the
 C<to_memorize> stash value based on L<QuizSage::Model::Memory>'s C<to_memorize>.
 It will also handle memorized verse save actions via JSON POST.
+
+=head2 review_setup
+
+This controller handles the memorization review setup page.
 
 =head2 review
 

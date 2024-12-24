@@ -1,0 +1,44 @@
+[% page.title = 'Mem. Review Setup' %]
+
+[% IF c.session.become %]
+    [% PROCESS become_note.html.tt %]
+[% END %]
+
+<details>
+    <summary>Instructions</summary>
+    <p>
+        Enter the mem. review setup settings below.
+        Your settings will be saved for future mem. review use.
+    </p>
+    <p>
+        Submitting with checkboxes unchecked will result in the sub-settings
+        being remembered for possible future use but not used in the current use.
+    </p>
+    <p>
+        The material label/description field must contain a valid, full
+        material label or description. For details about how these can be
+        written, consult the
+        <a href="/docs/material_labels.md">material labels documentation</a>.
+    </p>
+</details>
+
+<form>
+    <input type="submit" value="Start Memorization Review"><br>
+
+    <fieldset class="left">
+        <legend>Memorization Review Scope</legend>
+            <label>
+                <input type="checkbox" name="use_date_range" [% IF use_date_range %]checked[% END %]>
+                Limit to verses last studied between:
+
+                <input type="date" name="start_date" value="[% start_date %]">
+                and <input type="date" name="stop_date" value="[% stop_date %]">
+            </label>
+
+            <label>
+                <input type="checkbox" name="use_material_label" [% IF use_material_label %]checked[% END %]>
+                Limit to the following material label/description:
+                <textarea name="material_label">[% material_label %]</textarea>
+            </label>
+    </fieldset>
+</form>

@@ -1,7 +1,6 @@
 package QuizSage::Control::Quiz;
 
 use exact 'Mojolicious::Controller';
-use QuizSage::Model::Label;
 use QuizSage::Model::Meet;
 use QuizSage::Model::Quiz;
 

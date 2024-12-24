@@ -75,6 +75,11 @@
         There appear to be no verses available for review.
         Try going to the [%
             PROCESS icon_link.html.tt,
+                data = [ ['Memorization Review'], '/memory/review_setup', 'review' ]
+        %] page and therein select different (or no) scope criteria.
+        Or perhaps if you haven't already, visit the [%
+            PROCESS icon_link.html.tt,
                 data = [ ['Initial Memorization'], '/memory/memorize/setup', 'memorize' ]
-        %] page, selecting some verses, and returning here.
+        %] page and therein select some verses you've memorized.
+    </p>
 [% END %]

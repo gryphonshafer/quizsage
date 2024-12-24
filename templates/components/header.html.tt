@@ -14,7 +14,7 @@
                 UNLESS meet_id;
                     icon_link_data_set = [
                         [ 'Initial Memorization', '/memory/memorize/setup', 'memorize' ],
-                        [ 'Memorization Review',  '/memory/review',         'review'   ],
+                        [ 'Memorization Review',  '/memory/review_setup',   'review'   ],
                         [ 'Memory State',         '/memory/state',          'memory'   ],
 
                         [ 'Queries Drill', '/drill/setup',       'drill'  ],

@@ -78,14 +78,78 @@ sub memorized ( $self, $data ) {
 }
 
 sub review_verse( $self, $user ) {
-    my $review_verse = $self->dq->sql(q{
+    my $review = $user->data->{settings}{review} // {};
+
+    my $material_label_sql = '';
+    my @material_label_binds;
+    if ( $review->{use_material_label} ) {
+        my ( $books, $chapters, $verses ) = ( {}, {}, {} );
+        for my $book (
+            $self->bible_ref->clear->acronyms(0)->sorting(0)->add_detail(0)->in(
+                join( '; ',
+                    map { $_->{range}->@* } QuizSage::Model::Label
+                        ->new( user_id => $user->id )
+                        ->parse( $review->{material_label} )
+                        ->{ranges}->@*
+                )
+            )->as_array->@*
+        ) {
+            if ( @$book == 1 ) {
+                $books->{ $book->[0] } = 1;
+            }
+            else {
+                for my $chapter ( $book->[1]->@* ) {
+                    if ( @$chapter == 1 ) {
+                        $chapters->{ $book->[0] }{ $chapter->[0] } = 1;
+                    }
+                    else {
+                        $verses->{ $book->[0] }{ $chapter->[0] }{$_} = 1 for ( $chapter->[1]->@* );
+                    }
+                }
+            }
+        }
+        ( $material_label_sql, @material_label_binds ) = SQL::Abstract::Complete->new->where(
+            [
+                {
+                    book => { -in => [ keys %$books ] },
+                },
+                (
+                    map {
+                        +{
+                            book    => $_,
+                            chapter => { -in => [ keys %{ $chapters->{$_} } ] },
+                        };
+                    } keys %$chapters
+                ),
+                (
+                    map {
+                        my $book = $_;
+                        map {
+                            +{
+                                book    => $book,
+                                chapter => $_,
+                                verses  => { -in => [ keys %{ $verses->{$book}{$_} } ] },
+                            };
+                        } keys %{ $verses->{$book} };
+                    } keys %$verses
+                ),
+            ],
+        );
+        $material_label_sql =~ s/^\s*WHERE\s*/AND /i;
+    }
+
+    my $review_verse = $self->dq->sql(qq{
         SELECT
             memory_id, book, chapter, verse, bible, level,
             JULIANDAY('NOW') - JULIANDAY(created)           AS first_memorized,
             JULIANDAY('NOW') - JULIANDAY(last_modified)     AS last_studied,
             ABS( CAST( RANDOM() % 10000 AS REAL ) ) / 10000 AS randomize
         FROM memory
-        WHERE user_id = ? AND level > 0
+        WHERE
+            user_id = ? AND
+            level > 0 AND
+            ( NOT ? OR last_modified BETWEEN ? AND ? )
+            $material_label_sql
         ORDER BY
             CASE
                 WHEN level = 1 AND last_studied <= 7  THEN 1 + randomize
@@ -96,7 +160,13 @@ sub review_verse( $self, $user ) {
                                                       ELSE 4 + randomize
             END
         LIMIT 1
-    })->run( $user->id )->first({});
+    })->run(
+        $user->id,
+        $review->{use_date_range},
+        $review->{start_date},
+        $review->{stop_date},
+        @material_label_binds,
+    )->first({});
 
     return unless ($review_verse);
 
@@ -226,10 +296,11 @@ sub report ( $self, $user_id ) {
         $earliest_active_season_start = $seasons[0]{start};
     }
     else {
-        my $dt = DateTime->new(
+        my ( $month, $day ) = split( /\D+/, $self->conf->get('season_start') );
+        my $dt              = DateTime->new(
             year      => DateTime->now( time_zone => 'local' )->year + 1,
-            month     => 8,
-            day       => 1,
+            month     => $month,
+            day       => $day,
             time_zone => 'local',
         );
         $dt->set_year( $dt->year - 1 ) if ( $dt->epoch > time );

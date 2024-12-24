@@ -166,6 +166,12 @@ input[type='range'] {
     }
 }
 
+input[type='date'],
+input[type='time'],
+input[type='datetime-local'] {
+    width: auto !important;
+}
+
 a.button {
     border         : 1px solid;
     text-decoration: none;

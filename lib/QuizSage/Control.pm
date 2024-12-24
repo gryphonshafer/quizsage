@@ -56,7 +56,7 @@ sub startup ($self) {
     $users->any('/user/profile')->to( 'user#account', account_action_type => 'profile' );
     $users->any('/user/logout')->to('user#logout');
 
-    $users->any( '/memory/' . $_ )->to( 'memory#' . $_ ) for ( qw( memorize review state ) );
+    $users->any( '/memory/' . $_ )->to( 'memory#' . $_ ) for ( qw( memorize review_setup review state ) );
 
     $users->any('/meet/passwd')->to('meet#passwd');
     $users
