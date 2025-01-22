@@ -208,7 +208,7 @@ sub recent_pickup_quizzes ( $self, $user_id, $ctime_life = undef ) {
                 current_query => $current_query,
                 label         => $quiz->{settings}{material}{label},
             };
-        } $self->every_data({ user_id => $user_id })->@*
+        } $self->every_data( { user_id => $user_id }, { limit => 20 } )->@*
     ];
 }
 

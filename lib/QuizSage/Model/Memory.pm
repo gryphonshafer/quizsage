@@ -198,7 +198,7 @@ sub reviewed ( $self, $memory_id, $level, $user_id ) {
 sub state ( $self, $user ) {
     return {
         $self->report( $user->id )->%*,
-        tiles     => $self->tiles( $user->id ),
+        tiles     => $self->tiles( $user->id, 'months', 9 ),
         shared_to => $self->dq->sql(q{
             SELECT
                 u.user_id,
@@ -215,7 +215,7 @@ sub state ( $self, $user ) {
                 +{
                     $self->report( $_->{user_id} )->%*,
                     user   => $_,
-                    tiles  => $self->tiles( $_->{user_id} ),
+                    tiles  => $self->tiles( $_->{user_id}, 'months', 9 ),
                     json   => encode_json({
                         id   => $_->{user_id},
                         name => $_->{first_name} . ' ' . $_->{last_name},
@@ -240,7 +240,7 @@ sub shared_from_users ( $self, $user ) {
     })->run( $user->id )->all({});
 }
 
-sub tiles ( $self, $user_id ) {
+sub tiles ( $self, $user_id, $unit = 'years', $count = 1 ) {
     my %studying = map { @$_ } $self->dq->sql(q{
         SELECT
             STRFTIME( '%Y-%m-%d', created ),
@@ -249,15 +249,15 @@ sub tiles ( $self, $user_id ) {
         WHERE
             user_id = ? AND
             level > 0 AND
-            created >= DATETIME( 'NOW', '-1 year' )
+            created >= DATETIME( 'NOW', ? )
         GROUP BY 1
         ORDER BY 1
-    })->run($user_id)->all->@*;
+    })->run( $user_id, ( -1 * $count ) . ' ' . $unit )->all->@*;
 
     my $dt    = DateTime->now( time_zone => 'local' );
     my $today = $dt->ymd;
 
-    $dt->subtract( years => 1 );
+    $dt->subtract( $unit => $count );
     $dt->subtract( days => $dt->dow ) if ( $dt->dow != 7 );
 
     my ( $weeks, $month, $date ) = ( [], '', '' );
@@ -422,13 +422,12 @@ sub usage ($self) {
             }
             (
                 { table => 'memory', metric => 'Verses Initially Memorized' },
-                { table => 'quiz',   metric => 'Quizzes (Practice + Meet)'  },
-                { table => 'user',   metric => 'New User Accounts'          },
+                { table => 'user',   metric => 'New Accounts'               },
             )
         ),
 
         $self->dq->sql(
-            q{SELECT 'Users Memorizing' AS name, 1 AS right, * FROM (} . join( ',',
+            q{SELECT 'People Memorizing in QuizSage' AS name, 1 AS right, * FROM (} . join( ',',
                 map { '(' . join( "\n",
                     q{SELECT COUNT( DISTINCT user_id ) AS } . $_->{label},
                     'FROM memory',

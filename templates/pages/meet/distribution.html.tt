@@ -10,7 +10,9 @@
     <time datetime="[% meet.data.start %]">[% date.format( meet.data.start, '%a, %b %-d, %Y' ) %]</time>
 </h2>
 
-[% IF per_quiz AND per_quiz.material %]<p>Material: [% per_quiz.material.label %]</p>[% END %]
+[% IF per_quiz AND per_quiz.material %]
+    <p>Material: [% per_quiz.material.label.split('\)').join(')<br>') %]</p>
+[% END %]
 
 [% FOR bracket IN build.brackets %]
     <details>
@@ -18,7 +20,8 @@
 
         [% IF bracket.material %]
             <div class="info_box">
-                <b>Material:</b> [% bracket.material.label %]
+                <b>Material:</b><br>
+                [% bracket.material.label.split('\)').join(')<br>') %]
             </div>
         [% END %]
 

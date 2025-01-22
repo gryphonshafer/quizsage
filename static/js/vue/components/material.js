@@ -31,7 +31,7 @@ export default {
         },
 
         display_description() {
-            notice( this.material.data.description );
+            notice( this.material.data.description.split('\)').join(')<br>') );
         },
     },
 

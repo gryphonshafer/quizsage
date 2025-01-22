@@ -209,7 +209,10 @@
 
 [% IF setup_label == 'pickup_quiz' AND recent_pickup_quizzes AND recent_pickup_quizzes.size > 0 %]
     <details>
-        <summary>[% c.stash.user.data.first_name %]'s Recent Pick-Up Quizzes</summary>
+        <summary>
+            [% c.stash.user.data.first_name %]'s
+            [% recent_pickup_quizzes.size %] Most Recent Pick-Up Quizzes
+        </summary>
         <table class="recent_pickup_quizzes">
             <thead>
                 <tr>
@@ -236,7 +239,7 @@
                             [% END %]
                         </td>
                         <td>[% quiz.current_query %]</td>
-                        <td>[% quiz.label %]</td>
+                        <td>[% quiz.label.split('\)').join(')<br>') %]</td>
                     </tr>
                 [% END %]
             </tbody>
