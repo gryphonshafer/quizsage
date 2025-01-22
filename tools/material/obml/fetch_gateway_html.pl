@@ -51,7 +51,7 @@ for my $bible ( shuffle(@$status) ) {
                 +{
                     book_display => $_->{display},
                     book_name    => $book_name,
-                    chapters     => [ map { $_->{chapter} } $_->{chapters} ],
+                    chapters     => [ map { $_->{chapter} } $_->{chapters}->@* ],
                 };
             } @{ $bg->structure( $bible->{bible} ) }
         ];
