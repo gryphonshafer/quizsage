@@ -2,13 +2,13 @@ package QuizSage::Model::Meet;
 
 use exact -class;
 use Mojo::JSON qw( encode_json decode_json );
+use Omniframe::Class::Time;
 use QuizSage::Model::Quiz;
 use QuizSage::Model::Season;
 
 with qw(
     Omniframe::Role::Bcrypt
     Omniframe::Role::Model
-    Omniframe::Role::Time
     QuizSage::Role::Data
     QuizSage::Role::Meet::Build
     QuizSage::Role::Meet::Settings
@@ -16,13 +16,14 @@ with qw(
 );
 
 my $min_passwd_length = 8;
+my $time              = Omniframe::Class::Time->new;
 
 before 'create' => sub ( $self, $params ) {
     $params->{settings} //= $self->dataload('config/meets/defaults/meet.yaml');
 };
 
 sub freeze ( $self, $data ) {
-    $data->{start} = $self->time->parse( $data->{start} )->format('sqlite_min')
+    $data->{start} = $time->parse( $data->{start} )->format('sqlite_min')
         if ( $self->is_dirty( 'start', $data ) );
 
     if ( $self->is_dirty( 'passwd', $data ) ) {
@@ -309,8 +310,8 @@ sub quiz_settings ( $self, $bracket_name, $quiz_name ) {
 sub stats ($self) {
     return $self->data->{stats} if (
         $self->data->{stats}->%* and
-        $self->time->parse( $self->data->{last_modified} )->{datetime}->epoch >
-        $self->time->parse( $self->conf->get('rebuild_stats_before') )->{datetime}->epoch
+        $time->parse( $self->data->{last_modified} )->{datetime}->epoch >
+        $time->parse( $self->conf->get('rebuild_stats_before') )->{datetime}->epoch
     );
 
     my $build        = $self->deepcopy( $self->data->{build} );
@@ -760,6 +761,6 @@ or remove that user to/from the list of administrators of the meet.
 
 =head1 WITH ROLES
 
-L<Omniframe::Role::Bcrypt>, L<Omniframe::Role::Model>, L<Omniframe::Role::Time>,
-L<QuizSage::Role::Data>, L<QuizSage::Role::Meet::Build>,
-L<QuizSage::Role::Meet::Settings>, L<QuizSage::Role::Meet::Editing>.
+L<Omniframe::Role::Bcrypt>, L<Omniframe::Role::Model>, L<QuizSage::Role::Data>,
+L<QuizSage::Role::Meet::Build>, L<QuizSage::Role::Meet::Settings>,
+L<QuizSage::Role::Meet::Editing>.

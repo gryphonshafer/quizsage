@@ -2,18 +2,21 @@ package QuizSage::Model::Season;
 
 use exact -class;
 use Mojo::JSON qw( encode_json decode_json );
+use Omniframe::Class::Time;
 use QuizSage::Model::Meet;
 
-with qw( Omniframe::Role::Model Omniframe::Role::Time QuizSage::Role::Data );
+with qw( Omniframe::Role::Model QuizSage::Role::Data );
 
 class_has active => 1;
+
+my $time = Omniframe::Class::Time->new;
 
 before 'create' => sub ( $self, $params ) {
     $params->{settings} //= $self->dataload('config/meets/defaults/season.yaml');
 };
 
 sub freeze ( $self, $data ) {
-    $data->{start} = $self->time->parse( $data->{start} )->format('sqlite_min')
+    $data->{start} = $time->parse( $data->{start} )->format('sqlite_min')
         if ( $self->is_dirty( 'start', $data ) );
 
     for ( qw( settings stats ) ) {
@@ -68,8 +71,8 @@ sub seasons ($self) {
 sub stats ($self) {
     return $self->data->{stats} if (
         $self->data->{stats}->%* and
-        $self->time->parse( $self->data->{last_modified} )->{datetime}->epoch >
-        $self->time->parse( $self->conf->get('rebuild_stats_before') )->{datetime}->epoch
+        $time->parse( $self->data->{last_modified} )->{datetime}->epoch >
+        $time->parse( $self->conf->get('rebuild_stats_before') )->{datetime}->epoch
     );
 
     my $meets = QuizSage::Model::Meet->new->every({ season_id => $self->id });
@@ -276,4 +279,4 @@ Returns an arrayref of hashrefs of users who are administrators of the season.
 
 =head1 WITH ROLES
 
-L<Omniframe::Role::Model>, L<Omniframe::Role::Time>, L<QuizSage::Role::Data>.
+L<Omniframe::Role::Model>, L<QuizSage::Role::Data>.
