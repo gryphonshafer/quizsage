@@ -6,7 +6,6 @@ my $obj;
 ok( lives { $obj = QuizSage::Model::Season->new }, 'new' ) or note $@;
 DOES_ok( $obj, $_ ) for ( qw(
     Omniframe::Role::Model
-    Omniframe::Role::Time
     QuizSage::Role::Data
 ) );
 can_ok( $obj, qw(

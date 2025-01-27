@@ -3,16 +3,18 @@ package QuizSage::Role::Meet::Build;
 use exact -role;
 use Mojo::JSON 'decode_json';
 use Omniframe::Class::Javascript;
+use Omniframe::Class::Time;
 use QuizSage::Util::Material 'material_json';
 use YAML::XS 'Dump';
 
 with qw(
     Omniframe::Role::Database
-    Omniframe::Role::Time
     QuizSage::Role::Data
     QuizSage::Role::JSApp
     QuizSage::Role::Meet::Settings
 );
+
+my $time = Omniframe::Class::Time->new;
 
 sub build ( $self, $user_id = undef ) {
     my ($build_settings) = $self->build_settings;
@@ -191,15 +193,15 @@ sub schedule_integration( $self, $build_settings ) {
     my $blocks;
     unless ( $schedule->{blocks} and $schedule->{blocks}->@* ) {
         $blocks = [ {
-            start    => $self->time->parse( $self->data->{start} )->datetime,
+            start    => $time->parse( $self->data->{start} )->datetime,
             duration => $schedule_duration,
         } ];
     }
     else {
         $blocks = $self->deepcopy( $schedule->{blocks} );
         for my $block (@$blocks) {
-            $block->{start} = $self->time->parse( $block->{start} )->datetime if ( $block->{start} );
-            $block->{stop}  = $self->time->parse( $block->{stop}  )->datetime if ( $block->{stop}  );
+            $block->{start} = $time->parse( $block->{start} )->datetime if ( $block->{start} );
+            $block->{stop}  = $time->parse( $block->{stop}  )->datetime if ( $block->{stop}  );
 
             $block->{duration} //= $schedule_duration;
         }
@@ -208,7 +210,7 @@ sub schedule_integration( $self, $build_settings ) {
     # events setup
     my $events = $schedule->{events} // [];
     for my $event (@$events) {
-        $event->{start} = $self->time->parse( $event->{start} )->datetime if ( $event->{start} );
+        $event->{start} = $time->parse( $event->{start} )->datetime if ( $event->{start} );
         $event->{duration} //= $schedule_duration;
     }
 
@@ -323,7 +325,7 @@ sub schedule_integration( $self, $build_settings ) {
                         )
                     } $schedule->{overrides}->@*
                 ) {
-                    $start    = $self->time->parse( $override->{start} )->datetime if ( $override->{start} );
+                    $start    = $time->parse( $override->{start} )->datetime if ( $override->{start} );
                     $duration = ( $override->{duration} ) ? $override->{duration} : $set_duration;
                     $stop     = $start->clone->add( minutes => $duration );
 
@@ -427,8 +429,8 @@ sub schedule_integration( $self, $build_settings ) {
             for my $quiz ( $set->{rooms}->@* ) {
                 for ( qw( start stop ) ) {
                     if ( $quiz->{schedule}{$_} ) {
-                        $self->time->datetime( $quiz->{schedule}{$_} );
-                        $quiz->{schedule}{$_} = $self->time->format('sqlite_min');
+                        $time->datetime( $quiz->{schedule}{$_} );
+                        $quiz->{schedule}{$_} = $time->format('sqlite_min');
                     }
                 }
             }
@@ -438,8 +440,8 @@ sub schedule_integration( $self, $build_settings ) {
         for my $event ( $events->@* ) {
             for ( qw( start stop ) ) {
                 if ( $event->{$_} ) {
-                    $self->time->datetime( $event->{$_} );
-                    $event->{$_} = $self->time->format('sqlite_min');
+                    $time->datetime( $event->{$_} );
+                    $event->{$_} = $time->format('sqlite_min');
                 }
             }
         }
@@ -762,5 +764,5 @@ This method cleans up build settings.
 
 =head1 WITH ROLES
 
-L<Omniframe::Role::Database>, L<Omniframe::Role::Time>, L<QuizSage::Role::Data>,
-L<QuizSage::Role::JSApp>, L<QuizSage::Role::Meet::Settings>.
+L<Omniframe::Role::Database>, L<QuizSage::Role::Data>, L<QuizSage::Role::JSApp>,
+L<QuizSage::Role::Meet::Settings>.
