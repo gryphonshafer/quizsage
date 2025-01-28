@@ -7,7 +7,7 @@ use Omniframe;
 use QuizSage::Util::Material 'material_json';
 use QuizSage::Util::Reference 'reference_data';
 
-class_has conf => Omniframe->with_roles('+Conf')->new->conf;
+class_has conf => sub { Omniframe->with_roles('+Conf')->new->conf };
 
 sub lookup ($self) {
     return $self->redirect_to('/') unless ( -f join( '/',

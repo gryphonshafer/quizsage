@@ -10,7 +10,7 @@ use QuizSage::Util::Material 'material_json';
 
 with qw( Omniframe::Role::Model QuizSage::Role::JSApp );
 
-class_has socket => Omniframe::Mojo::Socket->new;
+class_has socket => sub { Omniframe::Mojo::Socket->new };
 
 after [ qw( create save delete ) ] => sub ( $self, @params ) {
     return unless ( $self->data->{meet_id} );
