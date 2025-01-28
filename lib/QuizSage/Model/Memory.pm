@@ -11,7 +11,7 @@ use QuizSage::Util::Material 'text2words';
 
 with 'Omniframe::Role::Model';
 
-class_has bible_ref => Bible::Reference->new;
+class_has bible_ref => sub { Bible::Reference->new };
 
 sub to_memorize ( $self, $user ) {
     my $quiz_defaults = conf->get('quiz_defaults');
