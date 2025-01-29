@@ -1,6 +1,6 @@
 package QuizSage::Control;
 
-use exact 'Omniframe::Control';
+use exact -conf, 'Omniframe::Control';
 use MIME::Base64 'encode_base64';
 use Mojo::JSON 'encode_json';
 use QuizSage::Model::User;
@@ -29,7 +29,7 @@ sub startup ($self) {
                         name  => 'quizsage_info',
                         value => encode_base64( encode_json( {
                             material_json_path => $self->url_for(
-                                $c->stash('user')->conf->get( qw( material json path ) )
+                                conf->get( qw( material json path ) )
                             ),
                         } ), '' ),
                         samesite => 'Strict',
@@ -114,7 +114,7 @@ sub startup ($self) {
     $all->any( '/set/:type/:name' => [ type => [ qw( theme style ) ] ] )->to('main#set');
     $all->any("/$_")->to("main#$_") for ( qw( captcha download ) );
     $all
-        ->any( '/download/:shard' => [ name => [ keys $self->conf->get( qw( database shards ) )->%* ] ] )
+        ->any( '/download/:shard' => [ name => [ keys conf->get( qw( database shards ) )->%* ] ] )
         ->to('main#download');
 
     $all->any("/user/$_")->to("user#$_") for ( qw( forgot_password login ) );

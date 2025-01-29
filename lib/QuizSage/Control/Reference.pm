@@ -1,18 +1,16 @@
 package QuizSage::Control::Reference;
 
-use exact 'Mojolicious::Controller';
+use exact -conf, 'Mojolicious::Controller';
 use File::Path 'make_path';
 use Mojo::File 'path';
 use Omniframe;
 use QuizSage::Util::Material 'material_json';
 use QuizSage::Util::Reference 'reference_data';
 
-class_has conf => Omniframe->with_roles('+Conf')->new->conf;
-
 sub lookup ($self) {
     return $self->redirect_to('/') unless ( -f join( '/',
-        $self->conf->get( qw( config_app root_dir ) ),
-        $self->conf->get( qw( material json location ) ),
+        conf->get( qw( config_app root_dir ) ),
+        conf->get( qw( material json location ) ),
         $self->stash('material_json_id') . '.json',
     ) );
 
@@ -27,10 +25,10 @@ sub generator ($self) {
 
     # remove any reference HTML files that haven't been accessed in the last N days
     my $now        = time;
-    my $atime_life = $self->conf->get( qw{ reference atime_life } );
+    my $atime_life = conf->get( qw{ reference atime_life } );
     my $html_path  = path( join( '/',
-        $self->conf->get( qw{ config_app root_dir } ),
-        $self->conf->get( qw{ reference location html } ),
+        conf->get( qw{ config_app root_dir } ),
+        conf->get( qw{ reference location html } ),
     ) );
 
     $html_path->list->grep( sub ($file) {

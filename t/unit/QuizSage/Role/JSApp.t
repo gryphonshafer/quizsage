@@ -9,7 +9,7 @@ ok(
     q{with_roles('QuizSage::Role::JSApp')->new},
 ) or note $@;
 
-DOES_ok( $obj, 'QuizSage::Role::Data' );
+DOES_ok( $obj, "QuizSage::Role::$_" ) for ( qw( Data JSApp ) );
 can_ok( $obj, qw( js_app_names js_app_config ) );
 
 is( $obj->js_app_names->[0], { id => 'default', name => D() }, 'js_app_names' );

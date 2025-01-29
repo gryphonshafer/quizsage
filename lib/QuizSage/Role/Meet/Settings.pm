@@ -1,6 +1,6 @@
 package QuizSage::Role::Meet::Settings;
 
-use exact -role;
+use exact -role, -conf;
 use QuizSage::Model::Label;
 use QuizSage::Model::Season;
 
@@ -37,7 +37,7 @@ sub merged_settings ($self) {
 sub build_settings ($self) {
     my $settings = $self->merged_settings;
 
-    my $default_bible = $settings->{roster}{default_bible} // $self->conf->get( qw( quiz_defaults bible ) );
+    my $default_bible = $settings->{roster}{default_bible} // conf->get( qw( quiz_defaults bible ) );
     my $tags          = $settings->{roster}{tags} // {};
 
     $settings->{roster} = $self->thaw_roster_data(
@@ -64,7 +64,7 @@ sub canonical_settings ( $self, $user_id = undef ) {
         ),
         maybe tags          => $self->data->{settings}{roster}{tags},
         maybe default_bible => (
-            ( $default_bible ne $self->conf->get( qw( quiz_defaults bible ) ) )
+            ( $default_bible ne conf->get( qw( quiz_defaults bible ) ) )
                 ? $default_bible
                 : undef
         ),
@@ -114,7 +114,7 @@ sub thaw_roster_data (
 
         $default_bible //=
             $settings->{roster}{default_bible} //
-            $self->conf->get( qw( quiz_defaults bible ) );
+            conf->get( qw( quiz_defaults bible ) );
 
         $tags //= $settings->{roster}{tags} // {};
     }

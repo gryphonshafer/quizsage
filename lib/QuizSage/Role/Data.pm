@@ -1,11 +1,9 @@
 package QuizSage::Role::Data;
 
-use exact -role;
+use exact -role, -conf;
 use Mojo::JSON 'decode_json';
 use Mojo::File 'path';
 use YAML::XS qw( LoadFile Load Dump );
-
-with 'Omniframe::Role::Conf';
 
 sub deepcopy ( $self, @items ) {
     return unless (@items);
@@ -14,7 +12,7 @@ sub deepcopy ( $self, @items ) {
 }
 
 sub dataload ( $self, $file ) {
-    my $path = path( $self->conf->get( qw( config_app root_dir ) ) . '/' . $file );
+    my $path = path( conf->get( qw( config_app root_dir ) ) . '/' . $file );
     return
         ( $file =~ /\.yaml$/i ) ? LoadFile($path)             :
         ( $file =~ /\.json$/i ) ? decode_json( $path->slurp ) : $path->slurp;
@@ -66,7 +64,3 @@ The method will return the data from the source file.
         $obj->dataload('config/meets/defaults/season.yaml');
     my $decoded_material_data =
         $obj->dataload('static/json/material/d8dc04b8c7ed6bc4.json');
-
-=head1 WITH ROLE
-
-L<Omniframe::Role::Conf>.

@@ -9,7 +9,7 @@ ok(
     q{with_roles('QuizSage::Role::Data')->new},
 ) or note $@;
 
-DOES_ok( $obj, 'Omniframe::Role::Conf' );
+DOES_ok( $obj, 'QuizSage::Role::Data' );
 can_ok( $obj, qw( deepcopy dataload ) );
 
 my $data_0    = { thx => 1138, answer => 42 };

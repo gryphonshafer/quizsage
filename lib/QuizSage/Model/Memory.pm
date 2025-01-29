@@ -1,6 +1,6 @@
 package QuizSage::Model::Memory;
 
-use exact -class;
+use exact -class, -conf;
 use Bible::Reference;
 use DateTime;
 use Mojo::JSON 'encode_json';
@@ -14,7 +14,7 @@ with 'Omniframe::Role::Model';
 class_has bible_ref => Bible::Reference->new;
 
 sub to_memorize ( $self, $user ) {
-    my $quiz_defaults = $self->conf->get('quiz_defaults');
+    my $quiz_defaults = conf->get('quiz_defaults');
     my $user_settings = $user->data->{settings}{memorize}  // {};
     my $label         = QuizSage::Model::Label->new( user_id => $user->id );
     my $material_data = $label->parse( $user_settings->{material_label} // $quiz_defaults->{material_label} );
@@ -296,7 +296,7 @@ sub report ( $self, $user_id ) {
         $earliest_active_season_start = $seasons[0]{start};
     }
     else {
-        my ( $month, $day ) = split( /\D+/, $self->conf->get('season_start') );
+        my ( $month, $day ) = split( /\D+/, conf->get('season_start') );
         my $dt              = DateTime->new(
             year      => DateTime->now( time_zone => 'local' )->year + 1,
             month     => $month,

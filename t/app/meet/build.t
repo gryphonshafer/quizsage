@@ -59,7 +59,7 @@ my $bible_insert = $material_dq->sql(q{
     INSERT INTO bible (acronym) VALUES (?)
     ON CONFLICT(acronym) DO NOTHING
 });
-$bible_insert->run( $user->conf->get( qw( quiz_defaults bible ) ) );
+$bible_insert->run( conf->get( qw( quiz_defaults bible ) ) );
 $bible_insert->run($_) for ( qw( BSB ESV NASB NIV ) );
 
 my $mock = mock $meet => ( override => [

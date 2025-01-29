@@ -1,6 +1,6 @@
 package QuizSage::Control::Quiz;
 
-use exact 'Mojolicious::Controller';
+use exact -conf, 'Mojolicious::Controller';
 use QuizSage::Model::Meet;
 use QuizSage::Model::Quiz;
 
@@ -128,7 +128,7 @@ sub quiz ($self) {
         }
         else {
             my $data = $quiz->data;
-            $data->{json_material_path} = $self->url_for( $quiz->conf->get( qw( material json path ) ) );
+            $data->{json_material_path} = $self->url_for( conf->get( qw( material json path ) ) );
             $self->render( json => $data );
         }
     }
@@ -142,7 +142,7 @@ sub queries ($self) {
         $self->stash( template => 'quiz/drill' ) if ( $self->stash('action_type') eq 'drill' );
     }
     else {
-        my $quiz_defaults = $quiz->conf->get('quiz_defaults');
+        my $quiz_defaults = conf->get('quiz_defaults');
         my $user_settings = $self->stash('user')->data->{settings}{
             ( $self->stash('action_type') eq 'drill' ) ? 'queries_drill' : 'pickup_quiz'
         } // {};
@@ -163,7 +163,7 @@ sub queries ($self) {
 
         $self->render( json => {
             settings           => $settings,
-            json_material_path => $self->url_for( $quiz->conf->get( qw( material json path ) ) ),
+            json_material_path => $self->url_for( conf->get( qw( material json path ) ) ),
         } );
     }
 }

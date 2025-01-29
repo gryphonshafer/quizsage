@@ -9,7 +9,12 @@ ok(
     q{with_roles('QuizSage::Role::Meet::Settings')->new},
 ) or note $@;
 
-DOES_ok( $obj, 'QuizSage::Role::Data' );
+DOES_ok( $obj, $_ ) for ( qw(
+    Omniframe::Role::Model
+    QuizSage::Role::Data
+    QuizSage::Role::Meet::Settings
+) );
+
 can_ok( $obj, $_ ) for ( qw(
     merged_settings
     build_settings
