@@ -1,16 +1,14 @@
 package QuizSage::Role::Meet::Settings;
 
 use exact -role, -conf;
+use Omniframe::Util::Data 'deepcopy';
 use QuizSage::Model::Label;
 use QuizSage::Model::Season;
 
-with qw(
-    Omniframe::Role::Model
-    QuizSage::Role::Data
-);
+with 'Omniframe::Role::Model';
 
 sub merged_settings ($self) {
-    my $meet_settings   = $self->deepcopy( $self->data->{settings} // {} );
+    my $meet_settings   = deepcopy( $self->data->{settings} // {} );
     my $season_settings = QuizSage::Model::Season->new
         ->load( $self->data->{season_id} )->data->{settings} // {};
 
@@ -397,4 +395,4 @@ quizzers). For example:
 
 =head1 WITH ROLE
 
-L<Omniframe::Role::Model>, L<QuizSage::Role::Data>.
+L<Omniframe::Role::Model>.

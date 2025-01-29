@@ -8,7 +8,6 @@ ok( lives { $obj = QuizSage::Model::Meet->new }, 'new' ) or note $@;
 DOES_ok( $obj, $_ ) for ( qw(
     Omniframe::Role::Bcrypt
     Omniframe::Role::Model
-    QuizSage::Role::Data
     QuizSage::Role::Meet::Build
     QuizSage::Role::Meet::Settings
     QuizSage::Role::Meet::Editing

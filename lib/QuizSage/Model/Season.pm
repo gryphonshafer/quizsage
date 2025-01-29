@@ -3,16 +3,17 @@ package QuizSage::Model::Season;
 use exact -class, -conf;
 use Mojo::JSON qw( encode_json decode_json );
 use Omniframe::Class::Time;
+use Omniframe::Util::Data qw( dataload deepcopy );
 use QuizSage::Model::Meet;
 
-with qw( Omniframe::Role::Model QuizSage::Role::Data );
+with 'Omniframe::Role::Model';
 
 class_has active => 1;
 
 my $time = Omniframe::Class::Time->new;
 
 before 'create' => sub ( $self, $params ) {
-    $params->{settings} //= $self->dataload('config/meets/defaults/season.yaml');
+    $params->{settings} //= dataload('config/meets/defaults/season.yaml');
 };
 
 sub freeze ( $self, $data ) {
@@ -76,7 +77,7 @@ sub stats ($self) {
     );
 
     my $meets = QuizSage::Model::Meet->new->every({ season_id => $self->id });
-    my $rules = $self->deepcopy( $self->data->{settings}{statistics} ) // { meets => [ map { +{
+    my $rules = deepcopy( $self->data->{settings}{statistics} ) // { meets => [ map { +{
         name   => $_->data->{name},
         weight => 1,
     } } @$meets ] };
@@ -277,6 +278,6 @@ or remove that user to/from the list of administrators of the season.
 
 Returns an arrayref of hashrefs of users who are administrators of the season.
 
-=head1 WITH ROLES
+=head1 WITH ROLE
 
-L<Omniframe::Role::Model>, L<QuizSage::Role::Data>.
+L<Omniframe::Role::Model>.
