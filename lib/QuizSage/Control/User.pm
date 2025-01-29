@@ -23,7 +23,7 @@ sub account ($self) {
 
                     my $email = {
                         to   => $user->data->{email},
-                        from => $user->conf->get( qw( email from ) ),
+                        from => conf->get( qw( email from ) ),
                     };
                     $email->{$_} =~ s/(<|>)/ ( $1 eq '<' ) ? '&lt;' : '&gt;' /eg for ( qw( to from ) );
 
@@ -136,7 +136,7 @@ sub forgot_password ($self) {
 
             my $email = {
                 to   => $user->data->{email},
-                from => $user->conf->get( qw( email from ) ),
+                from => conf->get( qw( email from ) ),
             };
             $email->{$_} =~ s/(<|>)/ ( $1 eq '<' ) ? '&lt;' : '&gt;' /eg for ( qw( to from ) );
 

@@ -32,7 +32,7 @@ $user->save({ active => 1 });
 $obj->dq('material')->sql(q{
     INSERT INTO bible (acronym) VALUES (?)
     ON CONFLICT(acronym) DO NOTHING
-})->run( $user->conf->get( qw( quiz_defaults bible ) ) );
+})->run( conf->get( qw( quiz_defaults bible ) ) );
 
 my $mock = mock $obj => ( override => [ material_json => sub { +{
     label       => 'label',

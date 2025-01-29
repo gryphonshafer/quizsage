@@ -1,6 +1,6 @@
 package QuizSage::Control::Main;
 
-use exact 'Mojolicious::Controller';
+use exact -conf, 'Mojolicious::Controller';
 use GD;
 use Mojo::File 'path';
 use QuizSage::Model::Memory;
@@ -27,14 +27,13 @@ sub set ($self) {
     $self->redirect_to( $self->req->headers->referer );
 }
 
-my $conf     = QuizSage::Model::Season->new->conf;
-my $root_dir = $conf->get( qw( config_app root_dir ) );
+my $root_dir = conf->get( qw( config_app root_dir ) );
 my $base     = path($root_dir);
 
 {
-    my $captcha = $conf->get('captcha');
+    my $captcha = conf->get('captcha');
     my ($ttf)   = glob( $base->to_string . '/' . $captcha->{ttf} );
-    ($ttf)      = glob( $base->child( $conf->get('omniframe') )->to_string . '/' . $captcha->{ttf} )
+    ($ttf)      = glob( $base->child( conf->get('omniframe') )->to_string . '/' . $captcha->{ttf} )
         unless ($ttf);
 
     sub captcha ($self) {
@@ -91,7 +90,7 @@ sub setup ($self) {
     ) if ( $self->stash('setup_label') eq 'pickup_quiz' );
 
     my $label         = QuizSage::Model::Label->new( user_id => $user->id );
-    my $quiz_defaults = $label->conf->get('quiz_defaults');
+    my $quiz_defaults = conf->get('quiz_defaults');
     my $user_settings = $user->data->{settings}{ $self->stash('setup_label') }  // {};
 
     my $settings;
@@ -175,9 +174,9 @@ sub setup ($self) {
 }
 
 sub download ($self) {
-    $self->stash( shards => $conf->get( qw( database shards ) ) );
+    $self->stash( shards => conf->get( qw( database shards ) ) );
     if ( my $shard = $self->param('shard') ) {
-        my $file = $base->child( $conf->get( qw( database shards ), $shard, 'file' ) );
+        my $file = $base->child( conf->get( qw( database shards ), $shard, 'file' ) );
 
         $self->res->headers->header(@$_) for (
             [ 'Content-Type'        => 'application/x-sqlite'                           ],

@@ -1,6 +1,6 @@
 package QuizSage::Role::Meet::Build;
 
-use exact -role;
+use exact -role, -conf;
 use Mojo::JSON 'decode_json';
 use Omniframe::Class::Javascript;
 use Omniframe::Class::Time;
@@ -187,7 +187,7 @@ sub build_bracket_data ( $self, $build_settings ) {
 
 sub schedule_integration( $self, $build_settings ) {
     my $schedule          = delete $build_settings->{schedule} // {};
-    my $schedule_duration = $schedule->{duration} // $self->conf->get( qw( quiz_defaults duration ) );
+    my $schedule_duration = $schedule->{duration} // conf->get( qw( quiz_defaults duration ) );
 
     # blocks setup
     my $blocks;
@@ -608,7 +608,7 @@ sub build_score_sum_draw (
 sub add_distributions ( $self, $build_settings ) {
     my ( $material_json_bibles, $importmap_js );
 
-    my $root_dir = $self->conf->get( qw( config_app root_dir ) );
+    my $root_dir = conf->get( qw( config_app root_dir ) );
 
     for my $bracket ( $build_settings->{brackets}->@* ) {
         for my $quiz ( map { $_->{rooms}->@* } $bracket->{sets}->@* ) {

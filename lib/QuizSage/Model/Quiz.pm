@@ -1,6 +1,6 @@
 package QuizSage::Model::Quiz;
 
-use exact -class;
+use exact -class, -conf;
 use Mojo::JSON qw( encode_json decode_json );
 use Omniframe::Class::Javascript;
 use Omniframe::Mojo::Socket;
@@ -51,7 +51,7 @@ sub thaw ( $self, $data ) {
 
 sub pickup ( $self, $pickup_settings, $user = undef ) {
     my $quiz_settings    = {};
-    my $quiz_defaults    = $self->conf->get('quiz_defaults');
+    my $quiz_defaults    = conf->get('quiz_defaults');
     my $available_bibles = $self->dq('material')->get( 'bible', ['acronym'] )->run->column;
 
     # canonicalize default bible acronym
@@ -96,7 +96,7 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
 
     # build distribution
 
-    my $root_dir = $self->conf->get( qw( config_app root_dir ) );
+    my $root_dir = conf->get( qw( config_app root_dir ) );
 
     $quiz_settings->{distribution} = Omniframe::Class::Javascript->new(
         basepath  => $root_dir . '/static/js',
@@ -153,8 +153,8 @@ sub latest_quiz_in_meet_room ( $self, $meet_id, $room_number ) {
 
 sub ensure_material_json_exists ($self) {
     return if ( -f join( '/',
-        $self->conf->get( qw( config_app root_dir ) ),
-        $self->conf->get( qw( material json location ) ),
+        conf->get( qw( config_app root_dir ) ),
+        conf->get( qw( material json location ) ),
         $self->data->{settings}{material}{id} . '.json',
     ) );
 
@@ -181,7 +181,7 @@ sub create_material_json_from_label ( $self, $label, $user = undef ) {
 sub recent_pickup_quizzes ( $self, $user_id, $ctime_life = undef ) {
     $self->dq
         ->sql(q{DELETE FROM quiz WHERE meet_id IS NULL AND JULIANDAY('NOW') - JULIANDAY(created) > ?})
-        ->run( $ctime_life // $self->conf->get('pickup_quiz_ctime_life') );
+        ->run( $ctime_life // conf->get('pickup_quiz_ctime_life') );
 
     return [
         sort { $b->{created} cmp $a->{created} }

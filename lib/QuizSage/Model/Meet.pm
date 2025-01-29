@@ -1,6 +1,6 @@
 package QuizSage::Model::Meet;
 
-use exact -class;
+use exact -class, -conf;
 use Mojo::JSON qw( encode_json decode_json );
 use Omniframe::Class::Time;
 use QuizSage::Model::Quiz;
@@ -311,7 +311,7 @@ sub stats ($self) {
     return $self->data->{stats} if (
         $self->data->{stats}->%* and
         $time->parse( $self->data->{last_modified} )->{datetime}->epoch >
-        $time->parse( $self->conf->get('rebuild_stats_before') )->{datetime}->epoch
+        $time->parse( conf->get('rebuild_stats_before') )->{datetime}->epoch
     );
 
     my $build        = $self->deepcopy( $self->data->{build} );

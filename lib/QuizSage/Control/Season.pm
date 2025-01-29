@@ -1,6 +1,6 @@
 package QuizSage::Control::Season;
 
-use exact 'Mojolicious::Controller';
+use exact -conf, 'Mojolicious::Controller';
 use Mojo::File 'path';
 use QuizSage::Model::Meet;
 use QuizSage::Model::Season;
@@ -102,7 +102,7 @@ sub record ($self) {
     }
     else {
         ( my $yaml = path(
-            $season->conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/season.yaml'
+            conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/season.yaml'
         )->slurp ) =~ s/^\-+//;
 
         $self->stash(
@@ -125,7 +125,7 @@ sub meet ($self) {
     if ( $self->param('meet_action_type') eq 'add' ) {
         unless ( $self->param('settings') ) {
             ( my $yaml = path(
-                $meet->conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/meet.yaml'
+                conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/meet.yaml'
             )->slurp ) =~ s/^\-+//;
             my $roster_data = Load($yaml)->{roster}{data};
             $yaml =~ s/\nroster\s*:.*(?=\n\w)//ms;
@@ -138,7 +138,7 @@ sub meet ($self) {
                 start         => $meet->time->set->format('sqlite_min'),
                 days          => 1,
                 settings      => $yaml,
-                default_bible => $meet->conf->get( qw( quiz_defaults bible ) ),
+                default_bible => conf->get( qw( quiz_defaults bible ) ),
                 roster_data   => $roster_data,
             );
         }
@@ -205,7 +205,7 @@ sub meet ($self) {
                 $self->stash(
                     meet          => $meet,
                     settings      => $yaml,
-                    default_bible => $default_bible // $meet->conf->get( qw( quiz_defaults bible ) ),
+                    default_bible => $default_bible // conf->get( qw( quiz_defaults bible ) ),
                     roster_data   => $roster_data,
                     users_list    => $self->stash('user')->active_users_list,
                 );

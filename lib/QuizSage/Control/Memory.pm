@@ -1,6 +1,6 @@
 package QuizSage::Control::Memory;
 
-use exact 'Mojolicious::Controller';
+use exact -conf, 'Mojolicious::Controller';
 use DateTime;
 use QuizSage::Model::Label;
 use QuizSage::Model::Memory;
@@ -51,7 +51,7 @@ sub review_setup ($self) {
     my $review = $user->data->{settings}{review};
     unless ($review) {
         my $now = DateTime->now( time_zone => 'local' );
-        my ( $month, $day ) = split( /\D+/, QuizSage::Model::Memory->conf->get('season_start') );
+        my ( $month, $day ) = split( /\D+/, conf->get('season_start') );
         my $season_start = DateTime->new(
             month     => $month,
             day       => $day,
