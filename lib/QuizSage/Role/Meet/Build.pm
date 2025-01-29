@@ -673,7 +673,7 @@ QuizSage::Role::Meet::Build
 
 =head1 SYNOPSIS
 
-    package Package;
+    package Example::Meet;
 
     use exact -class;
 

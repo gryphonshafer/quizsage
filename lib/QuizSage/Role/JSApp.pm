@@ -58,7 +58,7 @@ QuizSage::Role::JSApp
 
 =head1 SYNOPSIS
 
-    package Package;
+    package Example::JSApp;
 
     use exact -class;
 

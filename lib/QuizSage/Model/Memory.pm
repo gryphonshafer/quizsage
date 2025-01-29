@@ -4,6 +4,7 @@ use exact -class, -conf;
 use Bible::Reference;
 use DateTime;
 use Mojo::JSON 'encode_json';
+use Omniframe::Class::Time;
 use QuizSage::Model::Label;
 use QuizSage::Model::Season;
 use QuizSage::Model::User;
@@ -12,6 +13,8 @@ use QuizSage::Util::Material 'text2words';
 with 'Omniframe::Role::Model';
 
 class_has bible_ref => sub { Bible::Reference->new };
+
+my $time = Omniframe::Class::Time->new;
 
 sub to_memorize ( $self, $user ) {
     my $quiz_defaults = conf->get('quiz_defaults');
@@ -57,7 +60,7 @@ sub to_memorize ( $self, $user ) {
                 };
                 +{
                     %$reference,
-                    text      => $sth_text->run( $book, $chapter, $verse, $_ )->value,
+                    text      => ( $sth_text->run( $book, $chapter, $verse, $_ )->value // '' ),
                     reference => encode_json($reference),
                     ( $sth_level->run( $user->id, $book, $chapter, $verse, $_ )->first({}) // {} )->%*,
                 };
@@ -304,8 +307,8 @@ sub report ( $self, $user_id ) {
             time_zone => 'local',
         );
         $dt->set_year( $dt->year - 1 ) if ( $dt->epoch > time );
-        $season->time->datetime($dt);
-        $earliest_active_season_start = $season->time->format('sqlite_min');
+        $time->datetime($dt);
+        $earliest_active_season_start = $time->format('sqlite_min');
     }
 
     my $data;

@@ -256,7 +256,7 @@ QuizSage::Role::Meet::Settings
 
 =head1 SYNOPSIS
 
-    package Package;
+    package Example::Settings;
 
     use exact -class;
 
