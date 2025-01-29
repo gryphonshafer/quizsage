@@ -11,14 +11,18 @@ jobs:
       image: perldocker/perl-tester:5.${{ matrix.perl-version }}
     steps:
       - run: |-
-          remotes=$( git ls-remote --heads https://github.com/gryphonshafer/omniframe.git | sed 's/^.*\srefs\/heads\///' )
+          remotes=$(
+            git ls-remote --heads https://github.com/gryphonshafer/omniframe.git | \
+            sed 's/^.*\srefs\/heads\///'
+          )
           if echo "$remotes" | grep -q "${GITHUB_REF#refs/heads/}"
           then
-              branch="${GITHUB_REF#refs/heads/}"
+            branch="${GITHUB_REF#refs/heads/}"
           else
-              branch=$( echo "$remotes" | head -n 1 )
+            branch=$( echo "$remotes" | head -n 1 )
           fi
-          git clone -b $branch --single-branch --depth 1 https://github.com/gryphonshafer/omniframe.git $GITHUB_WORKSPACE/../omniframe
+          git clone -b $branch --single-branch --depth 1 \
+          https://github.com/gryphonshafer/omniframe.git $GITHUB_WORKSPACE/../omniframe
       - uses: actions/checkout@v3
       - run: |-
           curl -s -L -o - $(
