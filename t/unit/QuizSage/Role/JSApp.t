@@ -1,20 +1,9 @@
 use Test2::V0;
 use exact -conf;
 use Omniframe;
+use Omniframe::Util::Data;
 
-my $obj;
-
-ok(
-    lives { $obj = Omniframe->with_roles('QuizSage::Role::JSApp')->new },
-    q{with_roles('QuizSage::Role::JSApp')->new},
-) or note $@;
-
-DOES_ok( $obj, "QuizSage::Role::$_" ) for ( qw( Data JSApp ) );
-can_ok( $obj, qw( js_app_names js_app_config ) );
-
-is( $obj->js_app_names->[0], { id => 'default', name => D() }, 'js_app_names' );
-
-my $mock = mock $obj => ( override => [ dataload => sub { +{
+my $mock = mock 'Omniframe::Util::Data' => ( override => [ dataload => sub { +{
     default => {
         name => 'Christian Bible Quizzing (CBQ)',
         apps => {
@@ -39,6 +28,18 @@ my $mock = mock $obj => ( override => [ dataload => sub { +{
         },
     },
 } } ] );
+
+my $obj;
+
+ok(
+    lives { $obj = Omniframe->with_roles('QuizSage::Role::JSApp')->new },
+    q{with_roles('QuizSage::Role::JSApp')->new},
+) or note $@;
+
+DOES_ok( $obj, 'QuizSage::Role::JSApp' );
+can_ok( $obj, qw( js_app_names js_app_config ) );
+
+is( $obj->js_app_names->[0], { id => 'default', name => D() }, 'js_app_names' );
 
 is(
     $obj->js_app_config('app_name'),

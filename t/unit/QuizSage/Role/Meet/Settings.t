@@ -11,7 +11,6 @@ ok(
 
 DOES_ok( $obj, $_ ) for ( qw(
     Omniframe::Role::Model
-    QuizSage::Role::Data
     QuizSage::Role::Meet::Settings
 ) );
 

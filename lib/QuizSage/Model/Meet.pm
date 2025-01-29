@@ -3,13 +3,13 @@ package QuizSage::Model::Meet;
 use exact -class, -conf;
 use Mojo::JSON qw( encode_json decode_json );
 use Omniframe::Class::Time;
+use Omniframe::Util::Data qw( dataload deepcopy );
 use QuizSage::Model::Quiz;
 use QuizSage::Model::Season;
 
 with qw(
     Omniframe::Role::Bcrypt
     Omniframe::Role::Model
-    QuizSage::Role::Data
     QuizSage::Role::Meet::Build
     QuizSage::Role::Meet::Settings
     QuizSage::Role::Meet::Editing
@@ -19,7 +19,7 @@ my $min_passwd_length = 8;
 my $time              = Omniframe::Class::Time->new;
 
 before 'create' => sub ( $self, $params ) {
-    $params->{settings} //= $self->dataload('config/meets/defaults/meet.yaml');
+    $params->{settings} //= dataload('config/meets/defaults/meet.yaml');
 };
 
 sub freeze ( $self, $data ) {
@@ -57,7 +57,7 @@ sub from_season_meet ( $self, $season_name, $meet_name ) {
 }
 
 sub state ($self) {
-    my $state        = $self->deepcopy( $self->data->{build} );
+    my $state        = deepcopy( $self->data->{build} );
     my $quizzes_data = QuizSage::Model::Quiz->new->every_data({ meet_id => $self->id });
 
     # for every bracket that has a first-to-win-twice finals situation
@@ -82,7 +82,7 @@ sub state ($self) {
                 $quiz->{name} !~ $first_finals_quiz_name_regex or
                 grep { $_->{name} eq $quiz->{name} } $bracket->{sets}[-1]{rooms}->@*
             );
-            my $next_finals_quiz = $self->deepcopy($first_finals_quiz_template);
+            my $next_finals_quiz = deepcopy($first_finals_quiz_template);
             $next_finals_quiz->{name} = $quiz->{name};
             push( $bracket->{sets}[-1]{rooms}->@*, $next_finals_quiz );
         }
@@ -116,7 +116,7 @@ sub state ($self) {
         unless ( grep { $winners->{$_} >= 2 } keys %$winners ) {
 
             # inject an additional finals quiz into meet state
-            my $next_finals_quiz = $self->deepcopy($first_finals_quiz_template);
+            my $next_finals_quiz = deepcopy($first_finals_quiz_template);
             $next_finals_quiz->{name} .= '-' . ( @finals_quizzes_done + 1 );
             push( $bracket->{sets}[-1]{rooms}->@*, $next_finals_quiz );
         }
@@ -265,7 +265,7 @@ sub state ($self) {
 }
 
 sub quiz_settings ( $self, $bracket_name, $quiz_name ) {
-    my $build = $self->deepcopy( $self->data->{build} );
+    my $build = deepcopy( $self->data->{build} );
 
     my ($bracket) = grep { $_->{name} eq $bracket_name } $build->{brackets}->@*;
     return unless $bracket;
@@ -314,7 +314,7 @@ sub stats ($self) {
         $time->parse( conf->get('rebuild_stats_before') )->{datetime}->epoch
     );
 
-    my $build        = $self->deepcopy( $self->data->{build} );
+    my $build        = deepcopy( $self->data->{build} );
     my $quizzes_data = QuizSage::Model::Quiz->new->every_data({ meet_id => $self->id });
 
     my $stats;
@@ -761,6 +761,6 @@ or remove that user to/from the list of administrators of the meet.
 
 =head1 WITH ROLES
 
-L<Omniframe::Role::Bcrypt>, L<Omniframe::Role::Model>, L<QuizSage::Role::Data>,
+L<Omniframe::Role::Bcrypt>, L<Omniframe::Role::Model>,
 L<QuizSage::Role::Meet::Build>, L<QuizSage::Role::Meet::Settings>,
 L<QuizSage::Role::Meet::Editing>.

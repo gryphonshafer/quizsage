@@ -4,10 +4,7 @@ use QuizSage::Model::Season;
 
 my $obj;
 ok( lives { $obj = QuizSage::Model::Season->new }, 'new' ) or note $@;
-DOES_ok( $obj, $_ ) for ( qw(
-    Omniframe::Role::Model
-    QuizSage::Role::Data
-) );
+DOES_ok( $obj, 'Omniframe::Role::Model' );
 can_ok( $obj, qw(
     create
     freeze thaw seasons stats

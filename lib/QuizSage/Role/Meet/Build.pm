@@ -4,12 +4,12 @@ use exact -role, -conf;
 use Mojo::JSON 'decode_json';
 use Omniframe::Class::Javascript;
 use Omniframe::Class::Time;
+use Omniframe::Util::Data qw( dataload deepcopy );
 use QuizSage::Util::Material 'material_json';
 use YAML::XS 'Dump';
 
 with qw(
     Omniframe::Role::Database
-    QuizSage::Role::Data
     QuizSage::Role::JSApp
     QuizSage::Role::Meet::Settings
 );
@@ -137,7 +137,7 @@ sub build_bracket_data ( $self, $build_settings ) {
             }
         }
         elsif ( $bracket->{type} eq 'positional' ) {
-            my $template = $self->dataload( 'config/meets/brackets/' . $bracket->{template} . '.yaml' );
+            my $template = dataload( 'config/meets/brackets/' . $bracket->{template} . '.yaml' );
 
             for my $quiz_override ( $bracket->{quizzes}->@* ) {
                 my ($quiz_to_override) =
@@ -198,7 +198,7 @@ sub schedule_integration( $self, $build_settings ) {
         } ];
     }
     else {
-        $blocks = $self->deepcopy( $schedule->{blocks} );
+        $blocks = deepcopy( $schedule->{blocks} );
         for my $block (@$blocks) {
             $block->{start} = $time->parse( $block->{start} )->datetime if ( $block->{start} );
             $block->{stop}  = $time->parse( $block->{stop}  )->datetime if ( $block->{stop}  );

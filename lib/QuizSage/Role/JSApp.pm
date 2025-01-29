@@ -1,23 +1,24 @@
 package QuizSage::Role::JSApp;
 
 use exact -role;
-
-with 'QuizSage::Role::Data';
+use Omniframe::Util::Data 'dataload';
 
 sub js_app_names ($self) {
-    my $conf = $self->dataload('config/js_apps.yaml');
+    my $apps_conf = dataload('config/js_apps.yaml');
+
     return [
         sort {
             $a->{id} eq 'default' && -1 or
             $b->{id} eq 'default' &&  1 or
             $a->{name} cmp $b->{name}
         }
-        map { +{ id => $_, name => $conf->{$_}{name} } } keys $conf->%*
+        map { +{ id => $_, name => $apps_conf->{$_}{name} } } keys $apps_conf->%*
     ];
 }
 
 sub js_app_config ( $self, $app, $id = undef ) {
-    my $apps_conf = $self->dataload('config/js_apps.yaml');
+    my $apps_conf = dataload('config/js_apps.yaml');
+
     my $app_conf  = $apps_conf->{
         $id // ( ( $self->can('data') and $self->data ) ? $self->data->{js_apps_id} : undef ) // 'default'
     }{apps}{$app};
@@ -109,7 +110,3 @@ application name and optional set ID.
 
     my $conf_0 = $obj->js_app_config('quiz');
     my $conf_1 = $obj->js_app_config( 'quiz', 'default' );
-
-=head1 WITH ROLE
-
-L<QuizSage::Role::Data>.
