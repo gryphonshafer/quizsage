@@ -270,7 +270,7 @@ QuizSage::Role::Meet::Editing
 
 =head1 SYNOPSIS
 
-    package Package;
+    package Example::Editing;
 
     use exact -class;
 

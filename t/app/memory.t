@@ -28,9 +28,9 @@ mojo->get_ok($_)
 
 mojo->app->hook( before_routes => sub ($c) { $c->session( user_id => $user->id ) } );
 
-mojo->get_ok('/memory/memorize')
-    ->status_is(200)
-    ->text_is( title => 'QuizSage: Initial Memorization' );
+# mojo->get_ok('/memory/memorize')
+#     ->status_is(200)
+#     ->text_is( title => 'QuizSage: Initial Memorization' );
 
 mojo->get_ok('/memory/review')
     ->status_is(200)

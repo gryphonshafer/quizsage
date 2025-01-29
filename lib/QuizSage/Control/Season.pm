@@ -2,9 +2,12 @@ package QuizSage::Control::Season;
 
 use exact -conf, 'Mojolicious::Controller';
 use Mojo::File 'path';
+use Omniframe::Class::Time;
 use QuizSage::Model::Meet;
 use QuizSage::Model::Season;
 use YAML::XS qw( LoadFile Load Dump );
+
+my $time = Omniframe::Class::Time->new;
 
 sub stats ($self) {
     my $season = QuizSage::Model::Season->new->load( $self->param('season_id') );
@@ -135,7 +138,7 @@ sub meet ($self) {
 
             $self->stash(
                 name          => 'Meet ' . ( 1 + $meet_count ),
-                start         => $meet->time->set->format('sqlite_min'),
+                start         => $time->set->format('sqlite_min'),
                 days          => 1,
                 settings      => $yaml,
                 default_bible => conf->get( qw( quiz_defaults bible ) ),
