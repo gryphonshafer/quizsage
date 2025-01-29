@@ -1,6 +1,6 @@
-requires 'Bible::OBML', '2.07';
-requires 'Bible::OBML::Gateway', '2.08';
-requires 'Bible::Reference', '1.16';
+requires 'Bible::OBML', '2.09';
+requires 'Bible::OBML::Gateway', '2.10';
+requires 'Bible::Reference', '1.17';
 requires 'Email::Address', '1.913';
 requires 'File::Path', '2.18';
 requires 'MIME::Base64', '3.16';

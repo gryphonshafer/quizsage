@@ -1,35 +1,56 @@
 name: test
 on: [ push, pull_request, workflow_dispatch ]
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        perl-version: [ 38, 36, 34, 32 ]
-    container:
-      image: perldocker/perl-tester:5.${{ matrix.perl-version }}
-    steps:
-      - run: git clone https://github.com/gryphonshafer/omniframe.git $GITHUB_WORKSPACE/../omniframe
-      - uses: actions/checkout@v3
-      - run: apt-get update && apt-get install -y libgd3 libgd-dev
-      - uses: perl-actions/install-with-cpanm@v1
+    test:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                perl-version: [ devel, 40, 38, 36, 34, 32 ]
+        container:
+            image: |-
+                perldocker/perl-tester:${{
+                    contains( matrix.perl-version, 'd' )
+                        && matrix.perl-version
+                        || format( '5.{0}', matrix.perl-version )
+                }}
         env:
-          PERL_CPANM_OPT: --from https://cpan.metacpan.org/ --notest --force --skip-satisfied
-        with:
-          sudo: false
-          args: --with-develop --with-all-features --installdeps ../omniframe/.
-      - run: cpanm --with-develop --with-all-features --installdeps .
-        env:
-          PERL_CPANM_OPT: --from https://cpan.metacpan.org/ --notest --force --skip-satisfied
-      - run: ../omniframe/tools/install_externals.pl
-      - run: dest init
-      - run: dest update
-      - run: |-
-          PATH="$PATH:." \
-          HARNESS_PERL_SWITCHES=-MDevel::Cover=+ignore,'/lib/Omniframe\\b' \
-          prove --recurse --lib --failures --jobs 4 --timer t
-      - run: cover -report codecov
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        if: env.CODECOV_TOKEN != null && matrix.perl-version >= 26
+            PERL_CPANM_OPT: |-
+                --from https://cpan.metacpan.org
+                --notest
+                --force
+                --skip-satisfied
+                --with-develop
+                --with-all-features
+                --installdeps
+            HARNESS_PERL_SWITCHES: -MDevel::Cover
+            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        steps:
+            - run: apt-get update && apt-get install -y libgd3 libgd-dev
+            - run: |-
+                remotes=$(
+                    git ls-remote --heads https://github.com/gryphonshafer/omniframe.git | \
+                    sed 's/^.*\srefs\/heads\///'
+                )
+                if echo "$remotes" | grep -q "${GITHUB_REF#refs/heads/}"
+                then
+                    branch="${GITHUB_REF#refs/heads/}"
+                else
+                    branch=$( echo "$remotes" | head -n 1 )
+                fi
+                git clone -b $branch --single-branch --depth 1 \
+                https://github.com/gryphonshafer/omniframe.git $GITHUB_WORKSPACE/../omniframe
+            - uses: actions/checkout@v4
+            - uses: perl-actions/install-with-cpanm@v1
+              with: { sudo: false, args: ../omniframe/. }
+            - uses: perl-actions/install-with-cpanm@v1
+              with: { sudo: false, args: . }
+            - run: ../omniframe/tools/install_externals.pl
+            - run: dest init
+            - run: dest update
+            - run: >-
+                PATH="$PATH:."
+                HARNESS_PERL_SWITCHES=-MDevel::Cover=+ignore,'/lib/Omniframe\\b'
+                prove --recurse --lib --failures --jobs 4 --timer t
+            - run: cover -report codecov
+              if: env.CODECOV_TOKEN != null && ( matrix.perl-version == 'devel' || matrix.perl-version >= 26 )
