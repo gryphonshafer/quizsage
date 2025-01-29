@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use exact -cli, -conf;
 use QuizSage::Model::Label;
-use Omniframe::Util::Table 'table';
+use Omniframe::Util::Output 'table';
 
 my $opt = options( qw{
     user|u=s
