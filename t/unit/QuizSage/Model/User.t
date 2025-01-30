@@ -5,7 +5,7 @@ use QuizSage::Model::User;
 
 my $obj;
 ok( lives { $obj = QuizSage::Model::User->new }, 'new' ) or note $@;
-DOES_ok( $obj, "Omniframe::Role::$_" ) for ( qw( Bcrypt Model ) );
+DOES_ok( $obj, 'Omniframe::Role::Model' );
 can_ok( $obj, qw(
     active
     create

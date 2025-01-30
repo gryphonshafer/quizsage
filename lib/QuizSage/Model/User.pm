@@ -4,9 +4,10 @@ use exact -class;
 use Email::Address;
 use Mojo::JSON qw( encode_json decode_json );
 use Omniframe::Class::Email;
+use Omniframe::Util::Bcrypt 'bcrypt';
 use QuizSage::Model::Meet;
 
-with qw( Omniframe::Role::Bcrypt Omniframe::Role::Model );
+with 'Omniframe::Role::Model';
 
 class_has active => 1;
 
@@ -27,7 +28,7 @@ sub freeze ( $self, $data ) {
     if ( $self->is_dirty( 'passwd', $data ) ) {
         croak("Password supplied is not at least $min_passwd_length characters in length")
             unless ( length $data->{passwd} >= $min_passwd_length );
-        $data->{passwd} = $self->bcrypt( $data->{passwd} );
+        $data->{passwd} = bcrypt( $data->{passwd} );
     }
 
     if ( $self->is_dirty( 'phone', $data ) ) {
@@ -80,7 +81,7 @@ sub reset_password ( $self, $user_id, $user_hash, $new_password ) {
     return 0 unless $user_found;
 
     $self->dq->sql('UPDATE user SET passwd = ? WHERE user_id = ?')
-        ->run( $self->bcrypt($new_password), $user_id );
+        ->run( bcrypt($new_password), $user_id );
 
     return 1;
 }
@@ -88,7 +89,7 @@ sub reset_password ( $self, $user_id, $user_hash, $new_password ) {
 sub login ( $self, $email, $passwd ) {
     $self->load({
         email  => lc($email),
-        passwd => $self->bcrypt($passwd),
+        passwd => bcrypt($passwd),
         active => 1,
     });
 
@@ -240,6 +241,6 @@ This method will return an arrayref of hashrefs with C<user_id>, C<first_name>,
 C<last_name>, and C<email> that match active users. It will also include a
 C<label> field using data from other fields.
 
-=head1 WITH ROLES
+=head1 WITH ROLE
 
-L<Omniframe::Role::Bcrypt>, L<Omniframe::Role::Model>.
+L<Omniframe::Role::Model>.

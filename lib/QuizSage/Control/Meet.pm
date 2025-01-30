@@ -2,14 +2,13 @@ package QuizSage::Control::Meet;
 
 use exact 'Mojolicious::Controller';
 use Mojo::JSON 'encode_json';
+use Omniframe::Util::Bcrypt 'bcrypt';
 use QuizSage::Model::Meet;
 use QuizSage::Model::Quiz;
 
-with 'Omniframe::Role::Bcrypt';
-
 sub passwd ($self) {
     if ( my $meet_passwd = $self->param('meet_passwd') ) {
-        $self->stash('user')->data->{settings}{meet_passwd} = $self->bcrypt($meet_passwd);
+        $self->stash('user')->data->{settings}{meet_passwd} = bcrypt($meet_passwd);
         $self->stash('user')->save;
 
         $self->flash(
@@ -130,7 +129,3 @@ socket for the meet and room (if a web socket is requested).
 =head1 INHERITANCE
 
 L<Mojolicious::Controller>.
-
-=head1 WITH ROLE
-
-L<Omniframe::Role::Bcrypt>.
