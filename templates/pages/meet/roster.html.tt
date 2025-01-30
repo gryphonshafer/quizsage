@@ -1,5 +1,5 @@
 [%
-    USE date;
+    PROCESS macros;
     page.title = 'Meet Roster';
 %]
 
@@ -7,7 +7,7 @@
     [% meet.data.name %]
     at
     [% meet.data.location %];
-    <time datetime="[% meet.data.start %]">[% date.format( meet.data.start, '%a, %b %-d, %Y' ) %]</time>
+    [% time( meet.data.start, '%a, %b %-d, %Y' ) %]
 </h2>
 
 [% FOR team IN roster %]

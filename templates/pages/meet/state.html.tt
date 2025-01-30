@@ -1,5 +1,5 @@
 [%
-    USE date;
+    PROCESS macros;
     page.title = 'Meet State';
     page.body_classes.push('state');
 
@@ -32,7 +32,7 @@
     [% meet.data.name %]
     at
     [% meet.data.location %];
-    <time datetime="[% meet.data.start %]">[% date.format( meet.data.start, '%a, %b %-d, %Y' ) %]</time>
+    [% time( meet.data.start, '%a, %b %-d, %Y' ) %]
 </h2>
 
 <ul class="column no_print">
@@ -152,9 +152,9 @@
             %]
             <div class="info_box">
                 <b>[% event.name %]</b> —
-                <time datetime="[% event.start %]">[% date.format( event.start, '%a, %b %-d' ) %]</time>
-                from <time datetime="[% event.start %]"><b>[% date.format( event.start, '%-I:%M %p' ) %]</b></time>
-                to <time datetime="[% event.stop %]">[% date.format( event.stop, '%-I:%M %p' ) %]</time>
+                [% time( event.start, '%a, %b %-d' ) %]
+                from <b>[% time( event.start, '%-I:%M %p' ) %]</b>
+                to [% time( event.stop, '%-I:%M %p' ) %]
                 <i>([% event.duration %] min.)</i>
             </div>
         [% END %]
@@ -190,15 +190,12 @@
                     [% IF row_has_active_quiz %]active_quiz[% END %]
                 ">
                     <b>Set [% loop.count %]<span class="time_preposition"> — </span></b>
-                    <time datetime="[% schedule.start %]">[%
-                        date.format( schedule.start, '%a, %b %-d' ) %]</time>
+                    [% time( schedule.start, '%a, %b %-d' ) %]
                     [% IF qm_auth %]
                         <span class="time_preposition"> from </span>
-                        <time datetime="[% schedule.start %]"><b>[%
-                            date.format( schedule.start, '%-I:%M %p' ) %]</b></time>
+                        <b>[% time( schedule.start, '%-I:%M %p' ) %]</b>
                         <span class="time_preposition"> to </span>
-                        <time datetime="[% schedule.stop %]">[%
-                            date.format( schedule.stop, '%-I:%M %p' ) %]</time>
+                        [% time( schedule.stop, '%-I:%M %p' ) %]
                     [% END %]
                     <i>([% UNLESS qm_auth %]~[% END %][% schedule.duration %] min.)</i>
                 </div>
