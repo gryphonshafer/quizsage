@@ -60,7 +60,7 @@ sub to_memorize ( $self, $user ) {
                 };
                 +{
                     %$reference,
-                    text      => $sth_text->run( $book, $chapter, $verse, $_ )->value,
+                    text      => ( $sth_text->run( $book, $chapter, $verse, $_ )->value // '' ),
                     reference => encode_json($reference),
                     ( $sth_level->run( $user->id, $book, $chapter, $verse, $_ )->first({}) // {} )->%*,
                 };
