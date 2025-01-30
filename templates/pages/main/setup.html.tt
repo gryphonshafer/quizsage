@@ -1,5 +1,5 @@
 [%
-    USE date;
+    PROCESS macros;
 
     setup_name =
         ( setup_label == 'pickup_quiz'   ) ? 'Pick-Up'      :
@@ -229,10 +229,9 @@
                     [% number = number + 1 %]
                     <tr>
                         <td class="right">[% number %]</td>
-                        <td><a href="[% c.url_for( '/quiz/pickup/' _ quiz.quiz_id ) %]"><time
-                            datetime="[% quiz.created %]">[%
-                                date.format( quiz.created, '%a, %b %-d %-I:%M %p' )
-                            %]</time></a></td>
+                        <td><a href="[% c.url_for( '/quiz/pickup/' _ quiz.quiz_id ) %]">[%
+                            time( quiz.created, '%a, %b %-d %-I:%M %p' )
+                        %]</a></td>
                         <td>
                             [% FOR team IN quiz.teams %]
                                 [% team.name %][% UNLESS loop.last %], [% END %]

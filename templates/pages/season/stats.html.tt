@@ -1,5 +1,5 @@
 [%
-    USE date;
+    PROCESS macros;
     page.title = 'Season Statistics';
 %]
 
@@ -21,8 +21,7 @@
                         c.url_for( '/meet/' _ meet.meet_id _ '/stats' )
                     %]">[% meet.name %]</a></td>
                     <td>[% meet.location %]</td>
-                    <td><time datetime="[% meet.start %]">[%
-                        date.format( meet.start, '%a, %b %-d, %Y at %-I:%M %p %Z' ) %]</time></td>
+                    <td>[% time( meet.start, '%a, %b %-d, %Y at %-I:%M %p %Z' ) %]</td>
                 </tr>
             [% END %]
         </tbody>

@@ -1,5 +1,5 @@
 [%
-    USE date;
+    PROCESS macros;
     page.title = 'Memory State';
 %]
 
@@ -69,8 +69,7 @@
     [% IF data AND data.size %]
         <p>
             Report of memorization levels of verses last modified since:
-            <time datetime="[% state.earliest_active_season_start %]">[%
-                date.format( state.earliest_active_season_start, '%b %e, %Y' ) %]</time>
+            [% time( state.earliest_active_season_start, '%b %e, %Y' ) %]
         </p>
 
         [% FOR section IN data %]

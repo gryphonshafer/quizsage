@@ -1,5 +1,5 @@
 [%
-    USE date;
+    PROCESS macro;
     page.title = ( NOT season ) ? 'Create New Season' : 'Edit Season';
 %]
 
@@ -75,8 +75,7 @@
                                 c.url_for( '/season/' _ meet.data.season_id _ '/meet/' _ meet.id _ '/edit' )
                             %]">[% meet.data.name %]</a></td>
                             <td>[% meet.data.location %]</td>
-                            <td><time datetime="[% meet.date.start %]">[%
-                                date.format( meet.data.start, '%a, %b %-e, %Y %-I:%M %p %Z' ) %]</time></td>
+                            <td>[% time( meet.data.start, '%a, %b %-e, %Y %-I:%M %p %Z' ) %]</td>
                         </tr>
                     [% END %]
                 </tbody>
