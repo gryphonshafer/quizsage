@@ -3,12 +3,12 @@ package QuizSage::Model::Meet;
 use exact -class, -conf;
 use Mojo::JSON qw( encode_json decode_json );
 use Omniframe::Class::Time;
+use Omniframe::Util::Bcrypt 'bcrypt';
 use Omniframe::Util::Data qw( dataload deepcopy );
 use QuizSage::Model::Quiz;
 use QuizSage::Model::Season;
 
 with qw(
-    Omniframe::Role::Bcrypt
     Omniframe::Role::Model
     QuizSage::Role::Meet::Build
     QuizSage::Role::Meet::Settings
@@ -29,7 +29,7 @@ sub freeze ( $self, $data ) {
     if ( $self->is_dirty( 'passwd', $data ) ) {
         croak("Password supplied is not at least $min_passwd_length characters in length")
             unless ( length $data->{passwd} >= $min_passwd_length );
-        $data->{passwd} = $self->bcrypt( $data->{passwd} );
+        $data->{passwd} = bcrypt( $data->{passwd} );
     }
 
     for ( qw( settings build stats ) ) {
@@ -761,6 +761,5 @@ or remove that user to/from the list of administrators of the meet.
 
 =head1 WITH ROLES
 
-L<Omniframe::Role::Bcrypt>, L<Omniframe::Role::Model>,
-L<QuizSage::Role::Meet::Build>, L<QuizSage::Role::Meet::Settings>,
-L<QuizSage::Role::Meet::Editing>.
+L<Omniframe::Role::Model>, L<QuizSage::Role::Meet::Build>,
+<QuizSage::Role::Meet::Settings>, L<QuizSage::Role::Meet::Editing>.
