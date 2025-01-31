@@ -39,8 +39,8 @@ default:
     material:
         obml: local/obml
         json:
-            location  : static/json/material
-            path      : /json/material
+            location  : static/build/material
+            path      : /build/material
             atime_life: 274
     reference:
         atime_life: 274
