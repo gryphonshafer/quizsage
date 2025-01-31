@@ -1,7 +1,7 @@
 $root_font_size: 16px !default;
 
-@use '../css/fonts/inter-tight';
-@use '../css/fonts/material-icons';
+@use '../../../static/externals/google_fonts/css/inter-tight';
+@use '../../../static/externals/google_fonts/css/material-icons';
 
 :root {
     font-size: $root_font_size;

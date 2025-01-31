@@ -1,8 +1,8 @@
 ---
 google_fonts:
     dest:
-        fonts : static/fonts
-        css   : config/assets/css/fonts
+        fonts : static/externals/google_fonts/fonts
+        css   : static/externals/google_fonts/css
     fonts:
         'Inter Tight':
             variants:
@@ -24,7 +24,7 @@ google_fonts:
             - woff2
             - woff
 vue:
-    dest: static/js/vue/lib
+    dest: static/externals/vue
     libs:
         vue/dist/vue.global.js       : vue.global.js
         vue/dist/vue.global.prod.js  : vue.global.prod.js

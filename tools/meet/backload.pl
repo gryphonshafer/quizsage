@@ -117,9 +117,11 @@ for my $quiz_data (@$meet_data) {
         \,
         {
             material => {
-                data => decode_json( path(
-                    $root_dir . '/static/json/material/' . $quiz_settings->{material}{id} . '.json'
-                )->slurp ),
+                data => decode_json( path( join( '/',
+                    $root_dir,
+                    conf->get( qw( material json location ) ),
+                    $quiz_settings->{material}{id} . '.json',
+                ) )->slurp ),
             },
             quiz => {
                 teams        => $quiz_settings->{teams},

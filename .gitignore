@@ -17,8 +17,6 @@ local/
 *.sublime-project
 *.sublime-workspace
 
-#-------------------------------------------------------------------------------
-
 # Prove
 .prove
 
@@ -29,13 +27,12 @@ cover_db/
 nytprof/
 nytprof.out
 
-#-------------------------------------------------------------------------------
-
 # Dest Status
 /.dest/
 
-#-------------------------------------------------------------------------------
+# GitHub Actions
+/src/
 
 # Application
-/static/app.css
-/static/json/material
+/static/build/
+/static/externals/
