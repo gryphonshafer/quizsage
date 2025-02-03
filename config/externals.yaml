@@ -1,8 +1,6 @@
 ---
 google_fonts:
-    dest:
-        fonts : static/externals/google_fonts/fonts
-        css   : static/externals/google_fonts/css
+    dest: static/externals/google_fonts
     fonts:
         'Inter Tight':
             variants:
