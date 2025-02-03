@@ -6,21 +6,16 @@
 This is the software, data, and content behind the
 [QuizSage](https://quizsage.org) web site.
 
-## Setup
+## Installation and Setup
 
-To setup an instance of QuizSage, first install and setup the
-[Omniframe](https://github.com/gryphonshafer/omniframe) project as per its
-instructions. Then clone this project to a desired location. Typically, this is
-in parallel to the `omniframe` project root directory.
+This project requires the [Omniframe](https://github.com/gryphonshafer/omniframe)
+project, which is expected to be deployed in a parallel directory. Follow the
+instructions in the Omniframe README "Installation" and "Project Setup" sections.
 
-Change directory to the QuizSage project root directory, and run the following:
+## Run Application
 
-    cpanm -n -f --installdeps .
-
-## Run
-
-To run the QuizSage application, follow the instructions in the `~/app.psgi`
-file within the project's root directory.
+To run the project application, follow the instructions in the `~/app.psgi`
+file within this project's root directory.
 
 ## Material Data
 
