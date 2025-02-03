@@ -27,7 +27,7 @@ default:
         width      : 216
         height     : 50
         size       : 20
-        ttf        : static/fonts/inter-tight/inter-tight-v*-latin_latin-ext-700.ttf
+        ttf        : static/externals/google_fonts/fonts/inter-tight/inter-tight-v*-latin_latin-ext-700.ttf
         rotation   : 7
         x          : 13
         y_base     : 35
