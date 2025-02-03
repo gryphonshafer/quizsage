@@ -1,4 +1,6 @@
 ---
+dart_sass:
+    dest: local/externals/dart_sass
 google_fonts:
     dest: static/externals/google_fonts
     fonts:
