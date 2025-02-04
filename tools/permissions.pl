@@ -33,6 +33,8 @@ my $permissions = {
     'static'                   => { grp => $opt->{ops_group} },
     'static/build'             => { grp => $opt->{ops_group} },
     'static/build/app.css'     => { usr => $opt->{ops_user}, grp => $opt->{ops_group} },
+    'static/build/material'    => { grp => $opt->{ops_group} },
+    'static/build/material/*'  => { grp => $opt->{ops_group} },
     'local/ttc'                => { ignore => 1 },
     'local/ttc/*'              => { ignore => 1 },
     '*.pl'                     => { prm => '0775' },
