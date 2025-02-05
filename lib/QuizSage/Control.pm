@@ -3,10 +3,15 @@ package QuizSage::Control;
 use exact -conf, 'Omniframe::Control';
 use MIME::Base64 'encode_base64';
 use Mojo::JSON 'encode_json';
+use Omniframe::Util::File 'opath';
 use QuizSage::Model::User;
 
 sub startup ($self) {
     $self->setup;
+
+    my $captcha_conf = conf->get('captcha');
+    $captcha_conf->{ttf} = opath( $captcha_conf->{ttf} );
+    $self->plugin( CaptchaPNG => $captcha_conf );
 
     my $all = $self->routes->under( sub ($c) {
         $c->stash( page => { wrappers => ['page.html.tt'] } );
@@ -112,7 +117,7 @@ sub startup ($self) {
 
     $all->any('/')->to('main#home');
     $all->any( '/set/:type/:name' => [ type => [ qw( theme style ) ] ] )->to('main#set');
-    $all->any("/$_")->to("main#$_") for ( qw( captcha download ) );
+    $all->any('/download')->to('main#download');
     $all
         ->any( '/download/:shard' => [ name => [ keys conf->get( qw( database shards ) )->%* ] ] )
         ->to('main#download');

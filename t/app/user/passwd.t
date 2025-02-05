@@ -15,7 +15,7 @@ my $user  = QuizSage::Model::User->new->create({
 });
 $user->save({ active => 1 });
 
-mojo->app->hook( before_routes => sub ($c) { $c->session( captcha => 1234567 ) } );
+mojo->app->hook( before_routes => sub ($c) { $c->set_captcha_value(1234567) } );
 
 mojo->post_ok( '/user/forgot_password' => form => { email => $email } )
     ->status_is(200)
