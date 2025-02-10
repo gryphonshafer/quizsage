@@ -27,8 +27,11 @@ mojo->post_ok( '/meet/passwd', form => { meet_passwd => 'test_meet_passwd' } )
     ->header_is( location => url('/') )
     ->get_ok('/')
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'error' )
-    ->text_like( 'dialog#message', qr|Login required for the previously requested resource| );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+error\b[":\s,]+
+        message[":\s]+Login\s+required\s+for\s+the\s+previously\s+requested\s+resource
+    |x );
 
 mojo->app->hook( before_routes => sub ($c) { $c->session( user_id => $user->id ) } );
 
@@ -37,8 +40,11 @@ mojo->post_ok( '/meet/passwd', form => { meet_passwd => 'test_meet_passwd' } )
     ->header_is( location => url('/') )
     ->get_ok('/')
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'success' )
-    ->text_like( 'dialog#message', qr|Successfully set your meet official password| );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+success\b[":\s,]+
+        message[":\s]+Successfully\s+set\s+your\s+meet\s+official\s+password
+    |x );
 
 is(
     length( $user->load( $user->id )->data->{settings}{meet_passwd} // '' ),

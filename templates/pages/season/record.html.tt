@@ -43,15 +43,17 @@
             window.addEventListener( 'load', () => {
                 window.document.querySelectorAll('a.confirm').forEach( a => {
                     a.onclick = () => {
-                        notice(
-                            'Are you sure? This will delete the season,<br>' +
+                        if ( window.omniframe && omniframe.memo ) omniframe.memo({
+                            class   : 'notice',
+                            message :
+                                'Are you sure? This will delete the season,<br>' +
                                 'all its meets, and all their quizzes. Everything.',
-                            [ 'Yes, delete', 'No, keep' ],
-                            event => {
+                            options : [ 'Yes, delete', 'No, keep' ],
+                            callback: event => {
                                 if ( event.target.textContent == 'Yes, delete' )
                                     window.location.href = a.href;
                             },
-                        );
+                        });
                         return false;
                     };
                 } );

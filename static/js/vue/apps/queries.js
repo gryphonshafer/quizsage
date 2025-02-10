@@ -31,15 +31,16 @@ const queries = await Promise.all( [ quiz_promise, material_promise ] )
         }
         catch (e) {
             console.log(e);
-            notice(
-                "Unable to construct a complete quiz's worth of queries, " +
-                "likely due to insufficient material.<br>" +
-                "Try expanding the material and re-generating the queries.",
-                'OK',
-                () => {
+            if ( window.omniframe && omniframe.memo ) omniframe.memo({
+                class  : 'error',
+                message:
+                    "Unable to construct a complete quiz's worth of queries, " +
+                    "likely due to insufficient material.<br>" +
+                    "Try expanding the material and re-generating the queries.",
+                callback: () => {
                     window.location.href = new URL( '/quiz/pickup/setup', url );
                 },
-            );
+            });
         }
 
         const queries = quiz.state.board.map( row => {

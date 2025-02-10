@@ -59,7 +59,12 @@
         } );
 
         window.document.querySelectorAll('div.tile').forEach( tile => {
-            tile.onclick = () => notice( tile.title );
+            tile.onclick = () => {
+                if ( window.omniframe && omniframe.memo ) omniframe.memo({
+                    class  : 'notice',
+                    message: tile.title,
+                });
+            };
         } );
     } );
 [% END %]
@@ -209,16 +214,18 @@
 
         window.document.querySelectorAll('form#shared_from_labels a.unfollow').forEach( a => {
             a.onclick = () => {
-                notice(
-                    'Are you sure you want to unfollow the memory state of this person?<br>' +
+                if ( window.omniframe && omniframe.memo ) omniframe.memo({
+                    class   : 'notice',
+                    message :
+                        'Are you sure you want to unfollow the memory state of this person?<br>' +
                         'There is no option to undo this without ' +
                         'the person resharing their memory state with you.',
-                    [ 'Yes, unfollow', 'No, leave it unchanged' ],
-                    event => {
+                    options : [ 'Yes, unfollow', 'No, leave it unchanged' ],
+                    callback: event => {
                         if ( event.target.textContent == 'Yes, unfollow' )
                             window.location.href = a.href;
                     },
-                );
+                });
                 return false;
             };
         } );

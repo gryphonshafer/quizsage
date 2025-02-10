@@ -103,9 +103,9 @@ sub state ($self) {
 
         if ($shared_from_user) {
             $self->session( become => $self->param('user_id') );
-            $self->flash( message => {
-                type => 'success',
-                text => join( ' ',
+            $self->flash( memo => {
+                class   => 'success',
+                message => join( ' ',
                     q{You have temporarily "become"},
                     $shared_from_user->{first_name},
                     $shared_from_user->{last_name},
@@ -118,9 +118,9 @@ sub state ($self) {
     elsif ( ( $self->param('action') // '' ) eq 'unbecome' ) {
         if ( $self->session('become') ) {
             $self->session( become => undef );
-            $self->flash( message => {
-                type => 'success',
-                text => 'You have reverted to your own user account.',
+            $self->flash( memo => {
+                class   => 'success',
+                message => 'You have reverted to your own user account.',
             } );
         }
         return $self->redirect_to('/memory/state');

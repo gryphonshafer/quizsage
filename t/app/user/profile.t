@@ -46,8 +46,11 @@ mojo->post_ok(
     ->header_is( location => url('/') )
     ->get_ok('/')
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'success' )
-    ->text_like( 'dialog#message', qr|Successfully edited user profile| );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+success\b[":\s,]+
+        message[":\s]+Successfully\s+edited\s+user\s+profile
+    |x );
 
 is(
     stuff('dq')->get(
@@ -70,6 +73,9 @@ mojo->post_ok(
         },
     )
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'error' );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+error\b
+    |x );
 
 teardown;

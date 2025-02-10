@@ -28,7 +28,26 @@ export default {
                 }
                 else {
                     this.state = 'Reset';
-                    flash_window();
+
+                    let top_left_corner = window.document.querySelector('table.board td.top_left_corner');
+                    if (top_left_corner) top_left_corner.style.backgroundColor = 'transparent';
+
+                    const main     = window.document.querySelector('main');
+                    const original = window.getComputedStyle(main).backgroundColor;
+                    const color    = original.slice( 4, -1 ).split(',').map( value => parseInt(value) );
+                    const inverted = `rgb( ${ color.map( value => 255 - value ).join(', ') } )`;
+
+                    main.style.backgroundColor = inverted;
+
+                    setTimeout( () => {
+                        main.style.backgroundColor = original;
+                        main.style.transition      = 'background-color 1000ms ease';
+
+                        setTimeout( () => {
+                            main.style.backgroundColor = 'inherit';
+                            main.style.transition      = 'inherit';
+                        }, 1000 );
+                    }, 0 );
                 }
             };
 

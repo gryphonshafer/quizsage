@@ -29,9 +29,9 @@ sub account ($self) {
 
                     $self->info( 'User create success: ' . $user->id );
                     $self->flash(
-                        message => {
-                            type => 'success',
-                            text => join( ' ',
+                        memo => {
+                            class   => 'success',
+                            message => join( ' ',
                                 'Successfully created user with email address: ' .
                                     '<b>' . $email->{to} . '</b>.',
                                 'Check your email for reception of the verification email.',
@@ -48,7 +48,7 @@ sub account ($self) {
         catch ($e) {
             if ( $e =~ /\bcaptcha\b/i ) {
                 $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
-                $self->stash( message => $e );
+                $self->stash( memo => { class => 'error', message => $e } );
             }
             else {
                 $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
@@ -60,7 +60,7 @@ sub account ($self) {
                     if ( $e =~ /UNIQUE constraint failed/ );
 
                 $self->notice("User create failure: $e");
-                $self->stash( message => $e, %params );
+                $self->stash( memo => { class => 'error', message => $e }, %params );
             }
         }
     }
@@ -82,9 +82,9 @@ sub account ($self) {
 
             $self->info( 'User profile edit success: ' . $self->stash('user')->id );
             $self->flash(
-                message => {
-                    type => 'success',
-                    text => 'Successfully edited user profile.',
+                memo => {
+                    class   => 'success',
+                    message => 'Successfully edited user profile.',
                 }
             );
             $self->redirect_to('/');
@@ -99,7 +99,7 @@ sub account ($self) {
                 if ( $e =~ /UNIQUE constraint failed/ );
 
             $self->notice("User profile edit failure: $e");
-            $self->stash( message => $e, %params );
+            $self->stash( memo => { class => 'error', message => $e }, %params );
         }
     }
 }
@@ -108,14 +108,17 @@ sub verify ($self) {
     if ( QuizSage::Model::User->new->verify( $self->stash('user_id'), $self->stash('user_hash') ) ) {
         $self->info( 'User verified: ' . $self->stash('user_id') );
         $self->flash(
-            message => {
-                type => 'success',
-                text => 'Successfully verified this user account. You may now login with your credentials.',
+            memo => {
+                class   => 'success',
+                message => 'Successfully verified this user account. You may now login with your credentials.',
             }
         );
     }
     else {
-        $self->flash( message => 'Unable to verify user account using the link provided' );
+        $self->flash( memo => {
+            class   => 'error',
+            message => 'Unable to verify user account using the link provided',
+        } );
     }
 
     $self->redirect_to('/');
@@ -141,9 +144,9 @@ sub forgot_password ($self) {
             $email->{$_} =~ s/(<|>)/ ( $1 eq '<' ) ? '&lt;' : '&gt;' /eg for ( qw( to from ) );
 
             $self->flash(
-                message => {
-                    type => 'success',
-                    text => join( ' ',
+                memo => {
+                    class   => 'success',
+                    message => join( ' ',
                         'Sent email to: ' .
                             '<b>' . $email->{to} . '</b>.',
                         'Check your email for reception of the email.',
@@ -158,7 +161,7 @@ sub forgot_password ($self) {
         }
         catch ($e) {
             $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
-            $self->stash( message => $e );
+            $self->stash( memo => { class => 'error', message => $e } );
         }
     }
 }
@@ -175,15 +178,18 @@ sub reset_password ($self) {
             ) {
                 $self->info( 'Password reset for: ' . $self->stash('user_id') );
                 $self->flash(
-                    message => {
-                        type => 'success',
-                        text => 'Successfully reset password. Login with your new password.',
+                    memo => {
+                        class   => 'success',
+                        message => 'Successfully reset password. Login with your new password.',
                     }
                 );
                 $self->redirect_to('/');
             }
             else {
-                $self->stash( message => 'Failed to reset password.' );
+                $self->stash( memo => {
+                    class   => 'error',
+                    message => 'Failed to reset password.',
+                } );
             }
         }
         catch ($e) {
@@ -192,7 +198,7 @@ sub reset_password ($self) {
             $e =~ s/DBD::\w+::st execute failed:\s*//;
             $e .= '. Please try again.';
 
-            $self->stash( message => $e );
+            $self->stash( memo => { class => 'error', message => $e } );
         }
     }
 }
@@ -207,14 +213,16 @@ sub login ($self) {
     catch ($e) {
         if ( $e =~ /\bcaptcha\b/i ) {
             $e =~ s/\s+at\s+(?:(?!\s+at\s+).)*[\r\n]*$//;
-            $self->flash( message => $e );
+            $self->flash( memo => { class => 'error', message => $e } );
         }
         else {
             $self->notice( 'Login failure for ' . $self->param('email') );
-            $self->flash( message =>
-                'Login failed. Please try again, or try the ' .
-                '<a href="' . $self->url_for('/user/reset_password') . '">Reset Password page</a>.'
-            );
+            $self->flash( memo => {
+                class   => 'error',
+                message =>
+                    'Login failed. Please try again, or try the ' .
+                    '<a href="' . $self->url_for('/user/reset_password') . '">Reset Password page</a>.',
+            } );
         }
     }
 

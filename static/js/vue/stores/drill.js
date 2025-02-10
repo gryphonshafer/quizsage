@@ -29,15 +29,17 @@ function get_current( type, bible ) {
     }
     catch (e) {
         console.log(e);
-        notice(
-            'Unable to create query, likely due to insufficient material label range(s) width.<br>' +
-            'Try avoiding this query type or go back to setup to alter the material label range(s).',
-            [ 'Stay here and continue', 'Go back to setup' ],
-            event => {
+        if ( window.omniframe && omniframe.memo ) omniframe.memo({
+            class  : 'error',
+            message:
+                'Unable to create query, likely due to insufficient material label range(s) width.<br>' +
+                'Try avoiding this query type or go back to setup to alter the material label range(s).',
+            options: [ 'Stay here and continue', 'Go back to setup' ],
+            callback: event => {
                 if ( event.target.textContent == 'Go back to setup' )
                     window.location.href = new URL( '/drill/setup', url );
             },
-        );
+        });
     }
 
     return {
@@ -119,10 +121,12 @@ export default Pinia.defineStore( 'store', {
             catch (e) {
                 if ( e != 'Unable to find next verse' ) throw e;
                 this.add_verse = ! this.add_verse;
-                notice(
-                    'Unable to add a verse due to a next verse being unavailable.',
-                    'OK',
-                );
+
+                if ( window.omniframe && omniframe.memo ) omniframe.memo({
+                    class  : 'error',
+                    message: 'Unable to add a verse due to a next verse being unavailable.',
+                } );
+
                 return;
             }
 

@@ -279,14 +279,15 @@
                             window.addEventListener( 'load', () => {
                                 window.document.querySelectorAll('a.qm_auth').forEach( a => {
                                     a.onclick = () => {
-                                        notice(
-                                            a.attributes.getNamedItem('data-confirm').textContent,
-                                            [ 'Yes, I am sure!', 'Nevermind' ],
-                                            event => {
+                                        if ( window.omniframe && omniframe.memo ) omniframe.memo({
+                                            class   : 'notice',
+                                            message : a.attributes.getNamedItem('data-confirm').textContent,
+                                            options : [ 'Yes, I am sure!', 'Nevermind' ],
+                                            callback: event => {
                                                 if ( event.target.textContent == 'Yes, I am sure!' )
                                                     window.location.href = a.href;
                                             },
-                                        );
+                                        });
                                         return false;
                                     };
                                 } );

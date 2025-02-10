@@ -45,7 +45,7 @@ sub editor ($self) {
         };
 
         if ( not $data->{label} ) {
-            $self->flash( message => 'Unable to parse the material label' );
+            $self->flash( memo => { class => 'error', message => 'Unable to parse the material label' } );
         }
         elsif ( not $self->param('id') ) {
             $label->create($data);

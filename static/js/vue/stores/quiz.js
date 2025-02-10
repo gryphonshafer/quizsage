@@ -90,14 +90,15 @@ export default Pinia.defineStore( 'store', {
         }
         catch (e) {
             console.log(e);
-            notice(
-                "Unable to construct a complete quiz, likely due to insufficient material.<br>" +
-                "Try expanding the material and retrying.",
-                'OK',
-                () => {
+            if ( window.omniframe && omniframe.memo ) omniframe.memo({
+                class  : 'error',
+                message:
+                    'Unable to construct a complete quiz, likely due to insufficient material.<br>' +
+                    'Try expanding the material and retrying.',
+                callback: () => {
                     window.location.href = exit_quiz_url;
                 },
-            );
+            });
         }
 
         return {
@@ -134,18 +135,17 @@ export default Pinia.defineStore( 'store', {
             }
             catch (e) {
                 console.log(e);
-                if (
-                    e == 'Unable to select a verse from which to construct query' ||
-                    e == 'Unable to find phrase block from which to construct query'
-                ) {
-                    notice(
-                        'Unable to replace query, likely due to insufficient size of material.<br>' +
-                        'Try exiting the quiz and expanding the material.'
-                    );
-                }
-                else {
-                    notice( 'Unexpected error occurred: ' + e + '.' );
-                }
+                if ( window.omniframe && omniframe.memo ) omniframe.memo({
+                    class  : 'error',
+                    message:
+                        (
+                            e == 'Unable to select a verse from which to construct query' ||
+                            e == 'Unable to find phrase block from which to construct query'
+                        )
+                        ? 'Unable to replace query, likely due to insufficient size of material.<br>' +
+                            'Try exiting the quiz and expanding the material.'
+                        : 'Unexpected error occurred: ' + e,
+                });
             }
         },
 
@@ -168,14 +168,19 @@ export default Pinia.defineStore( 'store', {
                     e == 'Unable to select a verse from which to construct query' ||
                     e == 'Unable to find phrase block from which to construct query'
                 ) {
-                    notice(
-                        'Unable to create a query, likely due to insufficient size of material.<br>' +
-                        'Try exiting the quiz and expanding the material.',
-                    );
+                    if ( window.omniframe && omniframe.memo ) omniframe.memo({
+                        class  : 'error',
+                        message:
+                            'Unable to create a query, likely due to insufficient size of material.<br>' +
+                            'Try exiting the quiz and expanding the material.',
+                    });
                     this.delete_last_action();
                 }
                 else {
-                    notice( 'Unexpected error occurred: ' + e + '.' );
+                    if ( window.omniframe && omniframe.memo ) omniframe.memo({
+                        class  : 'error',
+                        message: 'Unexpected error occurred: ' + e,
+                    });
                 }
             }
         },
@@ -237,15 +242,16 @@ export default Pinia.defineStore( 'store', {
         },
 
         exit_quiz() {
-            if ( ! this.is_quiz_done() ) {
-                notice(
-                    'Are you sure you want to exit the quiz? The quiz is not finished.',
-                    [ 'Yes, exit the quiz', 'No, stay here' ],
-                    event => {
+            if ( ! this.is_quiz_done() && window.omniframe && omniframe.memo ) {
+                omniframe.memo({
+                    class   : 'notice',
+                    message : 'Are you sure you want to exit the quiz? The quiz is not finished.',
+                    options : [ 'Yes, exit the quiz', 'No, stay here' ],
+                    callback: event => {
                         if ( event.target.textContent == 'Yes, exit the quiz' )
                             window.location.href = this.exit_quiz_url;
                     },
-                );
+                });
             }
             else {
                 window.location.href = this.exit_quiz_url;

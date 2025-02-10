@@ -12,9 +12,9 @@ sub passwd ($self) {
         $self->stash('user')->save;
 
         $self->flash(
-            message => {
-                type => 'success',
-                text => 'Successfully set your meet official password.',
+            memo => {
+                class   => 'success',
+                message => 'Successfully set your meet official password.',
             }
         );
 
