@@ -280,7 +280,10 @@ export default class Quiz {
 
         if ( ! event_id ) this.state.events.push(event);
         const message = this.#build_board();
-        if (message) notice(message);
+        if (message) {
+            console.log(e);
+            if ( window.omniframe && omniframe.memo ) omniframe.memo({ class: 'notice', message: message });
+        }
     }
 
     replace_query() {

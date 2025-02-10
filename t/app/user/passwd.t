@@ -19,21 +19,30 @@ mojo->app->hook( before_routes => sub ($c) { $c->set_captcha_value(1234567) } );
 
 mojo->post_ok( '/user/forgot_password' => form => { email => $email } )
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'error' )
-    ->text_like( 'dialog#message', qr|captcha sequence provided does not match| );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+error\b[":\s,]+
+        message[":\s]+The\s+captcha\s+sequence\s+provided\s+does\s+not\s+match
+    |x );
 
 mojo->post_ok( '/user/forgot_password' => form => { email => $email, captcha => 1234567 } )
     ->status_is(302)
     ->header_is( location => url('/') )
     ->get_ok('/')
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'success' )
-    ->text_like( 'dialog#message', qr|Sent email to:| );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+success\b[":\s,]+
+        message[":\s]+Sent\s+email\s+to:
+    |x );
 
 mojo->post_ok( '/user/forgot_password' => form => { email => 'not_exists_' . $email, captcha => 1234567 } )
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'error' )
-    ->text_like( 'dialog#message', qr|Failed to load user| );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+error\b[":\s,]+
+        message[":\s]+Failed\s+to\s+load\s+user
+    |x );
 
 my $old_password_encrypted = $user->data->{passwd};
 
@@ -42,16 +51,22 @@ mojo->post_ok(
     form => { passwd => 'new_poor_but_long_password' },
 )
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'error' )
-    ->text_like( 'dialog#message', qr|Failed to reset password| );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+error\b[":\s,]+
+        message[":\s]+Failed\s+to\s+reset\s+password
+    |x );
 
 mojo->post_ok(
     '/user/reset_password/' . $user->id . '/' . substr( $old_password_encrypted, 0, 12 ),
     form => { passwd => 'short' },
 )
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'error' )
-    ->text_like( 'dialog#message', qr|Password supplied is not at least| );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+error\b[":\s,]+
+        message[":\s]+Password\s+supplied\s+is\s+not\s+at\s+least
+    |x );
 
 my $new_password_encrypted = $user->load( $user->id )->data->{passwd};
 is( $old_password_encrypted, $new_password_encrypted, 'password not changed' );
@@ -64,8 +79,11 @@ mojo->post_ok(
     ->header_is( location => url('/') )
     ->get_ok('/')
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'success' )
-    ->text_like( 'dialog#message', qr|Successfully reset password| );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+success\b[":\s,]+
+        message[":\s]+Successfully\s+reset\s+password
+    |x );
 
 my $new_password_encrypted_2 = $user->load( $user->id )->data->{passwd};
 isnt( $old_password_encrypted, $new_password_encrypted_2, 'password changed' );

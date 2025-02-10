@@ -58,8 +58,11 @@ mojo->post_ok(
     ->header_is( location => url('/') )
     ->get_ok('/')
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'error' )
-    ->text_like( 'dialog#message', qr|Login failed| );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+error\b[":\s,]+
+        message[":\s]+Login\s+failed
+    |x );
 
 mojo->get_ok('/set/theme/theme_name')
     ->status_is(302)

@@ -126,7 +126,10 @@ sub setup ($self) {
         }
         catch ($e) {
             $self->notice( 'Pickup quiz error: ' . $e );
-            $self->flash( message => 'Pickup quiz settings error: ' . $e );
+            $self->flash( memo => {
+                class   => 'error',
+                message => 'Pickup quiz settings error: ' . $e,
+            } );
             return $self->redirect_to('/quiz/pickup/setup');
         }
     }

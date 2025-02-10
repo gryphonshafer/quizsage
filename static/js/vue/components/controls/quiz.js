@@ -53,7 +53,10 @@ export default {
                     }
                     catch (e) {
                         console.log(e);
-                        notice('Unable to "Add Verse"');
+                        if ( window.omniframe && omniframe.memo ) omniframe.memo({
+                            class  : 'notice',
+                            message: 'Unable to "Add Verse"',
+                        });
                         this.selected.type.add_verse = ! this.selected.type.add_verse;
                     }
                 }
@@ -63,7 +66,10 @@ export default {
                     }
                     catch (e) {
                         console.log(e);
-                        notice('Unable to revoke "Add Verse"');
+                        if ( window.omniframe && omniframe.memo ) omniframe.memo({
+                            class  : 'notice',
+                            message: 'Unable to revoke "Add Verse"',
+                        });
                         this.selected.type.add_verse = ! this.selected.type.add_verse;
                     }
                 }

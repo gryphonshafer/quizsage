@@ -54,13 +54,7 @@ body {
         margin-bottom: 0.125em;
     }
 
-    dialog {
-        margin   : 2em auto 0 auto;
-        padding  : 1em;
-        border   : 1px solid;
-        max-width: calc( 100vw - 6em );
-        z-index  : 100;
-
+    dialog.memo {
         @include theme.apply( themes.$themes ) {
             color       : theme.get('text');
             border-color: theme.get('lines');
@@ -68,14 +62,6 @@ body {
 
         @include theme.apply( themes.$styles, 'style' ) {
             border-radius: calc( theme.get('radius') * 2 );
-        }
-
-        form {
-            text-align: right;
-
-            button {
-                margin-left: 0.5em;
-            }
         }
 
         &.error {
@@ -94,6 +80,10 @@ body {
             @include theme.apply( themes.$themes ) {
                 background: theme.get('dialog_notice_background');
             }
+        }
+
+        form button {
+            margin-top: 0;
         }
     }
 

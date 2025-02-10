@@ -99,7 +99,10 @@ sub record ($self) {
         }
         catch ($e) {
             $self->notice($e);
-            $self->flash( message => 'There was an unexpected error in creating the season' );
+            $self->flash( memo => {
+                class   => 'error',
+                message => 'There was an unexpected error in creating the season',
+            } );
             return $self->redirect_to('/season/create');
         }
     }
@@ -165,29 +168,35 @@ sub meet ($self) {
                 $meet->save;
                 my $warnings = $meet->build( $self->stash('user')->id );
 
-                $self->flash( message => {
-                    type => ( (@$warnings) ? 'notice' : 'success' ),
-                    text => 'New meet created and built' .
+                $self->flash( memo => {
+                    class   => ( (@$warnings) ? 'notice' : 'success' ),
+                    messages => [
+                        'New meet created and built' .
                         ( (@$warnings) ? ', but with the following warnings:' : '' ),
-                    maybe bullets => ( (@$warnings) ? $warnings : undef ),
+                        ( grep { defined } ( (@$warnings) ? $warnings : undef ) ),
+                    ],
                 } );
 
                 return $self->redirect_to('/season/admin');
             }
             catch ($e) {
                 $self->notice($e);
-                $self->flash(
+                $self->flash( memo => {
+                    class   => 'error',
                     message => ( length $e < 1024 )
                         ? deat $e
                         : 'There was an unexpected error in creating the meet.',
-                );
+                } );
                 return $self->redirect_to( '/season/' . $self->param('season_id') . '/meet/add' );
             }
         }
     }
     else {
         unless ( $meet->load( $self->param('meet_id') )->admin_auth( $self->stash('user') ) ) {
-            $self->flash( message => 'User account not authorized for this action' );
+            $self->flash( memo => {
+                class   => 'error',
+                message => 'User account not authorized for this action',
+            } );
             return $self->redirect_to('/season/admin');
         }
         elsif ( $self->param('action') and $self->param('user_id') ) {
@@ -227,23 +236,25 @@ sub meet ($self) {
                     my ( $result, $warnings ) = $meet->save_after_edit( $self->stash('user')->id );
 
                     if ( $result eq 'success' ) {
-                        $self->flash( message => {
-                            type => ( (@$warnings) ? 'notice' : 'success' ),
-                            text => 'Meet changes saved' .
+                        $self->flash( memo => {
+                            class   => ( (@$warnings) ? 'notice' : 'success' ),
+                            message => [
+                                'Meet changes saved' .
                                 ( (@$warnings) ? ', but with the following warnings:' : '' ),
-                            maybe bullets => ( (@$warnings) ? $warnings : undef ),
+                                ( grep { defined } ( (@$warnings) ? $warnings : undef ) ),
+                            ],
                         } );
                     }
                     elsif ($result) {
                         $self->notice( 'Season/meet admin: ' . $result );
-                        $self->flash( message => 'Changes rejected: ' . $result );
+                        $self->flash( memo => { class => 'error', message => 'Changes rejected: ' . $result } );
                     }
 
                     return $self->redirect_to( '/season/' . $meet->data->{season_id} . '/edit' );
                 }
                 catch ($e) {
                     $self->notice($e);
-                    $self->flash( message => 'An error happened: ' . deat $e );
+                    $self->flash( memo => { class => 'error', message => 'An error happened: ' . deat $e } );
                     return $self->redirect_to(
                         '/season/' . $self->param('season_id') . '/meet/' . $self->param('meet_id') . '/edit'
                     );
@@ -253,9 +264,9 @@ sub meet ($self) {
         elsif ( $self->param('meet_action_type') eq 'delete' ) {
             $meet->delete;
 
-            $self->flash( message => {
-                type => 'success',
-                text => 'Meet deleted',
+            $self->flash( memo => {
+                class   => 'success',
+                message => 'Meet deleted',
             } );
 
             return $self->redirect_to('/season/admin');

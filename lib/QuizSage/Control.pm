@@ -53,7 +53,10 @@ sub startup ($self) {
     my $users = $all->under( sub ($c) {
         return 1 if ( $c->stash('user') );
         $c->info( 'Login required but not yet met: ' . $c->req->url->to_string );
-        $c->flash( message => 'Login required for the previously requested resource' );
+        $c->flash( memo => {
+            class   => 'error',
+            message => 'Login required for the previously requested resource',
+        } );
         $c->redirect_to('/');
         return 0;
     } );

@@ -35,7 +35,7 @@ sub teams ($self) {
 
         if ( @$roster != $quiz->{roster}->@* ) {
             $self->notice( 'Failed to parse teams: ' . $self->param('teams') );
-            $self->flash( message => 'Teams seemingly not entered correctly' );
+            $self->flash( memo => { class => 'error', message => 'Teams seemingly not entered correctly' } );
             return $self->redirect_to(
                 $self
                     ->url_for('/quiz/teams')
@@ -65,14 +65,14 @@ sub build ($self) {
     return $self->redirect_to( '/quiz/' . $quizzes->[0]{quiz_id} ) if ( $quizzes and @$quizzes );
 
     unless ( $meet and $self->stash('user')->qm_auth($meet) ) {
-        $self->flash( message => 'Unauthorized to build a quiz for this meet' );
+        $self->flash( memo => { class => 'error', message => 'Unauthorized to build a quiz for this meet' } );
         return $self->redirect_to( '/meet/' . $self->param('meet') );
     }
 
     my $settings = $meet->quiz_settings( $self->param('bracket'), $self->param('quiz') );
     unless ($settings) {
         $self->notice('Quiz build failed');
-        $self->flash( message => 'Quiz settings creation failed' );
+        $self->flash( memo => { class => 'error', message => 'Quiz settings creation failed' } );
         return $self->redirect_to( '/meet/' . $self->param('meet') );
     }
 
@@ -102,11 +102,13 @@ sub quiz ($self) {
     }
     catch ($e) {
         $self->warn( deat $e );
-        $self->flash(
-            message => deat($e) . '. ' .
-            'This error can occur when trying to load a quiz that does not exist. ' .
-            'This may be a temporary error, so try again'
-        );
+        $self->flash( memo => {
+            class   => 'error',
+            message =>
+                deat($e) . '. ' .
+                'This error can occur when trying to load a quiz that does not exist. ' .
+                'This may be a temporary error, so try again',
+        } );
         return $self->redirect_to( $self->req->headers->referrer );
     }
 
@@ -114,7 +116,7 @@ sub quiz ($self) {
         not $quiz->data->{meet_id} and
         $quiz->data->{user_id} and $quiz->data->{user_id} ne $self->stash('user')->id
     ) {
-        $self->flash( message => 'Unauthorized to view this particular quiz' );
+        $self->flash( memo => { class => 'error', message => 'Unauthorized to view this particular quiz' } );
         return $self->redirect_to('/');
     }
     else {

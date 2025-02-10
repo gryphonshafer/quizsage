@@ -33,8 +33,11 @@ mojo->post_ok(
         },
     )
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'error' )
-    ->text_like( 'dialog#message', qr|captcha sequence provided does not match| );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+error\b[":\s,]+
+        message[":\s]+The\s+captcha\s+sequence\s+provided\s+does\s+not\s+match
+    |x );
 
 mojo->post_ok(
         '/user/create',
@@ -48,8 +51,11 @@ mojo->post_ok(
         },
     )
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'error' )
-    ->text_like( 'dialog#message', qr|Phone supplied is not at least 10 digits in length| );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+error\b[":\s,]+
+        message[":\s]+Phone\s+supplied\s+is\s+not\s+at\s+least\s+10\s+digits\s+in\s+length
+    |x );
 
 mojo->post_ok(
         '/user/create',
@@ -66,8 +72,11 @@ mojo->post_ok(
     ->header_is( location => url('/') )
     ->get_ok('/')
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'success' )
-    ->text_like( 'dialog#message', qr|Successfully created user| );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+success\b[":\s,]+
+        message[":\s]+Successfully\s+created\s+user
+    |x );
 
 my $user = stuff('dq')
     ->get( 'user', [ qw( user_id passwd phone active ) ], { email => '?' } )
@@ -90,8 +99,11 @@ mojo->post_ok( '/user/verify/' . $user->{user_id} . '/a1b2c3' )
     ->header_is( location => url('/') )
     ->get_ok('/')
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'error' )
-    ->text_like( 'dialog#message', qr|Unable to verify| );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+error\b[":\s,]+
+        message[":\s]+Unable\s+to\s+verify
+    |x );
 
 is(
     stuff('dq')->get( 'user', ['active'], { email => '?' } )->run($email)->value,
@@ -104,8 +116,11 @@ mojo->post_ok( '/user/verify/' . $user->{user_id} . '/' . substr( $user->{passwd
     ->header_is( location => url('/') )
     ->get_ok('/')
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'success' )
-    ->text_like( 'dialog#message', qr|Successfully verified| );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+success\b[":\s,]+
+        message[":\s]+Successfully\s+verified
+    |x );
 
 is(
     stuff('dq')->get( 'user', ['active'], { email => '?' } )->run($email)->value,

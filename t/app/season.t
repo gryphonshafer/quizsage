@@ -22,8 +22,11 @@ mojo->get_ok( '/season/' . $season->id . '/stats' )
     ->header_is( location => url('/') )
     ->get_ok('/')
     ->status_is(200)
-    ->attr_is( 'dialog#message', 'class', 'error' )
-    ->text_like( 'dialog#message', qr|Login required for the previously requested resource| );
+    ->content_like( qr|
+        \bomniframe\s*\.\s*memo\s*\([\s\{"]+
+        class[":\s]+error\b[":\s,]+
+        message[":\s]+Login\s+required\s+for\s+the\s+previously\s+requested\s+resource
+    |x );
 
 mojo->app->hook( before_routes => sub ($c) { $c->session( user_id => $user->id ) } );
 

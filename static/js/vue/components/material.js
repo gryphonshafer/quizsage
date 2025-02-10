@@ -31,7 +31,16 @@ export default {
         },
 
         display_description() {
-            notice( this.material.data.description.split('\)').join(')<br>') );
+            if ( window.omniframe && omniframe.memo ) {
+                const parts = this.material.data.description.split('\)');
+                omniframe.memo({
+                    class   : 'notice',
+                    messages: [ [
+                        ...parts.slice( 0, -1 ).map( part => part + ')' ),
+                        ...parts.slice(-1),
+                    ] ],
+                });
+            }
         },
     },
 

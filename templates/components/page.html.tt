@@ -11,57 +11,9 @@
         'theme-' _ ( c.session.theme || 'light'   ),
         'style-' _ ( c.session.style || 'rounded' ),
     );
+
+    page.js.defer.push('util/memo');
 %]
-
-[% PROCESS message.html.tt %]
-
-<dialog id="notice" class="notice">
-    <div></div>
-    <form method="dialog"></form>
-</dialog>
-
-[% js = BLOCK %]
-    function notice( message, options = 'OK', callback = undefined ) {
-        window.document.querySelector('dialog#notice div').innerHTML = message;
-
-        if ( typeof options == 'string' ) options = [options];
-
-        let buttons_html = '';
-        options.forEach( option => buttons_html += '<button>' + option + '</button>' );
-
-        window.document.querySelector('dialog#notice form').innerHTML = buttons_html;
-
-        if (callback) window.document.querySelectorAll('dialog#notice button')
-            .forEach( button => button.onclick = callback );
-
-        const notice = window.document.querySelector('dialog#notice');
-        notice.autofocus = true;
-        notice.show();
-    }
-
-    function flash_window() {
-        let top_left_corner = window.document.querySelector('table.board td.top_left_corner');
-        if (top_left_corner) top_left_corner.style.backgroundColor = 'transparent';
-
-        const main     = window.document.querySelector('main');
-        const original = window.getComputedStyle(main).backgroundColor;
-        const color    = original.slice( 4, -1 ).split(',').map( value => parseInt(value) );
-        const inverted = `rgb( ${ color.map( value => 255 - value ).join(', ') } )`;
-
-        main.style.backgroundColor = inverted;
-
-        setTimeout( () => {
-            main.style.backgroundColor = original;
-            main.style.transition      = 'background-color 1000ms ease';
-
-            setTimeout( () => {
-                main.style.backgroundColor = 'inherit';
-                main.style.transition      = 'inherit';
-            }, 1000 );
-        }, 0 );
-    }
-[% END %]
-[% page.js.inline.push(js) %]
 
 [% UNLESS no_page_page %]
     [%
