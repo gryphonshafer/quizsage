@@ -58,6 +58,7 @@ body {
         @include theme.apply( themes.$themes ) {
             color       : theme.get('text');
             border-color: theme.get('lines');
+            filter      : drop-shadow( 0px 0px 0.5rem theme.get('lines') );
         }
 
         @include theme.apply( themes.$styles, 'style' ) {
