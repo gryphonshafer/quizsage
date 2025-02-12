@@ -127,7 +127,7 @@ sub startup ($self) {
 
     $all->any("/user/$_")->to("user#$_") for ( qw( forgot_password login ) );
     $all->any('/user/create')->to( 'user#account', account_action_type => 'create' );
-    $all->any("/user/$_/:user_id/:user_hash")->to("user#$_") for ( qw( verify reset_password ) );
+    $all->any("/user/$_/:token")->to("user#$_") for ( qw( verify reset_password ) );
 
     $all->any( '/docs/*name' => { name => 'index.md' } => sub ($c) {
         $c->document( 'docs/' . $c->stash('name') );

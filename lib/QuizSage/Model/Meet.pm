@@ -15,8 +15,7 @@ with qw(
     QuizSage::Role::Meet::Editing
 );
 
-my $min_passwd_length = 8;
-my $time              = Omniframe::Class::Time->new;
+my $time = Omniframe::Class::Time->new;
 
 before 'create' => sub ( $self, $params ) {
     $params->{settings} //= dataload('config/meets/defaults/meet.yaml');
@@ -26,6 +25,7 @@ sub freeze ( $self, $data ) {
     $data->{start} = $time->parse( $data->{start} )->format('sqlite_min')
         if ( $self->is_dirty( 'start', $data ) );
 
+    my $min_passwd_length = conf->get('min_passwd_length');
     if ( $self->is_dirty( 'passwd', $data ) ) {
         croak("Password supplied is not at least $min_passwd_length characters in length")
             unless ( length $data->{passwd} >= $min_passwd_length );

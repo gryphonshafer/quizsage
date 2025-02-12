@@ -105,8 +105,8 @@ sub account ($self) {
 }
 
 sub verify ($self) {
-    if ( QuizSage::Model::User->new->verify( $self->stash('user_id'), $self->stash('user_hash') ) ) {
-        $self->info( 'User verified: ' . $self->stash('user_id') );
+    if ( my $user_id = QuizSage::Model::User->new->verify( $self->stash('token') ) ) {
+        $self->info( 'User verified: ' . $user_id );
         $self->flash(
             memo => {
                 class   => 'success',
@@ -170,13 +170,9 @@ sub reset_password ($self) {
     if ( my $passwd = $self->param('passwd') ) {
         try {
             if (
-                QuizSage::Model::User->new->reset_password(
-                    $self->stash('user_id'),
-                    $self->stash('user_hash'),
-                    $passwd,
-                )
+                my $user_id = QuizSage::Model::User->new->reset_password( $self->stash('token'), $passwd )
             ) {
-                $self->info( 'Password reset for: ' . $self->stash('user_id') );
+                $self->info( 'Password reset for: ' . $user_id );
                 $self->flash(
                     memo => {
                         class   => 'success',
