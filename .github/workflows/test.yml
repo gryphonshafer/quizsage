@@ -25,6 +25,7 @@ jobs:
           https://github.com/gryphonshafer/omniframe.git $GITHUB_WORKSPACE/../omniframe
       - uses: actions/checkout@v3
       - run: apt-get update && apt-get install -y libgd3 libgd-dev
+      - run: cpanm https://backpan.perl.org/authors/id/T/TO/TONYC/Imager-1.026.tar.gz
       - uses: perl-actions/install-with-cpanm@v1
         env:
           PERL_CPANM_OPT: --from https://cpan.metacpan.org/ --notest --force --skip-satisfied
