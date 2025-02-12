@@ -76,13 +76,15 @@ ok(
     q/send_email(...)/,
 ) or note $@;
 
+my $token = QuizSage::Model::User::_encode_token( $obj->id );
+
 ok(
-    $obj->verify( $obj->id, substr( $obj->data->{passwd}, 0, 12 ) ),
+    $obj->verify($token),
     q/verify(...)/,
 );
 
 ok(
-    $obj->reset_password( $obj->id, substr( $obj->data->{passwd}, 0, 12 ), 'new_password' ),
+    $obj->reset_password( $token, 'new_password' ),
     q/reset_password(...)/,
 );
 

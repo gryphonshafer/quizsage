@@ -23,6 +23,11 @@ default:
         from: QuizSage <example@example.org>
     bcrypt:
         salt: 63MWT0N6PQlNU43R
+    crypt:
+        pass: 4FjvcTJD54XYZdnG
+        salt: 56789a01234
+    min_passwd_length: 8
+    token_expiration : 86400 # 1 day
     captcha:
         ttf: static/externals/google_fonts/fonts/inter-tight/inter-tight-v*-latin_latin-ext-700.ttf
     material:

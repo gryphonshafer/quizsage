@@ -45,9 +45,11 @@ mojo->post_ok( '/user/forgot_password' => form => { email => 'not_exists_' . $em
     |x );
 
 my $old_password_encrypted = $user->data->{passwd};
+my $good_token             = QuizSage::Model::User::_encode_token( $user->id );
+my $bad_token              = QuizSage::Model::User::_encode_token(0);
 
 mojo->post_ok(
-    '/user/reset_password/' . $user->id . '/a1b2c3d4',
+    '/user/reset_password/' . $bad_token,
     form => { passwd => 'new_poor_but_long_password' },
 )
     ->status_is(200)
@@ -58,7 +60,7 @@ mojo->post_ok(
     |x );
 
 mojo->post_ok(
-    '/user/reset_password/' . $user->id . '/' . substr( $old_password_encrypted, 0, 12 ),
+    '/user/reset_password/' . $good_token,
     form => { passwd => 'short' },
 )
     ->status_is(200)
@@ -72,7 +74,7 @@ my $new_password_encrypted = $user->load( $user->id )->data->{passwd};
 is( $old_password_encrypted, $new_password_encrypted, 'password not changed' );
 
 mojo->post_ok(
-    '/user/reset_password/' . $user->id . '/' . substr( $old_password_encrypted, 0, 12 ),
+    '/user/reset_password/' . $good_token,
     form => { passwd => 'new_poor_but_long_password' },
 )
     ->status_is(302)

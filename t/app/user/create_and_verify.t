@@ -94,7 +94,10 @@ is(
     'user ID, phone, and active ok',
 );
 
-mojo->post_ok( '/user/verify/' . $user->{user_id} . '/a1b2c3' )
+my $good_token = QuizSage::Model::User::_encode_token( $user->{user_id} );
+my $bad_token  = QuizSage::Model::User::_encode_token(0);
+
+mojo->post_ok( '/user/verify/' . $bad_token )
     ->status_is(302)
     ->header_is( location => url('/') )
     ->get_ok('/')
@@ -111,7 +114,7 @@ is(
     'user not verified (yet)',
 );
 
-mojo->post_ok( '/user/verify/' . $user->{user_id} . '/' . substr( $user->{passwd}, 0, 12 ) )
+mojo->post_ok( '/user/verify/' . $good_token )
     ->status_is(302)
     ->header_is( location => url('/') )
     ->get_ok('/')
