@@ -1,14 +1,14 @@
 ---
 preinclude: ../omniframe/config/app.yaml
 default:
-    libs        : ../omniframe/lib
-    omniframe   : ../omniframe
+    libs     : ../omniframe/lib
+    omniframe: ../omniframe
     mojo_app_lib: QuizSage::Control
-    database    :
+    database:
         shards:
             app:
                 default_shard: 1
-                file         : local/db/app.sqlite
+                file: local/db/app.sqlite
             material:
                 file: local/db/material.sqlite
     logging:
@@ -27,26 +27,26 @@ default:
         pass: 4FjvcTJD54XYZdnG
         salt: 56789a01234
     min_passwd_length: 8
-    token_expiration : 86400 # 1 day
+    token_expiration: 86400 # 1 day
     captcha:
         ttf: static/externals/google_fonts/fonts/inter-tight/inter-tight-v*-latin_latin-ext-700.ttf
     material:
         obml: local/obml
         json:
-            location  : static/build/material
-            path      : /build/material
+            location: static/build/material
+            path: /build/material
             atime_life: 274
     reference:
         atime_life: 274
-        location  :
+        location:
             json: local/reference/json
             html: local/reference/html
     pickup_quiz_ctime_life: 274
     quiz_defaults:
-        bible         : NIV
-        duration      : 30
+        bible: NIV
+        duration: 30
         material_label: Luke 1-2; 3:1-23; 4-24 ESV NIV NIV84*
-        roster_data   : |
+        roster_data: |
             Team 1
             Alpha Bravo
             Charlie Delta
