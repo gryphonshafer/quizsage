@@ -1,0 +1,10 @@
+---
+quizzes:
+  - name: A
+rankings:
+  - position: 1
+    quiz: A
+  - position: 2
+    quiz: A
+  - position: 3
+    quiz: A
