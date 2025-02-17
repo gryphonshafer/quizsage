@@ -46,13 +46,13 @@ sub save_after_edit ( $self, $user_id = undef ) {
     my @actions;
 
     if ( not @$meet_quizzes ) {
-        push( @actions, 'reschedule_and_reevent', 'save' )
+        push( @actions, 'save', 'build' )
             if ( $self->is_dirty( 'start', $meet_data ) );
 
         if ( $self->is_dirty( 'settings', $meet_data ) ) {
             my $settings = $get_settings->();
 
-            push( @actions, 'reschedule_and_reevent', 'save' ) if (
+            push( @actions, 'save', 'build' ) if (
                 Dump( $settings->{old}{schedule}  ) ne Dump( $settings->{new}{schedule}  ) or
                 Dump( $settings->{old}{overrides} ) ne Dump( $settings->{new}{overrides} )
             );
@@ -157,15 +157,13 @@ sub save_after_edit ( $self, $user_id = undef ) {
 
     @actions = grep {
         $_ ne 'create_material_json' and
-        $_ ne 'propagate_roster' and
-        $_ ne 'reschedule_and_reevent'
+        $_ ne 'propagate_roster'
     } @actions if ( grep { $_ eq 'build' } @actions );
 
     push( @actions, 'save' ) if (
         grep {
             $_ eq 'create_material_json' or
-            $_ eq 'propagate_roster' or
-            $_ eq 'reschedule_and_reevent'
+            $_ eq 'propagate_roster'
         } @actions
     );
 
@@ -223,28 +221,6 @@ sub save_after_edit ( $self, $user_id = undef ) {
                 }
 
                 $quiz->save;
-            }
-        }
-    }
-
-    if ( grep { $_ eq 'reschedule_and_reevent' } @actions ) {
-        $self->notice( 'Meet ' . $self->id . ' editing: reschedule_and_reevent' );
-
-        my $build_settings = Load( Dump( $self->data->{build} ) );
-        $build_settings->{schedule} = Load( Dump( $self->data->{settings}{schedule} // {} ) );
-        $warnings = $self->schedule_integration($build_settings);
-
-        $self->data->{build}{events} = $build_settings->{events};
-
-        for my $b ( 0 .. @{ $build_settings->{brackets} } - 1 ) {
-            for my $s ( 0 .. @{ $build_settings->{brackets}[$b]{sets} } - 1 ) {
-                for my $r ( 0 .. @{ $build_settings->{brackets}[$b]{sets}[$s]{rooms} } - 1 ) {
-                    for ( qw( start stop ) ) {
-                        $self->data->{build}{brackets}[$b]{sets}[$s]{rooms}[$r]{$_} =
-                            $build_settings->{brackets}[$b]{sets}[$s]{rooms}[$r]{$_}
-                            if ( defined $build_settings->{brackets}[$b]{sets}[$s]{rooms}[$r]{$_} );
-                    }
-                }
             }
         }
     }

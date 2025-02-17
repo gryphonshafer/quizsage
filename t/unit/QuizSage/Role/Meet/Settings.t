@@ -1,6 +1,8 @@
 use Test2::V0;
 use exact -conf;
 use Omniframe;
+use QuizSage::Model::Season;
+use QuizSage::Model::Meet;
 
 my $obj;
 
@@ -55,9 +57,10 @@ my $roster_data = {
     ),
 };
 
+my $roster;
 ok(
     lives {
-        $roster_data = $obj->thaw_roster_data(
+        $roster = $obj->thaw_roster_data(
             $roster_data->{data},
             $roster_data->{default_bible},
             $roster_data->{tags},
@@ -66,9 +69,9 @@ ok(
     'thaw_roster_data',
 ) or note $@;
 
-ref_ok( $roster_data, 'ARRAY', 'roster data is an arrayref' );
+ref_ok( $roster, 'ARRAY', 'roster data is an arrayref' );
 is(
-    $roster_data->[1],
+    $roster->[1],
     {
         name     => 'Team 2',
         quizzers => [
@@ -92,6 +95,79 @@ is(
     'team 2 data',
 );
 
+my $frozen_roster_data;
+ok(
+    lives {
+        $frozen_roster_data = $obj->freeze_roster_data(
+            $roster,
+            $roster_data->{default_bible},
+            $roster_data->{tags},
+        );
+    },
+    'freeze_roster_data',
+) or note $@;
+
+is(
+    $frozen_roster_data,
+    join( "\n",
+        'Team 1',
+        'Alpha Bravo',
+        'Charlie Delta',
+        'Echo Foxtrox',
+        '',
+        'Team 2',
+        'Gulf Hotel NASB5',
+        'Juliet India NASB (Rookie)',
+        'Kilo Lima NASB5 (Rookie)',
+        '',
+        'Team 3',
+        'Mike November',
+        'Oscar Papa (Rookie)',
+        'Romeo Quebec',
+    ),
+    'freeze_roster_data data',
+);
+
+my $meet = QuizSage::Model::Meet->new;
+$meet->dq->begin_work;
+
+my $season = QuizSage::Model::Season->new->create({
+    name     => 'Name',
+    location => 'Location',
+    start    => time - 60 * 60 * 24 * 365.25 * 7,
+});
+
+$meet->create({
+    season_id => $season->id,
+    name     => 'Name',
+    location => 'Location',
+    start    => time - 60 * 60 * 24 * 365.25 * 7,
+    passwd   => 'password',
+});
+
+my $canonical_settings = $meet->canonical_settings;
+
+is(
+    $canonical_settings,
+    hash {
+        field brackets => array {
+            all_items hash {
+                field name     => T();
+                field material => T();
+                field rooms    => T();
+                field weight   => T();
+                etc();
+            };
+            etc();
+        };
+        roster   => { data => T() },
+        schedule => T(),
+        etc();
+    },
+    'canonical_settings',
+);
+
+$meet->dq->rollback;
 $obj->dq('material')->rollback;
 
 done_testing;
