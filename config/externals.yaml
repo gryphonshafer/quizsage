@@ -26,8 +26,8 @@ google_fonts:
 vue:
     dest: static/externals/vue
     libs:
-        vue/dist/vue.global.js       : vue.global.js
-        vue/dist/vue.global.prod.js  : vue.global.prod.js
-        vue-demi                     : demi.iife.js
-        pinia/dist/pinia.iife.js     : pinia.iife.js
-        pinia/dist/pinia.iife.prod.js: pinia.iife.prod.js
+        vue/dist/vue.global.js             : vue.global.js
+        vue/dist/vue.global.prod.js        : vue.global.prod.js
+        vue-demi                           : demi.iife.js
+        pinia@2.3.1/dist/pinia.iife.js     : pinia.iife.js
+        pinia@2.3.1/dist/pinia.iife.prod.js: pinia.iife.prod.js
