@@ -29,7 +29,7 @@
             <input type="text" name="name" value="[% name %]" placeholder="Name">
         </label>
 
-        <textarea name="label" placeholder="Material Label">[% label %]</textarea>
+        <textarea name="label" placeholder="Material Label">[% label.split('\)\s*').join(")\n") %]</textarea>
 
         <label>
             <input type="checkbox" name="public">

@@ -186,7 +186,8 @@
     <fieldset class="material_label">
         <legend>Material Label/Description</legend>
         <textarea name="material_label">[%
-            c.param('label') || material_label
+            label = c.param('label') || material_label;
+            label.split('\)\s*').join(")\n");
         %]</textarea>
 
         <p class="fieldset_base_buttons">
