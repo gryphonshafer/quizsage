@@ -39,11 +39,11 @@ $dq->get('bible')->run->each( sub ($row) {
 
 =head1 NAME
 
-details.pl - Add Bible details to material database from Bible Gateway
+bible_details_add.pl - Add Bible details to material database from Bible Gateway
 
 =head1 SYNOPSIS
 
-    details.pl OPTIONS
+    bible_details_add.pl OPTIONS
         -h, --help
         -m, --man
 

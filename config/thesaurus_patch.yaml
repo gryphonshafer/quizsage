@@ -1,0 +1,46 @@
+---
+# interogatives
+- text: what
+  meanings:
+    - synonyms: []
+      type: pronoun
+      word: interrogative pronoun
+- text: whom
+  meanings:
+    - synonyms: []
+      type: pronoun
+      word: objective case of who
+- text: whose
+  meanings:
+    - synonyms: []
+      type: pronoun
+      word: possessive case of who or which
+- text: himself
+  meanings:
+    - synonyms: []
+      type: pronoun
+      word: emphatic appositive of him or he
+- text: herself
+  meanings:
+    - synonyms: []
+      type: pronoun
+      word: emphatic appositive of her or she
+- text: itself
+  meanings:
+    - synonyms: []
+      type: pronoun
+      word: reflexive form of it
+- text: thyself
+  meanings:
+    - synonyms: []
+      type: pronoun
+      word: emphatic appositive to thou or thee
+- text: yourself
+  meanings:
+    - synonyms: []
+      type: pronoun
+      word: emphatic appositive of you
+
+# irregular verbs
+- text: saw
+  target: see

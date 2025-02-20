@@ -165,27 +165,13 @@ for ( my $i = 0; $i < @words_to; $i++ ) {
         $word;
 }
 
-my $update_meanings = $dq->prepare_cached('UPDATE word SET meanings = ? WHERE text = ?');
-$dq->begin_work;
-$update_meanings->run( $_->[1], $_->[0] ) for (
-    [ 'what',     '[{"synonyms":[],"type":"pronoun","word":"interrogative pronoun"}]'               ],
-    [ 'whom',     '[{"synonyms":[],"type":"pronoun","word":"objective case of who"}]'               ],
-    [ 'whose',    '[{"synonyms":[],"type":"pronoun","word":"possessive case of who or which"}]'     ],
-    [ 'himself',  '[{"synonyms":[],"type":"pronoun","word":"emphatic appositive of him or he"}]'    ],
-    [ 'herself',  '[{"synonyms":[],"type":"pronoun","word":"emphatic appositive of her or she"}]'   ],
-    [ 'itself',   '[{"synonyms":[],"type":"pronoun","word":"reflexive form of it"}]'                ],
-    [ 'thyself',  '[{"synonyms":[],"type":"pronoun","word":"emphatic appositive to thou or thee"}]' ],
-    [ 'yourself', '[{"synonyms":[],"type":"pronoun","word":"emphatic appositive of you"}]'          ],
-);
-$dq->commit;
-
 =head1 NAME
 
-thesaurus.pl - Get and insert synonyms and other data into a material SQLite database
+thesaurus_get.pl - Get and insert synonyms and other data into a material SQLite database
 
 =head1 SYNOPSIS
 
-    thesaurus.pl OPTIONS
+    thesaurus_get.pl OPTIONS
         -s, --sleep SECONDS  # default: 4
         -e, --estimate
         -h, --help
