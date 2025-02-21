@@ -139,7 +139,24 @@ fun material_json (
     for my $word ( sort keys %words ) {
         my $synonym = $thesaurus->run($word)->first({});
         next unless ( $synonym->{meanings} );
-        $data->{thesaurus}{ $synonym->{redirected_to} // $word } = decode_json( $synonym->{meanings} );
+
+        $synonym->{meanings} = [
+            grep { $_->{synonyms}->@* }
+            map {
+                $_->{synonyms} = [
+                    grep { $_->{words}->@* }
+                    map {
+                        $_->{words} = [ grep { not /\s/ } $_->{words}->@* ];
+                        $_;
+                    } $_->{synonyms}->@*
+                ];
+                $_;
+            }
+            decode_json( $synonym->{meanings} )->@*
+        ];
+        next unless ( $synonym->{meanings}->@* );
+
+        $data->{thesaurus}{ $synonym->{redirected_to} // $word } = $synonym->{meanings};
         $data->{thesaurus}{$word} = $synonym->{redirected_to} if ( $synonym->{redirected_to} );
     }
 
