@@ -11,7 +11,14 @@
 </h2>
 
 [% FOR team IN roster %]
-    <div class="summary_box roster_box">
+    <div class="
+        summary_box
+        roster_box
+        [% IF c.param('team') == team.name %]
+            team_highlight
+            team_highlight_on
+        [% END %]
+    ">
         <b>[% team.name %]</b>
         <ul>
             [% FOR quizzer IN team.quizzers %]
@@ -26,3 +33,10 @@
         </ul>
     </div>
 [% END %]
+
+[% scroll_to = BLOCK %]
+    window.addEventListener( 'load', () => {
+        window.document.querySelector('div.team_highlight_on').scrollIntoView();
+    } );
+[% END %]
+[% page.js.inline.push(scroll_to) %]

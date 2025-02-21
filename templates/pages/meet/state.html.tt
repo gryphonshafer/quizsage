@@ -241,9 +241,61 @@
                         <span class="query">
                             Query: [% quiz.current_query_id %]
                         </span>
+                    [% ELSIF NOT quiz.id %]
+                        <span class="query">
+                            [%
+                                title = 'Distribution for Quiz ' _ quiz.name;
+                                PROCESS icon_link.html.tt, data = [
+                                        title,
+                                        c.url_for('distribution').query({
+                                            bracket => bracket.name,
+                                            quiz    => quiz.name,
+                                        }),
+                                        'distribution',
+                                    ];
+                            %]
+                        </span>
                     [% END %]
 
-                    [% PROCESS quiz_teams_list.html.tt roster = quiz.roster %]
+                    <ul>
+                        [% FOR team IN quiz.roster %]
+                            <li>[%
+                                IF team.name;
+                                    '<b class="team_highlight ' _
+                                        'team_highlight_' _ team.name.lower.replace( '\s', '' ) _ '">' _
+                                        team.name _ '</b> ';
+
+                                    title = 'Roster for ' _ team.name;
+                                    PROCESS icon_link.html.tt, data = [
+                                            title,
+                                            c.url_for('roster').query({ team => team.name }),
+                                            'roster',
+                                        ];
+
+                                    IF team.score;
+                                        '<br><i>';
+                                        IF team.score.position;
+                                            PROCESS st_ing.html.tt position = team.score.position;
+                                            ' with ';
+                                        END;
+                                        team.score.points;
+                                        ' pts.</i>';
+                                    END;
+                                ELSIF team.position AND ( team.quiz OR team.bracket );
+                                    '<i>';
+                                    PROCESS st_ing.html.tt position = team.position;
+                                    IF team.quiz;
+                                        ' in ' _ team.quiz;
+                                    ELSE;
+                                        ' of ' _ team.bracket;
+                                    END;
+                                    '</i>';
+                                ELSE;
+                                    '<i>(to be determined)</i>';
+                                END;
+                            %]</li>
+                        [% END %]
+                    </ul>
 
                     [% IF qm_auth %]
                         [% IF quiz.id %]

@@ -15,7 +15,11 @@
 [% END %]
 
 [% FOR bracket IN build.brackets %]
-    <details>
+    <details
+        [% IF c.param('bracket') == bracket.name %]
+            open
+        [% END %]
+    >
         <summary>Bracket: [% bracket.name %]</summary>
 
         [% IF bracket.material %]
@@ -28,7 +32,14 @@
         [% FOR set IN bracket.sets %]
             <div class="distribution_box_container">
                 [% FOR quiz IN set.rooms %]
-                    <div class="summary_box distribution_box">
+                    <div class="
+                        summary_box
+                        distribution_box
+                        [% IF c.param('quiz') == quiz.name %]
+                            team_highlight
+                            team_highlight_on
+                        [% END %]
+                    ">
                         <b>Quiz: [% quiz.name %]</b>
 
                         <table>
@@ -55,3 +66,10 @@
         [% END %]
     </details>
 [% END %]
+
+[% scroll_to = BLOCK %]
+    window.addEventListener( 'load', () => {
+        window.document.querySelector('div.team_highlight_on').scrollIntoView();
+    } );
+[% END %]
+[% page.js.inline.push(scroll_to) %]
