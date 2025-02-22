@@ -1,3 +1,4 @@
+import flag      from 'modules/flag';
 import store     from 'vue/store';
 import template  from 'modules/template';
 import thesaurus from 'vue/components/thesaurus';
@@ -8,7 +9,9 @@ export default {
     },
 
     computed: {
-        ...Pinia.mapState( store, [ 'current', 'selected', 'hidden_solution', 'toggle_hidden_solution', 'material' ] ),
+        ...Pinia.mapState( store, [
+            'current', 'selected', 'hidden_solution', 'toggle_hidden_solution', 'material',
+        ] ),
 
         buffer() {
             return this.current.materials
@@ -41,6 +44,13 @@ export default {
                     ] ],
                 });
             }
+        },
+
+        flag() {
+            flag( {
+                source: 'material',
+                data  : this.current,
+            } );
         },
     },
 

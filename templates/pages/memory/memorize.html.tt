@@ -89,7 +89,7 @@
                 };
             } );
 
-            const review_url = new URL( 'review', new URL( window.document.location.href ) );
+            const review_url = new URL( 'review', new URL( window.location.href ) );
             window.document.querySelectorAll('div#memorize form').forEach( form => {
                 form.querySelector('button').onclick = () => {
                     form.style.display = 'none';

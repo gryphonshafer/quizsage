@@ -1,0 +1,71 @@
+[%
+    PROCESS macros;
+    page.title = 'Flag List';
+%]
+
+<details open>
+    <summary>Instructions</summary>
+
+    <p>
+        This flag list page provides view and <b><i>permanent removal</i></b>
+        access to all submitted flags. Note that actions taken on this page are
+        conducted <b><i>universally</i></b>.
+    </p>
+    <p>
+        Unless you are a regional coordinator or season administration
+        delegate,
+        <b><i>you almost certainly do not want to use this page</i></b>.
+        <span class="warning">
+            Unauthorized or otherwise improper use of this page may result
+            in account deactivation.
+        </span>
+    </p>
+</details>
+
+[% IF flags AND flags.size %]
+    <table>
+        <thead>
+            <tr>
+                <th></th>
+                <th>Date; Time</th>
+                <th>Reporter</th>
+                <th>Source</th>
+                <th>Report</th>
+                <th>URL</th>
+                <th>Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            [% FOR flag IN flags %]
+                <tr>
+                    <td><a href="javascript:confirm_delete([% flag.flag_id %])"><span
+                        class="material-symbols-outlined">delete</span></a></td>
+                    <td>[% time( flag.created, '%a, %b %-d; %-I:%M %p' ) %]</td>
+                    <td>[% flag.first_name %] [% flag.last_name %]</td>
+                    <td>[% flag.source.ucfirst %]</td>
+                    <td class="pre">[% flag.report | trim | html | replace( '\n', '<br>' ) %]</td>
+                    <td><a href="[% flag.url %]">[% flag.url.match('^https?://[^/]+/(.*)$').0 %]</a></td>
+                    <td><a href="[% c.url_for( 'item/' _ flag.flag_id ) %]"><span
+                        class="material-symbols-outlined">graph_1</span></a></td>
+                </tr>
+            [% END %]
+        </tbody>
+    </table>
+[% ELSE %]
+    <p>There are currently no reported flags.</p>
+[% END %]
+
+[% confirm_delete = BLOCK %]
+    function confirm_delete(flag_id) {
+        omniframe.memo({
+            message : 'Are you sure you want to permanently delete this flag?',
+            options : [ 'Yes, delete', 'No, cancel' ],
+            class   : 'notice',
+            callback: event => {
+                if ( event.target.textContent == 'Yes, delete' )
+                    window.location.href = '[% c.url_for( 'remove/' _ flag.flag_id ) %]';
+            },
+        });
+    }
+[% END %]
+[% page.js.inline.push(confirm_delete) %]

@@ -220,7 +220,7 @@ export default Pinia.defineStore( 'store', {
 
         save_quiz_data() {
             fetch(
-                new URL( '/quiz/save/' + miscellaneous.quiz_id, url ),
+                new URL( '../../../quiz/save/' + miscellaneous.quiz_id, import.meta.url ),
                 {
                     method: 'POST',
                     body  : JSON.stringify( quiz.state ),

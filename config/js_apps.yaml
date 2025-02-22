@@ -12,6 +12,7 @@ default:
                 classes/scoring         : classes/scoring
                 modules/distribution    : modules/distribution
                 modules/template        : modules/template
+                modules/flag            : modules/flag
                 vue/components/board    : vue/components/board
                 vue/components/controls : vue/components/controls/quiz
                 vue/components/material : vue/components/material
@@ -25,6 +26,7 @@ default:
               - vue/apps/board
             importmap:
                 modules/template    : modules/template
+                modules/flag        : modules/flag
                 vue/components/board: vue/components/board
                 vue/store           : vue/stores/board
         drill:
@@ -34,6 +36,7 @@ default:
                 classes/material        : classes/material
                 classes/queries         : classes/queries
                 modules/template        : modules/template
+                modules/flag            : modules/flag
                 vue/components/controls : vue/components/controls/drill
                 vue/components/material : vue/components/material
                 vue/components/query    : vue/components/query
@@ -51,11 +54,13 @@ default:
                 classes/scoring     : classes/scoring
                 modules/distribution: modules/distribution
                 modules/template    : modules/template
+                modules/flag        : modules/flag
         lookup:
             module:
               - vue/apps/lookup
             importmap:
                 classes/material              : classes/material
                 modules/template              : modules/template
+                modules/flag                  : modules/flag
                 vue/components/lookup/synonyms: vue/components/lookup/synonyms
                 vue/components/lookup/verses  : vue/components/lookup/verses

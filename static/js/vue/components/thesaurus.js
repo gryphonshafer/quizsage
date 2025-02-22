@@ -1,3 +1,4 @@
+import flag     from 'modules/flag';
 import store    from 'vue/store';
 import template from 'modules/template';
 
@@ -15,6 +16,15 @@ export default {
                 : this.current.materials
                     .find( material => material.bible.name == this.selected.bible )
                     .detailed_text;
+        },
+    },
+
+    methods: {
+        flag(item) {
+            flag( {
+                source: 'thesaurus',
+                data  : item,
+            } );
         },
     },
 

@@ -27,6 +27,10 @@ table {
             background: theme.get('td_background');
             color     : theme.get('td_text');
         }
+
+        &.pre {
+            white-space: pre-wrap;
+        }
     }
 
     tr th:not(:last-of-type),

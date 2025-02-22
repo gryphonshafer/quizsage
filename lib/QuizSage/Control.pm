@@ -118,6 +118,9 @@ sub startup ($self) {
     $users->any('/reference/lookup/:material_json_id')->to( 'reference#lookup', material_json_id => undef );
     $users->any('/reference/generator')->to('reference#generator');
 
+    $users->any("/flag/$_")->to("flag#$_") for ( qw( add list ) );
+    $users->any("/flag/$_/:flag_id")->to("flag#$_") for ( qw( item remove ) );
+
     $all->any('/')->to('main#home');
     $all->any( '/set/:type/:name' => [ type => [ qw( theme style ) ] ] )->to('main#set');
     $all->any('/download')->to('main#download');

@@ -1,3 +1,4 @@
+import flag     from 'modules/flag';
 import template from 'modules/template';
 
 export default {
@@ -26,6 +27,15 @@ export default {
             return ( entry && typeof entry.meanings === 'string' )
                 ? this.thesaurus.find( item => item.term == entry.meanings )
                 : entry;
+        },
+    },
+
+    methods: {
+        flag() {
+            if ( this.content ) flag( {
+                source: 'synonyms',
+                data  : this.content,
+            } );
         },
     },
 
