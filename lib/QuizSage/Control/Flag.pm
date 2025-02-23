@@ -20,10 +20,24 @@ sub add ($self) {
 }
 
 sub list ($self) {
+    my $user         = QuizSage::Model::User->new;
+    my $is_app_admin = $user->is_app_admin( $self->stash('user')->id );
+
     $self->stash(
         template     => 'flag/list',
         flags        => QuizSage::Model::Flag->new->list,
-        is_app_admin => QuizSage::Model::User->new->is_app_admin( $self->stash('user')->id ),
+        is_app_admin => $is_app_admin,
+        users        => [ ($is_app_admin) ? (
+            sort {
+                $b->{is_app_admin} <=> $a->{is_app_admin} or
+                $a->{first_name} cmp $b->{first_name} or
+                $a->{last_name} cmp $b->{last_name}
+            }
+            map {
+                $_->{is_app_admin} = $user->is_app_admin( $_->{user_id} );
+                $_;
+            } $user->every_data
+        ) : () ],
     );
 }
 
@@ -55,6 +69,24 @@ sub remove ($self) {
     $self->redirect_to('/flag/list');
 }
 
+sub is_app_admin ($self) {
+    my $user = QuizSage::Model::User->new;
+    return unless ( $user->is_app_admin( $self->stash('user')->id ) );
+
+    if ( $self->param('is_app_admin') ) {
+        $user->dq
+            ->sql('INSERT INTO administrator (user_id) VALUES (?)')
+            ->run( $self->param('user_id') );
+    }
+    else {
+        $user->dq
+            ->sql('DELETE FROM administrator WHERE user_id = ? AND season_id IS NULL and meet_id IS NULL')
+            ->run( $self->param('user_id') );
+    }
+
+    $self->render( json => $self->req->params->to_hash );
+}
+
 1;
 
 =head1 NAME
@@ -83,6 +115,11 @@ This controller handles returning the JSON data of a flag.
 =head2 remove
 
 This controller handles removing a flag.
+
+=head2 is_app_admin
+
+This controller handles user application administrator checkbox checking and
+unchecking on the flag list page.
 
 =head1 INHERITANCE
 

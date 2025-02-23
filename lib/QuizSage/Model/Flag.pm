@@ -20,7 +20,7 @@ sub list ($self) {
     return $self->dq->sql(q{
         SELECT
             f.flag_id, f.source, f.url, f.report, f.data, f.created,
-            u.first_name, u.last_name
+            u.first_name, u.last_name, u.email
         FROM flag AS f
         JOIN user AS u USING (user_id)
     })->run->all({});
