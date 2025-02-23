@@ -638,6 +638,66 @@ sub admins ($self) {
     })->run( $self->id )->all({});
 }
 
+sub swap_draw_parts ( $self, $bracket_name, $sets = [], $quizzes = [] ) {
+    croak('Meet not loaded') unless ( $self->id );
+    croak('Meet has not yet been built') unless ( $self->data->{build} );
+
+    my ($bracket) = grep { $_->{name} eq $bracket_name } $self->data->{build}{brackets}->@*;
+    croak('Bracket specified not found') unless ($bracket);
+
+    my $count = $self->dq->sql('SELECT COUNT(*) FROM quiz WHERE meet_id = ? AND bracket = ? AND name = ?');
+    for my $name ( map { $_->{name} } map { $bracket->{sets}[ $_ - 1 ]{rooms}->@* } $sets->@* ) {
+        croak('Quiz $name already exists and therefore prevents swapping its set')
+            if ( $count->run( $self->id, $bracket_name, $name )->value );
+    }
+
+    while ( $sets->@* ) {
+        my @sets = ( shift $sets->@*, shift $sets->@* );
+        my ( $quizzes_a, $quizzes_b ) = map { $bracket->{sets}[ $_ - 1 ]->{rooms} } @sets;
+
+        if ( $quizzes_a->@* == $quizzes_b->@* ) {
+            my @rosters_a = map { $_->{roster} } $quizzes_a->@*;
+            my @rosters_b = map { $_->{roster} } $quizzes_b->@*;
+
+            $_->{roster} = shift @rosters_b for ( $quizzes_a->@* );
+            $_->{roster} = shift @rosters_a for ( $quizzes_b->@* );
+        }
+        else {
+            my @names = map { $_->{name} } map { $_->{rooms}->@* } $bracket->{sets}->@*;
+
+            my %set_a = $bracket->{sets}[ $sets[0] - 1 ]->%*;
+            my %set_b = $bracket->{sets}[ $sets[1] - 1 ]->%*;
+
+            my $schedule_a = $set_a{rooms}[0]{schedule};
+            my $schedule_b = $set_b{rooms}[0]{schedule};
+
+            $_->{schedule} = $schedule_b for ( $set_a{rooms}->@* );
+            $_->{schedule} = $schedule_a for ( $set_b{rooms}->@* );
+
+            %{ $bracket->{sets}[ $sets[0] - 1 ] } = %set_b;
+            %{ $bracket->{sets}[ $sets[1] - 1 ] } = %set_a;
+
+            $_->{name} = shift @names for ( map { $_->{rooms}->@* } $bracket->{sets}->@* );
+        }
+    }
+
+    while ( $quizzes->@* ) {
+        my @quizzes = ( shift $quizzes->@*, shift $quizzes->@* );
+
+        my ($quiz_a) = grep { $_->{name} eq $quizzes[0] } map { $_->{rooms}->@* } $bracket->{sets}->@*;
+        my ($quiz_b) = grep { $_->{name} eq $quizzes[1] } map { $_->{rooms}->@* } $bracket->{sets}->@*;
+
+        my $roster_a = $quiz_a->{roster};
+        my $roster_b = $quiz_b->{roster};
+
+        $quiz_a->{roster} = $roster_b;
+        $quiz_b->{roster} = $roster_a;
+    }
+
+    $self->save;
+    return;
+}
+
 1;
 
 =head1 NAME
@@ -652,6 +712,8 @@ QuizSage::Model::Meet
     my $state         = $meet->state;
     my $quiz_settings = $meet->quiz_settings( 'Bracket Name', 'Quiz Name' );
     my $stats         = $meet->stats;
+
+    $meet->swap_draw_parts( 'Preliminary', [ 1, 4 ], [ 3, 12 ] );
 
 =head1 DESCRIPTION
 
@@ -758,6 +820,23 @@ Returns an arrayref of hashrefs of users who are administrators of the meet.
 
 Requires either "add" or "remove" followed by a user ID. Will then either add
 or remove that user to/from the list of administrators of the meet.
+
+=head2 swap_draw_parts
+
+Swap draw parts (sets and/or quizzes) built meet's schedule. Requires the meet
+object be loaded and have previously been built via C<build>. The method
+requires the input of a text string of the name of the bracket to change
+followed by an arrayref of sets to swap and an arrayref of quizzes to swap.
+
+
+    # swap the first and fourth sets in the draw of the "Preliminary" bracket
+    $meet->swap_draw_parts( 'Preliminary', [ 1, 4 ], [] );
+
+    # swap the third and twelfth quizzes in the draw of the "Preliminary" bracket
+    $meet->swap_draw_parts( 'Preliminary', [], [ 3, 12 ] );
+
+    # swap both the sets and draws from the examples above
+    $meet->swap_draw_parts( 'Preliminary', [ 1, 4 ], [ 3, 12 ] );
 
 =head1 WITH ROLES
 

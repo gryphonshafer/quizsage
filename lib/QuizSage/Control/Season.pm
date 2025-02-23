@@ -230,6 +230,21 @@ sub meet ($self) {
                     my $hidden = ( $self->param('hidden') ) ? 1 : 0;
                     $meet->save({ hidden => $hidden }) if ( $hidden != $meet->data->{hidden} );
 
+                    if (
+                        $self->param('bracket_name') and
+                        ( $self->param('set_pairs') or $self->param('quiz_pairs') )
+                    ) {
+                        my $set_pairs  = [ grep { /^\d+$/ } split( '\D+', $self->param('set_pairs' ) // '' ) ];
+                        my $quiz_pairs = [ grep { /^\d+$/ } split( '\D+', $self->param('quiz_pairs') // '' ) ];
+
+                        die "Sets or quizzes provided need to be in even (pairs)\n" unless (
+                            $set_pairs->@* and not $set_pairs->@* % 2 or
+                            $quiz_pairs->@* and not $quiz_pairs->@* % 2
+                        );
+
+                        $meet->swap_draw_parts( $self->param('bracket_name'), $set_pairs, $quiz_pairs );
+                    }
+
                     my $settings = Load( $self->param('settings') );
 
                     $settings->{roster}{data}          = $self->param('roster_data');

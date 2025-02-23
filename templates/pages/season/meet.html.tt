@@ -111,6 +111,27 @@
         </label>
         <textarea name="roster_data">[% value('roster_data') | trim %]</textarea>
     </fieldset>
+
+    [% IF meet %]
+        <fieldset>
+            <legend>Swap Draw Parts</legend>
+            <label>
+                Bracket Name:
+                <input type="text" name="bracket_name" value="Preliminary"
+                    placeholder="Bracket Name">
+            </label>
+            <label>
+                Set Pairs:
+                <input type="text" name="set_pairs" value=""
+                    placeholder="Sequence of Set Numbers (in Pairs)">
+            </label>
+            <label>
+                Quiz Pairs:
+                <input type="text" name="quiz_pairs" value=""
+                    placeholder="Sequence of Quiz Numbers (in Pairs)">
+            </label>
+        </fieldset>
+    [% END %]
 </form>
 
 [% IF meet %]

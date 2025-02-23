@@ -28,7 +28,7 @@ brackets:
             min: 1
         slotting: snaked # random, striped, snaked, sequential
         source: Preliminary # roster, "bracket name"
-    template: double_elimination
+    template: double_elimination # double_elimination, single_elimination, finals_only
     type: positional # score_sum, positional
     quizzes:
       - name: J
