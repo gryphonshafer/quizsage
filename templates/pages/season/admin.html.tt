@@ -31,6 +31,7 @@
                 <th>Season</th>
                 <th>Location</th>
                 <th>Name</th>
+                <th>Visibility</th>
             </tr>
         </thead>
         <tbody>
@@ -46,6 +47,9 @@
                     </td>
                     <td>[% season.data.location %]</td>
                     <td>[% season.data.name %]</td>
+                    <td class="selected">
+                        [% IF season.data.hidden %]<b><i>Hidden</i></b>[% ELSE %]Visible[% END %]
+                    </td>
                 </tr>
             [% END %]
         </tbody>

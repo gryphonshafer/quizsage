@@ -74,9 +74,9 @@
                     <b>Meet</b>
                     <ul>
                         [% FOR icon_link_data IN [
-                            [ ['State'],        [ '/meet/', meet_id ],                  'meet_state'   ],
+                            [ ['State'],        [ '/meet/', meet_id, '/state'        ], 'meet_state'   ],
                             [ ['Distribution'], [ '/meet/', meet_id, '/distribution' ], 'distribution' ],
-                            [ ['Roster'],       [ '/meet/', meet_id, '/roster' ],       'roster'       ],
+                            [ ['Roster'],       [ '/meet/', meet_id, '/roster'       ], 'roster'       ],
                         ] %]
                             <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
                         [% END %]

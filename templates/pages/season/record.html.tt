@@ -1,5 +1,5 @@
 [%
-    PROCESS macro;
+    PROCESS macros;
     page.title = ( NOT season ) ? 'Create New Season' : 'Edit Season';
 %]
 
@@ -68,6 +68,7 @@
                         <th>Meet</th>
                         <th>Location</th>
                         <th>Start</th>
+                        <th>Visibility</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -78,6 +79,9 @@
                             %]">[% meet.data.name %]</a></td>
                             <td>[% meet.data.location %]</td>
                             <td>[% time( meet.data.start, '%a, %b %-e, %Y %-I:%M %p %Z' ) %]</td>
+                            <td>
+                                [% IF meet.data.hidden %]<b><i>Hidden</i></b>[% ELSE %]Visible[% END %]
+                            </td>
                         </tr>
                     [% END %]
                 </tbody>
@@ -121,7 +125,7 @@
     <fieldset>
         <legend>[% page.title %]</legend>
 
-        [% MACRO value(key) GET $key OR meet.data.$key %]
+        [% MACRO value(key) GET $key OR season.data.$key %]
 
         <label>
             Name:
@@ -145,6 +149,10 @@
         <label>
             Days:
             <input type="text" name="days" value="[% value('days') %]" placeholder="Days">
+        </label>
+        <label>
+            <input type="checkbox" name="hidden" [% IF value('hidden') %]checked[% END %]>
+            Hidden
         </label>
 
         <p>

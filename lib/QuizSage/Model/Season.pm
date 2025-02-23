@@ -39,7 +39,7 @@ sub seasons ($self) {
             $_->{meets} = [
                 $self->dq->get(
                     'meet',
-                    [ qw( meet_id name location start ) ],
+                    [ qw( meet_id name location start hidden ) ],
                     { $self->id_name => $_->{season_id} },
                     { order_by => 'start' },
                 )->run->all({})->@*
@@ -48,7 +48,7 @@ sub seasons ($self) {
         } $self->dq->get(
             $self->name,
             [
-                qw( season_id name location start ),
+                qw( season_id name location start hidden ),
                 [ \q{ DATETIME( start, '+' || days || ' day' ) }, 'stop' ],
                 [
                     \q{
@@ -76,7 +76,7 @@ sub stats ($self) {
         $time->parse( conf->get('rebuild_stats_before') )->{datetime}->epoch
     );
 
-    my $meets = QuizSage::Model::Meet->new->every({ season_id => $self->id });
+    my $meets = QuizSage::Model::Meet->new->every({ season_id => $self->id, hidden => 0 });
     my $rules = deepcopy( $self->data->{settings}{statistics} ) // { meets => [ map { +{
         name   => $_->data->{name},
         weight => 1,

@@ -36,6 +36,19 @@
     </ul>
 </details>
 
+[% IF meet.id %]
+    <p>
+        <b>Preview:</b>
+        [% FOR icon_link_data IN [
+            [ ['State'],        [ '/meet/', meet_id, '/state'        ], 'meet_state'   ],
+            [ ['Distribution'], [ '/meet/', meet_id, '/distribution' ], 'distribution' ],
+            [ ['Roster'],       [ '/meet/', meet_id, '/roster'       ], 'roster'       ],
+        ] %]
+            [% PROCESS icon_link.html.tt, data = icon_link_data %]
+        [% END %]
+    </p>
+[% END %]
+
 <form method="post" class="admin column">
     <fieldset class="edit_meet">
         <legend>[% page.title %]</legend>
@@ -69,6 +82,10 @@
         <label>
             QM Password:
             <input type="text" name="passwd" value="" placeholder="QM Password">
+        </label>
+        <label>
+            <input type="checkbox" name="hidden" [% IF value('hidden') %]checked[% END %]>
+            Hidden
         </label>
 
         <p>

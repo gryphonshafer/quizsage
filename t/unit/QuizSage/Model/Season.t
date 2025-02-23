@@ -44,6 +44,7 @@ is(
         name      => $label . ' Name Current',
         location  => 'Location',
         meets     => [],
+        hidden    => 0,
         active    => 1,
         start     => T(),
         stop      => T(),

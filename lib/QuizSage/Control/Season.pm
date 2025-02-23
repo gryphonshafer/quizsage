@@ -61,6 +61,7 @@ sub record ($self) {
                     $season->data->{settings} = Load( $self->param('settings') )
                         if ( $self->param('settings') );
                     $season->data->{$_} = $self->param($_) for ( qw( name location start days ) );
+                    $season->data->{hidden} = ( $self->param('hidden') ) ? 1 : 0;
                     $season->save;
                     return $self->redirect_to('/season/admin');
                 }
@@ -90,6 +91,7 @@ sub record ($self) {
             $season->create({
                 user_id        => $self->stash('user')->id,
                 name           => $self->param('name'),
+                hidden         => ( ( $self->param('hidden') ) ? 1 : 0 ),
                 maybe location => $self->param('location') || undef,
                 maybe start    => $self->param('start')    || undef,
                 maybe days     => $self->param('days')     || undef,
@@ -162,6 +164,7 @@ sub meet ($self) {
                 $meet->create({
                     season_id => $self->param('season_id'),
                     settings  => $settings,
+                    hidden    => ( ( $self->param('hidden') ) ? 1 : 0 ),
                     map { $_ => $self->param($_) } qw( name location start days passwd ),
                 });
                 $meet->data->{settings} = $meet->canonical_settings( $self->param('user_id') );
@@ -224,6 +227,9 @@ sub meet ($self) {
             }
             else {
                 try {
+                    my $hidden = ( $self->param('hidden') ) ? 1 : 0;
+                    $meet->save({ hidden => $hidden }) if ( $hidden != $meet->data->{hidden} );
+
                     my $settings = Load( $self->param('settings') );
 
                     $settings->{roster}{data}          = $self->param('roster_data');
@@ -247,18 +253,20 @@ sub meet ($self) {
                     }
                     elsif ($result) {
                         $self->notice( 'Season/meet admin: ' . $result );
-                        $self->flash( memo => { class => 'error', message => 'Changes rejected: ' . $result } );
+                        $self->flash( memo => {
+                            class   => 'error',
+                            message => 'Changes rejected: ' . $result,
+                        } );
                     }
-
-                    return $self->redirect_to( '/season/' . $meet->data->{season_id} . '/edit' );
                 }
                 catch ($e) {
                     $self->notice($e);
                     $self->flash( memo => { class => 'error', message => 'An error happened: ' . deat $e } );
-                    return $self->redirect_to(
-                        '/season/' . $self->param('season_id') . '/meet/' . $self->param('meet_id') . '/edit'
-                    );
                 }
+
+                return $self->redirect_to(
+                    '/season/' . $self->param('season_id') . '/meet/' . $self->param('meet_id') . '/edit'
+                );
             }
         }
         elsif ( $self->param('meet_action_type') eq 'delete' ) {

@@ -79,11 +79,13 @@
         archived_seasons = [];
 
         FOR season IN seasons;
-           IF season.active;
-               active_seasons.push(season);
-           ELSE;
-               archived_seasons.push(season);
-           END;
+            IF NOT season.hidden;
+                IF season.active;
+                    active_seasons.push(season);
+                ELSE;
+                    archived_seasons.push(season);
+                END;
+            END;
        END;
     %]
 
@@ -105,7 +107,18 @@
                     data = [ ['Season Statistics'], [ '/season/', season.season_id, '/stats' ], 'stats' ]
             %]</li></ul>
 
-            [% IF season.meets AND season.meets.size > 0 %]
+            [%
+                visible_meets = [];
+                IF season.meets AND season.meets.size > 0;
+                    FOR meet IN season.meets;
+                        IF NOT meet.hidden;
+                            visible_meets.push(meet);
+                        END;
+                    END;
+                END;
+            %]
+
+            [% IF visible_meets.size > 0 %]
                 <table>
                     <thead>
                         <tr>
@@ -115,7 +128,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        [% FOR meet IN season.meets %]
+                        [% FOR meet IN visible_meets %]
                             <tr>
                                 <td><a href="[%
                                     c.url_for( '/meet/' _ meet.meet_id _ '/state' )
