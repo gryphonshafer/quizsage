@@ -141,6 +141,14 @@ sub active_users_list ($self) {
     ];
 }
 
+sub is_app_admin ( $self, $user_id = undef ) {
+    return $self->dq->sql(q{
+        SELECT COUNT(*)
+        FROM administrator
+        WHERE user_id = ? AND season_id IS NULL and meet_id IS NULL
+    })->run( $user_id // $self->id // 0 )->value
+}
+
 1;
 
 =head1 NAME
@@ -252,6 +260,12 @@ It requires the meet ID or a meet object.
 This method will return an arrayref of hashrefs with C<user_id>, C<first_name>,
 C<last_name>, and C<email> that match active users. It will also include a
 C<label> field using data from other fields.
+
+=head2 is_app_admin
+
+This method will return a boolean value about whether the user is an
+application-level administrator, meaning they have a record in the
+C<administrator> table with no reference to season or meet.
 
 =head1 WITH ROLE
 

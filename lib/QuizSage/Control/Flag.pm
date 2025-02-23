@@ -2,6 +2,7 @@ package QuizSage::Control::Flag;
 
 use exact 'Mojolicious::Controller';
 use QuizSage::Model::Flag;
+use QuizSage::Model::User;
 
 sub add ($self) {
     my $flag = QuizSage::Model::Flag->new;
@@ -20,8 +21,9 @@ sub add ($self) {
 
 sub list ($self) {
     $self->stash(
-        template => 'flag/list',
-        flags    => QuizSage::Model::Flag->new->list,
+        template     => 'flag/list',
+        flags        => QuizSage::Model::Flag->new->list,
+        is_app_admin => QuizSage::Model::User->new->is_app_admin( $self->stash('user')->id ),
     );
 }
 
@@ -38,7 +40,8 @@ sub item ($self) {
 
 sub remove ($self) {
     try {
-        QuizSage::Model::Flag->new->load( $self->param('flag_id') )->delete;
+        QuizSage::Model::Flag->new->load( $self->param('flag_id') )->delete
+            if ( QuizSage::Model::User->new->is_app_admin( $self->stash('user')->id ) );
     }
     catch ($e) {
         $self->flash(
