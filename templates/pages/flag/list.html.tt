@@ -51,7 +51,7 @@
 
 [% confirm_delete = BLOCK %]
     function confirm_delete(flag_id) {
-        omniframe.memo({
+        if ( window.omniframe && omniframe.memo ) omniframe.memo({
             message : 'Are you sure you want to permanently delete this flag?',
             options : [ 'Yes, delete', 'No, cancel' ],
             class   : 'notice',
