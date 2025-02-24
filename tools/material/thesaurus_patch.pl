@@ -1,60 +1,10 @@
 #!/usr/bin/env perl
 use exact -cli, -conf;
-use Mojo::JSON 'encode_json';
-use Omniframe;
 use Omniframe::Util::File 'opath';
-use YAML::XS 'Load';
+use QuizSage::Model::Flag;
 
 my $opt = options('input|i=s');
-my $input;
-try {
-    $opt->{input} = opath( $opt->{input} // 'config/thesaurus_patch.yaml' );
-    $input = Load( $opt->{input}->slurp );
-}
-catch ($e) {
-    pod2usage( deat $e );
-}
-
-die "All patches in the input must have a text value and not both meanings and target values.\n" if ( grep {
-    not length( $_->{text} ) or
-    length( $_->{text} ) and $_->{meanings} and $_->{target}
-} @$input );
-
-my $dq = Omniframe->with_roles('+Database')->new->dq('material');
-
-my $redirect_id = $dq->prepare_cached('SELECT word_id FROM word WHERE text = ?');
-my $delete_word = $dq->prepare_cached('DELETE FROM word WHERE text = ?');
-my $patch_word  = $dq->prepare_cached(q{
-    INSERT INTO word ( redirect_id, meanings, text )
-    VALUES ( ?, ?, ? )
-    ON CONFLICT (text) DO
-    UPDATE SET redirect_id = ?, meanings = ? WHERE text = ?
-});
-
-$dq->begin_work;
-
-for my $patch (@$input) {
-    if ( not $patch->{target} and not $patch->{meanings} ) {
-        $delete_word->run( $patch->{text} );
-    }
-    else {
-        $patch->{meanings} = encode_json( $patch->{meanings} ) if ( defined $patch->{meanings} );
-        if ( defined $patch->{target} ) {
-            $patch->{target} = $redirect_id->run( $patch->{target} )->value;
-            die "Unable to locate target of $patch->{text}\n" unless ( $patch->{target} );
-        }
-
-        $patch_word->run(
-            (
-                $patch->{target},
-                $patch->{meanings},
-                $patch->{text},
-            ) x 2,
-        );
-    }
-}
-
-$dq->commit;
+QuizSage::Model::Flag->new->thesaurus_patch( opath( $opt->{input} // 'config/thesaurus_patch.yaml' ) );
 
 =head1 NAME
 

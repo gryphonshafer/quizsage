@@ -37,6 +37,11 @@ body {
         }
     }
 
+    span.spaced {
+        margin-left : 0.25em;
+        margin-right: 0.25em;
+    }
+
     li > ul,
     ul.column,
     ul > ul {
@@ -44,6 +49,7 @@ body {
         margin-bottom: 0;
     }
 
+    ul.no_bullets li,
     li.no_bullet {
         margin-left    : -1em;
         list-style-type: none;

@@ -1,7 +1,8 @@
 package QuizSage::Model::Flag;
 
-use exact -class, -conf;
+use exact -class;
 use Mojo::JSON qw( encode_json decode_json );
+use YAML::XS 'Load';
 
 with 'Omniframe::Role::Model';
 
@@ -24,6 +25,53 @@ sub list ($self) {
         FROM flag AS f
         JOIN user AS u USING (user_id)
     })->run->all({});
+}
+
+sub thesaurus_patch ( $self, $yaml ) {
+    my $input = Load($yaml);
+
+    croak('All patches in the input must have a text value and not both meanings and target values.')
+        if ( grep {
+            not length( $_->{text} ) or
+            length( $_->{text} ) and $_->{meanings} and $_->{target}
+        } @$input );
+
+    my $dq = $self->dq('material');
+
+    my $redirect_id = $dq->prepare_cached('SELECT word_id FROM word WHERE text = ?');
+    my $delete_word = $dq->prepare_cached('DELETE FROM word WHERE text = ?');
+    my $patch_word  = $dq->prepare_cached(q{
+        INSERT INTO word ( redirect_id, meanings, text )
+        VALUES ( ?, ?, ? )
+        ON CONFLICT (text) DO
+        UPDATE SET redirect_id = ?, meanings = ? WHERE text = ?
+    });
+
+    $dq->begin_work;
+
+    for my $patch (@$input) {
+        if ( not $patch->{target} and not $patch->{meanings} ) {
+            $delete_word->run( $patch->{text} );
+        }
+        else {
+            $patch->{meanings} = encode_json( $patch->{meanings} ) if ( defined $patch->{meanings} );
+            if ( defined $patch->{target} ) {
+                $patch->{target} = $redirect_id->run( $patch->{target} )->value;
+                croak("Unable to locate target of $patch->{text}") unless ( $patch->{target} );
+            }
+
+            $patch_word->run(
+                (
+                    $patch->{target},
+                    $patch->{meanings},
+                    $patch->{text},
+                ) x 2,
+            );
+        }
+    }
+
+    $dq->commit;
+    return;
 }
 
 1;
@@ -59,6 +107,11 @@ Likely not used directly, C<thaw> will JSON-decode the C<data> hashref.
 
 This method will return an arrayref of hashrefs of flag items suitable for
 display in a flat items table.
+
+=head2 thesaurus_patch
+
+This method expects valid YAML that will be used to patch the application
+thesaurus.
 
 =head1 WITH ROLE
 

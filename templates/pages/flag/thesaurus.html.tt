@@ -1,0 +1,117 @@
+[% page.title = 'Thesaurus Modification' %]
+
+<details open>
+    <summary>Instructions</summary>
+
+    <p>
+        This page allows an application administrator to modify the system-wide
+        thesaurus. Note that actions taken on this page are conducted
+        universally. <b>Be sure you know what you're doing before you use this
+        page.</b> Changes to the thesaurus should be done with great care and
+        only after deep consideration for the impact those changes will make
+        across the whole of the system for generations.
+        <span class="warning">
+            Do not make changes flippantly or to satisy the opinions of those
+            who have not invested the significant forethougth into the
+            multi-order-effects a change would create.
+        </span>
+        If you modify the thesaurus, <b>you and you <i>alone</i></b> will become
+        the sole authority responsible for the change's derived outcomes.
+    </p>
+
+    <p>
+        To modify the thesaurus, you need to enter and submit YAML for each
+        entry you want to add, alter, or remove. The YAML needs to be an array
+        of hashs. Each hash should describe the end-state of a given word.
+        A regular, full entry will have <code>text</code> (the word) and
+        <code>meanings</code> (a data structure representing the synonyms of
+        each meaning of the word):
+    </p>
+    <pre>
+    - text: see
+      meanings:
+        - word: perceive with eyes
+          type: verb
+          synonyms:
+            - verity: 3
+              words:
+                  - look
+                  - notice
+                  - view
+            - verity: 2
+              words:
+                  - mark
+                  - note
+                  - stare
+            - verity: 1
+              words:
+                  - be apprised of
+                  - pay attention to
+                  - take notice
+        - word: appreciate, comprehen
+          type: verb
+          synonyms:
+            - verity: 3
+              words:
+                  - catch
+                  - determine
+                  - discover
+              - verity: 2
+              words:
+                  - grasp
+                  - imagine
+                  - investigate
+              - verity: 1
+              words:
+                  - get the drift
+                  - get the hang of
+                  - make out</pre>
+
+    <p>For words that should just redirect to other words, use a
+    <code>target</code>:</p>
+    <pre>
+    - text: saw
+      target: see</pre>
+
+    <p>To ensure a word does not exist in the thesaurus, define only the word:</p>
+    <pre>
+    - text: Gryphon</pre>
+
+    <p>
+        Note that it's entirely reasonable (and recommended) to setup 2 entries
+        for a word that should be capicalized:
+    </p>
+
+    <pre>
+    - text: Christ
+      meanings:
+        - word: Jesus Christ
+          type: noun
+          synonyms:
+            - verity: 1
+              words:
+                  - Emmanuel
+                  - Good Shepherd
+                  - Jesus
+                  - King of Kings
+                  - Lamb of God
+                  - Light of the World
+                  - lord
+                  - Lord of Lords
+                  - messiah
+                  - Prince of Peace
+                  - prophet
+                  - redeemer
+                  - savior
+                  - Son of Man
+    - text: christ
+      target: Christ</pre>
+</details>
+
+<form method="post">
+    <fieldset>
+        <legend>[% page.title %]</legend>
+        <textarea class="max_width" name="yaml"></textarea>
+        <input type="submit" value="Submit">
+    </fieldset>
+</form>

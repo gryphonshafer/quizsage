@@ -44,7 +44,7 @@
             [ ['Distribution'], [ '/meet/', meet_id, '/distribution' ], 'distribution' ],
             [ ['Roster'],       [ '/meet/', meet_id, '/roster'       ], 'roster'       ],
         ] %]
-            [% PROCESS icon_link.html.tt, data = icon_link_data %]
+            <span class="spaced">[% PROCESS icon_link.html.tt, data = icon_link_data %]</span>
         [% END %]
     </p>
 [% END %]

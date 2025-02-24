@@ -178,3 +178,8 @@ table.recent_pickup_quizzes {
         line-height: 1.5em;
     }
 }
+
+textarea.max_width {
+    width : calc( 100vw - 5em );
+    height: 20em;
+}

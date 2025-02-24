@@ -1,0 +1,51 @@
+[%
+    PROCESS macros;
+    page.title = 'Application Administrators';
+%]
+
+<h2>Promote/Demote Application Administrators</h2>
+<table>
+    <thead>
+        <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Telephone</th>
+            <th>Last Login</th>
+            <th>Account Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        [% FOR user IN users %]
+            <tr>
+                <td>
+                    <input type="checkbox" value="[% user.user_id %]"
+                        [% IF user.is_app_admin %]checked[% END %]>
+                </td>
+                <td>[% user.first_name %] [% user.last_name %] </td>
+                <td><a href="mailto:[% user.email %]">[% user.email %]</a></td>
+                <td>[% user.phone %]</td>
+                <td>[%
+                    ( user.last_login )
+                        ? time( user.last_login, '%a, %b %-d, %Y' )
+                        : '(No Login)'
+                %]</td>
+                <td>[% time( user.created, '%a, %b %-d, %Y' ) %]</td>
+            </tr>
+        [% END %]
+    </tbody>
+</table>
+
+[% promote_demote_admins = BLOCK %]
+    window.addEventListener( 'load', () => {
+        window.document.querySelectorAll('input').forEach( input => {
+            input.onchange = () => {
+                const url = new URL( 'is_app_admin', window.location.href );
+                url.searchParams.append( 'is_app_admin', ( input.checked ) ? 1 : 0 );
+                url.searchParams.append( 'user_id', input.value );
+                fetch(url);
+            };
+        } );
+    } );
+[% END %]
+[% page.js.inline.push(promote_demote_admins) %]

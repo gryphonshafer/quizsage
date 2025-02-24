@@ -3,22 +3,12 @@
     page.title = 'Flag List';
 %]
 
-<details open>
+<details>
     <summary>Instructions</summary>
-
     <p>
-        This flag list page provides view and <b><i>permanent removal</i></b>
-        access to all submitted flags. Note that actions taken on this page are
-        conducted <b><i>universally</i></b>.
-    </p>
-    <p>
-        Unless you are a regional coordinator or season administration
-        delegate,
-        <b><i>you almost certainly do not want to use this page</i></b>.
-        <span class="warning">
-            Unauthorized or otherwise improper use of this page may result
-            in account deactivation.
-        </span>
+        This flag list page provides means to view all flags submitted from any
+        user of the application. Clicking on the "data" icon will result in
+        display of the raw JSON data associated with the flag.
     </p>
 </details>
 
@@ -75,50 +65,16 @@
 [% page.js.inline.push(confirm_delete) %]
 
 [% IF is_app_admin %]
-    <h2>Promote/Demote Application Administrators</h2>
-    <table>
-        <thead>
-            <tr>
-                <th></th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Telephone</th>
-                <th>Last Login</th>
-                <th>Account Created</th>
-            </tr>
-        </thead>
-        <tbody>
-            [% FOR user IN users %]
-                <tr>
-                    <td>
-                        <input type="checkbox" value="[% user.user_id %]"
-                            [% IF user.is_app_admin %]checked[% END %]>
-                    </td>
-                    <td>[% user.first_name %] [% user.last_name %] </td>
-                    <td><a href="mailto:[% user.email %]">[% user.email %]</a></td>
-                    <td>[% user.phone %]</td>
-                    <td>[%
-                        ( user.last_login )
-                            ? time( user.last_login, '%a, %b %-d, %Y' )
-                            : '(No Login)'
-                    %]</td>
-                    <td>[% time( user.created, '%a, %b %-d, %Y' ) %]</td>
-                </tr>
-            [% END %]
-        </tbody>
-    </table>
+    <ul class="no_bullets">
+        <li>
+            <a href="[% c.url_for('/flag/administrators') %]"><span
+                class="material-symbols-outlined">admin_panel_settings</span></a>
+            <a href="[% c.url_for('/flag/administrators') %]">Application Administrators</a>
+        </li>
+        <li>
+            <a href="[% c.url_for('/flag/thesaurus') %]"><span
+                class="material-symbols-outlined">dictionary</span></a>
+            <a href="[% c.url_for('/flag/thesaurus') %]">Modify Application Thesaurus</a>
+        </li>
+    </ul>
 [% END %]
-
-[% promote_demote_admins = BLOCK %]
-    window.addEventListener( 'load', () => {
-        window.document.querySelectorAll('input').forEach( input => {
-            input.onchange = () => {
-                const url = new URL( 'is_app_admin', window.location.href );
-                url.searchParams.append( 'is_app_admin', ( input.checked ) ? 1 : 0 );
-                url.searchParams.append( 'user_id', input.value );
-                fetch(url);
-            };
-        } );
-    } );
-[% END %]
-[% page.js.inline.push(promote_demote_admins) %]

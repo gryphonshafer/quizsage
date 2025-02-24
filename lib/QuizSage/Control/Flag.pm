@@ -2,7 +2,6 @@ package QuizSage::Control::Flag;
 
 use exact 'Mojolicious::Controller';
 use QuizSage::Model::Flag;
-use QuizSage::Model::User;
 
 sub add ($self) {
     my $flag = QuizSage::Model::Flag->new;
@@ -20,24 +19,10 @@ sub add ($self) {
 }
 
 sub list ($self) {
-    my $user         = QuizSage::Model::User->new;
-    my $is_app_admin = $user->is_app_admin( $self->stash('user')->id );
-
     $self->stash(
         template     => 'flag/list',
         flags        => QuizSage::Model::Flag->new->list,
-        is_app_admin => $is_app_admin,
-        users        => [ ($is_app_admin) ? (
-            sort {
-                $b->{is_app_admin} <=> $a->{is_app_admin} or
-                $a->{first_name} cmp $b->{first_name} or
-                $a->{last_name} cmp $b->{last_name}
-            }
-            map {
-                $_->{is_app_admin} = $user->is_app_admin( $_->{user_id} );
-                $_;
-            } $user->every_data
-        ) : () ],
+        is_app_admin => $self->stash('user')->is_app_admin,
     );
 }
 
@@ -55,7 +40,7 @@ sub item ($self) {
 sub remove ($self) {
     try {
         QuizSage::Model::Flag->new->load( $self->param('flag_id') )->delete
-            if ( QuizSage::Model::User->new->is_app_admin( $self->stash('user')->id ) );
+            if ( $self->stash('user')->is_app_admin );
     }
     catch ($e) {
         $self->flash(
@@ -70,21 +55,66 @@ sub remove ($self) {
 }
 
 sub is_app_admin ($self) {
-    my $user = QuizSage::Model::User->new;
-    return unless ( $user->is_app_admin( $self->stash('user')->id ) );
+    return unless ( $self->stash('user')->is_app_admin );
 
     if ( $self->param('is_app_admin') ) {
-        $user->dq
+        $self->stash('user')->dq
             ->sql('INSERT INTO administrator (user_id) VALUES (?)')
             ->run( $self->param('user_id') );
     }
     else {
-        $user->dq
+        $self->stash('user')->dq
             ->sql('DELETE FROM administrator WHERE user_id = ? AND season_id IS NULL and meet_id IS NULL')
             ->run( $self->param('user_id') );
     }
 
     $self->render( json => $self->req->params->to_hash );
+}
+
+sub administrators ($self) {
+    $self->redirect_to('/flag/list') unless ( $self->stash('user')->is_app_admin );
+
+    $self->stash(
+        users => [
+            sort {
+                $b->{is_app_admin} <=> $a->{is_app_admin} or
+                $a->{first_name} cmp $b->{first_name} or
+                $a->{last_name} cmp $b->{last_name}
+            }
+            map {
+                $_->{is_app_admin} = $self->stash('user')->is_app_admin( $_->{user_id} );
+                $_;
+            } $self->stash('user')->every_data
+        ],
+    );
+}
+
+sub thesaurus ($self) {
+    $self->redirect_to('/flag/list') unless ( $self->stash('user')->is_app_admin );
+
+    if ( $self->param('yaml') ) {
+        my $error;
+        try {
+            QuizSage::Model::Flag->new->thesaurus_patch( $self->param('yaml') );
+        }
+        catch ($e) {
+            $error = $e;
+        }
+
+        $self->flash(
+            memo => ($error)
+                ? {
+                    class   => 'error',
+                    message => 'Thesaurus failed to be patched',
+                }
+                : {
+                    class   => 'success',
+                    message => 'Thesaurus successfully patched',
+                }
+        );
+
+        $self->redirect_to('/flag/thesaurus');
+    }
 }
 
 1;
@@ -120,6 +150,15 @@ This controller handles removing a flag.
 
 This controller handles user application administrator checkbox checking and
 unchecking on the flag list page.
+
+=head2 administrators
+
+This controller handles display of the user list and checkboxes for application
+administrator.
+
+=head2 thesaurus
+
+This controller handles display of the thesaurus modification page.
 
 =head1 INHERITANCE
 
