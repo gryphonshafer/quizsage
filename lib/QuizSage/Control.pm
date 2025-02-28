@@ -5,6 +5,7 @@ use MIME::Base64 'encode_base64';
 use Mojo::JSON 'encode_json';
 use Omniframe::Util::File 'opath';
 use QuizSage::Model::User;
+use YAML::XS 'Load';
 
 sub startup ($self) {
     $self->setup;
@@ -12,6 +13,17 @@ sub startup ($self) {
     my $captcha_conf = conf->get('captcha');
     $captcha_conf->{ttf} = opath( $captcha_conf->{ttf} );
     $self->plugin( CaptchaPNG => $captcha_conf );
+
+    $self->plugin( OpenAPI => { url => 'config/api.yaml' } );
+    my $spec = Load( opath('config/api.yaml')->slurp );
+    $self->plugin(
+        SwaggerUI => {
+            route   => $self->routes->any('api'),
+            url     => $spec->{servers}[0]{url},
+            title   => $spec->{info}{title},
+            favicon => '/favicon.ico',
+        }
+    );
 
     my $all = $self->routes->under( sub ($c) {
         $c->stash( page => { wrappers => ['page.html.tt'] } );

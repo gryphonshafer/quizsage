@@ -19,6 +19,15 @@ default:
             - 65.zH1eZb4m7Q19Jf1OUtzxeYg92Ngqy
         session:
             cookie_name: quizsage_session
+        linda:
+            watch:
+                - app.psgi
+                - config/app.yaml
+                - config/api.yaml
+                - config/assets
+                - lib
+                - templates
+                - ../omniframe
     email:
         from: QuizSage <example@example.org>
     bcrypt:
