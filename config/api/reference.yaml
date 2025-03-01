@@ -50,7 +50,7 @@ paths:
                     references for matching. Default false.
                 schema:
                     type: boolean
-                    default: false
+                    default: 'false'
               - name: require_verse_match
                 in: query
                 description: |-
@@ -58,7 +58,7 @@ paths:
                     references for matching. Default false.
                 schema:
                     type: boolean
-                    default: false
+                    default: 'false'
               - name: require_book_ucfirst
                 in: query
                 description: |-
@@ -66,7 +66,7 @@ paths:
                     be ucfirst for matching. Default false.
                 schema:
                     type: boolean
-                    default: false
+                    default: 'false'
               - name: minimum_book_length
                 in: query
                 description: |-
@@ -83,7 +83,7 @@ paths:
                     and verse detail. Default false.
                 schema:
                     type: boolean
-                    default: false
+                    default: 'false'
             responses:
                 '200':
                     description: Parsed and canonicalized data.

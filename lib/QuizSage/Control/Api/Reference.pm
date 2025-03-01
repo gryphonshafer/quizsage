@@ -8,7 +8,7 @@ my $bible_ref = QuizSage::Model::Label->new->bible_ref;
 sub reference_parse ($self) {
     $self->openapi->valid_input or return;
 
-    for (
+    for my $setting (
         [ bible                 => 'Protestant' ],
         [ acronyms              => 0            ],
         [ sorting               => 1            ],
@@ -18,7 +18,7 @@ sub reference_parse ($self) {
         [ minimum_book_length   => 3            ],
         [ add_detail            => 0            ],
     ) {
-        my ( $attribute, $default ) = @_;
+        my ( $attribute, $default ) = @$setting;
         $bible_ref->$attribute( $self->param($attribute) // $default );
     }
 
