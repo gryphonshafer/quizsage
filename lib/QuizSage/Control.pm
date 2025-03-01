@@ -21,15 +21,33 @@ sub startup ($self) {
     opath( 'config/api', { no_check => 1 } )->list_tree->each( sub {
         $spec = merge( $spec, Load( $_->slurp ) );
     } );
-    $self->plugin( OpenAPI => { spec => $spec } );
-    $self->plugin(
-        SwaggerUI => {
-            route   => $self->routes->any('api'),
-            url     => $spec->{servers}[0]{url},
-            title   => $spec->{info}{title},
-            favicon => '/favicon.ico',
-        }
-    );
+    $self->plugin( OpenAPI => {
+        spec     => $spec,
+        security => {
+            sessionAuth => sub ( $c, $definition, $scopes, $callback ) {
+                if ( $c->session('user_id') ) {
+                    $c->$callback();
+                }
+                else {
+                    $c->render(
+                        status => 401,
+                        json   => {
+                            error   => 'Unauthorized',
+                            message =>
+                                'Authorization required; ' .
+                                'use the /user/login API endpoint to authenticate',
+                        },
+                    );
+                }
+            },
+        },
+    } );
+    $self->plugin( SwaggerUI => {
+        route   => $self->routes->any('api'),
+        url     => $spec->{servers}[0]{url},
+        title   => $spec->{info}{title},
+        favicon => '/favicon.ico',
+    } );
 
     my $all = $self->routes->under( sub ($c) {
         $c->stash( page => { wrappers => ['page.html.tt'] } );

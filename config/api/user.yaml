@@ -1,0 +1,90 @@
+---
+paths:
+    /user/login:
+        post:
+            summary: User login to application and API.
+            description: |-
+                This endpoints requires the same email address and password for
+                an active application/API user. *User accounts can be created on
+                the web site when not logged in. User accounts can be edited on
+                the web site when logged in.*
+
+                If authenticated when this endpoint is used, the API will set a
+                cookie containing the login session (as would the application
+                if the user logged in from the web site). The session cookie
+                name is `quizsage_session`.
+
+                Login via the web application or from the API results in the
+                same cookie change.
+            tags:
+              - Users
+            operationId: user_login
+            x-mojo-to: api-user#login
+            parameters:
+              - name: email
+                in: query
+                description: |-
+                    Email address used as to identify the application/API user
+                    account.
+                example: g@cbqz.org
+                schema:
+                    type: string
+                required: true
+              - name: password
+                in: query
+                description: |-
+                    Password associated with the email address for the
+                    application/API user account.
+                example: '12345678'
+                schema:
+                    type: string
+                    format: password
+                required: true
+            responses:
+                '200':
+                    description: Login successful.
+                    headers:
+                        Set-Cookie:
+                            schema:
+                                type: string
+                                example: >-
+                                    quizsage_session=aBcDe12345; Path=/; HttpOnly; HostOnly; SameSite=Lax
+                    $ref: '#/components/responses/login'
+                '401':
+                    description: Login failure.
+                    $ref: '#/components/responses/login'
+    /user/logout:
+        post:
+            summary: User logout from application and API.
+            description: |-
+                This endpoint removes the session cookie `quizsage_session`,
+                resulting in a user logout condition.
+
+                Logout via the web application or from the API results in the
+                same cookie change.
+            tags:
+              - Users
+            operationId: user_logout
+            x-mojo-to: api-user#logout
+            responses:
+                '200':
+                    description: Logout successful.
+                    $ref: '#/components/responses/login'
+components:
+    responses:
+        login:
+            description: Login response
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        properties:
+                            success:
+                                type: boolean
+                            message:
+                                type: string
+    securitySchemes:
+        sessionAuth:
+            type: apiKey
+            in: cookie
+            name: quizsage_session

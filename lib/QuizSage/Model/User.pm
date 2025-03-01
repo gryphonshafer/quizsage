@@ -101,7 +101,7 @@ sub reset_password ( $self, $token, $new_password ) {
 sub login ( $self, $email, $passwd ) {
     $self->load({
         email  => lc($email),
-        passwd => bcrypt($passwd),
+        passwd => bcrypt( $passwd // '' ),
         active => 1,
     });
 
