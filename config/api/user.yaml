@@ -1,10 +1,14 @@
 ---
+tags:
+  - name: Users
+    description: |-
+        Endpoints related to application/API user accounts.
 paths:
     /user/login:
         post:
             summary: User login to application and API.
             description: |-
-                This endpoints requires the same email address and password for
+                This endpoint requires the same email address and password for
                 an active application/API user. *User accounts can be created on
                 the web site when not logged in. User accounts can be edited on
                 the web site when logged in.*
@@ -20,6 +24,7 @@ paths:
               - Users
             operationId: user_login
             x-mojo-to: api-user#login
+            security: []
             parameters:
               - name: email
                 in: query

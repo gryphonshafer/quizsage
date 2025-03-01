@@ -24,3 +24,5 @@ info:
 servers:
   - url: /api/v1
     description: QuizSage API Version 1
+security:
+  - sessionAuth: []

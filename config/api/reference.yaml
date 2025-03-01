@@ -1,4 +1,10 @@
 ---
+tags:
+  - name: Bible References
+    description: |-
+        Endpoints related to Bible references, books, and structure.
+        All are derived from the
+        [Bible::Reference](https://metacpan.org/pod/Bible::Reference) library.
 paths:
     /reference/parse:
         get:
@@ -17,8 +23,6 @@ paths:
               - Bible References
             operationId: reference_parse
             x-mojo-to: api-reference#reference_parse
-            security:
-                - sessionAuth: []
             parameters:
               - name: text
                 in: query
@@ -175,8 +179,6 @@ paths:
               - Bible References
             operationId: bible_books
             x-mojo-to: api-reference#bible_books
-            security:
-                - sessionAuth: []
             parameters:
               - $ref: '#/components/parameters/bible'
             responses:
@@ -206,8 +208,6 @@ paths:
               - Bible References
             operationId: identify_bible
             x-mojo-to: api-reference#identify_bible
-            security:
-                - sessionAuth: []
             parameters:
               - name: books
                 in: query
@@ -262,8 +262,6 @@ paths:
               - Bible References
             operationId: bible_structure
             x-mojo-to: api-reference#bible_structure
-            security:
-                - sessionAuth: []
             parameters:
               - $ref: '#/components/parameters/bible'
             responses:
