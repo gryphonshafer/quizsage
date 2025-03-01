@@ -14,6 +14,10 @@ info:
         user accounts may be deactivated.**
 
         Limited to no technical support available. Use at your own risk.
+
+        Note that nearly all endpoints require authentication. Use the
+        `/user/login` endpoint to login (or login via the web application, then
+        return here).
     contact:
         name: Gryphon Shafer
         email: g@cbqz.org
