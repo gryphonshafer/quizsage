@@ -1,11 +1,14 @@
 package QuizSage::Control;
 
 use exact -conf, 'Omniframe::Control';
+use Hash::Merge 'merge';
 use MIME::Base64 'encode_base64';
 use Mojo::JSON 'encode_json';
 use Omniframe::Util::File 'opath';
 use QuizSage::Model::User;
 use YAML::XS 'Load';
+
+$YAML::XS::Boolean = 'JSON::PP';
 
 sub startup ($self) {
     $self->setup;
@@ -14,8 +17,11 @@ sub startup ($self) {
     $captcha_conf->{ttf} = opath( $captcha_conf->{ttf} );
     $self->plugin( CaptchaPNG => $captcha_conf );
 
-    $self->plugin( OpenAPI => { url => 'config/api.yaml' } );
-    my $spec = Load( opath('config/api.yaml')->slurp );
+    my $spec = {};
+    opath( 'config/api', { no_check => 1 } )->list_tree->each( sub {
+        $spec = merge( $spec, Load( $_->slurp ) );
+    } );
+    $self->plugin( OpenAPI => { spec => $spec } );
     $self->plugin(
         SwaggerUI => {
             route   => $self->routes->any('api'),

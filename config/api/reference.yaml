@@ -1,24 +1,4 @@
-openapi: 3.0.3
-info:
-    title: QuizSage API
-    version: 1.0.1
-    description: |-
-        This is the [QuizSage](https://quizsage.org)
-        [OpenAPI](https://openapis.org) web service.
-
-        This API is provided for open and free use by any QuizSage user. Most
-        requests require authentication with QuizSage user credentials. Please
-        respect the API, service, servers, and networks by throttling heavy
-        and/or repeated requests. **API abuse will be reported and associated
-        user accounts may be deactivated.**
-
-        Limited to no technical support available. Use at your own risk.
-    contact:
-        name: Gryphon Shafer
-        email: g@cbqz.org
-servers:
-  - url: /api/v1
-    description: QuizSage API Version 1
+---
 paths:
     /reference/parse:
         get:
@@ -34,9 +14,9 @@ paths:
                 input setting also the Orthodox Bible and the current Catholic
                 Bible.
             tags:
-              - Reference
+              - Bible References
             operationId: reference_parse
-            x-mojo-to: label#reference_parse
+            x-mojo-to: api-reference#reference_parse
             parameters:
               - name: text
                 in: query
@@ -190,9 +170,9 @@ paths:
         get:
             summary: Returns a list of books of the Bible, in order.
             tags:
-              - Reference
+              - Bible References
             operationId: bible_books
-            x-mojo-to: label#bible_books
+            x-mojo-to: api-reference#bible_books
             parameters:
               - $ref: '#/components/parameters/bible'
             responses:
@@ -219,9 +199,9 @@ paths:
                 Bibles and will return an array of the most likely Bibles for
                 your inputs.
             tags:
-              - Reference
+              - Bible References
             operationId: identify_bible
-            x-mojo-to: label#identify_bible
+            x-mojo-to: api-reference#identify_bible
             parameters:
               - name: books
                 in: query
@@ -273,9 +253,9 @@ paths:
                 (in order) that contains two elements: the name of the book and
                 an array of the maximum verse number per chapter.
             tags:
-              - Reference
+              - Bible References
             operationId: bible_structure
-            x-mojo-to: label#bible_structure
+            x-mojo-to: api-reference#bible_structure
             parameters:
               - $ref: '#/components/parameters/bible'
             responses:
