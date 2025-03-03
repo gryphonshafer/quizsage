@@ -24,7 +24,15 @@ has 'bible_acronyms' => sub ($self) {
     })->run->column;
 };
 
-sub aliases ($self) {
+has 'bibles' => sub ($self) {
+    return $self->dq('material')->sql(q{
+        SELECT acronym, label, name, year
+        FROM bible
+        ORDER BY LENGTH(acronym) DESC, acronym
+    })->run->all({});
+};
+
+sub aliases ( $self, $user_id = $self->user_id ) {
     return $self->dq->get(
         [
             [ [ qw( label l ) ] ],
@@ -37,7 +45,7 @@ sub aliases ($self) {
         ],
         [
             -bool             => 'l.public',
-            maybe 'u.user_id' => $self->user_id,
+            maybe 'u.user_id' => $user_id,
         ],
         { order_by => [
             { -desc => { -length => 'l.name' } },
@@ -536,6 +544,11 @@ The L<Bible::Reference> object used throughout, set with default-correct values.
 
 An auto-populated array of supported Bible translation acronyms.
 
+=head2 bibles
+
+An arrayref of hashrefs containing information about available Bible
+translations.
+
 =head1 OBJECT METHODS
 
 =head2 aliases
@@ -544,6 +557,10 @@ Returns an array of hashes of aliases based on whatever C<user_id> is set to
 at the time.
 
     my $aliases = $label->aliases;
+
+You can alternatively explicitly pass the user ID.
+
+    my $aliases = $label->aliases(42);
 
 =head2 parse
 

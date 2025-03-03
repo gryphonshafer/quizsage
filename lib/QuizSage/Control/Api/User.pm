@@ -44,7 +44,7 @@ QuizSage::Control::Api::User
 =head1 DESCRIPTION
 
 This class is a subclass of L<Mojolicious::Controller> and provides handlers
-for "Users" API calls.
+for "User Accounts" API calls.
 
 =head1 METHODS
 

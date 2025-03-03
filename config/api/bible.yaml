@@ -6,7 +6,84 @@ tags:
         All are derived from the
         [Bible::Reference](https://metacpan.org/pod/Bible::Reference) library.
 paths:
-    /reference/parse:
+    /bible/books:
+        get:
+            summary: Returns a list of books of the Bible, in order.
+            tags:
+              - Bible References
+            operationId: bible_books
+            x-mojo-to: api-bible#books
+            parameters:
+              - $ref: '#/components/parameters/bible'
+            responses:
+                '200':
+                    description: List of books of the Bible, in order.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: string
+                                description: List of books of the Bible, in order.
+                                example: >-
+                                    [ "Genesis", "Exodus", "Leviticus",
+                                    "Numbers", "Deuteronomy" ]
+    /bible/identify:
+        get:
+            summary: Identify which Bible based on book names.
+            description: |-
+                This endpoint is to help identify which Bible to use if you
+                aren't sure. It requires a list of strings as input, each string
+                representing a book from the Bible you're trying to identify.
+                This method will then try to match these book names across all
+                Bibles and will return an array of the most likely Bibles for
+                your inputs.
+            tags:
+              - Bible References
+            operationId: identify_bible
+            x-mojo-to: api-bible#identify
+            parameters:
+              - name: books
+                in: query
+                description: |-
+                    One or more text strings of Bible books or book acronyms to
+                    analyze.
+                required: true
+                style: form
+                explode: true
+                schema:
+                    type: array
+                    items:
+                        type: string
+                        minItems: 1
+                    example: >-
+                        [ "Gen", "Lev", "3 Mac" ]
+            responses:
+                '200':
+                    description: List of books of the Bible, in order.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        name:
+                                            type: string
+                                        count:
+                                            type: integer
+                                        books:
+                                            type: array
+                                            items:
+                                                type: string
+                                description: Matched book objects.
+                                example: >-
+                                    [ {
+                                        "name": "Orthodox",
+                                        "count": 3,
+                                        "books": [ "Genesis", "Leviticus", "3 Maccabees" ]
+                                    } ]
+    /bible/parse_reference:
         get:
             summary: Bible reference parse and canonicalize.
             description: |-
@@ -21,8 +98,8 @@ paths:
                 Bible.
             tags:
               - Bible References
-            operationId: reference_parse
-            x-mojo-to: api-reference#reference_parse
+            operationId: parse_reference
+            x-mojo-to: api-bible#parse_reference
             parameters:
               - name: text
                 in: query
@@ -111,7 +188,7 @@ paths:
                                             An array of all references found,
                                             each item being grouped by book.
                                         example: >-
-                                            [ 'Romans 12:13-14, 17', '1 Peter 3:16' ]
+                                            [ "Romans 12:13-14, 17", "1 Peter 3:16" ]
                                     as_chapters:
                                         type: array
                                         description: |-
@@ -119,7 +196,7 @@ paths:
                                             returns a list of canonicalized
                                             references by book and chapter.
                                         example: >-
-                                            [ 'Romans 12:13-14, 17', '1 Peter 3:16' ]
+                                            [ "Romans 12:13-14, 17", "1 Peter 3:16" ]
                                     as_runs:
                                         type: array
                                         description: |-
@@ -129,16 +206,16 @@ paths:
                                             is a set of verses in an unbroken
                                             list together.
                                         example: >-
-                                            [ 'Romans 12:13-14', 'Romans 12:17',
-                                            '1 Peter 3:16' ]
+                                            [ "Romans 12:13-14", "Romans 12:17",
+                                            "1 Peter 3:16" ]
                                     as_verses:
                                         type: array
                                         description: |-
                                             Same as `as_books` except that it
                                             returns a list of independent verses.
                                         example: >-
-                                            [ 'Romans 12:13', 'Romans 12:14',
-                                            'Romans 12:17', '1 Peter 3:16' ]
+                                            [ "Romans 12:13", "Romans 12:14",
+                                            "Romans 12:17", "1 Peter 3:16" ]
                                     as_hash:
                                         type: object
                                         description: |-
@@ -146,16 +223,16 @@ paths:
                                             `refs` except that the output is an
                                             object of a tree of data.
                                         example: >-
-                                            { 'Romans' => { 12 => [ 13, 14, 17 ] },
-                                            '1 Peter' => { 3 => [16] } }
+                                            { "Romans": { 12: [ 13, 14, 17 ] },
+                                            "1 Peter": { 3 => [16] } }
                                     as_array:
                                         type: array
                                         description: |-
                                             Same as `as_hash` except that the
                                             output is an array of a tree of data.
                                         example: >-
-                                            [[ 'Romans', [[ 12, [ 13, 14, 17 ]]]],
-                                            [ '1 Peter', [[ 3, [16] ]]]]
+                                            [[ "Romans", [[ 12, [ 13, 14, 17 ]]]],
+                                            [ "1 Peter", [[ 3, [16] ]]]]
                                     as_text:
                                         oneOf:
                                           - type: string
@@ -172,86 +249,7 @@ paths:
                                         example: >-
                                             Text with 1 Peter 3:16 and
                                             Romans 12:13-14, 17 references in it.
-    /reference/books:
-        get:
-            summary: Returns a list of books of the Bible, in order.
-            tags:
-              - Bible References
-            operationId: bible_books
-            x-mojo-to: api-reference#bible_books
-            parameters:
-              - $ref: '#/components/parameters/bible'
-            responses:
-                '200':
-                    description: List of books of the Bible, in order.
-                    content:
-                        application/json:
-                            schema:
-                                type: array
-                                items:
-                                    type: string
-                                description: List of books of the Bible, in order.
-                                example: >-
-                                    [ 'Genesis', 'Exodus', 'Leviticus',
-                                    'Numbers', 'Deuteronomy' ]
-    /reference/identify_bible:
-        get:
-            summary: Identify which Bible based on book names.
-            description: |-
-                This endpoint is to help identify which Bible to use if you
-                aren't sure. It requires a list of strings as input, each string
-                representing a book from the Bible you're trying to identify.
-                This method will then try to match these book names across all
-                Bibles and will return an array of the most likely Bibles for
-                your inputs.
-            tags:
-              - Bible References
-            operationId: identify_bible
-            x-mojo-to: api-reference#identify_bible
-            parameters:
-              - name: books
-                in: query
-                description: |-
-                    One or more text strings of Bible books or book acronyms to
-                    analyze.
-                required: true
-                style: form
-                explode: true
-                schema:
-                    type: array
-                    items:
-                        type: string
-                        minItems: 1
-                    example: >-
-                        [ 'Gen', 'Lev', '3 Mac' ]
-            responses:
-                '200':
-                    description: List of books of the Bible, in order.
-                    content:
-                        application/json:
-                            schema:
-                                type: array
-                                items:
-                                    type: object
-                                    properties:
-                                        name:
-                                            type: string
-                                        count:
-                                            type: integer
-                                        books:
-                                            type: array
-                                            items:
-                                                type: string
-                                description: Matched book objects.
-                                example: >-
-                                    [
-                                        {
-                                            name  => 'Orthodox',
-                                            count => 3,
-                                            books => [ 'Genesis', 'Leviticus', '3 Maccabees' ],
-                                        },
-                                    ]
-    /reference/bible_structure:
+    /bible/structure:
         get:
             summary: Returns a data structure of the Bible.
             description: |-
@@ -261,7 +259,7 @@ paths:
             tags:
               - Bible References
             operationId: bible_structure
-            x-mojo-to: api-reference#bible_structure
+            x-mojo-to: api-bible#structure
             parameters:
               - $ref: '#/components/parameters/bible'
             responses:
@@ -284,7 +282,7 @@ paths:
                                                 type: integer
                                             description: Maximum verse number per chapter.
                                 example: >-
-                                    [ 'Genesis', [ 31, 25, 24 ] ]
+                                    [ "Genesis", [ 31, 25, 24 ] ]
 components:
     parameters:
         bible:

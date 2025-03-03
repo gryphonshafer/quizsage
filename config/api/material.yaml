@@ -1,0 +1,39 @@
+---
+tags:
+  - name: Bible Materials
+    description: |-
+        Endpoints related to Bible materials.
+paths:
+    /material/bibles:
+        get:
+            summary: Returns a list of objects representing available Bible translations.
+            tags:
+              - Bible Materials
+            operationId: material_bibles
+            x-mojo-to: api-material#bibles
+            responses:
+                '200':
+                    description: List of objects representing available Bible translations.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        acronym:
+                                            type: string
+                                        label:
+                                            type: string
+                                        name:
+                                            type: string
+                                        year:
+                                            type: integer
+                                description: List of objects representing available Bible translations.
+                                example: >-
+                                    [ {
+                                        "acronym": "NIV84",
+                                        "label": "NIV1984",
+                                        "name": "New International Version",
+                                        "year": 1984
+                                    } ]

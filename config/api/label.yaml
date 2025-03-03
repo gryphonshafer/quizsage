@@ -1,0 +1,59 @@
+---
+tags:
+  - name: Material Labels
+    description: |-
+        Endpoints related to material labels and descriptions.
+paths:
+    /label/aliases:
+        get:
+            summary: Returns an array of objects of aliases for the current authenticated user.
+            tags:
+              - Material Labels
+            operationId: label_aliases
+            x-mojo-to: api-label#aliases
+            responses:
+                '200':
+                    description: Array of objects of aliases for the current authenticated user.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        name:
+                                            type: string
+                                        label:
+                                            type: string
+                                        author:
+                                            type: object
+                                            properties:
+                                                first_name:
+                                                    type: string
+                                                last_name:
+                                                    type: string
+                                                email:
+                                                    type: string
+                                        is_self_made:
+                                            type: boolean
+                                        public:
+                                            type: boolean
+                                        created:
+                                            type: string
+                                        last_modified:
+                                            type: string
+                                description: Array of objects of aliases for the current authenticated user.
+                                example: >-
+                                    [ {
+                                        "name": "string",
+                                        "label": "string",
+                                        "author": {
+                                            "first_name": "string",
+                                            "last_name": "string",
+                                            "email": "string",
+                                        },
+                                        "is_self_made": "boolean",
+                                        "public": "boolean",
+                                        "created": "string",
+                                        "last_modified": "string"
+                                    } ]
