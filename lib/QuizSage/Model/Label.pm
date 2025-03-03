@@ -56,8 +56,15 @@ sub aliases ( $self, $user_id = $self->user_id ) {
     )->run->all({});
 }
 
-sub parse ( $self, $input = $self->data->{label} ) {
-    $self->user_aliases( $self->aliases ) unless ( $self->user_aliases );
+sub parse ( $self, $input = $self->data->{label}, $user_id = undef ) {
+    my $user_aliases;
+    unless ($user_id) {
+        $self->user_aliases( $self->aliases ) unless ( $self->user_aliases );
+        $user_aliases = $self->user_aliases;
+    }
+    else {
+        $user_aliases = $self->aliases($user_id);
+    }
 
     my $data;
     $input //= '';
@@ -72,7 +79,7 @@ sub parse ( $self, $input = $self->data->{label} ) {
             $a->{public} <=> $b->{public} ||
             $b->{is_self_made} <=> $a->{is_self_made}
         }
-        $self->user_aliases->@*
+        $user_aliases->@*
     ) {
         ( my $re = '\b' . $alias->{name} . '\b' ) =~ s/\s+/\\s+/g;
 

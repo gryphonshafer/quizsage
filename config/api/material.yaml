@@ -29,7 +29,6 @@ paths:
                                             type: string
                                         year:
                                             type: integer
-                                description: List of objects representing available Bible translations.
                                 example: >-
                                     [ {
                                         "acronym": "NIV84",

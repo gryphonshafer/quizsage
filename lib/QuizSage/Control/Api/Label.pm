@@ -26,6 +26,14 @@ sub aliases ($self) {
     ] );
 }
 
+sub parse ($self) {
+    $self->openapi->valid_input or return;
+    $self->render( openapi => $label->parse(
+        $self->param('label'),
+        $self->session('user_id'),
+    ) );
+}
+
 1;
 
 =head1 NAME
@@ -42,6 +50,10 @@ for "Material Labels" API calls.
 =head2 aliases
 
 Returns an array of objects of aliases for the current authenticated user.
+
+=head2 parse
+
+Parses a label into a data structure.
 
 =head1 INHERITANCE
 

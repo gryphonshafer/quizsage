@@ -7,6 +7,10 @@ paths:
     /label/aliases:
         get:
             summary: Returns an array of objects of aliases for the current authenticated user.
+            description: |-
+                Read the documentation about
+                [Material Labels](/docs/material_labels.md)
+                to learn more about aliases.
             tags:
               - Material Labels
             operationId: label_aliases
@@ -42,7 +46,6 @@ paths:
                                             type: string
                                         last_modified:
                                             type: string
-                                description: Array of objects of aliases for the current authenticated user.
                                 example: >-
                                     [ {
                                         "name": "string",
@@ -57,3 +60,61 @@ paths:
                                         "created": "string",
                                         "last_modified": "string"
                                     } ]
+    /label/parse:
+        get:
+            summary: Parses a label into a data structure.
+            description: |-
+                Accepts a string label and returns a data structure. Any aliases
+                contained within the label will be parsed according to the
+                access/view of the current authenticated user.
+            tags:
+              - Material Labels
+            operationId: label_parse
+            x-mojo-to: api-label#parse
+            parameters:
+              - name: label
+                in: query
+                description: |-
+                    Label string to be parsed. Read the documentation about
+                    [Material Labels](/docs/material_labels.md)
+                    to learn more about label formatting.
+                example: Romans 12:1-5 (2) James 1:2-4 (1) NIV ESV*
+                schema:
+                    type: string
+                required: true
+            responses:
+                '200':
+                    description: Array of objects of aliases for the current authenticated user.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    bibles:
+                                        type: object
+                                    ranges:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                range:
+                                                    type: array
+                                                weight:
+                                                    type: integer
+                                example: >-
+                                    {
+                                        "bibles": {
+                                            "auxiliary": ["ESV"],
+                                            "primary": ["NIV"]
+                                        },
+                                        "ranges": [
+                                            {
+                                                "range": ["Romans 12:1-5"],
+                                                "weight": 2
+                                            },
+                                            {
+                                                "range": ["James 1:2-4"],
+                                                "weight": 1
+                                            }
+                                        ]
+                                    }
