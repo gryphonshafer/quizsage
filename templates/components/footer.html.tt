@@ -9,9 +9,12 @@
     <span class="separator">|</span>
     <a href="https://cbqz.org/rules">Rule Book</a>
 
+    <span class="separator">|</span>
+    <a href="[% c.url_for('/api') %]">API</a>
+
     <span class="hide_priority_5">
         <span class="separator">|</span>
-        <a href="https://github.com/gryphonshafer/quizsage">GitHub Project</a>
+        <a href="https://github.com/gryphonshafer/quizsage">GitHub</a>
     </span>
 
     <span class="hide_priority_1">

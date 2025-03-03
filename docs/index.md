@@ -2,6 +2,10 @@
 
 This is the documentation archive for QuizSage.
 
+## On-Site Resources
+
+- [QuizSage API](/api)
+
 ## Off-Site Resources
 
 In addition to the articles listed in the documentation menu
