@@ -31,7 +31,7 @@ paths:
                 description: |-
                     Email address used as to identify the application/API user
                     account.
-                example: g@cbqz.org
+                example: example@example.com
                 schema:
                     type: string
                 required: true
@@ -40,7 +40,7 @@ paths:
                 description: |-
                     Password associated with the email address for the
                     application/API user account.
-                example: '12345678'
+                example: password
                 schema:
                     type: string
                     format: password
@@ -52,8 +52,6 @@ paths:
                         Set-Cookie:
                             schema:
                                 type: string
-                                example: >-
-                                    quizsage_session=aBcDe12345; Path=/; HttpOnly; HostOnly; SameSite=Lax
                     $ref: '#/components/responses/login'
                 '401':
                     description: Login failure.
@@ -78,7 +76,7 @@ paths:
 components:
     responses:
         login:
-            description: Login response
+            description: Login response.
             content:
                 application/json:
                     schema:

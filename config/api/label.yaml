@@ -46,20 +46,85 @@ paths:
                                             type: string
                                         last_modified:
                                             type: string
+                                example:
+                                    name: string
+                                    label: string
+                                    author:
+                                        first_name: string
+                                        last_name: string
+                                        email: string
+                                    is_self_made: true
+                                    public: true
+                                    created: string
+                                    last_modified: string
+    /label/canonicalize:
+        get:
+            summary: Canonicalize a label.
+            description: |-
+                Canonicalize a label, maintaining valid and accessible aliases if any, and
+                unifying any intersections and/or filters.
+            tags:
+              - Material Labels
+            operationId: label_canonicalize
+            x-mojo-to: api-label#canonicalize
+            parameters:
+              - $ref: '#/components/parameters/label'
+            responses:
+                '200':
+                    description: String containing the canonicalized label.
+                    content:
+                        application/json:
+                            schema:
+                                type: string
                                 example: >-
-                                    [ {
-                                        "name": "string",
-                                        "label": "string",
-                                        "author": {
-                                            "first_name": "string",
-                                            "last_name": "string",
-                                            "email": "string",
-                                        },
-                                        "is_self_made": "boolean",
-                                        "public": "boolean",
-                                        "created": "string",
-                                        "last_modified": "string"
-                                    } ]
+                                    "Romans 12:1-5 (2) James 1:2-4 (1) ESV* NIV"
+    /label/descriptionize:
+        get:
+            summary: Convert a label into a description.
+            description: |-
+                Convert a label into a description, converting all valid and accessible aliases
+                to their associated label values, and processing any intersections and/or
+                filters.
+            tags:
+              - Material Labels
+            operationId: label_descriptionize
+            x-mojo-to: api-label#descriptionize
+            parameters:
+              - $ref: '#/components/parameters/label'
+            responses:
+                '200':
+                    description: String containing the descriptionized label.
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: >-
+                                    "Romans 12:1-5 (2) James 1:2-4 (1) ESV* NIV"
+    /label/format:
+        post:
+            summary: Return a canonically formatted string from parsed data.
+            description: |-
+                Return a canonically formatted string given the input of a data structure you
+                might get from calling `parse` on a string coming out of `descriptionize`.
+            tags:
+              - Material Labels
+            operationId: label_format
+            x-mojo-to: api-label#format
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/label_data'
+            responses:
+                '200':
+                    description: String containing the formatted label.
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: >-
+                                    "Romans 12:1-5 (2) James 1:2-4 (1) ESV* NIV"
     /label/parse:
         get:
             summary: Parses a label into a data structure.
@@ -72,49 +137,53 @@ paths:
             operationId: label_parse
             x-mojo-to: api-label#parse
             parameters:
-              - name: label
-                in: query
-                description: |-
-                    Label string to be parsed. Read the documentation about
-                    [Material Labels](/docs/material_labels.md)
-                    to learn more about label formatting.
-                example: Romans 12:1-5 (2) James 1:2-4 (1) NIV ESV*
-                schema:
-                    type: string
-                required: true
+              - $ref: '#/components/parameters/label'
             responses:
                 '200':
                     description: Array of objects of aliases for the current authenticated user.
                     content:
                         application/json:
                             schema:
-                                type: object
-                                properties:
-                                    bibles:
-                                        type: object
-                                    ranges:
-                                        type: array
-                                        items:
-                                            type: object
-                                            properties:
-                                                range:
-                                                    type: array
-                                                weight:
-                                                    type: integer
-                                example: >-
-                                    {
-                                        "bibles": {
-                                            "auxiliary": ["ESV"],
-                                            "primary": ["NIV"]
-                                        },
-                                        "ranges": [
-                                            {
-                                                "range": ["Romans 12:1-5"],
-                                                "weight": 2
-                                            },
-                                            {
-                                                "range": ["James 1:2-4"],
-                                                "weight": 1
-                                            }
-                                        ]
-                                    }
+                                $ref: '#/components/schemas/label_data'
+components:
+    parameters:
+        label:
+            name: label
+            in: query
+            description: |-
+                Label string to be parsed. Read the documentation about
+                [Material Labels](/docs/material_labels.md)
+                to learn more about label formatting.
+            example: Romans 12:1-5 (2) James 1:2-4 (1) NIV ESV*
+            schema:
+                type: string
+            required: true
+    schemas:
+        label_data:
+            type: object
+            properties:
+                bibles:
+                    type: object
+                    additionalProperties: true
+                ranges:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            range:
+                                type: array
+                            weight:
+                                type: integer
+            example:
+                bibles:
+                    auxiliary:
+                        - ESV
+                    primary:
+                        - NIV
+                ranges:
+                  - range:
+                        - Romans 12:1-5
+                    weight: 2
+                  - range:
+                        - James 1:2-4
+                    weight: 1

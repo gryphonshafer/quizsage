@@ -219,12 +219,12 @@ sub parse ( $self, $input = $self->data->{label}, $user_id = undef ) {
     return $data;
 }
 
-sub canonicalize( $self, $input = $self->data->{label} ) {
-    return $self->format( $self->parse($input) );
+sub canonicalize( $self, $input = $self->data->{label}, $user_id = undef ) {
+    return $self->format( $self->parse( $input, $user_id ) );
 }
 
-sub descriptionize( $self, $input = $self->data->{label} ) {
-    my $full_data = $self->parse($input);
+sub descriptionize( $self, $input = $self->data->{label}, $user_id = undef ) {
+    my $full_data = $self->parse( $input, $user_id );
 
     # parse data by alias-node, replacing aliases along the way
     try {
@@ -577,6 +577,10 @@ the C<label> data label if the object is model-data-loaded.
     my $data    = $label->parse('Romans 12:1-5 (2) James 1:2-4 (1) NIV ESV*');
     my $data_42 = $label->load(42)->parse;
 
+You can alternatively explicitly pass the user ID.
+
+    my $data = $label->parse( 'Romans 12:1-5 (2) James 1:2-4 (1) NIV ESV*', 42 );
+
 =head2 canonicalize
 
 Canonicalize a label, maintaining valid and accessible aliases if any, and
@@ -585,6 +589,10 @@ uses the C<label> data label if the object is model-data-loaded.
 
     my $label_text = $label->canonicalize('Romans 12:1-5; James 1:2-4');
     my $label_42   = $label->load(42)->canonicalize;
+
+You can alternatively explicitly pass the user ID.
+
+    my $label_text = $label->canonicalize( 'Romans 12:1-5; James 1:2-4', 42 );
 
 =head2 descriptionize
 
@@ -596,6 +604,10 @@ L<QuizSage::Util::Material> calls to generated material JSON.
 
     my $description    = $label->descriptionize('Romans 12:1-5; James 1:2-4');
     my $description_42 = $label->load(42)->descriptionize;
+
+You can alternatively explicitly pass the user ID.
+
+    my $description = $label->descriptionize( 'Romans 12:1-5; James 1:2-4', 42 );
 
 =head2 format
 

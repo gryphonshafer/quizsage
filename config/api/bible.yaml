@@ -24,9 +24,12 @@ paths:
                                 type: array
                                 items:
                                     type: string
-                                example: >-
-                                    [ "Genesis", "Exodus", "Leviticus",
-                                    "Numbers", "Deuteronomy" ]
+                                example:
+                                    - Genesis
+                                    - Exodus
+                                    - Leviticus
+                                    - Numbers
+                                    - Deuteronomy
     /bible/identify:
         get:
             summary: Identify which Bible based on book names.
@@ -55,8 +58,10 @@ paths:
                     items:
                         type: string
                         minItems: 1
-                    example: >-
-                        [ "Gen", "Lev", "3 Mac" ]
+                    example:
+                        - Gen
+                        - Lev
+                        - 3 Mac
             responses:
                 '200':
                     description: |-
@@ -80,12 +85,10 @@ paths:
                                             type: array
                                             items:
                                                 type: string
-                                example: >-
-                                    [ {
-                                        "name": "Orthodox",
-                                        "count": 3,
-                                        "books": [ "Genesis", "Leviticus", "3 Maccabees" ]
-                                    } ]
+                                example:
+                                  - name: Orthodox
+                                    count: 3,
+                                    books: [ 'Genesis', 'Leviticus', '3 Maccabees' ]
     /bible/reference/parse:
         get:
             summary: Bible reference parse and canonicalize.
@@ -175,58 +178,27 @@ paths:
                     description: |-
                         Various forms of the parsed and canonicalized data.
 
-                        - `refs`
-
+                        - `refs`:
                           All references found in the input text returned as a single, canonical string.
-
-                              Romans 12:13-14, 17; 1 Peter 3:16
-
-                        - `as_books`
-
+                        - `as_books`:
                           An array of all references found, each item being grouped by book.
-
-                              [ "Romans 12:13-14, 17", "1 Peter 3:16" ]
-
-                        - `as_chapters`
-
+                        - `as_chapters`:
                           Same as `as_books` except that it returns a list of canonicalized references by book
                           and chapter.
-
-                              [ "Romans 12:13-14, 17", "1 Peter 3:16" ]
-
-                        - `as_runs`
-
+                        - `as_runs`:
                           Same as `as_chapters` except that it returns a list of canonicalized references by
                           verse run. A "verse run" is a set of verses in an unbroken list together.
-
-                              [ "Romans 12:13-14", "Romans 12:17", "1 Peter 3:16" ]
-
-                        - `as_verses`
-
+                        - `as_verses`:
                           Same as `as_books` except that it returns a list of independent verses.
-
-                              [ "Romans 12:13", "Romans 12:14", "Romans 12:17", "1 Peter 3:16" ]
-
-                        - `as_hash`
-
+                        - `as_hash`:
                           Returns the references output like `refs` except that the output is an object of a
                           tree of data.
-
-                              { "Romans": { 12: [ 13, 14, 17 ] }, "1 Peter": { 3 => [16] } }
-
-                        - `as_array`
-
+                        - `as_array`:
                           Same as `as_hash` except that the output is an array of a tree of data.
-
-                              [[ "Romans", [[ 12, [ 13, 14, 17 ]]]], [ "1 Peter", [[ 3, [16] ]]]]
-
-                        - `as_text`
-
+                        - `as_text`:
                           A text string or, if there were multiple calls to in, an array or arrayref of text
                           strings (depending on context), of the input string or strings with the references
                           found therein canonicalized.
-
-                              Text with 1 Peter 3:16 and Romans 12:13-14, 17 references in it.
                     content:
                         application/json:
                             schema:
@@ -252,8 +224,32 @@ paths:
                                           - type: array
                                             items:
                                                 type: string
-                                example: >-
-                                    [ "Genesis", [ 31, 25, 24 ] ]
+                                example:
+                                    refs: Romans 12:13-14, 17; 1 Peter 3:16
+                                    as_books:
+                                        - Romans 12:13-14, 17
+                                        - 1 Peter 3:16
+                                    as_chapters:
+                                        - Romans 12:13-14, 17
+                                        - 1 Peter 3:16
+                                    as_runs:
+                                        - Romans 12:13-14
+                                        - Romans 12:17
+                                        - 1 Peter 3:16
+                                    as_verses:
+                                        - Romans 12:13
+                                        - Romans 12:14
+                                        - Romans 12:17
+                                        - 1 Peter 3:16
+                                    as_hash:
+                                        Romans:
+                                            12: [ 13, 14, 17 ]
+                                        1 Peter:
+                                            3: [16]
+                                    as_array:
+                                        - [ 'Romans', [[ 12, [ 13, 14, 17 ] ]]]
+                                        - [ '1 Peter', [[ 3, [16] ]]]
+                                    as_text: Text with 1 Peter 3:16 and Romans 12:13-14, 17 references in it.
     /bible/structure:
         get:
             summary: Returns a data structure of the Bible.
@@ -291,8 +287,8 @@ paths:
                                           - type: array
                                             items:
                                                 type: integer
-                                example: >-
-                                    [ [ "Genesis", [ 31, 25, 24 ] ] ]
+                                example:
+                                    - [ 'Genesis', [ 31, 25, 24 ] ]
 components:
     parameters:
         bible:

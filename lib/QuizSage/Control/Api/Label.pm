@@ -34,6 +34,27 @@ sub parse ($self) {
     ) );
 }
 
+sub canonicalize ($self) {
+    $self->openapi->valid_input or return;
+    $self->render( openapi => $label->canonicalize(
+        $self->param('label'),
+        $self->session('user_id'),
+    ) );
+}
+
+sub descriptionize ($self) {
+    $self->openapi->valid_input or return;
+    $self->render( openapi => $label->descriptionize(
+        $self->param('label'),
+        $self->session('user_id'),
+    ) );
+}
+
+sub format ($self) {
+    $self->openapi->valid_input or return;
+    $self->render( openapi => $label->format( $self->req->json ) );
+}
+
 1;
 
 =head1 NAME
@@ -54,6 +75,22 @@ Returns an array of objects of aliases for the current authenticated user.
 =head2 parse
 
 Parses a label into a data structure.
+
+=head2 canonicalize
+
+Canonicalize a label, maintaining valid and accessible aliases if any, and
+unifying any intersections and/or filters.
+
+=head2 descriptionize
+
+Convert a label into a description, converting all valid and accessible aliases
+to their associated label values, and processing any intersections and/or
+filters.
+
+=head2 format
+
+Return a canonically formatted string given the input of a data structure you
+might get from calling C<parse> on a string coming out of C<descriptionize>.
 
 =head1 INHERITANCE
 

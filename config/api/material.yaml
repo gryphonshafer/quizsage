@@ -29,10 +29,8 @@ paths:
                                             type: string
                                         year:
                                             type: integer
-                                example: >-
-                                    [ {
-                                        "acronym": "NIV84",
-                                        "label": "NIV1984",
-                                        "name": "New International Version",
-                                        "year": 1984
-                                    } ]
+                                example:
+                                  - acronym: NIV84
+                                    label: NIV1984
+                                    name: New International Version
+                                    year: 1984
