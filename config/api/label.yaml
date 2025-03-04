@@ -12,7 +12,7 @@ paths:
                 [Material Labels](/docs/material_labels.md)
                 to learn more about aliases.
             tags:
-              - Material Labels
+                - Material Labels
             operationId: label_aliases
             x-mojo-to: api-label#aliases
             responses:
@@ -64,11 +64,11 @@ paths:
                 Canonicalize a label, maintaining valid and accessible aliases if any, and
                 unifying any intersections and/or filters.
             tags:
-              - Material Labels
+                - Material Labels
             operationId: label_canonicalize
             x-mojo-to: api-label#canonicalize
             parameters:
-              - $ref: '#/components/parameters/label'
+                - $ref: '#/components/parameters/label'
             responses:
                 '200':
                     description: String containing the canonicalized label.
@@ -86,11 +86,11 @@ paths:
                 to their associated label values, and processing any intersections and/or
                 filters.
             tags:
-              - Material Labels
+                - Material Labels
             operationId: label_descriptionize
             x-mojo-to: api-label#descriptionize
             parameters:
-              - $ref: '#/components/parameters/label'
+                - $ref: '#/components/parameters/label'
             responses:
                 '200':
                     description: String containing the descriptionized label.
@@ -107,7 +107,7 @@ paths:
                 Return a canonically formatted string given the input of a data structure you
                 might get from calling `parse` on a string coming out of `descriptionize`.
             tags:
-              - Material Labels
+                - Material Labels
             operationId: label_format
             x-mojo-to: api-label#format
             requestBody:
@@ -133,11 +133,11 @@ paths:
                 contained within the label will be parsed according to the
                 access/view of the current authenticated user.
             tags:
-              - Material Labels
+                - Material Labels
             operationId: label_parse
             x-mojo-to: api-label#parse
             parameters:
-              - $ref: '#/components/parameters/label'
+                - $ref: '#/components/parameters/label'
             responses:
                 '200':
                     description: Array of objects of aliases for the current authenticated user.

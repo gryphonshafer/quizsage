@@ -10,11 +10,11 @@ paths:
         get:
             summary: Returns a list of books of the Bible, in order.
             tags:
-              - Bible References
+                - Bible References
             operationId: bible_books
             x-mojo-to: api-bible#books
             parameters:
-              - $ref: '#/components/parameters/bible'
+                - $ref: '#/components/parameters/bible_type'
             responses:
                 '200':
                     description: List of books of the Bible, in order.
@@ -41,7 +41,7 @@ paths:
                 Bibles and will return an array of the most likely Bibles for
                 your inputs.
             tags:
-              - Bible References
+                - Bible References
             operationId: identify_bible
             x-mojo-to: api-bible#identify
             parameters:
@@ -103,7 +103,7 @@ paths:
                 input setting also the Orthodox Bible and the current Catholic
                 Bible.
             tags:
-              - Bible References
+                - Bible References
             operationId: parse_reference
             x-mojo-to: api-bible#parse_reference
             parameters:
@@ -115,7 +115,7 @@ paths:
                 schema:
                     type: string
                 required: true
-              - $ref: '#/components/parameters/bible'
+              - $ref: '#/components/parameters/bible_type'
               - name: acronyms
                 in: query
                 description: |-
@@ -258,11 +258,11 @@ paths:
                 (in order) that contains two elements: the name of the book and
                 an array of the maximum verse number per chapter.
             tags:
-              - Bible References
+                - Bible References
             operationId: bible_structure
             x-mojo-to: api-bible#structure
             parameters:
-              - $ref: '#/components/parameters/bible'
+                - $ref: '#/components/parameters/bible_type'
             responses:
                 '200':
                     description: |-
@@ -291,7 +291,7 @@ paths:
                                     - [ 'Genesis', [ 31, 25, 24 ] ]
 components:
     parameters:
-        bible:
+        bible_type:
             name: bible
             in: query
             description: |-

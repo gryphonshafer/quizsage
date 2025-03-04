@@ -21,7 +21,7 @@ paths:
                 Login via the web application or from the API results in the
                 same cookie change.
             tags:
-              - User Accounts
+                - User Accounts
             operationId: user_login
             x-mojo-to: api-user#login
             security: []
@@ -66,7 +66,7 @@ paths:
                 Logout via the web application or from the API results in the
                 same cookie change.
             tags:
-              - User Accounts
+                - User Accounts
             operationId: user_logout
             x-mojo-to: api-user#logout
             responses:
