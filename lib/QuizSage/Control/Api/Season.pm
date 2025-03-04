@@ -10,8 +10,12 @@ sub list ($self) {
 
 sub stats ($self) {
     $self->openapi->valid_input or return;
-    my $stats = QuizSage::Model::Season->new->load( $self->param('season_id') )->data->{stats};
-    $self->render( openapi => (%$stats) ? $stats : undef );
+    my $stats;
+    try {
+        $stats = QuizSage::Model::Season->new->load( $self->param('season_id') )->data->{stats};
+    }
+    catch ($e) {}
+    $self->render( openapi => ( $stats and %$stats ) ? $stats : undef );
 }
 
 1;
@@ -23,7 +27,7 @@ QuizSage::Control::Api::Season
 =head1 DESCRIPTION
 
 This class is a subclass of L<Mojolicious::Controller> and provides handlers
-for "User Accounts" API calls.
+for "Quiz Seasons" API calls.
 
 =head1 METHODS
 

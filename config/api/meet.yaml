@@ -1,0 +1,256 @@
+---
+tags:
+  - name: Quiz Meets
+    description: |-
+        Endpoints related to Quizzing meets, typically annual.
+paths:
+    /meet/{meet_id}/state:
+        get:
+            summary: Meet state.
+            description: |-
+                This endpoint will return a given meet's state data.
+            tags:
+                - Quiz Meets
+            operationId: meet_state
+            x-mojo-to: api-meet#state
+            parameters:
+              - name: meet_id
+                in: path
+                required: true
+                schema:
+                    type: integer
+                    example: 1
+                    default: 1
+            responses:
+                '200':
+                    description: Current state data of a meet.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                nullable: true
+                                properties:
+                                    brackets:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                name:
+                                                    type: string
+                                                weight:
+                                                    type: number
+                                                material:
+                                                    type: object
+                                                    properties:
+                                                        id:
+                                                            type: string
+                                                        label:
+                                                            type: string
+                                                        description:
+                                                            type: string
+                                                sets:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                        properties:
+                                                            rooms:
+                                                                type: array
+                                                                items:
+                                                                    type: object
+                                                                    properties:
+                                                                        id:
+                                                                            type: integer
+                                                                        name:
+                                                                            type: string
+                                                                        room:
+                                                                            type: integer
+                                                                        roster:
+                                                                            type: array
+                                                                            items:
+                                                                                type: object
+                                                                                properties:
+                                                                                    id:
+                                                                                        type: string
+                                                                                    name:
+                                                                                        type: string
+                                                                                    quizzers:
+                                                                                        type: array
+                                                                        schedule:
+                                                                            type: object
+                                                                            properties:
+                                                                                start:
+                                                                                    type: string
+                                                                                stop:
+                                                                                    type: string
+                                                                                duration:
+                                                                                    type: integer
+                                                                        distribution:
+                                                                            type: array
+                                                                            items:
+                                                                                type: object
+                                                                                properties:
+                                                                                    id:
+                                                                                        type: integer
+                                                                                    bible:
+                                                                                        type: string
+                                                                                    type:
+                                                                                        type: string
+                                    events:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                name:
+                                                    type: string
+                                                start:
+                                                    type: string
+                                                stop:
+                                                    type: string
+                                                duration:
+                                                    type: integer
+                                    roster:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                name:
+                                                    type: string
+                                                quizzers:
+                                                    type: array
+                                example:
+                                    brackets:
+                                      - name: Top 9
+                                        weight: 1
+                                        material:
+                                            id: a1b2c3d4e5f67890
+                                            label: Luke 13-17 ESV NIV
+                                            description: Luke 13-17 ESV NIV
+                                        sets:
+                                          - rooms:
+                                              - id: 1138
+                                                name: A
+                                                room: 1
+                                                roster:
+                                                  - id: _1
+                                                    name: Team Name
+                                                    quizzers: []
+                                                schedule:
+                                                    start: 2025-02-15 14:00-08:00
+                                                    stop: 2025-02-15 14:30-08:00
+                                                    duration: 30
+                                                distribution:
+                                                  - id: 1
+                                                    bible: NIV
+                                                    type: P
+                                    events:
+                                      - name: Awards and Closing
+                                        start: 2025-02-15 14:00-08:00
+                                        stop: 2025-02-15 14:30-08:00
+                                        duration: 30
+                                    roster:
+                                      - name: Team Name
+                                        quizzers: []
+    /meet/{meet_id}/stats:
+        get:
+            summary: Meet statistics.
+            description: |-
+                This endpoint will return a given meet's statistics data.
+            tags:
+                - Quiz Meets
+            operationId: meet_stats
+            x-mojo-to: api-meet#stats
+            parameters:
+              - name: meet_id
+                in: path
+                required: true
+                schema:
+                    type: integer
+                    example: 1
+                    default: 1
+            responses:
+                '200':
+                    description: Current statistics data of a meet.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                nullable: true
+                                additionalProperties: true
+                                properties:
+                                    meta:
+                                        type: object
+                                        properties:
+                                            quizzers:
+                                                type: object
+                                            teams:
+                                                type: object
+                                    orgs:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                name:
+                                                    type: string
+                                                teams:
+                                                    type: integer
+                                                quizzes:
+                                                    type: integer
+                                                points_sum:
+                                                    type: integer
+                                                points_avg:
+                                                    type: number
+                                    quizzers:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                name:
+                                                    type: string
+                                                team_name:
+                                                    type: string
+                                                quizzes:
+                                                    type: array
+                                                tags:
+                                                    type: array
+                                                points_sum:
+                                                    type: integer
+                                                points_avg:
+                                                    type: number
+                                    tags:
+                                        type: array
+                                    teams:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                name:
+                                                    type: string
+                                                quizzes:
+                                                    type: array
+                                                points_sum:
+                                                    type: integer
+                                                points_avg:
+                                                    type: number
+                                example:
+                                    meta:
+                                        quizzers: {}
+                                        teams: {}
+                                    orgs:
+                                      - name: Organization Name
+                                        teams: 2
+                                        quizzes: 18
+                                        points_sum: 226
+                                        points_avg: 12.56
+                                    quizzers:
+                                      - name: Quizzer Name
+                                        team_name: Team Name
+                                        quizzes: []
+                                        tags: []
+                                        points_sum: 158
+                                        points_avg: 19.75
+                                    tags: []
+                                    teams:
+                                      - name: Team Name
+                                        quizzes: []
+                                        points_sum: 210
+                                        points_avg: 26.25
