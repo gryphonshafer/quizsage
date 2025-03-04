@@ -5,7 +5,7 @@ use Mojo::File 'path';
 use Mojo::JSON 'decode_json';
 use QuizSage::Model::Label;
 use QuizSage::Util::Material 'material_json';
-use QuizSage::Util::Reference 'reference_data';
+use QuizSage::Util::Reference qw( reference_data reference_html );
 
 my $label = QuizSage::Model::Label->new;
 
@@ -57,6 +57,15 @@ sub data ($self) {
     $self->render( openapi => _get_reference_data($self) );
 }
 
+sub html ($self) {
+    $self->openapi->valid_input or return;
+    $self->stash( skip_packer => 1 );
+    $self->render( openapi => reference_html(
+        $self,
+        _get_reference_data($self),
+    ) );
+}
+
 1;
 
 =head1 NAME
@@ -84,6 +93,12 @@ L<QuizSage::Util::Material>.
 
 This endpoint wraps the C<reference_data> function from
 L<QuizSage::Util::Reference>.
+
+=head2 html
+
+This endpoint wraps the C<reference_data> function from
+L<QuizSage::Util::Reference> but renders the data returned from it into HTML,
+then returns that HTML.
 
 =head1 INHERITANCE
 

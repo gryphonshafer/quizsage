@@ -211,6 +211,40 @@ paths:
                                           - header: NIV
                                             rows:
                                                 - Therefore, I urge you, brothers...
+    /material/reference/html:
+        get:
+            summary: Return material reference HTML for a material label.
+            tags:
+                - Bible Materials
+            operationId: material_reference_html
+            x-mojo-to: api-material#html
+            parameters:
+                - $ref: '#/components/parameters/label'
+                - $ref: '#/components/parameters/bible_acronym'
+                - $ref: '#/components/parameters/cover'
+                - $ref: '#/components/parameters/reference'
+                - $ref: '#/components/parameters/whole'
+                - $ref: '#/components/parameters/chapter'
+                - $ref: '#/components/parameters/phrases'
+                - $ref: '#/components/parameters/page_width'
+                - $ref: '#/components/parameters/page_height'
+                - $ref: '#/components/parameters/page_right_margin_left'
+                - $ref: '#/components/parameters/page_right_margin_right'
+                - $ref: '#/components/parameters/page_right_margin_top'
+                - $ref: '#/components/parameters/page_right_margin_bottom'
+                - $ref: '#/components/parameters/page_left_margin_left'
+                - $ref: '#/components/parameters/page_left_margin_right'
+                - $ref: '#/components/parameters/page_left_margin_top'
+                - $ref: '#/components/parameters/page_left_margin_bottom'
+            responses:
+                '200':
+                    description: Material reference HTML.
+                    content:
+                        text/html:
+                            schema:
+                                type: string
+                                example: >-
+                                    "<!DOCTYPE html><html>...</html>"
 components:
     parameters:
         bible_acronym:
