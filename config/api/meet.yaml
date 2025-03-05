@@ -4,6 +4,33 @@ tags:
     description: |-
         Endpoints related to Quizzing meets, typically annual.
 paths:
+    /meet/{meet_id}/quizzes:
+        get:
+            summary: Quizzes of a given meet.
+            description: |-
+                This endpoint will return quizzes of a given meet.
+            tags:
+                - Quiz Meets
+            operationId: meet_quizzes
+            x-mojo-to: api-meet#quizzes
+            parameters:
+              - name: meet_id
+                in: path
+                required: true
+                schema:
+                    type: integer
+                    example: 1
+                    default: 1
+            responses:
+                '200':
+                    description: Quizzes of a given meet.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                nullable: true
+                                items:
+                                    $ref: '#/components/schemas/quiz'
     /meet/{meet_id}/state:
         get:
             summary: Meet state.

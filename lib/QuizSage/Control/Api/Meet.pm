@@ -2,6 +2,13 @@ package QuizSage::Control::Api::Meet;
 
 use exact 'Mojolicious::Controller';
 use QuizSage::Model::Meet;
+use QuizSage::Model::Quiz;
+
+sub quizzes ($self) {
+    $self->openapi->valid_input or return;
+    my $every_data = QuizSage::Model::Quiz->new->every_data({ meet_id => $self->param('meet_id') });
+    $self->render( openapi => ( $every_data and @$every_data ) ? $every_data : undef );
+}
 
 sub state ($self) {
     $self->openapi->valid_input or return;
@@ -35,6 +42,11 @@ This class is a subclass of L<Mojolicious::Controller> and provides handlers
 for "Quiz Meets" API calls.
 
 =head1 METHODS
+
+=head2 quizzes
+
+Given a meet ID, this endpoint will return all created quiz records (quizzes
+that have at least been started).
 
 =head2 state
 

@@ -1,0 +1,63 @@
+---
+tags:
+  - name: Quizzes
+    description: |-
+        Endpoints related to individual quizzes.
+paths:
+    /quiz/{quiz_id}:
+        get:
+            summary: Quiz data.
+            description: |-
+                This endpoint will return a data structure of a given quiz that
+                has at least been started.
+            tags:
+                - Quizzes
+            operationId: quiz_data
+            x-mojo-to: api-quiz#data
+            parameters:
+              - name: quiz_id
+                in: path
+                required: true
+                schema:
+                    type: integer
+                    example: 1
+                    default: 1
+            responses:
+                '200':
+                    description: Quiz object.
+                    content:
+                        application/json:
+                            schema:
+                                nullable: true
+                                $ref: '#/components/schemas/quiz'
+components:
+    schemas:
+        quiz:
+            type: object
+            properties:
+                quiz_id:
+                    type: integer
+                meet_id:
+                    type: integer
+                bracket:
+                    type: string
+                name:
+                    type: string
+                settings:
+                    type: object
+                state:
+                    type: object
+                    nullable: true
+                last_modified:
+                    type: string
+                created:
+                    type: string
+            example:
+                quiz_id: 1
+                meet_id: 1
+                bracket: Top 9
+                name: A
+                settings: {}
+                state: {}
+                last_modified: 2025-02-15 11:13:46.433
+                created: 2025-02-15 11:13:46.433

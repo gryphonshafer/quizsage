@@ -13,7 +13,8 @@ info:
         and/or repeated requests. **API abuse will be reported and associated
         user accounts may be deactivated.**
 
-        Limited to no technical support available. Use at your own risk.
+        Limited technical support available. Use at your own risk. Please report
+        all defects and feature requests.
 
         Note that nearly all endpoints require authentication. Use the
         `/user/login` endpoint to login (or login via the web application, then
