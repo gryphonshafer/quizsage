@@ -4,6 +4,113 @@ tags:
     description: |-
         Endpoints related to individual quizzes.
 paths:
+    /quiz/distribution:
+        get:
+            summary: Generate a distribution for a quiz.
+            description: |-
+                This endpoint will return an array of a quiz distribution.
+            tags:
+                - Quizzes
+            operationId: quiz_distribution
+            x-mojo-to: api-quiz#distribution
+            parameters:
+              - name: bibles
+                in: query
+                description: |-
+                    One or more Bible acronyms.
+                required: true
+                style: form
+                explode: true
+                schema:
+                    type: array
+                    items:
+                        type: string
+                        minItems: 1
+                    example:
+                        - NIV
+                        - ESV
+                        - BSB
+              - name: teams_count
+                in: query
+                required: true
+                schema:
+                    type: integer
+                    example: 3
+                    default: 3
+            responses:
+                '200':
+                    description: Array of verse objects.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        id:
+                                            type: integer
+                                        bible:
+                                            type: string
+                                        type:
+                                            type: string
+                                example:
+                                  - id: 1
+                                    bible: BSB
+                                    type: P
+                                  - id: 2
+                                    bible: ESV
+                                    type: C
+                                  - id: 3
+                                    bible: NIV
+                                    type: F
+    /quiz/verses:
+        get:
+            summary: Generate verses for a quiz based on a label.
+            description: |-
+                This endpoint will use a material label and return an array of
+                verse objects that could be used for a quiz.
+            tags:
+                - Quizzes
+            operationId: quiz_verses
+            x-mojo-to: api-quiz#verses
+            parameters:
+              - $ref: '#/components/parameters/label'
+              - name: count
+                in: query
+                required: true
+                schema:
+                    type: integer
+                    example: 12
+                    default: 12
+            responses:
+                '200':
+                    description: Array of verse objects.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        bible:
+                                            type: string
+                                        book:
+                                            type: string
+                                        chapter:
+                                            type: integer
+                                        verse:
+                                            type: integer
+                                        reference:
+                                            type: string
+                                        text:
+                                            type: string
+                                example:
+                                  - bible: NIV
+                                    book: Romans
+                                    chapter: 12
+                                    verse: 1
+                                    reference: Romans 12:1
+                                    text: Therefore, I urge you, brothers...
     /quiz/{quiz_id}:
         get:
             summary: Quiz data.

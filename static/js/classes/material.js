@@ -211,7 +211,7 @@ export default class Material {
     // given a verse reference, return the synonyms at or above a given verity
     synonyms_of_verse( book, chapter, verse, bible = undefined ) {
         bible ||= this.current_bible();
-            return [ ...new Set(
+        return [ ...new Set(
             this.verses_by_bible[bible].find( this_verse =>
                 this_verse.book    == book    &&
                 this_verse.chapter == chapter &&
