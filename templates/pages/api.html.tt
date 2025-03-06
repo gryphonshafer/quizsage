@@ -1,0 +1,135 @@
+[% page.title = 'API' %]
+
+<iframe src="[% c.url_for('/swagger_ui') %]" scrolling="no" style="
+    margin: -1rem -1rem -1.4rem -1rem;
+    width : calc( 100vw - 0.5rem );
+"></iframe>
+
+[% iframe_resize = BLOCK %]
+    let iframe_document_setup = false;
+
+    function iframe_resize() {
+        const iframe = window.document.querySelector('iframe');
+        const iframe_document = iframe.contentDocument || iframe.contentWindow.document;
+
+        if ( ! iframe_document_setup ) {
+            const style = iframe_document.createElement('style');
+
+            style.textContent = `
+                @font-face {
+                    font-family : 'Inter Tight';
+                    font-style  : normal;
+                    font-weight : 700;
+                    src         : local(''),
+                        url('externals/google_fonts/fonts/inter-tight/inter-tight-v7-latin-ext-700.ttf') format('truetype'),
+                        url('externals/google_fonts/fonts/inter-tight/inter-tight-v7-latin-ext-700.ttf') format('truetype'),
+                        url('externals/google_fonts/fonts/inter-tight/inter-tight-v7-latin-ext-700.woff') format('woff'),
+                        url('externals/google_fonts/fonts/inter-tight/inter-tight-v7-latin-ext-700.woff2') format('woff2');
+                }
+
+                @font-face {
+                    font-family : 'Inter Tight';
+                    font-style  : italic;
+                    font-weight : 700;
+                    src         : local(''),
+                        url('externals/google_fonts/fonts/inter-tight/inter-tight-v7-latin_latin-ext-700italic.ttf') format('truetype'),
+                        url('externals/google_fonts/fonts/inter-tight/inter-tight-v7-latin_latin-ext-700italic.woff') format('woff'),
+                        url('externals/google_fonts/fonts/inter-tight/inter-tight-v7-latin_latin-ext-700italic.woff2') format('woff2');
+                }
+
+                @font-face {
+                    font-family : 'Inter Tight';
+                    font-style  : italic;
+                    font-weight : 400;
+                    src         : local(''),
+                        url('externals/google_fonts/fonts/inter-tight/inter-tight-v7-latin_latin-ext-italic.ttf') format('truetype'),
+                        url('externals/google_fonts/fonts/inter-tight/inter-tight-v7-latin_latin-ext-italic.woff') format('woff'),
+                        url('externals/google_fonts/fonts/inter-tight/inter-tight-v7-latin_latin-ext-italic.woff2') format('woff2');
+                }
+
+                @font-face {
+                    font-family : 'Inter Tight';
+                    font-style  : normal;
+                    font-weight : 400;
+                    src         : local(''),
+                        url('externals/google_fonts/fonts/inter-tight/inter-tight-v7-latin_latin-ext-regular.ttf') format('truetype'),
+                        url('externals/google_fonts/fonts/inter-tight/inter-tight-v7-latin_latin-ext-regular.woff') format('woff'),
+                        url('externals/google_fonts/fonts/inter-tight/inter-tight-v7-latin_latin-ext-regular.woff2') format('woff2');
+                }
+
+                * {
+                    font-family: "Inter Tight" !important;
+                }
+
+                .swagger-ui .parameter__type,
+                .swagger-ui .parameter__extension,
+                .swagger-ui .parameter__in,
+                .swagger-ui textarea.curl,
+                .swagger-ui .model-box,
+                .swagger-ui .model-box *,
+                code,
+                pre,
+                pre > span {
+                    font-family: monospace !important;
+                }
+
+                pre.version {
+                    font-family: "Inter Tight" !important;
+                }
+
+                div.topbar {
+                    display: none;
+                }
+
+                .swagger-ui {
+                    .info {
+                        margin-top: 1rem;
+                        margin-bottom: 0;
+
+                        .title {
+                            font-size: 1.5rem;
+
+                            small {
+                                top: 0.33rem;
+                            }
+                        }
+
+                        hgroup a {
+                            margin-left: 1rem;
+                        }
+                    }
+
+                    .scheme-container {
+                        margin-top   : 2rem;
+                        padding      : 1rem 0;
+                        box-shadow   : none;
+                        border-top   : 1px solid silver;
+                        border-bottom: 1px solid silver;
+                    }
+                }
+            `;
+
+            iframe_document.head.appendChild(style);
+            iframe_document_setup = true;
+        }
+
+        function setHeight() {
+            try {
+                iframe.style.height = iframe_document.documentElement.scrollHeight + 'px';
+            }
+            catch (e) {
+                console.log(e);
+            }
+        }
+
+        iframe.addEventListener( 'load', setHeight );
+        setHeight();
+
+        if ( iframe.contentWindow )
+            new ResizeObserver(setHeight).observe( iframe.contentWindow.document.body );
+    }
+
+    window.addEventListener( 'resize', iframe_resize );
+    window.addEventListener( 'load',   iframe_resize );
+[% END %]
+[% page.js.inline.push(iframe_resize) %]
