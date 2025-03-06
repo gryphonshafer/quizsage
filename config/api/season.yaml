@@ -47,6 +47,61 @@ paths:
                                     stop: 2024-07-31 07:00:00-07:00
                                     hidden: false
                                     active: false
+    /season/{season_id}/meets:
+        get:
+            summary: Meets of a given season.
+            description: |-
+                This endpoint will return a given season's meets.
+            tags:
+                - Quiz Seasons
+            operationId: season_meets
+            x-mojo-to: api-season#meets
+            parameters:
+              - name: season_id
+                description: |-
+                    Season ID, which can be found via a call to `/season/list`.
+                in: path
+                required: true
+                schema:
+                    type: integer
+                    example: 1
+                    default: 1
+            responses:
+                '200':
+                    description: Current meets a season.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                nullable: true
+                                items:
+                                    type: object
+                                    properties:
+                                        meet_id:
+                                            type: integer
+                                        season_id:
+                                            type: integer
+                                        name:
+                                            type: string
+                                        location:
+                                            type: string
+                                        start:
+                                            type: string
+                                        days:
+                                            type: integer
+                                        last_modified:
+                                            type: string
+                                        created:
+                                            type: string
+                                example:
+                                  - meet_id: 8
+                                    season_id: 3
+                                    name: Meet 1
+                                    location: Juniper Community Church (Madras)
+                                    start: 2024-10-19 08:00-07:00
+                                    days: 1
+                                    last_modified: 2025-02-22 15:55:39.920
+                                    created: 2024-10-15 10:05:05.993
     /season/{season_id}/stats:
         get:
             summary: Seasons statistics.
