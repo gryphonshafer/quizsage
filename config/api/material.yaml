@@ -7,6 +7,14 @@ paths:
     /material/bibles:
         get:
             summary: Returns a list of objects representing available Bible translations.
+            description: |-
+                The application maintains a set of Bible translations in its
+                material database. This endpoint provides a list of objects
+                representing metadata for each available Bible translation.
+
+                **Note:** You can [download the application databases](/download)
+                for use offline or in any other form so long you comply with the
+                [application license](https://github.com/gryphonshafer/quizsage/blob/master/LICENSE).
             tags:
                 - Bible Materials
             operationId: material_bibles
@@ -37,6 +45,17 @@ paths:
     /material/payload:
         get:
             summary: Turns a material label into a material data payload.
+            description: |-
+                This endpoint requires a material label, which it will parse,
+                analyze, and build out into a returned material data structure.
+                The data structure will contain blocks of content associated
+                with each range in the label, and it'll include all verse
+                content. The data will also contain a thesaurus for all words in
+                the content.
+
+                **Note:** You can [download the application databases](/download)
+                for use offline or in any other form so long you comply with the
+                [application license](https://github.com/gryphonshafer/quizsage/blob/master/LICENSE).
             tags:
                 - Bible Materials
             operationId: material_payload
@@ -110,6 +129,15 @@ paths:
     /material/reference/data:
         get:
             summary: Return material reference data for a material label.
+            description: |-
+                This endpoint returns all the data necessary to construct a
+                custom material reference document. (The data is purely the data,
+                not the document result. If you want a document result, consult
+                the `/material/reference/html` endpoint.
+
+                **Note:** You can [download the application databases](/download)
+                for use offline or in any other form so long you comply with the
+                [application license](https://github.com/gryphonshafer/quizsage/blob/master/LICENSE).
             tags:
                 - Bible Materials
             operationId: material_reference_data
@@ -214,6 +242,15 @@ paths:
     /material/reference/html:
         get:
             summary: Return material reference HTML for a material label.
+            description: |-
+                This endpoint returns a document (in HTML) for a custom material
+                reference. (The HTML is intended for use as a document containing
+                marked up data. If you want the source data instead, consult
+                the `/material/reference/data` endpoint.
+
+                **Note:** You can [download the application databases](/download)
+                for use offline or in any other form so long you comply with the
+                [application license](https://github.com/gryphonshafer/quizsage/blob/master/LICENSE).
             tags:
                 - Bible Materials
             operationId: material_reference_html
@@ -250,7 +287,13 @@ components:
         bible_acronym:
             name: bible
             in: query
-            description: Primary Bible translation.
+            description: |-
+                "Memorized" Bible translation. While the `label` parameter
+                should include all the translations desired to be included, a
+                "memorized" Bible translation parameter is used to identify the
+                translation that should be listed first and be considered the
+                "local" (i.e. "not foreign") translation. "Foreign" translations
+                will include "local" translation keys in the output.
             example: NIV
             schema:
                 type: string

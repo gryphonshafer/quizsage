@@ -8,7 +8,10 @@ paths:
         get:
             summary: Quizzes of a given meet.
             description: |-
-                This endpoint will return quizzes of a given meet.
+                This endpoint will return an array of objects representing the
+                *created* quizzes of a given meet. (Any quizzes that are
+                scheduled, and thus would appear in a meet state, but have not
+                yet been started will not be included.)
             tags:
                 - Quiz Meets
             operationId: meet_quizzes
@@ -25,7 +28,9 @@ paths:
                     default: 1
             responses:
                 '200':
-                    description: Quizzes of a given meet.
+                    description: |-
+                        Quizzes of a given meet. Note that `state` will not be
+                        populated until the first quiz event is recorded.
                     content:
                         application/json:
                             schema:
@@ -37,13 +42,17 @@ paths:
         get:
             summary: Meet state.
             description: |-
-                This endpoint will return a given meet's state data.
+                This endpoint will return a given meet's state data. This data
+                is what's used to render the meet state page of the web
+                application.
             tags:
                 - Quiz Meets
             operationId: meet_state
             x-mojo-to: api-meet#state
             parameters:
               - name: meet_id
+                description: |-
+                    Meet ID, which can be found via a call to `/season/list`.
                 in: path
                 required: true
                 schema:
@@ -190,6 +199,8 @@ paths:
             x-mojo-to: api-meet#stats
             parameters:
               - name: meet_id
+                description: |-
+                    Meet ID, which can be found via a call to `/season/list`.
                 in: path
                 required: true
                 schema:

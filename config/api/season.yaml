@@ -58,6 +58,8 @@ paths:
             x-mojo-to: api-season#stats
             parameters:
               - name: season_id
+                description: |-
+                    Season ID, which can be found via a call to `/season/list`.
                 in: path
                 required: true
                 schema:
