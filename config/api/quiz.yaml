@@ -1,0 +1,177 @@
+---
+tags:
+  - name: Quizzes
+    description: |-
+        Endpoints related to individual quizzes.
+paths:
+    /quiz/distribution:
+        get:
+            summary: Generate a distribution for a quiz.
+            description: |-
+                This endpoint will return an array of a quiz distribution.
+            tags:
+                - Quizzes
+            operationId: quiz_distribution
+            x-mojo-to: api-quiz#distribution
+            parameters:
+              - name: bibles
+                in: query
+                description: |-
+                    One or more Bible acronyms of supported Bible translations.
+                    See the `/material/bibles` endpoint for a complete list.
+                required: true
+                style: form
+                explode: true
+                schema:
+                    type: array
+                    items:
+                        type: string
+                        minItems: 1
+                    example:
+                        - NIV
+                        - ESV
+                        - BSB
+              - name: teams_count
+                description: |-
+                    Number of teams in the quiz.
+                in: query
+                required: true
+                schema:
+                    type: integer
+                    example: 3
+                    default: 3
+            responses:
+                '200':
+                    description: Array of verse objects.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        id:
+                                            type: integer
+                                        bible:
+                                            type: string
+                                        type:
+                                            type: string
+                                example:
+                                  - id: 1
+                                    bible: BSB
+                                    type: P
+                                  - id: 2
+                                    bible: ESV
+                                    type: C
+                                  - id: 3
+                                    bible: NIV
+                                    type: F
+    /quiz/verses:
+        get:
+            summary: Generate verses for a quiz based on a label.
+            description: |-
+                This endpoint will use a material label and return an array of
+                verse objects that could be used for a quiz.
+            tags:
+                - Quizzes
+            operationId: quiz_verses
+            x-mojo-to: api-quiz#verses
+            parameters:
+              - $ref: '#/components/parameters/label'
+              - name: count
+                description: |-
+                    Number of verses to source and return.
+                in: query
+                required: true
+                schema:
+                    type: integer
+                    example: 12
+                    default: 12
+            responses:
+                '200':
+                    description: Array of verse objects.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        bible:
+                                            type: string
+                                        book:
+                                            type: string
+                                        chapter:
+                                            type: integer
+                                        verse:
+                                            type: integer
+                                        reference:
+                                            type: string
+                                        text:
+                                            type: string
+                                example:
+                                  - bible: NIV
+                                    book: Romans
+                                    chapter: 12
+                                    verse: 1
+                                    reference: Romans 12:1
+                                    text: Therefore, I urge you, brothers...
+    /quiz/{quiz_id}/data:
+        get:
+            summary: Quiz data.
+            description: |-
+                This endpoint will return a data structure of a given quiz that
+                has at least been started.
+            tags:
+                - Quizzes
+            operationId: quiz_data
+            x-mojo-to: api-quiz#data
+            parameters:
+              - name: quiz_id
+                description: |-
+                    Quiz ID, which can be found via a call to `/meet/{meet_id}/quizzes`.
+                in: path
+                required: true
+                schema:
+                    type: integer
+                    example: 1
+                    default: 1
+            responses:
+                '200':
+                    description: Quiz object.
+                    content:
+                        application/json:
+                            schema:
+                                nullable: true
+                                $ref: '#/components/schemas/quiz'
+components:
+    schemas:
+        quiz:
+            type: object
+            properties:
+                quiz_id:
+                    type: integer
+                meet_id:
+                    type: integer
+                bracket:
+                    type: string
+                name:
+                    type: string
+                settings:
+                    type: object
+                state:
+                    type: object
+                    nullable: true
+                last_modified:
+                    type: string
+                created:
+                    type: string
+            example:
+                quiz_id: 1
+                meet_id: 1
+                bracket: Top 9
+                name: A
+                settings: {}
+                state: {}
+                last_modified: 2025-02-15 11:13:46.433
+                created: 2025-02-15 11:13:46.433

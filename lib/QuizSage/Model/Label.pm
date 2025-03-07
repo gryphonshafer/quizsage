@@ -24,7 +24,15 @@ has 'bible_acronyms' => sub ($self) {
     })->run->column;
 };
 
-sub aliases ($self) {
+has 'bibles' => sub ($self) {
+    return $self->dq('material')->sql(q{
+        SELECT acronym, label, name, year
+        FROM bible
+        ORDER BY LENGTH(acronym) DESC, acronym
+    })->run->all({});
+};
+
+sub aliases ( $self, $user_id = $self->user_id ) {
     return $self->dq->get(
         [
             [ [ qw( label l ) ] ],
@@ -37,7 +45,7 @@ sub aliases ($self) {
         ],
         [
             -bool             => 'l.public',
-            maybe 'u.user_id' => $self->user_id,
+            maybe 'u.user_id' => $user_id,
         ],
         { order_by => [
             { -desc => { -length => 'l.name' } },
@@ -48,8 +56,15 @@ sub aliases ($self) {
     )->run->all({});
 }
 
-sub parse ( $self, $input = $self->data->{label} ) {
-    $self->user_aliases( $self->aliases ) unless ( $self->user_aliases );
+sub parse ( $self, $input = $self->data->{label}, $user_id = undef ) {
+    my $user_aliases;
+    unless ($user_id) {
+        $self->user_aliases( $self->aliases ) unless ( $self->user_aliases );
+        $user_aliases = $self->user_aliases;
+    }
+    else {
+        $user_aliases = $self->aliases($user_id);
+    }
 
     my $data;
     $input //= '';
@@ -64,7 +79,7 @@ sub parse ( $self, $input = $self->data->{label} ) {
             $a->{public} <=> $b->{public} ||
             $b->{is_self_made} <=> $a->{is_self_made}
         }
-        $self->user_aliases->@*
+        $user_aliases->@*
     ) {
         ( my $re = '\b' . $alias->{name} . '\b' ) =~ s/\s+/\\s+/g;
 
@@ -204,12 +219,12 @@ sub parse ( $self, $input = $self->data->{label} ) {
     return $data;
 }
 
-sub canonicalize( $self, $input = $self->data->{label} ) {
-    return $self->format( $self->parse($input) );
+sub canonicalize( $self, $input = $self->data->{label}, $user_id = undef ) {
+    return $self->format( $self->parse( $input, $user_id ) );
 }
 
-sub descriptionize( $self, $input = $self->data->{label} ) {
-    my $full_data = $self->parse($input);
+sub descriptionize( $self, $input = $self->data->{label}, $user_id = undef ) {
+    my $full_data = $self->parse( $input, $user_id );
 
     # parse data by alias-node, replacing aliases along the way
     try {
@@ -536,6 +551,11 @@ The L<Bible::Reference> object used throughout, set with default-correct values.
 
 An auto-populated array of supported Bible translation acronyms.
 
+=head2 bibles
+
+An arrayref of hashrefs containing information about available Bible
+translations.
+
 =head1 OBJECT METHODS
 
 =head2 aliases
@@ -545,6 +565,10 @@ at the time.
 
     my $aliases = $label->aliases;
 
+You can alternatively explicitly pass the user ID.
+
+    my $aliases = $label->aliases(42);
+
 =head2 parse
 
 Parses a label into a data structure. Accepts a string input or otherwise uses
@@ -552,6 +576,10 @@ the C<label> data label if the object is model-data-loaded.
 
     my $data    = $label->parse('Romans 12:1-5 (2) James 1:2-4 (1) NIV ESV*');
     my $data_42 = $label->load(42)->parse;
+
+You can alternatively explicitly pass the user ID.
+
+    my $data = $label->parse( 'Romans 12:1-5 (2) James 1:2-4 (1) NIV ESV*', 42 );
 
 =head2 canonicalize
 
@@ -561,6 +589,10 @@ uses the C<label> data label if the object is model-data-loaded.
 
     my $label_text = $label->canonicalize('Romans 12:1-5; James 1:2-4');
     my $label_42   = $label->load(42)->canonicalize;
+
+You can alternatively explicitly pass the user ID.
+
+    my $label_text = $label->canonicalize( 'Romans 12:1-5; James 1:2-4', 42 );
 
 =head2 descriptionize
 
@@ -572,6 +604,10 @@ L<QuizSage::Util::Material> calls to generated material JSON.
 
     my $description    = $label->descriptionize('Romans 12:1-5; James 1:2-4');
     my $description_42 = $label->load(42)->descriptionize;
+
+You can alternatively explicitly pass the user ID.
+
+    my $description = $label->descriptionize( 'Romans 12:1-5; James 1:2-4', 42 );
 
 =head2 format
 

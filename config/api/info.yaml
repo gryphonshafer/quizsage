@@ -1,0 +1,29 @@
+---
+openapi: 3.0.3
+info:
+    title: QuizSage API
+    version: 1.0.1
+    description: |-
+        This is the [QuizSage](https://quizsage.org)
+        [OpenAPI](https://openapis.org) web service.
+
+        This API is provided for open and free use by any QuizSage user. Most
+        requests require authentication with QuizSage user credentials. Please
+        respect the API, service, servers, and networks by throttling heavy
+        and/or repeated requests. **API abuse will be reported and associated
+        user accounts may be deactivated.**
+
+        Limited technical support available. Use at your own risk. Please report
+        all defects and feature requests.
+
+        Note that nearly all endpoints require authentication. Use the
+        `/user/login` endpoint to login (or login via the web application, then
+        return here).
+    contact:
+        name: Gryphon Shafer
+        email: g@cbqz.org
+servers:
+  - url: /api/v1
+    description: QuizSage API Version 1
+security:
+  - sessionAuth: []

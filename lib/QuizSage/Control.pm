@@ -1,10 +1,14 @@
 package QuizSage::Control;
 
 use exact -conf, 'Omniframe::Control';
+use Hash::Merge 'merge';
 use MIME::Base64 'encode_base64';
 use Mojo::JSON 'encode_json';
 use Omniframe::Util::File 'opath';
 use QuizSage::Model::User;
+use YAML::XS 'Load';
+
+$YAML::XS::Boolean = 'JSON::PP';
 
 sub startup ($self) {
     $self->setup;
@@ -12,6 +16,37 @@ sub startup ($self) {
     my $captcha_conf = conf->get('captcha');
     $captcha_conf->{ttf} = opath( $captcha_conf->{ttf} );
     $self->plugin( CaptchaPNG => $captcha_conf );
+
+    my $api_spec = {};
+    opath( 'config/api', { no_check => 1 } )->list_tree->each( sub {
+        $api_spec = merge( $api_spec, Load( $_->slurp ) );
+    } );
+    $self->plugin( OpenAPI => {
+        spec     => $api_spec,
+        security => {
+            sessionAuth => sub ( $c, $definition, $scopes, $callback ) {
+                if ( $c->session('user_id') ) {
+                    $c->$callback();
+                }
+                else {
+                    $c->render(
+                        status => 401,
+                        json   => {
+                            error   => 'Unauthorized',
+                            message =>
+                                'Authorization required; ' .
+                                'use the /user/login API endpoint to authenticate',
+                        },
+                    );
+                }
+            },
+        },
+    } );
+    $self->plugin( SwaggerUI => {
+        route => $self->routes->any('/swagger_ui'),
+        url   => $api_spec->{servers}[0]{url},
+        title => $api_spec->{info}{title},
+    } );
 
     my $all = $self->routes->under( sub ($c) {
         $c->stash( page => { wrappers => ['page.html.tt'] } );
@@ -131,6 +166,8 @@ sub startup ($self) {
     $all->any("/user/$_")->to("user#$_") for ( qw( forgot_password login ) );
     $all->any('/user/create')->to( 'user#account', account_action_type => 'create' );
     $all->any("/user/$_/:token")->to("user#$_") for ( qw( verify reset_password ) );
+
+    $all->any( '/api' => sub ($c) { $c->render( template => 'api' ) } );
 
     $all->any( '/docs/*name' => { name => 'index.md' } => sub ($c) {
         $c->document( 'docs/' . $c->stash('name') );

@@ -1,0 +1,307 @@
+---
+tags:
+  - name: Bible References
+    description: |-
+        Endpoints related to Bible references, books, and structure.
+        All are derived from the
+        [Bible::Reference](https://metacpan.org/pod/Bible::Reference) library.
+paths:
+    /bible/books:
+        get:
+            summary: Returns a list of books of the Bible, in order.
+            tags:
+                - Bible References
+            operationId: bible_books
+            x-mojo-to: api-bible#books
+            parameters:
+                - $ref: '#/components/parameters/bible_type'
+            responses:
+                '200':
+                    description: List of books of the Bible, in order.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: string
+                                example:
+                                    - Genesis
+                                    - Exodus
+                                    - Leviticus
+                                    - Numbers
+                                    - Deuteronomy
+    /bible/identify:
+        get:
+            summary: Identify which Bible based on book names.
+            description: |-
+                This endpoint is to help identify which Bible to use if you
+                aren't sure. It requires a list of strings as input, each string
+                representing a book from the Bible you're trying to identify.
+                This method will then try to match these book names across all
+                Bibles and will return an array of the most likely Bibles for
+                your inputs.
+            tags:
+                - Bible References
+            operationId: identify_bible
+            x-mojo-to: api-bible#identify
+            parameters:
+              - name: books
+                in: query
+                description: |-
+                    One or more text strings of Bible books or book acronyms to
+                    analyze.
+                required: true
+                style: form
+                explode: true
+                schema:
+                    type: array
+                    items:
+                        type: string
+                        minItems: 1
+                    example:
+                        - Gen
+                        - Lev
+                        - 3 Mac
+            responses:
+                '200':
+                    description: |-
+                        List of objects of identified Bibles,
+                        including a list of canonical book names.
+                        The `count` property represents the number of matched
+                        books. The higher the `count`, the more likely the
+                        correctly identified Bible.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        name:
+                                            type: string
+                                        count:
+                                            type: integer
+                                        books:
+                                            type: array
+                                            items:
+                                                type: string
+                                example:
+                                  - name: Orthodox
+                                    count: 3,
+                                    books: [ 'Genesis', 'Leviticus', '3 Maccabees' ]
+    /bible/reference/parse:
+        get:
+            summary: Bible reference parse and canonicalize.
+            description: |-
+                This endpoint is intended to address Bible reference
+                canonicalization. Given some input, the endpoint will search for
+                Bible references, canonicalize them, and return them in various
+                forms desired. It can return the canonicalized within the
+                context of the input string or strings as well.
+
+                The endpoint supports the Protestant Bible by default and by
+                input setting also the Orthodox Bible and the current Catholic
+                Bible.
+            tags:
+                - Bible References
+            operationId: parse_reference
+            x-mojo-to: api-bible#parse_reference
+            parameters:
+              - name: text
+                in: query
+                description: |-
+                    String input that will get parsed and canonicalized.
+                example: Text with I Pet 3:16 and Rom 12:13-14,17 references in it.
+                schema:
+                    type: string
+                required: true
+              - $ref: '#/components/parameters/bible_type'
+              - name: acronyms
+                in: query
+                description: |-
+                    Boolean indicating whether to return full book names (which
+                    is the default) or acronyms.
+                schema:
+                    type: boolean
+                    default: 'false'
+              - name: sorting
+                in: query
+                description: |-
+                    Boolean indicating whether or not to return references
+                    sorted (which is the default) or in their input order.
+                schema:
+                    type: boolean
+                    default: true
+              - name: require_chapter_match
+                in: query
+                description: |-
+                    Boolean indicating whether or not to require chapters in
+                    references for matching. Default false.
+                schema:
+                    type: boolean
+                    default: 'false'
+              - name: require_verse_match
+                in: query
+                description: |-
+                    Boolean indicating whether or not to require verses in
+                    references for matching. Default false.
+                schema:
+                    type: boolean
+                    default: 'false'
+              - name: require_book_ucfirst
+                in: query
+                description: |-
+                    Boolean indicating whether or not to require book names to
+                    be ucfirst for matching. Default false.
+                schema:
+                    type: boolean
+                    default: 'false'
+              - name: minimum_book_length
+                in: query
+                description: |-
+                    Sets the minimum length of characters to match a book name.
+                    It's default is 3. Given a book like "Genesis", this will
+                    mean "Gen" and "Gene" and "Genes" matches, but "Ge" won't.
+                schema:
+                    type: integer
+                    default: 3
+              - name: add_detail
+                in: query
+                description: |-
+                    Boolean indicating whether or not to turn on adding chapter
+                    and verse detail. Default false.
+                schema:
+                    type: boolean
+                    default: 'false'
+            responses:
+                '200':
+                    description: |-
+                        Various forms of the parsed and canonicalized data.
+
+                        - `refs`:
+                          All references found in the input text returned as a single, canonical string.
+                        - `as_books`:
+                          An array of all references found, each item being grouped by book.
+                        - `as_chapters`:
+                          Same as `as_books` except that it returns a list of canonicalized references by book
+                          and chapter.
+                        - `as_runs`:
+                          Same as `as_chapters` except that it returns a list of canonicalized references by
+                          verse run. A "verse run" is a set of verses in an unbroken list together.
+                        - `as_verses`:
+                          Same as `as_books` except that it returns a list of independent verses.
+                        - `as_hash`:
+                          Returns the references output like `refs` except that the output is an object of a
+                          tree of data.
+                        - `as_array`:
+                          Same as `as_hash` except that the output is an array of a tree of data.
+                        - `as_text`:
+                          A text string or, if there were multiple calls to in, an array or arrayref of text
+                          strings (depending on context), of the input string or strings with the references
+                          found therein canonicalized.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    refs:
+                                        type: string
+                                    as_books:
+                                        type: array
+                                    as_chapters:
+                                        type: array
+                                    as_runs:
+                                        type: array
+                                    as_verses:
+                                        type: array
+                                    as_hash:
+                                        type: object
+                                    as_array:
+                                        type: array
+                                    as_text:
+                                        oneOf:
+                                          - type: string
+                                          - type: array
+                                            items:
+                                                type: string
+                                example:
+                                    refs: Romans 12:13-14, 17; 1 Peter 3:16
+                                    as_books:
+                                        - Romans 12:13-14, 17
+                                        - 1 Peter 3:16
+                                    as_chapters:
+                                        - Romans 12:13-14, 17
+                                        - 1 Peter 3:16
+                                    as_runs:
+                                        - Romans 12:13-14
+                                        - Romans 12:17
+                                        - 1 Peter 3:16
+                                    as_verses:
+                                        - Romans 12:13
+                                        - Romans 12:14
+                                        - Romans 12:17
+                                        - 1 Peter 3:16
+                                    as_hash:
+                                        Romans:
+                                            12: [ 13, 14, 17 ]
+                                        1 Peter:
+                                            3: [16]
+                                    as_array:
+                                        - [ 'Romans', [[ 12, [ 13, 14, 17 ] ]]]
+                                        - [ '1 Peter', [[ 3, [16] ]]]
+                                    as_text: Text with 1 Peter 3:16 and Romans 12:13-14, 17 references in it.
+    /bible/structure:
+        get:
+            summary: Returns a data structure of the Bible.
+            description: |-
+                This endpoint will return an array containing an array per book
+                (in order) that contains two elements: the name of the book and
+                an array of the maximum verse number per chapter.
+            tags:
+                - Bible References
+            operationId: bible_structure
+            x-mojo-to: api-bible#structure
+            parameters:
+                - $ref: '#/components/parameters/bible_type'
+            responses:
+                '200':
+                    description: |-
+                        Data structure of the Bible. The returned array will
+                        contain an array per book (in order from the Bible),
+                        with the first element being the book name and the
+                        second element being an array of numbers. The numbers
+                        are the maximum verse number per each chapter in the
+                        book.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: array
+                                    minItems: 2
+                                    maxItems: 2
+                                    items:
+                                        oneOf:
+                                          - type: string
+                                            description: Book name.
+                                          - type: array
+                                            items:
+                                                type: integer
+                                example:
+                                    - [ 'Genesis', [ 31, 25, 24 ] ]
+components:
+    parameters:
+        bible_type:
+            name: bible
+            in: query
+            description: |-
+                This parameter sets the current Bible to use. By default,
+                the Bible is the Protestant Bible. Other Bibles supported
+                are the Orthodox and Catholic Bibles.
+            schema:
+                type: string
+                enum:
+                    - Protestant
+                    - Orthodox
+                    - Catholic
+                default: Protestant

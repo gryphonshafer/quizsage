@@ -1,6 +1,7 @@
 use Test2::V0;
 use exact -conf;
 use Omniframe::Test::App;
+use QuizSage::Test;
 
 setup;
 
@@ -8,7 +9,7 @@ mojo->get_ok('/user/create')
     ->status_is(200)
     ->attr_is( 'main form', 'method', 'post' );
 
-my $email  = stuff('email');
+my $email  = email;
 my $passwd = 'terrible_but_long_enough_password';
 
 my $captcha_sequence;

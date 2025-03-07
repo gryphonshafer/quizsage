@@ -3,18 +3,11 @@ use exact -conf;
 use Omniframe::Test::App;
 use QuizSage::Model::Meet;
 use QuizSage::Model::Quiz;
-use QuizSage::Model::User;
+use QuizSage::Test;
 
 setup;
 
-my $user = QuizSage::Model::User->new->create({
-    email      => stuff('email'),
-    passwd     => 'terrible_but_long_enough_password',
-    first_name => 'First Name',
-    last_name  => 'Last Name',
-    phone      => '1234567890',
-});
-$user->save({ active => 1 });
+my ($user) = user;
 
 my $qm_auth   = 0;
 my $mock_user = mock $user => ( override => [ qm_auth => sub { $qm_auth } ] );

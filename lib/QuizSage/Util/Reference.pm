@@ -8,7 +8,7 @@ use Mojo::JSON qw( encode_json decode_json );
 use QuizSage::Model::Label;
 use QuizSage::Util::Material 'text2words';
 
-exact->exportable('reference_data');
+exact->exportable( qw( reference_data reference_html ) );
 
 fun reference_data (
     :$material_label = undef, # material label/description
@@ -288,6 +288,46 @@ fun reference_data (
     return $data;
 }
 
+sub reference_html ( $controller, $reference_data ) {
+    # remove any reference HTML files that haven't been accessed in the last N days
+    my $now        = time;
+    my $atime_life = conf->get( qw{ reference atime_life } );
+    my $html_path  = path( join( '/',
+        conf->get( qw{ config_app root_dir } ),
+        conf->get( qw{ reference location html } ),
+    ) );
+
+    $html_path->list->grep( sub ($file) {
+        ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
+    } )->each('remove');
+
+    my $html_file = $html_path->child( $reference_data->{id} . '.html' );
+
+    my $html;
+    unless ( -f $html_file ) {
+        $html = $controller->app->tt_html(
+            'reference/generator.html.tt',
+            {
+                page => {
+                    no_defaults => 1,
+                    lang        => 'en',
+                    charset     => 'utf-8',
+                    viewport    => 1,
+                },
+                $reference_data->%*,
+            },
+        );
+
+        make_path( $html_file->dirname ) unless ( -d $html_file->dirname );
+        $html_file->spew($html);
+    }
+    else {
+        $html = $html_file->slurp;
+    }
+
+    return $html;
+}
+
 1;
 
 =head1 NAME
@@ -312,7 +352,7 @@ QuizSage::Util::Reference
 
 =head1 DESCRIPTION
 
-This package provides an exportable reference material function.
+This package provides exportable reference material functions.
 
 =head1 FUNCTION
 
@@ -331,3 +371,8 @@ This function generates reference material.
         phrases   => 4,              # words for phrases section
         force     => 0,              # force data regeneration
     );
+
+=head2 reference_html
+
+This function requires an application controller instance and the output from
+C<reference_data>. It will render and return HTML.

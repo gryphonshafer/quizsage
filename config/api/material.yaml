@@ -1,0 +1,420 @@
+---
+tags:
+  - name: Bible Materials
+    description: |-
+        Endpoints related to Bible materials.
+paths:
+    /material/bibles:
+        get:
+            summary: Returns a list of objects representing available Bible translations.
+            description: |-
+                The application maintains a set of Bible translations in its
+                material database. This endpoint provides a list of objects
+                representing metadata for each available Bible translation.
+
+                **Note:** You can [download the application databases](/download)
+                for use offline or in any other form so long you comply with the
+                [application license](https://github.com/gryphonshafer/quizsage/blob/master/LICENSE).
+            tags:
+                - Bible Materials
+            operationId: material_bibles
+            x-mojo-to: api-material#bibles
+            responses:
+                '200':
+                    description: List of objects representing available Bible translations.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        acronym:
+                                            type: string
+                                        label:
+                                            type: string
+                                        name:
+                                            type: string
+                                        year:
+                                            type: integer
+                                example:
+                                  - acronym: NIV84
+                                    label: NIV1984
+                                    name: New International Version
+                                    year: 1984
+    /material/payload:
+        get:
+            summary: Turns a material label into a material data payload.
+            description: |-
+                This endpoint requires a material label, which it will parse,
+                analyze, and build out into a returned material data structure.
+                The data structure will contain blocks of content associated
+                with each range in the label, and it'll include all verse
+                content. The data will also contain a thesaurus for all words in
+                the content.
+
+                **Note:** You can [download the application databases](/download)
+                for use offline or in any other form so long you comply with the
+                [application license](https://github.com/gryphonshafer/quizsage/blob/master/LICENSE).
+            tags:
+                - Bible Materials
+            operationId: material_payload
+            x-mojo-to: api-material#payload
+            parameters:
+                - $ref: '#/components/parameters/label'
+            responses:
+                '200':
+                    description: Material data payload.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    bibles:
+                                        type: object
+                                    description:
+                                        type: string
+                                    ranges:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                range:
+                                                    type: string
+                                                verses:
+                                                    type: array
+                                                    items:
+                                                        type: string
+                                                weight:
+                                                    type: integer
+                                    thesaurus:
+                                        type: object
+                                example:
+                                    label: Romans 1-4; James (1) Romans 5-8 (1) ESV NASB NIV
+                                    bibles:
+                                        - NIV
+                                        - ESV
+                                        - NASB
+                                    blocks:
+                                      - range: Romans 1-4; James
+                                        weight: 1
+                                        content:
+                                            NIV:
+                                              - book: Romans
+                                                chapter: 1
+                                                verse: 1
+                                                text: Paul, a servant of Christ Jesus, called to
+                                                string: paul a servant of christ jesus called to
+                                            ESV: []
+                                            NASB: []
+                                      - range: Romans 5-8
+                                        weight: 1
+                                        content:
+                                            NIV: []
+                                            ESV: []
+                                            NASB: []
+                                    thesaurus:
+                                        called:
+                                            type: adj.
+                                            word: named
+                                            synonyms:
+                                              - verity: 1
+                                                words:
+                                                    - labeled
+                                              - verity: 2
+                                                words:
+                                                    - christened
+                                                    - termed
+                                        almighty: the Almighty
+    /material/reference/data:
+        get:
+            summary: Return material reference data for a material label.
+            description: |-
+                This endpoint returns all the data necessary to construct a
+                custom material reference document. (The data is purely the data,
+                not the document result. If you want a document result, consult
+                the `/material/reference/html` endpoint.
+
+                **Note:** You can [download the application databases](/download)
+                for use offline or in any other form so long you comply with the
+                [application license](https://github.com/gryphonshafer/quizsage/blob/master/LICENSE).
+            tags:
+                - Bible Materials
+            operationId: material_reference_data
+            x-mojo-to: api-material#data
+            parameters:
+                - $ref: '#/components/parameters/label'
+                - $ref: '#/components/parameters/bible_acronym'
+                - $ref: '#/components/parameters/cover'
+                - $ref: '#/components/parameters/reference'
+                - $ref: '#/components/parameters/whole'
+                - $ref: '#/components/parameters/chapter'
+                - $ref: '#/components/parameters/phrases'
+                - $ref: '#/components/parameters/page_width'
+                - $ref: '#/components/parameters/page_height'
+                - $ref: '#/components/parameters/page_right_margin_left'
+                - $ref: '#/components/parameters/page_right_margin_right'
+                - $ref: '#/components/parameters/page_right_margin_top'
+                - $ref: '#/components/parameters/page_right_margin_bottom'
+                - $ref: '#/components/parameters/page_left_margin_left'
+                - $ref: '#/components/parameters/page_left_margin_right'
+                - $ref: '#/components/parameters/page_left_margin_top'
+                - $ref: '#/components/parameters/page_left_margin_bottom'
+            responses:
+                '200':
+                    description: Material reference data.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    bible:
+                                        type: string
+                                    cover:
+                                        type: boolean
+                                    page_width:
+                                        type: number
+                                    page_height:
+                                        type: number
+                                    page_right_margin_left:
+                                        type: number
+                                    page_right_margin_right:
+                                        type: number
+                                    page_right_margin_top:
+                                        type: number
+                                    page_right_margin_bottom:
+                                        type: number
+                                    page_left_margin_left:
+                                        type: number
+                                    page_left_margin_right:
+                                        type: number
+                                    page_left_margin_top:
+                                        type: number
+                                    page_left_margin_bottom:
+                                        type: number
+                                    id:
+                                        type: string
+                                    description:
+                                        type: string
+                                    bibles:
+                                        type: array
+                                        items:
+                                            type: string
+                                    sections:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                header:
+                                                    type: string
+                                                blocks:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                        properties:
+                                                            header:
+                                                                type: string
+                                                            rows:
+                                                                type: array
+                                example:
+                                    bible: NIV
+                                    cover: true
+                                    page_width: 8.5
+                                    page_height: 11
+                                    page_right_margin_left: 1
+                                    page_right_margin_right: 0.5
+                                    page_right_margin_top: 0.5
+                                    page_right_margin_bottom: 0.5
+                                    page_left_margin_left: 0.5
+                                    page_left_margin_right: 1
+                                    page_left_margin_top: 0.5
+                                    page_left_margin_bottom: 0.5
+                                    id: a1b2c3d4e5f67890
+                                    description: Romans 12:1-5; James 1:2-4
+                                    bibles:
+                                        - ESV
+                                    sections:
+                                      - header: Reference Material
+                                        blocks:
+                                          - header: NIV
+                                            rows:
+                                                - Therefore, I urge you, brothers...
+    /material/reference/html:
+        get:
+            summary: Return material reference HTML for a material label.
+            description: |-
+                This endpoint returns a document (in HTML) for a custom material
+                reference. (The HTML is intended for use as a document containing
+                marked up data. If you want the source data instead, consult
+                the `/material/reference/data` endpoint.
+
+                **Note:** You can [download the application databases](/download)
+                for use offline or in any other form so long you comply with the
+                [application license](https://github.com/gryphonshafer/quizsage/blob/master/LICENSE).
+            tags:
+                - Bible Materials
+            operationId: material_reference_html
+            x-mojo-to: api-material#html
+            parameters:
+                - $ref: '#/components/parameters/label'
+                - $ref: '#/components/parameters/bible_acronym'
+                - $ref: '#/components/parameters/cover'
+                - $ref: '#/components/parameters/reference'
+                - $ref: '#/components/parameters/whole'
+                - $ref: '#/components/parameters/chapter'
+                - $ref: '#/components/parameters/phrases'
+                - $ref: '#/components/parameters/page_width'
+                - $ref: '#/components/parameters/page_height'
+                - $ref: '#/components/parameters/page_right_margin_left'
+                - $ref: '#/components/parameters/page_right_margin_right'
+                - $ref: '#/components/parameters/page_right_margin_top'
+                - $ref: '#/components/parameters/page_right_margin_bottom'
+                - $ref: '#/components/parameters/page_left_margin_left'
+                - $ref: '#/components/parameters/page_left_margin_right'
+                - $ref: '#/components/parameters/page_left_margin_top'
+                - $ref: '#/components/parameters/page_left_margin_bottom'
+            responses:
+                '200':
+                    description: Material reference HTML.
+                    content:
+                        text/html:
+                            schema:
+                                type: string
+                                example: >-
+                                    "<!DOCTYPE html><html>...</html>"
+components:
+    parameters:
+        bible_acronym:
+            name: bible
+            in: query
+            description: |-
+                "Memorized" Bible translation. While the `label` parameter
+                should include all the translations desired to be included, a
+                "memorized" Bible translation parameter is used to identify the
+                translation that should be listed first and be considered the
+                "local" (i.e. "not foreign") translation. "Foreign" translations
+                will include "local" translation keys in the output.
+            example: NIV
+            schema:
+                type: string
+            required: true
+        cover:
+            name: cover
+            in: query
+            description: Include a cover page.
+            example: true
+            schema:
+                type: boolean
+                default: true
+        reference:
+            name: reference
+            in: query
+            description: Include reference material.
+            example: true
+            schema:
+                type: boolean
+                default: true
+        whole:
+            name: whole
+            in: query
+            description: Include alphabetical material from first words.
+            example: 5
+            schema:
+                type: integer
+                default: 0
+        chapter:
+            name: chapter
+            in: query
+            description: Include key phrases by chapter.
+            example: 3
+            schema:
+                type: integer
+                default: 0
+        phrases:
+            name: phrases
+            in: query
+            description: Include global key phrases.
+            example: 4
+            schema:
+                type: integer
+                default: 0
+        page_width:
+            name: page_width
+            in: query
+            description: Include a cover page.
+            example: 8.5
+            schema:
+                type: number
+                default: 8.5
+        page_height:
+            name: page_height
+            in: query
+            description: Include a cover page.
+            example: 11
+            schema:
+                type: number
+                default: 11
+        page_right_margin_left:
+            name: page_right_margin_left
+            in: query
+            description: Include a cover page.
+            example: 1
+            schema:
+                type: number
+                default: 1
+        page_right_margin_right:
+            name: page_right_margin_right
+            in: query
+            description: Include a cover page.
+            example: 0.5
+            schema:
+                type: number
+                default: 0.5
+        page_right_margin_top:
+            name: page_right_margin_top
+            in: query
+            description: Include a cover page.
+            example: 0.5
+            schema:
+                type: number
+                default: 0.5
+        page_right_margin_bottom:
+            name: page_right_margin_bottom
+            in: query
+            description: Include a cover page.
+            example: 0.5
+            schema:
+                type: number
+                default: 0.5
+        page_left_margin_left:
+            name: page_left_margin_left
+            in: query
+            description: Include a cover page.
+            example: 0.5
+            schema:
+                type: number
+                default: 0.5
+        page_left_margin_right:
+            name: page_left_margin_right
+            in: query
+            description: Include a cover page.
+            example: 1
+            schema:
+                type: number
+                default: 1
+        page_left_margin_top:
+            name: page_left_margin_top
+            in: query
+            description: Include a cover page.
+            example: 0.5
+            schema:
+                type: number
+                default: 0.5
+        page_left_margin_bottom:
+            name: page_left_margin_bottom
+            in: query
+            description: Include a cover page.
+            example: 0.5
+            schema:
+                type: number
+                default: 0.5
