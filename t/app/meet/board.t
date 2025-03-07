@@ -4,17 +4,11 @@ use Omniframe::Test::App;
 use QuizSage::Model::Meet;
 use QuizSage::Model::Season;
 use QuizSage::Model::Quiz;
+use QuizSage::Test;
 
 setup;
 
-my $user = QuizSage::Model::User->new->create({
-    email      => stuff('email'),
-    passwd     => 'terrible_but_long_enough_password',
-    first_name => 'First Name',
-    last_name  => 'Last Name',
-    phone      => '1234567890',
-});
-$user->save({ active => 1 });
+my ($user) = user;
 mojo->app->hook( before_routes => sub ($c) { $c->session( user_id => $user->id ) } );
 
 ( my $name = lc( crypt( $$ . ( time + rand ), 'gs' ) ) ) =~ s/[^a-z0-9]+//g;

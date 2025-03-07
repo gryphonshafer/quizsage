@@ -25,26 +25,30 @@ paths:
             operationId: user_login
             x-mojo-to: api-user#login
             security: []
-            parameters:
-              - name: email
-                in: query
-                description: |-
-                    Email address used as to identify the application/API user
-                    account.
-                example: example@example.com
-                schema:
-                    type: string
+            requestBody:
                 required: true
-              - name: password
-                in: query
-                description: |-
-                    Password associated with the email address for the
-                    application/API user account.
-                example: password
-                schema:
-                    type: string
-                    format: password
-                required: true
+                content:
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                email:
+                                    type: string
+                                    format: email
+                                    description: |-
+                                        Email address used as to identify the application/API user
+                                        account.
+                                    example: example@example.com
+                                password:
+                                    type: string
+                                    format: password
+                                    description: |-
+                                        Password associated with the email address for the
+                                        application/API user account.
+                                    example: password
+                            required:
+                                - email
+                                - password
             responses:
                 '200':
                     description: Login successful.

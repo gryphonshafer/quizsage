@@ -8,7 +8,9 @@ sub login ($self) {
     my $response;
 
     try {
-        my $user = QuizSage::Model::User->new->login( map { $self->param($_) } qw( email password ) );
+        my $user = QuizSage::Model::User->new->login(
+            map { $self->req->body_params->param($_) } qw( email password )
+        );
 
         $response->{message} = 'Login success for: ' . $user->data->{email};
         $response->{success} = 1;

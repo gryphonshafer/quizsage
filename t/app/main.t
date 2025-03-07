@@ -1,22 +1,11 @@
 use Test2::V0;
 use exact -conf;
 use Omniframe::Test::App;
-use QuizSage::Model::User;
+use QuizSage::Test;
 
 setup;
 
-my $email  = stuff('email');
-my $passwd = 'terrible_but_long_enough_password';
-my $user   = QuizSage::Model::User->new;
-
-$user->create({
-    email      => $email,
-    passwd     => $passwd,
-    first_name => 'First Name',
-    last_name  => 'Last Name',
-    phone      => '1234567890',
-});
-$user->save({ active => 1 });
+my ( $user, $email, $passwd ) = user;
 
 mojo->get_ok('/')
     ->status_is(200)

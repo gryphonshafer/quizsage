@@ -1,7 +1,7 @@
 use Test2::V0;
 use exact -conf;
 use QuizSage::Model::Memory;
-use QuizSage::Model::User;
+use QuizSage::Test;
 
 my $obj;
 ok( lives { $obj = QuizSage::Model::Memory->new }, 'new' ) or note $@;
@@ -20,14 +20,7 @@ can_ok( $obj, qw(
 
 $obj->dq->begin_work;
 
-( my $username = lc( crypt( $$ . ( time + rand ), 'gs' ) ) ) =~ s/[^a-z0-9]+//g;
-my $user = QuizSage::Model::User->new->create({
-    email      => $username . '@example.com',
-    passwd     => 'terrible_but_long_password',
-    first_name => 'first_name',
-    last_name  => 'last_name',
-    phone      => '1234567890',
-});
+my ($user) = user;
 
 ok( lives {
     $obj->memorized({
@@ -44,14 +37,7 @@ my $memory_id = $obj->dq->last_insert_id;
 
 ok( lives { $obj->reviewed( $memory_id, 9, $user->id ) }, 'reviewed' ) or note $@;
 
-$username .= '_';
-my $other_user = QuizSage::Model::User->new->create({
-    email      => $username . '@example.com',
-    passwd     => 'terrible_but_long_password',
-    first_name => 'first_name',
-    last_name  => 'last_name',
-    phone      => '1234567890',
-});
+my ($other_user) = user;
 
 ok( lives { $obj->sharing({
     action            => 'add',

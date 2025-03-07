@@ -4,27 +4,6 @@ use Omniframe::Class::Javascript;
 use Mojo::File 'path';
 use Mojo::JSON 'decode_json';
 
-##############################################################################################################
-
-# use Mojo::JSON 'encode_json';
-# use QuizSage::Util::Material 'material_json';
-# use DDP;
-
-# my $json = material_json( description => 'James 1:2-4 (1) Ephesians 6:11-12 (2) BSB ESV NASB*' );
-# # p $json;
-# `cp $json->{json_file} t/js/classes/material.json`;
-
-# my $data = decode_json path( me('./material.json') )->slurp;
-# my @terms = sort keys $data->{thesaurus}->%*;
-# $data->{thesaurus} = { map { $_ => $data->{thesaurus}{$_} } @terms[ 0 .. 2 ] };
-
-# path( me('./material.json') )->spew( encode_json $data );
-# # p $data->{ranges};
-
-# is( 1, 1, 'ok' );
-
-##############################################################################################################
-
 my $out = Omniframe::Class::Javascript->new(
     basepath  => conf->get( qw( config_app root_dir ) ) . '/static/js',
     importmap => {

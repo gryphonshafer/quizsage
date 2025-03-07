@@ -56,6 +56,10 @@ for "Quiz Seasons" API calls.
 
 This endpoint wraps the L<QuizSage::Model::Season> C<seasons> method.
 
+=head2 meets
+
+This endpoint returns a given season's meets.
+
 =head2 stats
 
 This endpoint provides the C<stats> data of a L<QuizSage::Model::Season> object.
