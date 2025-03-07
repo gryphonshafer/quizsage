@@ -67,6 +67,7 @@
                 .swagger-ui textarea.curl,
                 .swagger-ui .model-box,
                 .swagger-ui .model-box *,
+                .swagger-ui textarea.body-param__text,
                 code,
                 pre,
                 pre > span {
