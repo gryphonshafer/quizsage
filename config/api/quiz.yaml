@@ -116,7 +116,7 @@ paths:
                                     verse: 1
                                     reference: Romans 12:1
                                     text: Therefore, I urge you, brothers...
-    /quiz/{quiz_id}:
+    /quiz/{quiz_id}/data:
         get:
             summary: Quiz data.
             description: |-
