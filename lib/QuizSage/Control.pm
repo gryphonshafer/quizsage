@@ -167,7 +167,14 @@ sub startup ($self) {
     $all->any('/user/create')->to( 'user#account', account_action_type => 'create' );
     $all->any("/user/$_/:token")->to("user#$_") for ( qw( verify reset_password ) );
 
-    $all->any( '/api' => sub ($c) { $c->render( template => 'api' ) } );
+    $all->any( '/api' => sub ($c) {
+        (
+            my $font_css = opath('static/externals/google_fonts/css/inter-tight.css')->slurp
+        ) =~ s|../(externals/google_fonts/fonts/)|$1|g;
+
+        $c->stash( font_css => $font_css );
+        $c->render( template => 'api' );
+    } );
 
     $all->any( '/docs/*name' => { name => 'index.md' } => sub ($c) {
         $c->document( 'docs/' . $c->stash('name') );
