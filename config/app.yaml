@@ -23,7 +23,7 @@ default:
             watch:
                 - app.psgi
                 - config/app.yaml
-                - config/api.yaml
+                - config/api
                 - config/assets
                 - lib
                 - templates
