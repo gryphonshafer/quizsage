@@ -156,12 +156,13 @@ sub startup ($self) {
     $users->any("/flag/$_")->to("flag#$_") for ( qw( add list is_app_admin administrators thesaurus ) );
     $users->any("/flag/$_/:flag_id")->to("flag#$_") for ( qw( item remove ) );
 
-    $all->any('/')->to('main#home');
-    $all->any( '/set/:type/:name' => [ type => [ qw( theme style ) ] ] )->to('main#set');
-    $all->any('/download')->to('main#download');
-    $all
+    $users->any('/download')->to('main#download');
+    $users
         ->any( '/download/:shard' => [ name => [ keys conf->get( qw( database shards ) )->%* ] ] )
         ->to('main#download');
+
+    $all->any('/')->to('main#home');
+    $all->any( '/set/:type/:name' => [ type => [ qw( theme style ) ] ] )->to('main#set');
 
     $all->any("/user/$_")->to("user#$_") for ( qw( forgot_password login ) );
     $all->any('/user/create')->to( 'user#account', account_action_type => 'create' );
