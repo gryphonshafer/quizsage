@@ -18,6 +18,11 @@ info:
 
         Limited technical support available. Use at your own risk. Please
         [report all defects and feature requests](https://github.com/gryphonshafer/quizsage/issues).
+
+        Also note that while you can use the API to pull down all historical
+        quizzing data and/or all material content, it's probably going to be
+        substantially faster and easier for you to just
+        [download the whole databases](/download) and work with them offline.
 servers:
   - url: /api/v1
     description: QuizSage API Version 1
