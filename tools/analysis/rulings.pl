@@ -1,16 +1,35 @@
 #!/usr/bin/env perl
 use exact -cli, -conf;
+use QuizSage::Model::Label;
 use QuizSage::Model::Meet;
 use QuizSage::Model::Quiz;
 use QuizSage::Model::Season;
 
-say csv(
+my $label = QuizSage::Model::Label->new;
+
+my $verse_to_list;
+for my $alias ( grep { $_->{public} } $label->aliases->@* ) {
+    my ($club) = reverse split( /\s/, $alias->{name} );
+
+    for my $reference (
+        $label->bible_ref
+            ->clear
+            ->in( map { $_->{range} } $label->parse( $alias->{label} )->{ranges}->@* )
+            ->as_verses
+            ->@*
+    ) {
+        $verse_to_list->{$reference} = $club if (
+            not $verse_to_list->{$reference} or
+            $verse_to_list->{$reference} > $club
+        );
+    }
+}
+
+my @columns = (
     'Season name',
     'Season location',
-
     'Meet name',
     'Meet location',
-
     'Quiz bracket',
     'Quiz name',
 
@@ -18,6 +37,7 @@ say csv(
     'Query type',
     'Query bible',
     'Query reference',
+    'Club list',
 
     'Ruling action',
     'Ruling score query',
@@ -45,10 +65,12 @@ say csv(
     'Quizzer score points',
     'Quizzer score team points',
 
-    'Quizzer translations',
+    'Quiz/quizzer bible count',
 );
 
-for my $season ( QuizSage::Model::Season->new->every({ hidden => 0 })->@* ) {
+say csv(@columns);
+
+for my $season ( QuizSage::Model::Season->new->every({ location => 'PNW Quizzing', hidden => 0 })->@* ) {
     for my $meet ( QuizSage::Model::Meet->new->every({ season_id => $season->id, hidden => 0 })->@* ) {
         for my $quiz ( QuizSage::Model::Quiz->new->every({ meet_id => $meet->id })->@* ) {
             for my $ruling (
@@ -77,63 +99,71 @@ for my $season ( QuizSage::Model::Season->new->every({ hidden => 0 })->@* ) {
                 $quizzer_bibles->{ $_->{bible} }++
                     for ( map { $_->{quizzers}->@* } $quiz->data->{state}{teams}->@* );
 
-                say csv(
-                    $season->data->{name},
-                    $season->data->{location},
+                my $reference =
+                    $ruling->{query}{book} . ' ' .
+                    $ruling->{query}{chapter} . ':' .
+                    $ruling->{query}{verse};
 
-                    $meet->data->{name},
-                    $meet->data->{location},
+                row({
+                    'Season name'     => $season->data->{name},
+                    'Season location' => $season->data->{location},
+                    'Meet name'       => $meet->data->{name},
+                    'Meet location'   => $meet->data->{location},
+                    'Quiz bracket'    => $quiz->data->{bracket},
+                    'Quiz name'       => $quiz->data->{name},
 
-                    $quiz->data->{bracket},
-                    $quiz->data->{name},
+                    'Query ID'        => $ruling->{id},
+                    'Query type'      => $ruling->{type},
+                    'Query bible'     => $ruling->{query}{bible},
+                    'Query reference' => $reference,
+                    'Club list'       => $verse_to_list->{$reference} // 'Full',
 
-                    $ruling->{id},
-                    $ruling->{type},
-                    $ruling->{query}{bible},
-                    join( ' ', $ruling->{query}{book}, $ruling->{query}{chapter}, $ruling->{query}{verse} ),
-                    $ruling->{action},
+                    'Ruling action'                     => $ruling->{action},
+                    'Ruling score query'                => $ruling->{score}{query},
+                    'Ruling score quizzer increment'    => $ruling->{score}{quizzer_increment},
+                    'Ruling score quizzer sum'          => $ruling->{score}{quizzer_sum},
+                    'Ruling score ceiling bonus'        => $ruling->{score}{ceiling_bonus},
+                    'Ruling score nth quizzer bonus'    => $ruling->{score}{nth_quizzer_bonus},
+                    'Ruling score follow bonus'         => $ruling->{score}{follow_bonus},
+                    'Ruling score team bonus increment' => $ruling->{score}{team_bonus_increment},
+                    'Ruling score team increment'       => $ruling->{score}{team_increment},
+                    'Ruling score team sum'             => $ruling->{score}{team_sum},
 
-                    $ruling->{score}{query},
-                    $ruling->{score}{quizzer_increment},
-                    $ruling->{score}{quizzer_sum},
-                    $ruling->{score}{ceiling_bonus},
-                    $ruling->{score}{nth_quizzer_bonus},
-                    $ruling->{score}{follow_bonus},
-                    $ruling->{score}{team_bonus_increment},
-                    $ruling->{score}{team_increment},
-                    $ruling->{score}{team_sum},
+                    'Team name'               => ( ($team) ? $team->{name} : '' ),
+                    'Team timeouts remaining' => ( ($team) ? $team->{timeouts_remaining} : '' ),
+                    'Team score position'     => ( ($team) ? $team->{score}{position} : '' ),
+                    'Team score points'       => ( ($team) ? $team->{score}{points} : '' ),
 
-                    ($team) ? (
-                        $team->{name},
-                        $team->{timeouts_remaining},
-                        $team->{score}{position},
-                        $team->{score}{points},
-                    ) : ( '' x 4 ),
+                    'Quizzer name'  => ( ($quizzer) ? $quizzer->{name} : '' ),
+                    'Quizzer bible' => ( ($quizzer) ? $quizzer->{bible} : '' ),
+                    'Quizzer tags'  => ( ($quizzer) ? join( ', ', sort +( $quizzer->{tags} // [] )->@* ) : '' ),
 
-                    ($quizzer) ? (
-                        $quizzer->{name},
-                        $quizzer->{bible},
-                        join( ', ', sort +( $quizzer->{tags} // [] )->@* ),
-                    ) : ( '' x 3 ),
+                    'Quizzer score correct'
+                        => ( $quizzer and $quizzer->{score} ) ? $quizzer->{score}{correct} : '',
+                    'Quizzer score incorrect'
+                        => ( $quizzer and $quizzer->{score} ) ? $quizzer->{score}{incorrect} : '',
+                    'Quizzer score open book'
+                        => ( $quizzer and $quizzer->{score} ) ? $quizzer->{score}{open_book} : '',
+                    'Quizzer score points'
+                        => ( $quizzer and $quizzer->{score} ) ? $quizzer->{score}{points} : '',
+                    'Quizzer score team points'
+                        => ( $quizzer and $quizzer->{score} ) ? $quizzer->{score}{team_points} : '',
 
-                    ( $quizzer->{score} ) ? (
-                        $quizzer->{score}{correct},
-                        $quizzer->{score}{incorrect},
-                        $quizzer->{score}{open_book},
-                        $quizzer->{score}{points},
-                        $quizzer->{score}{team_points},
-                    ) : ( '' x 5 ),
-
-                    join( ', ',
-                        map { $_ . ' (' . $quizzer_bibles->{$_} . ')' } sort keys %$quizzer_bibles
-                    ),
-                );
+                    'Quiz/quizzer bible count'
+                        => join( ', ',
+                            map { $_ . ' (' . $quizzer_bibles->{$_} . ')' } sort keys %$quizzer_bibles
+                        ),
+                });
             }
         }
     }
 }
 
-sub csv {
+sub row ($data) {
+    say csv( map { $data->{$_} } @columns );
+}
+
+sub csv (@cells) {
     return join( ',', map {
         if ( not defined $_ ) {
             '',
@@ -145,5 +175,5 @@ sub csv {
         else {
             $_;
         }
-    } @_ );
+    } @cells );
 }
