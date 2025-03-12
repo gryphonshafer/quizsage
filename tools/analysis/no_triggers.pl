@@ -70,7 +70,7 @@ for my $season ( QuizSage::Model::Season->new->every({
                 grep {
                     $_->{action} eq 'no_trigger'
                     and $_->{type} !~ /Q/
-                    and not $quizzer_bibles->{ESV}
+                    # and not $quizzer_bibles->{ESV}
                 } $quiz->data->{state}{board}->@*
             ) {
                 my $reference =
@@ -127,12 +127,12 @@ for (@$findings) {
     } $_->{teams}->@* };
 
     $_->{quizzers_who_know_verse} = join( '; ', map {
-        $_->{name} . ' (' . join( ', ',
+        join( ', ',
             $_->{bible},
             $_->{stats}{position} . ' of ' . $_->{stats}{count},
             int( $_->{stats}{position} / $_->{stats}{count} * 100 ) . '%',
             $quizzer_team->{ $_->{name} },
-        ) . ')'
+        )
     } $_->{quizzers_who_know_verse}->@* );
 
     $_->{teams} = join( ', ', map { $_->{name} } $_->{teams}->@* );
