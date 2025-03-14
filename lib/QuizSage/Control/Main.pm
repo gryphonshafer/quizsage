@@ -89,6 +89,7 @@ sub setup ($self) {
             $settings->{reference} = ( $self->req->param('reference') ) ? 1 : 0;
             $settings->{$_}        = ( $self->req->param($_) ) ? 0 + $self->req->param( $_ . '_number' ) : 0
                 for ( qw( whole chapter phrases ) );
+            $settings->{concordance} = ( $self->req->param('concordance') ) ? 1 : 0;
 
             $settings->{$_} = $self->req->param($_) for ( qw(
                 page_width

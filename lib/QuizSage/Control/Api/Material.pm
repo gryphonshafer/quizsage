@@ -37,6 +37,7 @@ sub _get_reference_data ($self) {
             whole
             chapter
             phrases
+            concordance
             force
             page_width
             page_height

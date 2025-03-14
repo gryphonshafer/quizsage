@@ -160,6 +160,10 @@
                 <input type="checkbox" name="phrases">
                 Global [% PROCESS pick_number, type = 'phrases', default = 4, max = 7 %]-Word Key Phrases
             </label>
+            <label>
+                <input type="checkbox" name="concordance">
+                Include Concordance
+            </label>
         </fieldset>
 
         <fieldset class="ref_gen_print">

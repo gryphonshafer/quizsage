@@ -150,6 +150,7 @@ paths:
                 - $ref: '#/components/parameters/whole'
                 - $ref: '#/components/parameters/chapter'
                 - $ref: '#/components/parameters/phrases'
+                - $ref: '#/components/parameters/concordance'
                 - $ref: '#/components/parameters/page_width'
                 - $ref: '#/components/parameters/page_height'
                 - $ref: '#/components/parameters/page_right_margin_left'
@@ -263,6 +264,7 @@ paths:
                 - $ref: '#/components/parameters/whole'
                 - $ref: '#/components/parameters/chapter'
                 - $ref: '#/components/parameters/phrases'
+                - $ref: '#/components/parameters/concordance'
                 - $ref: '#/components/parameters/page_width'
                 - $ref: '#/components/parameters/page_height'
                 - $ref: '#/components/parameters/page_right_margin_left'
@@ -325,7 +327,7 @@ components:
         chapter:
             name: chapter
             in: query
-            description: Include key phrases by chapter.
+            description: Include unique phrases by chapter.
             example: 3
             schema:
                 type: integer
@@ -333,11 +335,19 @@ components:
         phrases:
             name: phrases
             in: query
-            description: Include global key phrases.
+            description: Include global unique phrases.
             example: 4
             schema:
                 type: integer
                 default: 0
+        concordance:
+            name: concordance
+            in: query
+            description: Include a concordance.
+            example: 'false'
+            schema:
+                type: boolean
+                default: false
         page_width:
             name: page_width
             in: query

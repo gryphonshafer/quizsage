@@ -67,7 +67,10 @@ sub record ($self) {
                 }
                 catch ($e) {
                     $self->notice($e);
-                    $self->flash( message => 'There was an unexpected error in editing the season' );
+                    $self->flash( memo => {
+                        class   => 'error',
+                        message => 'There was an unexpected error in editing the season',
+                    } );
                     return $self->redirect_to( '/season/' . $self->param('season_id') . '/edit' );
                 }
             }

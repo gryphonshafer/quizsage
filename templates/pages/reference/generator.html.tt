@@ -34,6 +34,12 @@
 [% END %]
 
 [% FOR section IN sections %]
+    [%
+        IF section.header == 'Concordance';
+            concordance = section;
+            NEXT;
+        END;
+    %]
     <h2>[% section.header %]</h2>
     [% FOR block IN section.blocks %]
         <h3>[% block.header %]</h3>
@@ -50,6 +56,27 @@
                 </tr>
             [% END %]
         </table>
+    [% END %]
+[% END %]
+
+[% IF concordance %]</h2>
+    <h2>[% concordance.header %]</h2>
+    [% FOR block IN concordance.blocks %]
+        <h3>[% block.header %]</h3>
+        [% FOR entry IN block.rows %]
+            <h4>[% entry.word %] ([% entry.verses.size %])</h4>
+
+            [% IF entry.verses.size < 20 %]
+                <table>
+                    [% FOR verse IN entry.verses %]
+                        <tr>
+                            <td class="ref">[% verse.ref_short %]</td>
+                            <td>[% verse.text %]</td>
+                        </tr>
+                    [% END %]
+                </table>
+            [% END %]
+        [% END %]
     [% END %]
 [% END %]
 
@@ -102,6 +129,10 @@
     h3 {
         font-size : 18px;
         text-align: right;
+    }
+
+    h4 {
+        font-size : 16px;
     }
 
     table {

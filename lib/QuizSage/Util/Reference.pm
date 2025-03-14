@@ -19,6 +19,7 @@ fun reference_data (
     :$whole          = 5,     # words for whole section
     :$chapter        = 3,     # words for chapter section
     :$phrases        = 4,     # words for phrases section
+    :$concordance    = 0,     # boolean; include concordance
     :$force          = 0,     # force data regeneration (and update JSON cache file)
 
     :$page_width               = 8.5,
@@ -32,8 +33,9 @@ fun reference_data (
     :$page_left_margin_top     = 0.5,
     :$page_left_margin_bottom  = 0.5,
 ) {
-    croak('Not all required parameters provided')
-        unless ( $material_label and $bible and ( $reference or $whole or $chapter or $phrases ) );
+    croak('Not all required parameters provided') unless (
+        $material_label and $bible and ( $reference or $whole or $chapter or $phrases or $concordance )
+    );
 
     $bible = uc $bible;
 
@@ -55,6 +57,7 @@ fun reference_data (
             $whole,
             $chapter,
             $phrases,
+            $concordance,
             $page_width,
             $page_height,
             $page_right_margin_left,
@@ -155,7 +158,10 @@ fun reference_data (
     } ) if $reference;
 
     push( $data->{sections}->@*, {
-        header => 'Alphabetical Material from First ' . $whole . ' Words',
+        header => ( ( $whole > 1 )
+            ? 'Alphabetical Material from First ' . $whole . ' Words'
+            : 'Alphabetical Material from First Word'
+        ),
         blocks => [ map {
             my $this_bible = $_;
             +{
@@ -198,7 +204,10 @@ fun reference_data (
     } ) if $whole;
 
     push( $data->{sections}->@*, {
-        header => $chapter . '-Word Key Phrases by Chapter',
+        header => ( ( $chapter > 1 )
+            ? $chapter . '-Word Unique Phrases by Chapter'
+            : 'Unique Words by Chapter'
+        ),
         blocks => [ map {
             my $this_bible = $_;
             my $these_phrases;
@@ -246,7 +255,10 @@ fun reference_data (
     } ) if $chapter;
 
     push( $data->{sections}->@*, {
-        header => 'Global ' . $phrases . '-Word Key Phrases',
+        header => ( ( $phrases > 1 )
+            ? 'Global ' . $phrases . '-Word Unique Phrases'
+            : 'Global Unique Words'
+        ),
         blocks => [ map {
             my $this_bible = $_;
             my $these_phrases;
@@ -279,6 +291,42 @@ fun reference_data (
             };
         } @$bibles ],
     } ) if $phrases;
+
+    push( $data->{sections}->@*, {
+        header => 'Concordance',
+        blocks => [ map {
+            my $this_bible = $_;
+            my $these_words;
+
+            for my $verse ( $content->@* ) {
+                push( $these_words->{$_}->@*, $verse->{ref_short} )
+                    for ( $verse->{bibles}{$this_bible}{words}->@* );
+            }
+
+            +{
+                header => $this_bible,
+                rows   => [
+                    map {
+                        +{
+                            word   => $_,
+                            verses => [ map {
+                                my $ref_short = $_;
+                                map {
+                                    +{
+                                        ref_short => $_->{ref_short},
+                                        text      => $_->{bibles}{$bible}{text},
+                                    };
+                                }
+                                grep {
+                                    $_->{ref_short} eq $ref_short
+                                } $content->@*;
+                            } $these_words->{$_}->@* ],
+                        }
+                    } sort keys %$these_words
+                ],
+            };
+        } @$bibles ],
+    } ) if $concordance;
 
     $data->{bible} = shift @{ $data->{bibles} };
 
@@ -339,15 +387,16 @@ QuizSage::Util::Reference
     use QuizSage::Util::Reference 'reference_data';
 
     my $reference_data = reference_data(
-        label     => 'Luke ESV NIV', # material label/description
-        user_id   => 42,             # user ID from application database
-        bible     => 'NIV',          # acronym for memorized Bible
-        cover     => 1,              # boolean; include cover page
-        reference => 1,              # boolean; include reference section
-        whole     => 5,              # words for whole section
-        chapter   => 3,              # words for chapter section
-        phrases   => 4,              # words for phrases section
-        force     => 0,              # force data regeneration
+        label        => 'Luke ESV NIV', # material label/description
+        user_id      => 42,             # user ID from application database
+        bible        => 'NIV',          # acronym for memorized Bible
+        cover        => 1,              # boolean; include cover page
+        reference    => 1,              # boolean; include reference section
+        whole        => 5,              # words for whole section
+        chapter      => 3,              # words for chapter section
+        phrases      => 4,              # words for phrases section
+        concordance  => 0,              # boolean; include concordance
+        force        => 0,              # force data regeneration
     );
 
 =head1 DESCRIPTION
@@ -361,15 +410,16 @@ This package provides exportable reference material functions.
 This function generates reference material.
 
     my $reference_data = reference_data(
-        label     => 'Luke ESV NIV', # material label/description
-        user_id   => 42,             # user ID from application database
-        bible     => 'NIV',          # acronym for memorized Bible
-        cover     => 1,              # boolean; include cover page
-        reference => 1,              # boolean; include reference section
-        whole     => 5,              # words for whole section
-        chapter   => 3,              # words for chapter section
-        phrases   => 4,              # words for phrases section
-        force     => 0,              # force data regeneration
+        label        => 'Luke ESV NIV', # material label/description
+        user_id      => 42,             # user ID from application database
+        bible        => 'NIV',          # acronym for memorized Bible
+        cover        => 1,              # boolean; include cover page
+        reference    => 1,              # boolean; include reference section
+        whole        => 5,              # words for whole section
+        chapter      => 3,              # words for chapter section
+        phrases      => 4,              # words for phrases section
+        concordance  => 0,              # boolean; include concordance
+        force        => 0,              # force data regeneration
     );
 
 =head2 reference_html

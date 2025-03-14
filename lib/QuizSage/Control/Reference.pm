@@ -19,13 +19,21 @@ sub lookup ($self) {
 
 sub generator ($self) {
     $self->stash( skip_packer => 1 );
-    $self->render( text => reference_html(
-        $self,
-        reference_data(
-            user_id => $self->stash('user')->id,
-            $self->stash('user')->data->{settings}{ref_gen}->%*,
-        ),
-    ) );
+
+    try {
+        $self->render( text => reference_html(
+            $self,
+            reference_data(
+                user_id => $self->stash('user')->id,
+                $self->stash('user')->data->{settings}{ref_gen}->%*,
+            ),
+        ) );
+    }
+    catch ($e) {
+        $self->notice( deat $e );
+        $self->flash( memo => { class   => 'error', message => deat $e } );
+        return $self->redirect_to('/reference/generator/setup');
+    }
 }
 
 1;
