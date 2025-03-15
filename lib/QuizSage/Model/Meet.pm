@@ -307,6 +307,30 @@ sub quiz_settings ( $self, $bracket_name, $quiz_name ) {
     return $quiz;
 }
 
+sub distribution ($self) {
+    my $build = $self->data->{build};
+
+    for my $bracket ( $build->{brackets}->@* ) {
+        for my $quiz ( map { $_->{rooms}->@* } $bracket->{sets}->@* ) {
+            if ( grep { $_->{bible} and $_->{bible} eq '?' } $quiz->{distribution}->@* ) {
+                try {
+                    my $quiz_obj = QuizSage::Model::Quiz->new->load({
+                        meet_id => $self->id,
+                        bracket => $bracket->{name},
+                        name    => $quiz->{name},
+                    });
+
+                    $quiz->{distribution} = $quiz_obj->data->{settings}{distribution}
+                        if ( $quiz_obj->data->{settings}{distribution} );
+                }
+                catch ($e) {}
+            }
+        }
+    }
+
+    return $build;
+}
+
 sub stats ($self) {
     return $self->data->{stats} if (
         $self->data->{stats}->%* and
@@ -797,6 +821,14 @@ This method requires a bracket name and quiz name as input; it will return a
 quiz settings data structure suitable for L<QuizSage::Model::Quiz> objects.
 
     my $quiz_settings = $meet->quiz_settings( 'Bracket Name', 'Quiz Name' );
+
+=head2 distribution
+
+This method primarily just returns the meet's C<build> data. However, if there
+are any cases where a quiz's distribution includes Bible translations of C<?>
+and the quiz has itself been build (which therefore means it has actual
+translations), then the quiz's distribution is copied into the data structure
+that's returned from this method.
 
 =head2 stats
 

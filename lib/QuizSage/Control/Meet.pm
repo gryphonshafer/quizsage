@@ -45,7 +45,7 @@ sub roster ($self) {
 sub distribution ($self) {
     my $meet = QuizSage::Model::Meet->new->load( $self->param('meet_id') );
     $self->stash(
-        build => $meet->data->{build},
+        build => $meet->distribution,
         meet  => $meet,
     );
 }
