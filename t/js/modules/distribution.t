@@ -20,14 +20,25 @@ my $distribution = Omniframe::Class::Javascript->new(
         );
     },
     {
-        types       => [ qw( P C Q F ) ],
         bibles      => [ qw( NIV NASB ) ],
         teams_count => 3,
+        types       => {
+            p => { fresh_bible => 1 },
+            c => { fresh_bible => 1 },
+            q => { fresh_bible => 0 },
+            f => { fresh_bible => 1 },
+        },
     },
 )->[0][0];
 
 is( scalar(@$distribution), 12, '12 primary queries for 3 teams' );
-is( scalar( grep { $_->{bible} eq 'NIV' } @$distribution ), 6, '50% of queries are NIV' );
+
+my $bible_count = grep { $_->{bible} and $_->{bible} eq 'NIV' } @$distribution;
+ok(
+    $bible_count == 4 || $bible_count == 5,
+    '~50% of non-Q queries are NIV',
+);
+
 is( scalar( grep { $_->{type} eq 'Q' } @$distribution ), 3, '25% of queries are Q' );
 isnt( $distribution->[0]{bible}, $distribution->[1]{bible}, 'bibles rotate' );
 
