@@ -8,8 +8,6 @@ export default class Queries {
         chapter_reference_minimum_reply_length : 1,
         finish_prompt_length                   : 5,
         finish_minimum_reply_length            : 1,
-        // cross_reference_minimum_prompt_length  : 4,
-        // cross_reference_minimum_references     : 2,
     };
 
     constructor ( inputs = { queries : {} } ) {
@@ -22,7 +20,6 @@ export default class Queries {
         );
 
         this.references_selected = inputs.queries.references_selected || [];
-        this.prompts_selected    = inputs.queries.prompts_selected    || [];
 
         this.material = new Material(inputs);
         this.ready    = this.material.ready;
@@ -30,13 +27,11 @@ export default class Queries {
 
     reset() {
         this.references_selected = [];
-        this.prompts_selected    = [];
     }
 
     save() {
         const data = {
             references_selected: this.references_selected,
-            prompts_selected   : this.prompts_selected,
         };
 
         Object.keys(data).forEach( key => {
@@ -51,7 +46,6 @@ export default class Queries {
         c: { method: 'cr',     label: 'Chapter Reference' },
         q: { method: 'quote',  label: 'Quote'             },
         f: { method: 'finish', label: 'Finish'            },
-        // x: { method: 'xr',     label: 'Cross-Reference'   },
     };
 
     create( type, bible = undefined ) {
@@ -127,16 +121,7 @@ export default class Queries {
         });
     }
 
-    // create_xr(bible) {
-    //     return this.#prep_return_data( this.#find_phrase_block(
-    //         bible,
-    //         'xr',
-    //         this.cross_reference_minimum_prompt_length,
-    //         this.cross_reference_minimum_references,
-    //     ) );
-    // }
-
-    #select_verse( bible, type = 'not_xr', refs_filter = [] ) {
+    #select_verse( bible, refs_filter = [] ) {
         let verses;
         let attempts = 0;
 
@@ -145,15 +130,9 @@ export default class Queries {
             if ( attempts > 2 ) throw 'Unable to select a verse from which to construct query';
 
             verses = this.material.verses(bible).filter( verse =>
-                type != 'xr' &&
                 ! [ ...this.references_selected, ...refs_filter ].find(
                     reference => reference == verse.reference
-                ) ||
-                type == 'xr' &&
-                ! this.prompts_selected.find(
-                    prompt => verse.string.match( '\\b' + prompt.join('\\W+') + '\\b' )
-                ) &&
-                ! refs_filter.find( reference => reference == verse.reference )
+                )
             );
 
             if ( verses.length > 0 ) break;
@@ -208,7 +187,7 @@ export default class Queries {
                 let verse_candidate;
 
                 try {
-                    verse_candidate = this.#select_verse( bible, type, refs_filter );
+                    verse_candidate = this.#select_verse( bible, refs_filter );
                 }
                 catch (e) {
                     // if #select_verse can't select a verse, then clear
@@ -220,7 +199,7 @@ export default class Queries {
                     refs_filter = [];
                     this.reset();
 
-                    verse_candidate = this.#select_verse( bible, type, refs_filter );
+                    verse_candidate = this.#select_verse( bible, refs_filter );
                 }
 
                 if ( reset_count >= 3 )
@@ -246,7 +225,6 @@ export default class Queries {
 
                         if (
                             type == 'phrase' && verses_with_phrase.length == 1 ||
-                            type == 'xr' && verses_with_phrase.length > 1 ||
                             type == 'cr' &&
                             verses_with_phrase
                                 .filter(
@@ -294,7 +272,6 @@ export default class Queries {
 
                     if (
                         type == 'phrase' && verses_with_phrase.length == 1 ||
-                        type == 'xr' && verses_with_phrase.length > 1 ||
                         type == 'cr' &&
                         verses_with_phrase
                             .filter(
@@ -326,32 +303,17 @@ export default class Queries {
                 if ( phrase_suffix_length > 0 )
                     prompt_words = verse.words.slice( phrase_start, phrase_start + phrase_length ).join(' ');
 
-                if ( type != 'xr' ) {
-                    if ( [ ...verse.string.matchAll( '\\b' + prompt_words + '\\b' ) ].length == 1 ) {
-                        const [ prompt, reply, full_reply, prompt_words ] =
-                            this.#prompt_reply_text( verse, phrase_start, phrase_length, next_break );
+                if ( [ ...verse.string.matchAll( '\\b' + prompt_words + '\\b' ) ].length == 1 ) {
+                    const [ prompt, reply, full_reply, prompt_words ] =
+                        this.#prompt_reply_text( verse, phrase_start, phrase_length, next_break );
 
-                        return {
-                            type      : type,
-                            prompt    : prompt,
-                            reply     : reply,
-                            full_reply: full_reply,
-                            verse     : verse,
-                        };
-                    }
-                }
-                else {
-                    if ( verses_with_phrase.length >= min_reply ) {
-                        const [ prompt, reply, full_reply, prompt_words ] =
-                            this.#prompt_reply_text( verse, phrase_start, phrase_length );
-
-                        return {
-                            type        : type,
-                            prompt      : prompt,
-                            verses      : verses_with_phrase,
-                            prompt_words: prompt_words,
-                        };
-                    }
+                    return {
+                        type      : type,
+                        prompt    : prompt,
+                        reply     : reply,
+                        full_reply: full_reply,
+                        verse     : verse,
+                    };
                 }
             }
         }
@@ -366,37 +328,22 @@ export default class Queries {
             prompt   : block.prompt,
         };
 
-        if ( type != 'X' ) {
-            this.references_selected.push( block.verse.reference );
+        this.references_selected.push( block.verse.reference );
 
-            return_data = {
-                ...return_data,
-                reply     : block.reply,
-                full_reply: block.full_reply,
-                bible     : block.verse.bible,
-                book      : block.verse.book,
-                chapter   : block.verse.chapter,
-                verse     : block.verse.verse,
-            };
-        }
-        else {
-            this.prompts_selected.push( block.prompt_words );
-
-            return_data = {
-                ...return_data,
-                bible     : block.verses[0].bible,
-                references: block.verses.map(
-                    verse => verse.book + ' ' + verse.chapter  + ':' + verse.verse
-                ),
-            };
-        }
+        return_data = {
+            ...return_data,
+            reply     : block.reply,
+            full_reply: block.full_reply,
+            bible     : block.verse.bible,
+            book      : block.verse.book,
+            chapter   : block.verse.chapter,
+            verse     : block.verse.verse,
+        };
 
         return JSON.parse( JSON.stringify(return_data) );
     }
 
     add_verse(query) {
-        if ( query.type == 'xr' ) return query;
-
         const next_verse = this.material.next_verse(
             query.book,
             query.chapter,
@@ -426,7 +373,6 @@ export default class Queries {
     }
 
     remove_verse(query) {
-        if ( query.type == 'xr' ) return query;
         if ( ! query.original ) throw 'Unable to remove verse';
 
         for ( let key in query ) {
