@@ -71,10 +71,9 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
 
     # parse material label, append missing bibles, and build material JSON
 
-    my $roster_bibles = { map { $_->{bible} => 1 } map { $_->{quizzers}->@* } @{ $quiz_settings->{teams} } };
-    my $label         = QuizSage::Model::Label->new( maybe user_id => $user->id );
-    my $label_data    = $label->parse(
-        $pickup_settings->{material_label} // $quiz_defaults->{material_label}
+    my $label      = QuizSage::Model::Label->new( maybe user_id => $user->id );
+    my $label_data = $label->parse(
+        $pickup_settings->{material_label}  // $quiz_defaults->{material_label}
     );
 
     $label_data->{bibles}          //= {};
@@ -85,11 +84,19 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
         $label_data->{bibles}{auxiliary} // [],
     ) ];
 
-    push( @{ $label_data->{bibles}{primary} }, $_ ) for (
+    my $roster_bibles = { map { $_->{bible} => 1 } map { $_->{quizzers}->@* } @{ $quiz_settings->{teams} } };
+    $roster_bibles    = [ keys %$roster_bibles ];
+
+    my $distribution_bibles = [ grep {
+        my $roster_bible = $_;
+        grep { $roster_bible eq $_ } $label_data->{bibles}{primary}->@*;
+    } @$roster_bibles ];
+
+    push( @{ $label_data->{bibles}{auxiliary} }, $_ ) for (
         grep {
             my $roster_bible = $_;
             not grep { $_ eq $roster_bible } @$label_bibles;
-        } keys %$roster_bibles
+        } @$roster_bibles
     );
 
     $quiz_settings->{material} = $self->create_material_json_from_label( $label_data, $user );
@@ -107,7 +114,7 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
     )->run(
         $root_dir . '/ocjs/lib/Model/Meet/distribution.js',
         {
-            bibles      => $label_data->{bibles}{primary},
+            bibles      => $distribution_bibles,
             teams_count => scalar( $quiz_settings->{teams}->@* ),
         },
     )->[0][0];
