@@ -36,7 +36,8 @@
 
 [% scroll_to = BLOCK %]
     window.addEventListener( 'load', () => {
-        window.document.querySelector('div.team_highlight_on').scrollIntoView();
+        const team_highlight_on = window.document.querySelector('div.team_highlight_on');
+        if (team_highlight_on) team_highlight_on.scrollIntoView();
     } );
 [% END %]
 [% page.js.inline.push(scroll_to) %]
