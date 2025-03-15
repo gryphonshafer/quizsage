@@ -145,6 +145,41 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
     });
 }
 
+sub distribution_check ($self) {
+    return unless ( grep { $_->{bible} and $_->{bible} eq '?' } $self->data->{settings}{distribution}->@* );
+
+    my $primary_bibles = QuizSage::Model::Label->new->parse(
+        $self->data->{settings}{material}{description}
+    )->{bibles}{primary};
+
+    my $roster_bibles = {
+        map { $_->{bible} => 1 }
+        map { $_->{quizzers}->@* }
+        $self->data->{settings}{teams}->@*
+    };
+    $roster_bibles = [ keys %$roster_bibles ];
+
+    my @quiz_bibles = grep {
+        my $primary_bible = $_;
+        grep { $primary_bible eq $_ } @$roster_bibles;
+    } @$primary_bibles;
+
+    @quiz_bibles = @$primary_bibles unless (@quiz_bibles);
+
+    @quiz_bibles = map { $_->[0] } sort { $a->[1] <=> $b->[1] } map { [ $_, rand ] } @quiz_bibles
+        if ( @quiz_bibles > 1 );
+
+    for my $query ( $self->data->{settings}{distribution}->@* ) {
+        if ( $query->{bible} and $query->{bible} eq '?' ) {
+            $query->{bible} = $quiz_bibles[0];
+            push( @quiz_bibles, shift @quiz_bibles );
+        }
+    }
+
+    $self->save;
+    return;
+}
+
 sub latest_quiz_in_meet_room ( $self, $meet_id, $room_number ) {
     my $quiz_id = $self->dq->sql(q{
         SELECT quiz_id
@@ -301,6 +336,12 @@ C<pickup_quiz> (if a user was provided as input)
 
 Any missing configuration values are pulled from quiz settings defaults from the
 C<quiz_defaults> configuration value.
+
+=head2 distribution_check
+
+Checks to see if the distribution has any Bible translations set as C<?>. If so,
+it will then assign translations to these distribution positions and save the
+quiz object's data.
 
 =head2 latest_quiz_in_meet_room
 

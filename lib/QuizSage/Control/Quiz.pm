@@ -83,16 +83,17 @@ sub build ($self) {
         } $self->every_param('team')->@*
     ];
 
-    my $quiz_id = QuizSage::Model::Quiz->new->create({
+    my $quiz = QuizSage::Model::Quiz->new->create({
         meet_id  => $meet->id,
         user_id  => $self->stash('user')->id,
         bracket  => $self->param('bracket'),
         name     => $self->param('quiz'),
         settings => $settings,
-    })->id;
+    });
+    $quiz->distribution_check;
 
-    $self->info( 'Quiz build: ' . $quiz_id );
-    return $self->redirect_to( '/quiz/' . $quiz_id );
+    $self->info( 'Quiz build: ' . $quiz->id );
+    return $self->redirect_to( '/quiz/' . $quiz->id );
 }
 
 sub quiz ($self) {

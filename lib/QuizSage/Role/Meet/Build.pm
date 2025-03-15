@@ -640,10 +640,26 @@ sub add_distributions ( $self, $build_settings ) {
                 importmap => $importmap,
             );
 
+            my $roster_bibles = {
+                map { $_->{bible} => 1 }
+                map { $_->{quizzers}->@* }
+                grep { $_->{quizzers} }
+                ( $quiz->{roster} // [] )->@*
+            };
+            $roster_bibles = [ keys %$roster_bibles ];
+
+            my $distribution_bibles = [
+                grep {
+                    my $primary_bible = $_;
+                    grep { $primary_bible eq $_ } @$roster_bibles;
+                }
+                $material_json_bibles->{ $material->{json_file}->to_string }->@*
+            ];
+
             $quiz->{distribution} = $importmap_js->{$importmap_yaml}->run(
                 $root_dir . '/ocjs/lib/Model/Meet/distribution.js',
                 {
-                    bibles      => $material_json_bibles->{ $material->{json_file}->to_string },
+                    bibles      => (@$roster_bibles) ? $distribution_bibles : ['?'],
                     teams_count => scalar( $quiz->{roster}->@* ),
                 },
             )->[0][0];
