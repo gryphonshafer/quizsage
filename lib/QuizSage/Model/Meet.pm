@@ -440,6 +440,8 @@ sub stats ($self) {
             : undef;
     };
 
+    my $gross_points_by_quizzer_by_bibles;
+
     for my $bracket ( $build->{brackets}->@* ) {
         push( @{ $stats->{rankings} }, {
             bracket   => $bracket->{name},
@@ -491,6 +493,9 @@ sub stats ($self) {
             } @$quizzes_data;
 
             for my $quiz_data (@quiz_data) {
+                my $bibles = { map { $_->{bible} => 1 } $quiz_data->{settings}{distribution}->@* };
+                $bibles    = ( keys %$bibles > 1 ) ? 'multiple' : 'singular';
+
                 for my $team ( $quiz_data->{state}{teams}->@* ) {
                     push( @{ $stats->{teams}{ $team->{name} } }, {
                         quiz_id  => $quiz_data->{quiz_id},
@@ -499,15 +504,21 @@ sub stats ($self) {
                         weight   => $quiz->{weight} // $bracket->{weight} // 1,
                         points   => $team->{score}{points},
                         position => $team->{score}{position},
+                        bibles   => $bibles,
                     } );
 
                     for my $quizzer ( $team->{quizzers}->@* ) {
+                        push(
+                            @{ $gross_points_by_quizzer_by_bibles->{ $quizzer->{name} }{$bibles} },
+                            $quizzer->{score}{points},
+                        );
                         push( @{ $stats->{quizzers}{ $quizzer->{name} } }, {
                             quiz_id => $quiz_data->{quiz_id},
                             bracket => $bracket->{name},
                             name    => $quiz_data->{name},
                             weight  => $quiz->{weight} // $bracket->{weight} // 1,
                             points  => $quizzer->{score}{points},
+                            bibles  => $bibles,
                             vra     => scalar( grep {
                                 $_->{action}     eq 'correct'            and
                                 $_->{quizzer_id} eq $quizzer->{id}       and
@@ -523,6 +534,28 @@ sub stats ($self) {
         }
     }
 
+    my @boosts;
+    for my $quizzer (
+        grep {
+            $_->{singular} and
+            $_->{multiple}
+        }
+        values %$gross_points_by_quizzer_by_bibles
+    ) {
+        my %points_avg = map {
+            my $points;
+            $points += $_ for ( $quizzer->{$_}->@* );
+            $_ => $points / @{ $quizzer->{$_} };
+        } keys %$quizzer;
+        push( @boosts, $points_avg{multiple} / $points_avg{singular} );
+    }
+    my $factor;
+    if (@boosts) {
+        $factor += $_ for (@boosts);
+        $factor /= @boosts;
+    }
+    $stats->{meta}{foreign_bibles_boost_factor} = $factor // 1;
+
     my %unique_tags;
     for my $type ( qw( teams quizzers ) ) {
         my ( $position, $quizzes_max ) = ( 0, 0 );
@@ -534,17 +567,28 @@ sub stats ($self) {
                 $a->{name} cmp $b->{name}
             }
             map {
-                my ( $quizzes, $points_sum, $points_avg ) = ( $stats->{$type}{$_}, 0, 0 );
+                my $quizzes = $stats->{$type}{$_};
+                my ( $points_sum, $points_avg, $points_sum_raw, $points_avg_raw ) = (0) x 4;
                 $quizzes_max = @$quizzes if ( @$quizzes > $quizzes_max );
 
-                $points_sum += $_->{points} * $_->{weight} for (@$quizzes);
-                $points_avg = $points_sum / scalar grep { $_->{weight} } @$quizzes;
+                for (@$quizzes) {
+                    $points_sum_raw += $_->{points} * $_->{weight};
+                    $points_sum     += $_->{points} * $_->{weight} * (
+                        ( $_->{bibles} eq 'multiple' )
+                            ? $stats->{meta}{foreign_bibles_boost_factor}
+                            : 1
+                    );
+                }
+                $points_avg     = $points_sum     / scalar grep { $_->{weight} } @$quizzes;
+                $points_avg_raw = $points_sum_raw / scalar grep { $_->{weight} } @$quizzes;
 
                 my $stat = {
-                    name       => $_,
-                    quizzes    => $quizzes,
-                    points_sum => $points_sum,
-                    points_avg => $points_avg,
+                    name           => $_,
+                    quizzes        => $quizzes,
+                    points_sum     => $points_sum,
+                    points_avg     => $points_avg,
+                    points_sum_raw => $points_sum_raw,
+                    points_avg_raw => $points_avg_raw,
                 };
 
                 if ( $type eq 'quizzers' ) {

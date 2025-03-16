@@ -167,6 +167,16 @@
 
 <p>*Indicates a rookie quizzer.</p>
 
+[% IF stats.meta.foreign_bibles_boost_factor AND stats.meta.foreign_bibles_boost_factor != 1 %]
+    <p>
+        <i>
+            (Foreign Bibles boost factor = ~[%
+                stats.meta.foreign_bibles_boost_factor | format('%0.5f')
+            %])
+        </i>
+    </p>
+[% END %]
+
 [% BLOCK by_points_average %]
     <details>
         <summary>
@@ -234,8 +244,20 @@
                                     [% END %]
                                 </td>
                                 <td class="right">
-                                    [% item.points_avg | format('%0.2f') %]<br>
-                                    [% item.points_sum | format('%0.1f') %]
+                                    [% IF
+                                        stats.meta.foreign_bibles_boost_factor AND
+                                        stats.meta.foreign_bibles_boost_factor == 1
+                                    %]
+                                        [% item.points_avg | format('%0.2f') %]<br>
+                                        [% item.points_sum | format('%0.1f') %]
+                                    [% ELSE %]
+                                        [% item.points_avg | format('%0.2f') %]
+                                        /
+                                        [% item.points_sum | format('%0.1f') %]<br>
+                                        <i>([% item.points_avg_raw | format('%0.2f') %]
+                                        /
+                                        [% item.points_sum_raw | format('%0.1f') %])</i>
+                                    [% END %]
                                 </td>
                                 <td>
                                     [%
