@@ -494,8 +494,12 @@ sub stats ( $self, $rebuild = 0 ) {
             } @$quizzes_data;
 
             for my $quiz_data (@quiz_data) {
-                my $bibles = { map { $_->{bible} => 1 } $quiz_data->{settings}{distribution}->@* };
-                $bibles    = ( keys %$bibles > 1 ) ? 'multiple' : 'singular';
+                my $bibles = {
+                    map { $_->{bible} => 1 }
+                    grep { $_->{bible} }
+                    $quiz_data->{settings}{distribution}->@*
+                };
+                $bibles = ( keys %$bibles > 1 ) ? 'multiple' : 'singular';
 
                 for my $team ( $quiz_data->{state}{teams}->@* ) {
                     push( @{ $stats->{teams}{ $team->{name} } }, {
@@ -548,14 +552,14 @@ sub stats ( $self, $rebuild = 0 ) {
             $points += $_ for ( $quizzer->{$_}->@* );
             $_ => $points / @{ $quizzer->{$_} };
         } keys %$quizzer;
-        push( @boosts, $points_avg{multiple} / $points_avg{singular} );
+        push( @boosts, $points_avg{multiple} / $points_avg{singular} ) if ( $points_avg{singular} );
     }
     my $factor;
     if (@boosts) {
         $factor += $_ for (@boosts);
         $factor /= @boosts;
     }
-    $stats->{meta}{foreign_bibles_boost_factor} = $factor // 1;
+    $stats->{meta}{foreign_bibles_boost_factor} = ( defined $factor and $factor > 1 ) ? $factor : 1;
 
     my %unique_tags;
     for my $type ( qw( teams quizzers ) ) {
