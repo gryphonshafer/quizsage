@@ -331,8 +331,9 @@ sub distribution ($self) {
     return $build;
 }
 
-sub stats ($self) {
+sub stats ( $self, $rebuild = 0 ) {
     return $self->data->{stats} if (
+        not $rebuild and
         $self->data->{stats}->%* and
         $time->parse( $self->data->{last_modified} )->{datetime}->epoch >
         $time->parse( conf->get('rebuild_stats_before') )->{datetime}->epoch
@@ -582,6 +583,12 @@ sub stats ($self) {
                 $points_avg     = $points_sum     / scalar grep { $_->{weight} } @$quizzes;
                 $points_avg_raw = $points_sum_raw / scalar grep { $_->{weight} } @$quizzes;
 
+                if ( $rebuild and $rebuild eq 'raw' ) {
+                    $stats->{meta}{foreign_bibles_boost_factor} = 1;
+                    $points_sum = $points_sum_raw;
+                    $points_avg = $points_avg_raw;
+                }
+
                 my $stat = {
                     name           => $_,
                     quizzes        => $quizzes,
@@ -684,7 +691,6 @@ sub admin_auth ( $self, $user ) {
         })->run( $self->id, $user->id )->value
     ) ? 1 : 0;
 }
-
 
 sub admin ( $self, $action, $user_id ) {
     $self->dq->sql(

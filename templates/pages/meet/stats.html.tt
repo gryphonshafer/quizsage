@@ -174,7 +174,17 @@
                 stats.meta.foreign_bibles_boost_factor | format('%0.5f')
             %])
         </i>
+        [% IF qm_auth %]
+            &mdash;
+            <i><a href="[% c.url_for.query( rebuild => 'raw' ) %]">Rebuild using raw numbers</a></i>
+        [% END %]
     </p>
+[% ELSE %]
+    [% IF qm_auth %]
+        <p>
+            <i><a href="[% c.url_for.query( rebuild => 'factor' ) %]">Rebuild with factor if applicable</a></i>
+        </p>
+    [% END %]
 [% END %]
 
 [% BLOCK by_points_average %]
