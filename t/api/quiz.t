@@ -22,7 +22,8 @@ mojo->get_ok(
 )->status_is(200)->json_is(
     array {
         all_items hash {
-            field $_ => E() for ( qw( bible id type ) );
+            field $_ => E() for ( qw( id type ) );
+            etc;
         };
         etc;
     }

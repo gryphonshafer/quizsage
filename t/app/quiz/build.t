@@ -22,10 +22,11 @@ my $mock_meet     = mock 'QuizSage::Model::Meet' => ( override => [
 ] );
 
 my $mock_quiz = mock 'QuizSage::Model::Quiz' => ( override => [
-    new        => sub { $_[0] },
-    every_data => sub { [] },
-    create     => sub { $_[0] },
-    id         => sub { 42 },
+    new                => sub { $_[0] },
+    every_data         => sub { [] },
+    create             => sub { $_[0] },
+    id                 => sub { 42 },
+    distribution_check => sub {},
 ] );
 
 mojo->app->hook( before_routes => sub ($c) { $c->session( user_id => $user->id ) } );

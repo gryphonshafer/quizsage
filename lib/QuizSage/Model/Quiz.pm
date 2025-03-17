@@ -71,10 +71,9 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
 
     # parse material label, append missing bibles, and build material JSON
 
-    my $roster_bibles = { map { $_->{bible} => 1 } map { $_->{quizzers}->@* } @{ $quiz_settings->{teams} } };
-    my $label         = QuizSage::Model::Label->new( maybe user_id => $user->id );
-    my $label_data    = $label->parse(
-        $pickup_settings->{material_label} // $quiz_defaults->{material_label}
+    my $label      = QuizSage::Model::Label->new( maybe user_id => $user->id );
+    my $label_data = $label->parse(
+        $pickup_settings->{material_label}  // $quiz_defaults->{material_label}
     );
 
     $label_data->{bibles}          //= {};
@@ -85,11 +84,19 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
         $label_data->{bibles}{auxiliary} // [],
     ) ];
 
-    push( @{ $label_data->{bibles}{primary} }, $_ ) for (
+    my $roster_bibles = { map { $_->{bible} => 1 } map { $_->{quizzers}->@* } @{ $quiz_settings->{teams} } };
+    $roster_bibles    = [ keys %$roster_bibles ];
+
+    my $distribution_bibles = [ grep {
+        my $roster_bible = $_;
+        grep { $roster_bible eq $_ } $label_data->{bibles}{primary}->@*;
+    } @$roster_bibles ];
+
+    push( @{ $label_data->{bibles}{auxiliary} }, $_ ) for (
         grep {
             my $roster_bible = $_;
             not grep { $_ eq $roster_bible } @$label_bibles;
-        } keys %$roster_bibles
+        } @$roster_bibles
     );
 
     $quiz_settings->{material} = $self->create_material_json_from_label( $label_data, $user );
@@ -107,7 +114,7 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
     )->run(
         $root_dir . '/ocjs/lib/Model/Meet/distribution.js',
         {
-            bibles      => $label_data->{bibles}{primary},
+            bibles      => $distribution_bibles,
             teams_count => scalar( $quiz_settings->{teams}->@* ),
         },
     )->[0][0];
@@ -136,6 +143,41 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
         settings      => $quiz_settings,
         maybe user_id => ($user) ? $user->id : undef,
     });
+}
+
+sub distribution_check ($self) {
+    return unless ( grep { $_->{bible} and $_->{bible} eq '?' } $self->data->{settings}{distribution}->@* );
+
+    my $primary_bibles = QuizSage::Model::Label->new->parse(
+        $self->data->{settings}{material}{description}
+    )->{bibles}{primary};
+
+    my $roster_bibles = {
+        map { $_->{bible} => 1 }
+        map { $_->{quizzers}->@* }
+        $self->data->{settings}{teams}->@*
+    };
+    $roster_bibles = [ keys %$roster_bibles ];
+
+    my @quiz_bibles = grep {
+        my $primary_bible = $_;
+        grep { $primary_bible eq $_ } @$roster_bibles;
+    } @$primary_bibles;
+
+    @quiz_bibles = @$primary_bibles unless (@quiz_bibles);
+
+    @quiz_bibles = map { $_->[0] } sort { $a->[1] <=> $b->[1] } map { [ $_, rand ] } @quiz_bibles
+        if ( @quiz_bibles > 1 );
+
+    for my $query ( $self->data->{settings}{distribution}->@* ) {
+        if ( $query->{bible} and $query->{bible} eq '?' ) {
+            $query->{bible} = $quiz_bibles[0];
+            push( @quiz_bibles, shift @quiz_bibles );
+        }
+    }
+
+    $self->save;
+    return;
 }
 
 sub latest_quiz_in_meet_room ( $self, $meet_id, $room_number ) {
@@ -294,6 +336,12 @@ C<pickup_quiz> (if a user was provided as input)
 
 Any missing configuration values are pulled from quiz settings defaults from the
 C<quiz_defaults> configuration value.
+
+=head2 distribution_check
+
+Checks to see if the distribution has any Bible translations set as C<?>. If so,
+it will then assign translations to these distribution positions and save the
+quiz object's data.
 
 =head2 latest_quiz_in_meet_room
 

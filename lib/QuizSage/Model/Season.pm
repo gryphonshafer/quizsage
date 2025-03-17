@@ -69,8 +69,9 @@ sub seasons ($self) {
     ];
 }
 
-sub stats ($self) {
+sub stats ( $self, $rebuild = 0 ) {
     return $self->data->{stats} if (
+        not $rebuild and
         $self->data->{stats}->%* and
         $time->parse( $self->data->{last_modified} )->{datetime}->epoch >
         $time->parse( conf->get('rebuild_stats_before') )->{datetime}->epoch

@@ -61,7 +61,7 @@ export default class Quiz {
 
         this.ready.then( () => {
             this.distribution = this.state.distribution || inputs.quiz.distribution || distribution(
-                Object.keys( this.queries.constructor.types ).map( type => type.toUpperCase() ),
+                this.queries.constructor.types,
                 this.queries.material.primary_bibles,
                 this.teams.length,
             );

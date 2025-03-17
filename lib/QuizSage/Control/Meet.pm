@@ -45,16 +45,19 @@ sub roster ($self) {
 sub distribution ($self) {
     my $meet = QuizSage::Model::Meet->new->load( $self->param('meet_id') );
     $self->stash(
-        build => $meet->data->{build},
+        build => $meet->distribution,
         meet  => $meet,
     );
 }
 
 sub stats ($self) {
-    my $meet = QuizSage::Model::Meet->new->load( $self->param('meet_id') );
+    my $meet    = QuizSage::Model::Meet->new->load( $self->param('meet_id') );
+    my $qm_auth = $self->stash('user')->qm_auth($meet);
+
     $self->stash(
-        stats => $meet->stats,
-        meet  => $meet,
+        stats   => $meet->stats( ($qm_auth) ? $self->param('rebuild') : undef ),
+        qm_auth => $qm_auth,
+        meet    => $meet,
     );
 }
 

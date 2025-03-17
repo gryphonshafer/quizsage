@@ -3,7 +3,7 @@ import Queries      from 'classes/queries';
 
 OCJS.out(
     distribution(
-        Object.keys( Queries.types ).map( type => type.toUpperCase() ),
+        Queries.types,
         OCJS.in.bibles,
         OCJS.in.teams_count,
     )

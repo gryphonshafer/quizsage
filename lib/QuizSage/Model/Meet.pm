@@ -307,8 +307,33 @@ sub quiz_settings ( $self, $bracket_name, $quiz_name ) {
     return $quiz;
 }
 
-sub stats ($self) {
+sub distribution ($self) {
+    my $build = $self->data->{build};
+
+    for my $bracket ( $build->{brackets}->@* ) {
+        for my $quiz ( map { $_->{rooms}->@* } $bracket->{sets}->@* ) {
+            if ( grep { $_->{bible} and $_->{bible} eq '?' } $quiz->{distribution}->@* ) {
+                try {
+                    my $quiz_obj = QuizSage::Model::Quiz->new->load({
+                        meet_id => $self->id,
+                        bracket => $bracket->{name},
+                        name    => $quiz->{name},
+                    });
+
+                    $quiz->{distribution} = $quiz_obj->data->{settings}{distribution}
+                        if ( $quiz_obj->data->{settings}{distribution} );
+                }
+                catch ($e) {}
+            }
+        }
+    }
+
+    return $build;
+}
+
+sub stats ( $self, $rebuild = 0 ) {
     return $self->data->{stats} if (
+        not $rebuild and
         $self->data->{stats}->%* and
         $time->parse( $self->data->{last_modified} )->{datetime}->epoch >
         $time->parse( conf->get('rebuild_stats_before') )->{datetime}->epoch
@@ -416,6 +441,8 @@ sub stats ($self) {
             : undef;
     };
 
+    my $gross_points_by_quizzer_by_bibles;
+
     for my $bracket ( $build->{brackets}->@* ) {
         push( @{ $stats->{rankings} }, {
             bracket   => $bracket->{name},
@@ -467,6 +494,13 @@ sub stats ($self) {
             } @$quizzes_data;
 
             for my $quiz_data (@quiz_data) {
+                my $bibles = {
+                    map { $_->{bible} => 1 }
+                    grep { $_->{bible} }
+                    $quiz_data->{settings}{distribution}->@*
+                };
+                $bibles = ( keys %$bibles > 1 ) ? 'multiple' : 'singular';
+
                 for my $team ( $quiz_data->{state}{teams}->@* ) {
                     push( @{ $stats->{teams}{ $team->{name} } }, {
                         quiz_id  => $quiz_data->{quiz_id},
@@ -475,15 +509,21 @@ sub stats ($self) {
                         weight   => $quiz->{weight} // $bracket->{weight} // 1,
                         points   => $team->{score}{points},
                         position => $team->{score}{position},
+                        bibles   => $bibles,
                     } );
 
                     for my $quizzer ( $team->{quizzers}->@* ) {
+                        push(
+                            @{ $gross_points_by_quizzer_by_bibles->{ $quizzer->{name} }{$bibles} },
+                            $quizzer->{score}{points},
+                        );
                         push( @{ $stats->{quizzers}{ $quizzer->{name} } }, {
                             quiz_id => $quiz_data->{quiz_id},
                             bracket => $bracket->{name},
                             name    => $quiz_data->{name},
                             weight  => $quiz->{weight} // $bracket->{weight} // 1,
                             points  => $quizzer->{score}{points},
+                            bibles  => $bibles,
                             vra     => scalar( grep {
                                 $_->{action}     eq 'correct'            and
                                 $_->{quizzer_id} eq $quizzer->{id}       and
@@ -499,6 +539,28 @@ sub stats ($self) {
         }
     }
 
+    my @boosts;
+    for my $quizzer (
+        grep {
+            $_->{singular} and
+            $_->{multiple}
+        }
+        values %$gross_points_by_quizzer_by_bibles
+    ) {
+        my %points_avg = map {
+            my $points;
+            $points += $_ for ( $quizzer->{$_}->@* );
+            $_ => $points / @{ $quizzer->{$_} };
+        } keys %$quizzer;
+        push( @boosts, $points_avg{multiple} / $points_avg{singular} ) if ( $points_avg{singular} );
+    }
+    my $factor;
+    if (@boosts) {
+        $factor += $_ for (@boosts);
+        $factor /= @boosts;
+    }
+    $stats->{meta}{foreign_bibles_boost_factor} = ( defined $factor and $factor > 1 ) ? $factor : 1;
+
     my %unique_tags;
     for my $type ( qw( teams quizzers ) ) {
         my ( $position, $quizzes_max ) = ( 0, 0 );
@@ -510,17 +572,34 @@ sub stats ($self) {
                 $a->{name} cmp $b->{name}
             }
             map {
-                my ( $quizzes, $points_sum, $points_avg ) = ( $stats->{$type}{$_}, 0, 0 );
+                my $quizzes = $stats->{$type}{$_};
+                my ( $points_sum, $points_avg, $points_sum_raw, $points_avg_raw ) = (0) x 4;
                 $quizzes_max = @$quizzes if ( @$quizzes > $quizzes_max );
 
-                $points_sum += $_->{points} * $_->{weight} for (@$quizzes);
-                $points_avg = $points_sum / scalar grep { $_->{weight} } @$quizzes;
+                for (@$quizzes) {
+                    $points_sum_raw += $_->{points} * $_->{weight};
+                    $points_sum     += $_->{points} * $_->{weight} * (
+                        ( $_->{bibles} eq 'multiple' )
+                            ? $stats->{meta}{foreign_bibles_boost_factor}
+                            : 1
+                    );
+                }
+                $points_avg     = $points_sum     / scalar grep { $_->{weight} } @$quizzes;
+                $points_avg_raw = $points_sum_raw / scalar grep { $_->{weight} } @$quizzes;
+
+                if ( $rebuild and $rebuild eq 'raw' ) {
+                    $stats->{meta}{foreign_bibles_boost_factor} = 1;
+                    $points_sum = $points_sum_raw;
+                    $points_avg = $points_avg_raw;
+                }
 
                 my $stat = {
-                    name       => $_,
-                    quizzes    => $quizzes,
-                    points_sum => $points_sum,
-                    points_avg => $points_avg,
+                    name           => $_,
+                    quizzes        => $quizzes,
+                    points_sum     => $points_sum,
+                    points_avg     => $points_avg,
+                    points_sum_raw => $points_sum_raw,
+                    points_avg_raw => $points_avg_raw,
                 };
 
                 if ( $type eq 'quizzers' ) {
@@ -616,7 +695,6 @@ sub admin_auth ( $self, $user ) {
         })->run( $self->id, $user->id )->value
     ) ? 1 : 0;
 }
-
 
 sub admin ( $self, $action, $user_id ) {
     $self->dq->sql(
@@ -797,6 +875,14 @@ This method requires a bracket name and quiz name as input; it will return a
 quiz settings data structure suitable for L<QuizSage::Model::Quiz> objects.
 
     my $quiz_settings = $meet->quiz_settings( 'Bracket Name', 'Quiz Name' );
+
+=head2 distribution
+
+This method primarily just returns the meet's C<build> data. However, if there
+are any cases where a quiz's distribution includes Bible translations of C<?>
+and the quiz has itself been build (which therefore means it has actual
+translations), then the quiz's distribution is copied into the data structure
+that's returned from this method.
 
 =head2 stats
 

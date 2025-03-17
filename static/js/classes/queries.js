@@ -42,16 +42,16 @@ export default class Queries {
     }
 
     static types = {
-        p: { method: 'phrase', label: 'Phrase'            },
-        c: { method: 'cr',     label: 'Chapter Reference' },
-        q: { method: 'quote',  label: 'Quote'             },
-        f: { method: 'finish', label: 'Finish'            },
+        p: { method: 'phrase', label: 'Phrase',            fresh_bible: true  },
+        c: { method: 'cr',     label: 'Chapter Reference', fresh_bible: true  },
+        q: { method: 'quote',  label: 'Quote',             fresh_bible: false },
+        f: { method: 'finish', label: 'Finish',            fresh_bible: true  },
     };
 
     create( type, bible = undefined ) {
-        bible ||= this.material.next_bible();
         const target_type = this.constructor.types[ type.toLowerCase().substr( 0, 1 ) ];
         if ( ! target_type ) throw '"' + type + '" is not a valid query type';
+        bible ||= ( target_type.fresh_bible ) ? this.material.next_bible() : this.material.current_bible();
         return this[ 'create_' + target_type.method ](bible);
     }
 
