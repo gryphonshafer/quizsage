@@ -734,11 +734,13 @@ sub swap_draw_parts ( $self, $bracket_name, $sets = [], $quizzes = [] ) {
         my ( $quizzes_a, $quizzes_b ) = map { $bracket->{sets}[ $_ - 1 ]->{rooms} } @sets;
 
         if ( $quizzes_a->@* == $quizzes_b->@* ) {
-            my @rosters_a = map { $_->{roster} } $quizzes_a->@*;
-            my @rosters_b = map { $_->{roster} } $quizzes_b->@*;
+            for my $property ( qw{ roster distribution } ) {
+                my @properties_a = map { $_->{$property} } $quizzes_a->@*;
+                my @properties_b = map { $_->{$property} } $quizzes_b->@*;
 
-            $_->{roster} = shift @rosters_b for ( $quizzes_a->@* );
-            $_->{roster} = shift @rosters_a for ( $quizzes_b->@* );
+                $_->{$property} = shift @properties_b for ( $quizzes_a->@* );
+                $_->{$property} = shift @properties_a for ( $quizzes_b->@* );
+            }
         }
         else {
             my @names = map { $_->{name} } map { $_->{rooms}->@* } $bracket->{sets}->@*;
@@ -765,11 +767,13 @@ sub swap_draw_parts ( $self, $bracket_name, $sets = [], $quizzes = [] ) {
         my ($quiz_a) = grep { $_->{name} eq $quizzes[0] } map { $_->{rooms}->@* } $bracket->{sets}->@*;
         my ($quiz_b) = grep { $_->{name} eq $quizzes[1] } map { $_->{rooms}->@* } $bracket->{sets}->@*;
 
-        my $roster_a = $quiz_a->{roster};
-        my $roster_b = $quiz_b->{roster};
+        for my $property ( qw{ roster distribution } ) {
+            my $property_a = $quiz_a->{$property};
+            my $property_b = $quiz_b->{$property};
 
-        $quiz_a->{roster} = $roster_b;
-        $quiz_b->{roster} = $roster_a;
+            $quiz_a->{$property} = $property_b;
+            $quiz_b->{$property} = $property_a;
+        }
     }
 
     $self->save;
