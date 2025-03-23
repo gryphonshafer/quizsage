@@ -552,7 +552,8 @@ sub stats ( $self, $rebuild = 0 ) {
             $points += $_ for ( $quizzer->{$_}->@* );
             $_ => $points / @{ $quizzer->{$_} };
         } keys %$quizzer;
-        push( @boosts, $points_avg{multiple} / $points_avg{singular} ) if ( $points_avg{singular} );
+        push( @boosts, $points_avg{multiple} / $points_avg{singular} )
+            if ( $points_avg{multiple} and $points_avg{singular} );
     }
     my $factor;
     if (@boosts) {

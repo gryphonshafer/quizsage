@@ -165,27 +165,17 @@
     [% END %]
 </details>
 
-<p>*Indicates a rookie quizzer.</p>
-
-[% IF stats.meta.foreign_bibles_boost_factor AND stats.meta.foreign_bibles_boost_factor != 1 %]
-    <p>
-        <i>
-            (Foreign Bibles boost factor = ~[%
+<p class="tight_lines">
+    *Indicates a rookie quizzer.
+    [% IF stats.meta.foreign_bibles_boost_factor AND stats.meta.foreign_bibles_boost_factor != 1 %]
+        <br>
+        <i class="small">
+            (Foreign translations boost factor = ~[%
                 stats.meta.foreign_bibles_boost_factor | format('%0.5f')
             %])
         </i>
-        [% IF qm_auth %]
-            &mdash;
-            <i><a href="[% c.url_for.query( rebuild => 'raw' ) %]">Rebuild using raw numbers</a></i>
-        [% END %]
-    </p>
-[% ELSE %]
-    [% IF qm_auth %]
-        <p>
-            <i><a href="[% c.url_for.query( rebuild => 'factor' ) %]">Rebuild with factor if applicable</a></i>
-        </p>
     [% END %]
-[% END %]
+</p>
 
 [% BLOCK by_points_average %]
     <details>
@@ -214,7 +204,7 @@
                             <sub class="count">#</sub>
                         </th>
                         <th>Name</th>
-                        <th>Avg./Sum</th>
+                        <th class="no_wrap">Avg. / Sum</th>
                         <th>Brackets</th>
                         [% FOR i IN [ 1 .. stats.meta.$type.quizzes_max ] %]
                             <th>Quiz [% i %]</th>
@@ -245,7 +235,7 @@
                                     [% this_position %]
                                     <sub class="count">[% row_position %]</sub>
                                 </td>
-                                <td>
+                                <td class="no_wrap">
                                     [% item.name %][%
                                         IF item.tags AND item.tags.grep('^Rookie$').size %]*[% END %]
                                     [% IF item.team_name %]
@@ -253,7 +243,7 @@
                                         [% item.team_name %]
                                     [% END %]
                                 </td>
-                                <td class="right">
+                                <td class="right no_wrap tight_lines">
                                     [% IF
                                         stats.meta.foreign_bibles_boost_factor AND
                                         stats.meta.foreign_bibles_boost_factor == 1
@@ -264,7 +254,7 @@
                                         [% item.points_avg | format('%0.2f') %]
                                         /
                                         [% item.points_sum | format('%0.1f') %]<br>
-                                        <i>([% item.points_avg_raw | format('%0.2f') %]
+                                        <i class="small">([% item.points_avg_raw | format('%0.2f') %]
                                         /
                                         [% item.points_sum_raw | format('%0.1f') %])</i>
                                     [% END %]
@@ -281,7 +271,7 @@
                                     [% END %]
                                 </td>
                                 [% FOR quiz IN item.quizzes %]
-                                    <td>
+                                    <td class="no_wrap">
                                         [% quiz.points %] pts. <i>(at [% quiz.weight %])</i>
                                         <br>
 
