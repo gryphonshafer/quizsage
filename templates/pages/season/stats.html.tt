@@ -28,12 +28,87 @@
     </table>
 [% END %]
 
-[%
-    PROCESS by_points_average type = 'quizzers', filter_tag = undef;
-    FOR tag IN stats.tags;
-        PROCESS by_points_average type = 'quizzers', filter_tag = tag;
-    END;
-%]
+<details>
+    <summary>Quizzers by Points Average</summary>
+
+    [% IF stats.quizzers.size %]
+        <table class="stats">
+            <thead>
+                <tr>
+                    <th>
+                        Position
+                        <sub class="count">#</sub>
+                    </th>
+                    <th>Name</th>
+                    <th>YTD Avg.</th>
+                    <th>Total Avg.</th>
+                    <th>Total Pts.</th>
+                    <th>VRA Sum</th>
+                    [% FOR meet IN stats.meets %]
+                        <th>
+                            <a href="[% c.url_for( '/meet/' _ meet.meet_id _ '/stats' )
+                                %]">[% meet.name %]</a>
+                        </th>
+                    [% END %]
+                </tr>
+            </thead>
+            <tbody>
+                [%
+                    row_position  = 0;
+                    last_position = undef;
+                    last_item     = undef;
+                %]
+                [% FOR item IN stats.quizzers %]
+                    [%
+                        row_position  = row_position + 1;
+                        this_position = (
+                            NOT last_item OR (
+                                last_item.ytd_avg   != item.ytd_avg OR
+                                last_item.total_avg != item.total_avg
+                            )
+                        ) ? row_position : last_position;
+                    %]
+                    <tr>
+                        <td class="[%
+                            ( last_position != this_position ) ? 'right' : 'right tie'
+                        %]">
+                            [% this_position %]
+                            <sub class="count">[% row_position %]</sub>
+                        </td>
+                        <td>
+                            [% item.name %][%
+                                IF item.tags AND item.tags.grep('^Rookie$').size %]*[% END %]
+                        </td>
+                        <td class="right">[% item.ytd_avg   | format('%0.2f') %]</td>
+                        <td class="right">[% item.total_avg | format('%0.2f') %]</td>
+                        <td class="right">[% item.total_points %]</td>
+                        <td class="right">[% item.vra_sum      %]</td>
+                        [% FOR meet IN item.meets %]
+                            [% IF meet.points_avg.defined %]
+                                <td>
+                                    [% meet.points_avg | format('%0.2f') %] pts.
+                                    <i>(at [% meet.weight || 0 %])</i>
+                                    <br>
+                                    [% meet.points_sum %]
+                                    with [% meet.team_name %]
+                                </td>
+                            [% ELSE %]
+                                <td class="blank_cell"></td>
+                            [% END %]
+                            [% LAST IF loop.count >= stats.meets.size %]
+                        [% END %]
+                    </tr>
+                    [%
+                        last_position = this_position;
+                        last_item     = item;
+                    %]
+                [% END %]
+            </tbody>
+        </table>
+    [% ELSE %]
+        <p>No statistics currently available.</p>
+    [% END %]
+</details>
 
 <details>
     <summary>Quizzers with VRAs</summary>
@@ -102,103 +177,3 @@
 </details>
 
 <p>*Indicates a rookie quizzer.</p>
-
-[% BLOCK by_points_average %]
-    <details>
-        <summary>
-            [% IF filter_tag %]
-                [% filter_tag %]
-            [% ELSE %]
-                All
-            [% END %]
-            [% type.ucfirst %] by Points Average
-        </summary>
-
-        [% has_content = 0 %]
-        [% FOR item IN stats.$type %]
-            [% IF NOT filter_tag OR item.tags AND item.tags.grep( '^' _ filter_tag _ '$' ).size %]
-                [% has_content = 1 %]
-            [% END %]
-        [% END %]
-
-        [% IF has_content %]
-            <table class="stats">
-                <thead>
-                    <tr>
-                        <th>
-                            Position
-                            <sub class="count">#</sub>
-                        </th>
-                        <th>Name</th>
-                        <th>YTD Avg.</th>
-                        <th>Total Avg.</th>
-                        <th>Total Pts.</th>
-                        <th>VRA Sum</th>
-                        [% FOR meet IN stats.meets %]
-                            <th>
-                                <a href="[% c.url_for( '/meet/' _ meet.meet_id _ '/stats' )
-                                    %]">[% meet.name %]</a>
-                            </th>
-                        [% END %]
-                    </tr>
-                </thead>
-                <tbody>
-                    [%
-                        row_position  = 0;
-                        last_position = undef;
-                        last_item     = undef;
-                    %]
-                    [% FOR item IN stats.$type %]
-                        [% IF NOT filter_tag OR item.tags AND item.tags.grep( '^' _ filter_tag _ '$' ).size %]
-                            [%
-                                row_position  = row_position + 1;
-                                this_position = (
-                                    NOT last_item OR (
-                                        last_item.ytd_avg   != item.ytd_avg OR
-                                        last_item.total_avg != item.total_avg
-                                    )
-                                ) ? row_position : last_position;
-                            %]
-                            <tr>
-                                <td class="[%
-                                    ( last_position != this_position ) ? 'right' : 'right tie'
-                                %]">
-                                    [% this_position %]
-                                    <sub class="count">[% row_position %]</sub>
-                                </td>
-                                <td>
-                                    [% item.name %][%
-                                        IF item.tags AND item.tags.grep('^Rookie$').size %]*[% END %]
-                                </td>
-                                <td class="right">[% item.ytd_avg   | format('%0.2f') %]</td>
-                                <td class="right">[% item.total_avg | format('%0.2f') %]</td>
-                                <td class="right">[% item.total_points %]</td>
-                                <td class="right">[% item.vra_sum      %]</td>
-                                [% FOR meet IN item.meets %]
-                                    [% IF meet.points_avg.defined %]
-                                        <td>
-                                            [% meet.points_avg | format('%0.2f') %] pts.
-                                            <i>(at [% meet.weight || 0 %])</i>
-                                            <br>
-                                            [% meet.points_sum %]
-                                            with [% meet.team_name %]
-                                        </td>
-                                    [% ELSE %]
-                                        <td class="blank_cell"></td>
-                                    [% END %]
-                                    [% LAST IF loop.count >= stats.meets.size %]
-                                [% END %]
-                            </tr>
-                            [%
-                                last_position = this_position;
-                                last_item     = item;
-                            %]
-                        [% END %]
-                    [% END %]
-                </tbody>
-            </table>
-        [% ELSE %]
-            <p>No statistics currently available.</p>
-        [% END %]
-    </details>
-[% END %]
