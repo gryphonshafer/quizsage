@@ -26,7 +26,7 @@
 </form>
 
 [% user_select = BLOCK %]
-    window.addEventListener( 'load', () => {
+    window.addEventListener( 'DOMContentLoaded', () => {
         const form       = window.document.querySelector('form#user_select');
         const user_label = form.querySelector('input[name="user_label"]');
         const options    = Array.from( form.querySelector('datalist#user_labels').options );

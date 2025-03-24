@@ -82,7 +82,7 @@
 </ul>
 
 [% highlight_js = BLOCK %]
-    window.addEventListener( 'load', () => {
+    window.addEventListener( 'DOMContentLoaded', () => {
         const highlight_select = window.document.querySelector('select#team_highlight');
 
         const team_highlight = function () {
@@ -328,7 +328,7 @@
                         [% END %]
 
                         [% confirm_js = BLOCK %]
-                            window.addEventListener( 'load', () => {
+                            window.addEventListener( 'DOMContentLoaded', () => {
                                 window.document.querySelectorAll('a.qm_auth').forEach( a => {
                                     a.onclick = () => {
                                         if ( window.omniframe && omniframe.memo ) omniframe.memo({

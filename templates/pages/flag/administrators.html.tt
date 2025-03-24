@@ -37,7 +37,7 @@
 </table>
 
 [% promote_demote_admins = BLOCK %]
-    window.addEventListener( 'load', () => {
+    window.addEventListener( 'DOMContentLoaded', () => {
         window.document.querySelectorAll('input').forEach( input => {
             input.onchange = () => {
                 const url = new URL( 'is_app_admin', window.location.href );

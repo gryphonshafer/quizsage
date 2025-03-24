@@ -55,7 +55,7 @@
     </div>
 
     [% js = BLOCK %]
-        window.addEventListener( 'load', () => {
+        window.addEventListener( 'DOMContentLoaded', () => {
             const verses = window.document.querySelectorAll('div#memorize details');
 
             window.document.querySelector('button#expand_all').onclick =
