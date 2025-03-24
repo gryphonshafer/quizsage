@@ -97,7 +97,13 @@ sub stats ( $self, $rebuild = 0 ) {
 
     my $quizzers_meet_data;
     for my $meet (@$meets) {
-        my $meet_stats = $meet->stats;
+        my $meet_stats = $meet->stats($rebuild);
+
+        push( @{ $stats->{rookies_of_the_meets} }, +{
+            rookie => $meet_stats->{meta}{rookie_of_the_meet},
+            meet   => +{ map { $_ => $meet->data->{$_} } qw( meet_id name location start days ) },
+        } );
+
         for my $quizzer ( $meet_stats->{quizzers}->@* ) {
             $quizzers_meet_data->{ $quizzer->{name} }{ $meet->data->{name} } = {
                 map { $_ => $quizzer->{$_} } qw( points_avg points_sum vra_sum tags team_name )

@@ -661,7 +661,7 @@ sub stats ( $self, $rebuild = 0 ) {
 
             for my $team ( $orgs->{$org_name}{teams}->@* ) {
                 $org_data->{points_sum} += $team->{points_sum};
-                $org_data->{quizzes}    += scalar( $team->{quizzes}->@* )
+                $org_data->{quizzes}    += scalar( $team->{quizzes}->@* );
             }
 
             $org_data->{points_avg} = ( $org_data->{quizzes} )
@@ -672,6 +672,51 @@ sub stats ( $self, $rebuild = 0 ) {
         }
         keys %$orgs
     ];
+
+    my $rookies_of_the_meets_from_previous_meets = [];
+    for my $previous_meet (
+        $self->new->every_data(
+            {
+                season_id => $self->data->{season_id},
+                start     => { '<' => $self->data->{start} },
+            },
+            {
+                order_by => 'start',
+            },
+        )->@*
+    ) {
+        for my $rookie (
+            grep {
+                grep { $_ eq 'Rookie' } $_->{tags}->@*
+            } $previous_meet->{stats}{quizzers}->@*
+        ) {
+            if ( not grep { $_ eq $rookie->{name} } @$rookies_of_the_meets_from_previous_meets ) {
+                push( @$rookies_of_the_meets_from_previous_meets, $rookie->{name} );
+                last;
+            }
+        }
+    }
+    for my $rookie (
+        grep {
+            grep { $_ eq 'Rookie' } $_->{tags}->@*
+        } $stats->{quizzers}->@*
+    ) {
+        if ( not grep { $_ eq $rookie->{name} } @$rookies_of_the_meets_from_previous_meets ) {
+            $stats->{meta}{rookie_of_the_meet} = {
+                map { $_ => $rookie->{$_} } qw(
+                    name
+                    points_avg
+                    points_avg_raw
+                    points_sum
+                    points_sum_raw
+                    team_name
+                    vra_sum
+                )
+            };
+
+            last;
+        }
+    }
 
     $self->data->{stats}         = $stats;
     $self->data->{last_modified} = \q{ STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) },

@@ -137,7 +137,9 @@
                                 <sub class="count">[% row_position %]</sub>
                             </td>
                             <td class="no_wrap">
-                                [% item.name %][%
+                                [% IF stats.meta.rookie_of_the_meet.name == item.name
+                                    %]<b>[% item.name %]</b>[% ELSE %][% item.name %][% END
+                                %][%
                                     IF item.tags AND item.tags.grep('^Rookie$').size %]*[% END %]
                                 [% IF item.team_name %]
                                     <br>
@@ -353,6 +355,10 @@
         <p>No statistics currently available.</p>
     [% END %]
 </details>
+
+[% IF stats.meta.rookie_of_the_meet %]
+    <p>Rookie of the Meet: <b>[% stats.meta.rookie_of_the_meet.name %]</b>*</p>
+[% END %]
 
 <p class="tight_lines">
     *Indicates a rookie quizzer.
