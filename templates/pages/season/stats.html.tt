@@ -28,8 +28,57 @@
     </table>
 [% END %]
 
+[% filter_by = BLOCK %]
+    function filter_by(details) {
+        const stats_table = details.querySelector('table.stats');
+
+        stats_table.querySelectorAll('tr').forEach( tr => tr.style.display = 'table-row' );
+
+        details.querySelectorAll('p.filter_by select').forEach( select =>
+            Array.from( stats_table.querySelectorAll( 'tr[data-' + select.name + ']' ) )
+                .filter( tr =>
+                    select.value != 'All' &&
+                    ! JSON.parse( tr.dataset[ select.name ] ).includes( select.value )
+                )
+                .forEach( tr => tr.style.display = 'none' )
+        );
+    }
+
+    window.addEventListener( 'DOMContentLoaded', () => {
+        window.document.querySelectorAll('p.filter_by select').forEach( select => {
+            select.selectedIndex = 0;
+            select.onchange = () => filter_by( select.parentNode.parentNode );
+        } );
+    } );
+[% END %]
+[% page.js.inline.push(filter_by) %]
+
 <details>
     <summary>Quizzers by Points Average</summary>
+
+    [%
+        tags = [];
+
+        FOR item IN stats.quizzers;
+            IF item.tags;
+                FOR tag IN item.tags;
+                    tags.push(tag);
+                END;
+            END;
+        END;
+    %]
+
+    [% IF tags.size %]
+        <p class="filter_by">
+            Filter by Tag
+            <select name="tags">
+                <option>All</option>
+                [% FOR tag IN tags.unique.sort %]
+                    <option>[% tag %]</option>
+                [% END %]
+            </select>
+        </p>
+    [% END %]
 
     [% IF stats.quizzers.size %]
         <table class="stats">
@@ -67,8 +116,15 @@
                                 last_item.total_avg != item.total_avg
                             )
                         ) ? row_position : last_position;
+
+                        this_tags = [];
+                        IF item.tags;
+                            FOR tag IN item.tags;
+                                this_tags.push(tag);
+                            END;
+                        END;
                     %]
-                    <tr>
+                    <tr data-tags='[% this_tags.unique.json %]'>
                         <td class="[%
                             ( last_position != this_position ) ? 'right' : 'right tie'
                         %]">

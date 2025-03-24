@@ -10,9 +10,77 @@
     [% time( meet.data.start, '%a, %b %-d, %Y' ) %]
 </h2>
 
+[% filter_by = BLOCK %]
+    function filter_by(details) {
+        const stats_table = details.querySelector('table.stats');
+
+        stats_table.querySelectorAll('tr').forEach( tr => tr.style.display = 'table-row' );
+
+        details.querySelectorAll('p.filter_by select').forEach( select =>
+            Array.from( stats_table.querySelectorAll( 'tr[data-' + select.name + ']' ) )
+                .filter( tr =>
+                    select.value != 'All' &&
+                    ! JSON.parse( tr.dataset[ select.name ] ).includes( select.value )
+                )
+                .forEach( tr => tr.style.display = 'none' )
+        );
+    }
+
+    window.addEventListener( 'DOMContentLoaded', () => {
+        window.document.querySelectorAll('p.filter_by select').forEach( select => {
+            select.selectedIndex = 0;
+            select.onchange = () => filter_by( select.parentNode.parentNode );
+        } );
+    } );
+[% END %]
+[% page.js.inline.push(filter_by) %]
+
 [% BLOCK by_points_average %]
     <details>
         <summary>[% type.ucfirst %] by Points Average</summary>
+
+        [%
+            brackets = [];
+            tags     = [];
+
+            FOR item IN stats.$type;
+                FOR quiz IN item.quizzes;
+                    brackets.push( quiz.bracket );
+                END;
+
+                IF item.tags;
+                    FOR tag IN item.tags;
+                        tags.push(tag);
+                    END;
+                END;
+            END;
+        %]
+
+        [% IF bracket.size OR tags.size %]
+            <p class="filter_by">
+                Filter by
+
+                [% IF bracket.size %]
+                    Bracket
+                    <select name="brackets">
+                        <option>All</option>
+                        [% FOR bracket IN brackets.unique %]
+                            <option>[% bracket %]</option>
+                        [% END %]
+                    <select>
+                [% END %]
+
+                [% IF tags.size %]
+                    and/or Tag
+                    <select name="tags">
+                        <option>All</option>
+                        [% FOR tag IN tags.unique.sort %]
+                            <option>[% tag %]</option>
+                        [% END %]
+                    </select>
+                [% END %]
+            </p>
+        [% END %]
 
         [% IF stats.$type.size %]
             <table class="stats">
@@ -45,8 +113,23 @@
                                     last_item.points_sum != item.points_sum
                                 )
                             ) ? row_position : last_position;
+
+                            this_brackets = [];
+                            FOR quiz IN item.quizzes;
+                                this_brackets.push( quiz.bracket );
+                            END;
+
+                            this_tags = [];
+                            IF item.tags;
+                                FOR tag IN item.tags;
+                                    this_tags.push(tag);
+                                END;
+                            END;
                         %]
-                        <tr>
+                        <tr
+                            data-brackets='[% this_brackets.unique.json %]'
+                            data-tags='[% this_tags.unique.json %]'
+                        >
                             <td class="[%
                                 ( last_position != this_position ) ? 'right' : 'right tie'
                             %]">
@@ -78,13 +161,7 @@
                                 [% END %]
                             </td>
                             <td>
-                                [%
-                                    brackets = [];
-                                    FOR quiz IN item.quizzes;
-                                        brackets.push( quiz.bracket );
-                                    END;
-                                %]
-                                [% FOR bracket IN brackets.unique %]
+                                [% FOR bracket IN this_brackets.unique %]
                                     [% bracket %][% IF NOT loop.last %]<br>[% END %]
                                 [% END %]
                             </td>
