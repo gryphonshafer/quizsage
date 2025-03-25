@@ -95,7 +95,10 @@ sub thesaurus ($self) {
     if ( $self->param('yaml') ) {
         my $error;
         try {
-            QuizSage::Model::Flag->new->thesaurus_patch( $self->param('yaml') );
+            QuizSage::Model::Flag->new->thesaurus_patch(
+                $self->param('yaml'),
+                $self->stash('user'),
+            );
         }
         catch ($e) {
             $error = $e;
@@ -105,7 +108,7 @@ sub thesaurus ($self) {
             memo => ($error)
                 ? {
                     class   => 'error',
-                    message => 'Thesaurus failed to be patched',
+                    message => 'Thesaurus failed to be patched: ' . deat $error,
                 }
                 : {
                     class   => 'success',

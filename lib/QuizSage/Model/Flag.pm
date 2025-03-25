@@ -1,8 +1,10 @@
 package QuizSage::Model::Flag;
 
-use exact -class;
+use exact -class, -conf;
 use Mojo::JSON qw( encode_json decode_json );
-use YAML::XS 'Load';
+use Omniframe::Class::Time;
+use Omniframe::Util::File 'opath';
+use YAML::XS qw( Dump Load );
 
 with 'Omniframe::Role::Model';
 
@@ -27,14 +29,27 @@ sub list ($self) {
     })->run->all({});
 }
 
-sub thesaurus_patch ( $self, $yaml ) {
-    my $input = Load($yaml);
+my $time = Omniframe::Class::Time->new;
 
-    croak('All patches in the input must have a text value and not both meanings and target values.')
-        if ( grep {
+sub thesaurus_patch ( $self, $yaml, $user = undef ) {
+    my $input;
+
+    try {
+        $input = Load($yaml);
+    }
+    catch ($e) {
+        croak('Submitted YAML was not parse-able');
+    }
+
+    try {
+        die if ( grep {
             not length( $_->{text} ) or
             length( $_->{text} ) and $_->{meanings} and $_->{target}
         } @$input );
+    }
+    catch ($e) {
+        croak('All patches in the input must have a text value and not both meanings and target values.');
+    }
 
     my $dq = $self->dq('material');
 
@@ -54,21 +69,36 @@ sub thesaurus_patch ( $self, $yaml ) {
             $delete_word->run( $patch->{text} );
         }
         else {
-            $patch->{meanings} = encode_json( $patch->{meanings} ) if ( defined $patch->{meanings} );
+            my $target;
             if ( defined $patch->{target} ) {
-                $patch->{target} = $redirect_id->run( $patch->{target} )->value;
-                croak("Unable to locate target of $patch->{text}") unless ( $patch->{target} );
+                $target = $redirect_id->run( $patch->{target} )->value;
+                croak("Unable to locate target of $patch->{text}") unless ($target);
             }
 
             $patch_word->run(
                 (
-                    $patch->{target},
-                    $patch->{meanings},
+                    $target,
+                    (
+                        ( defined $patch->{meanings} )
+                            ? encode_json( $patch->{meanings} )
+                            : $patch->{meanings}
+                    ),
                     $patch->{text},
                 ) x 2,
             );
         }
     }
+
+    my $thesaurus_patch_log = opath( conf->get('thesaurus_patch_log'), { no_check => 1 } )->touch;
+    my $thesaurus_patches   = Load( $thesaurus_patch_log->slurp // [] );
+    push( @$thesaurus_patches, {
+        time       => $time->set->format('sqlite'),
+        patch      => $input,
+        maybe user => ($user)
+            ? { map { $_ => $user->data->{$_} } qw( first_name last_name email phone ) }
+            : undef,
+    } );
+    $thesaurus_patch_log->spew( Dump($thesaurus_patches) );
 
     $dq->commit;
     return;

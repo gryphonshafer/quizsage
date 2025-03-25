@@ -4,7 +4,7 @@ use Omniframe::Util::File 'opath';
 use QuizSage::Model::Flag;
 
 my $opt = options('input|i=s');
-QuizSage::Model::Flag->new->thesaurus_patch( opath( $opt->{input} // 'config/thesaurus_patch.yaml' ) );
+QuizSage::Model::Flag->new->thesaurus_patch( opath( $opt->{input} // conf->get('thesaurus_patch_log') ) );
 
 =head1 NAME
 
@@ -13,16 +13,16 @@ thesaurus_patch.pl - Patch the thesaurus contained in a material SQLite database
 =head1 SYNOPSIS
 
     thesaurus_patch.pl OPTIONS
-        -i, --input YAML_INPUT_FILE  # default: config/thesaurus_patch.yaml
+        -i, --input YAML_INPUT_FILE  # default: "thesaurus_patch_log" setting
         -h, --help
         -m, --man
 
 =head1 DESCRIPTION
 
 This program will patch the thesaurus contained in a material SQLite database.
-By default, the program will look at the "~/config/thesaurus_patch.yaml" file
-for input. The input is expected to be YAML and be an array of hashs. Each hash
-should describe the end-state of a given word.
+By default, the program will look at the "thesaurus_patch_log" setting as the
+file for input. The input is expected to be YAML and be an array of hashs. Each
+hash should describe the end-state of a given word.
 
 A regular, full entry will have C<text> (the word) and C<meanings> (a data
 structure representing the synonyms of each meaning of the word):
