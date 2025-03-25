@@ -1,12 +1,15 @@
+import flag     from 'modules/flag';
 import store    from 'vue/store';
 import template from 'modules/template';
 
 export default {
     data() {
         return {
-            selected_bible: undefined,
+            term          : '',
+            matched_terms : [],
             text          : '',
             exact         : false,
+            selected_bible: undefined,
             matched_verses: [],
         };
     },
@@ -20,6 +23,15 @@ export default {
     },
 
     methods: {
+        search_terms() {
+            this.matched_terms = [];
+            if ( this.term.length > 2 ) {
+                const matched_terms = this.material.synonyms_of_term( this.term );
+                if ( matched_terms.length > 0 && matched_terms.length < 100 )
+                    this.matched_terms = matched_terms;
+            }
+        },
+
         search_material() {
             this.matched_verses = [];
             if ( this.text.length > 3 ) {
@@ -62,24 +74,35 @@ export default {
         },
 
         reset() {
+            this.term  = '';
             this.text  = '';
             this.exact = false;
+        },
+
+        flag(item) {
+            flag( {
+                source: 'thesaurus',
+                data  : item,
+            } );
         },
     },
 
     watch: {
-        'selected.bible'() {
-            this.selected_bible = this.selected.bible;
-        },
-        selected_bible() {
-            this.search_material();
+        term() {
+            this.search_terms();
         },
         text() {
             this.search_material();
         },
         exact() {
             this.search_material();
-        }
+        },
+        selected_bible() {
+            this.search_material();
+        },
+        'selected.bible'() {
+            this.selected_bible = this.selected.bible;
+        },
     },
 
     template: await template( import.meta.url ),

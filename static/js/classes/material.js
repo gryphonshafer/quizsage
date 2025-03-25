@@ -208,6 +208,56 @@ export default class Material {
         return { word: key, meanings: entry };
     }
 
+    synonyms_of_term(term) {
+        term = term.toLowerCase();
+
+        const keys = [];
+
+        const key = Object.keys( this.data.thesaurus ).find( e => e.toLowerCase() == term );
+        if (key) keys.push(key);
+
+        Object.keys( this.data.thesaurus )
+            .filter( key => key.toLowerCase().includes(term) )
+            .forEach( key => {
+                if (
+                    key &&
+                    ! keys.map( e => e.toLowerCase() ).includes( key.toLowerCase() )
+                ) keys.push(key);
+            } );
+
+        term
+            .split(/\s+/)
+            .forEach( word => {
+                const key = Object.keys( this.data.thesaurus ).find( key => key.toLowerCase() == word );
+                if (
+                    key &&
+                    ! keys.map( e => e.toLowerCase() ).includes( key.toLowerCase() )
+                ) keys.push(key);
+            } );
+
+        return keys.map( key => {
+            const node = {
+                key     : key,
+                synonyms: this.synonyms_of_word(key),
+                types   : [],
+            };
+
+            if (
+                node.synonyms.meanings.find(
+                    block => this.ignored_types.find( type => type == block.type )
+                )
+            ) node.types.push('ignored');
+
+            if (
+                node.synonyms.meanings.find(
+                    block => this.special_types.find( type => type == block.type )
+                )
+            ) node.types.push('special');
+
+            return node;
+        } );
+    }
+
     // given a verse reference, return the synonyms at or above a given verity
     synonyms_of_verse( book, chapter, verse, bible = undefined ) {
         bible ||= this.current_bible();

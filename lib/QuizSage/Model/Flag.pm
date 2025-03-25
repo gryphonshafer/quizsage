@@ -89,6 +89,9 @@ sub thesaurus_patch ( $self, $yaml, $user = undef ) {
         }
     }
 
+    $dq->commit;
+
+    # append to thesaurus patch log
     my $thesaurus_patch_log = opath( conf->get('thesaurus_patch_log'), { no_check => 1 } )->touch;
     my $thesaurus_patches   = Load( $thesaurus_patch_log->slurp // [] );
     push( @$thesaurus_patches, {
@@ -100,7 +103,9 @@ sub thesaurus_patch ( $self, $yaml, $user = undef ) {
     } );
     $thesaurus_patch_log->spew( Dump($thesaurus_patches) );
 
-    $dq->commit;
+    # remove all material JSON files
+    opath( conf->get( qw{ material json location } ), { no_check => 1 } )->list->each('remove');
+
     return;
 }
 

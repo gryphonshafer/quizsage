@@ -145,10 +145,7 @@ fun material_json (
             map {
                 $_->{synonyms} = [
                     grep { $_->{words}->@* }
-                    map {
-                        $_->{words} = [ grep { not /\s/ } $_->{words}->@* ];
-                        $_;
-                    } $_->{synonyms}->@*
+                    $_->{synonyms}->@*
                 ];
                 $_;
             }

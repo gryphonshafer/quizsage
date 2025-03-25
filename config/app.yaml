@@ -23,9 +23,12 @@ default:
             watch:
                 - app.psgi
                 - config/app.yaml
+                - config/js_apps.yaml
                 - config/api
                 - config/assets
                 - lib
+                - static/html
+                - static/js
                 - templates
                 - ../omniframe
     email:

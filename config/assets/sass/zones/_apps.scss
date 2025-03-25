@@ -192,6 +192,103 @@ div#queries {
             margin-left: 0.5em;
         }
 
+        p.terms {
+            margin : -0.125em -0.125em -1.25em -0.25em;
+            padding: 0;
+            width  : 28.5em;
+
+            span.term {
+                display      : inline-block;
+                border-radius: 0.5em;
+                margin       : 0.25em 0 0 0.25em;
+                padding      : 0.2em 0.25em;
+                border       : 1px solid;
+                line-height  : 1em;
+
+                @include theme.apply( themes.$themes ) {
+                    background  : theme.get('form_elements_background');
+                    border-color: theme.get('lines');
+                }
+
+                &.required {
+                    @include theme.apply( themes.$themes ) {
+                        color: theme.get('material_required_text');
+                    }
+                }
+
+                &.ignored {
+                    font-style: italic;
+
+                    @include theme.apply( themes.$themes ) {
+                        color: theme.get('material_ignored_text');
+                    }
+                }
+
+                &.special {
+                    @include theme.apply( themes.$themes ) {
+                        color: theme.get('material_special_text');
+                    }
+                }
+
+                div.details {
+                    font-style      : normal;
+                    display         : none;
+                    position        : absolute;
+                    top             : 100%;
+                    left            : 0;
+                    z-index         : 1;
+                    padding         : 0 0.2em;
+                    transform       : translate( 0.5em, 0 );
+                    width           : 30em;
+                    max-height      : 20em;
+                    overflow-y      : auto;
+                    border          : 1px solid;
+                    line-height: 1.5em;
+
+                    @include theme.apply( themes.$themes ) {
+                        color       : theme.get('material_details_text');
+                        background  : theme.get('material_details_background');
+                        border-color: theme.get('lines');
+                    }
+
+                    @include theme.apply( themes.$styles, 'style' ) {
+                        border-radius: theme.get('radius');
+                    }
+
+                    span.word {
+                        font-weight    : bold;
+                        text-decoration: underline;
+                    }
+
+                    ul {
+                        margin: 0 0 0 1em;
+                    }
+
+                    li {
+                        list-style : none;
+                    }
+
+                    & > ul {
+                        margin: 0;
+                    }
+
+                    & > ul > li:not(:first-child) {
+                        margin-top: 1em;
+                    }
+                }
+
+                @media ( max-width: 48em ) {
+                    &.term div.details {
+                        width: 16em;
+                    }
+                }
+
+                &.term:hover div.details {
+                    display: block;
+                }
+            }
+        }
+
         table {
             position      : absolute;
             width         : calc( 100vw - 4em );
@@ -510,7 +607,8 @@ div#lookup {
 div.query p.prompt,
 div.query p.reply,
 div.material p.content,
-div.synonyms div.material {
+div.synonyms div.material,
+p.terms span.term {
     position: relative;
 
     span.flag {

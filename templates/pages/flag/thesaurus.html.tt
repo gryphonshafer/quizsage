@@ -30,42 +30,42 @@
     <pre>
 - text: see
   meanings:
-    - word: perceive with eyes
-      type: verb
-      synonyms:
-        - verity: 3
-          words:
-              - look
-              - notice
-              - view
-        - verity: 2
-          words:
-              - mark
-              - note
-              - stare
-        - verity: 1
-          words:
-              - be apprised of
-              - pay attention to
-              - take notice
-    - word: appreciate, comprehen
-      type: verb
-      synonyms:
-        - verity: 3
-          words:
-              - catch
-              - determine
-              - discover
-          - verity: 2
-          words:
-              - grasp
-              - imagine
-              - investigate
-          - verity: 1
-          words:
-              - get the drift
-              - get the hang of
-              - make out</pre>
+  - word: perceive with eyes
+    type: verb
+    synonyms:
+    - verity: 3
+      words:
+      - look
+      - notice
+      - view
+    - verity: 2
+      words:
+      - mark
+      - note
+      - stare
+    - verity: 1
+      words:
+      - be apprised of
+      - pay attention to
+      - take notice
+  - word: appreciate, comprehen
+    type: verb
+    synonyms:
+    - verity: 3
+      words:
+      - catch
+      - determine
+      - discover
+    - verity: 2
+      words:
+      - grasp
+      - imagine
+      - investigate
+    - verity: 1
+      words:
+      - get the drift
+      - get the hang of
+      - make out</pre>
 
     <p>For words that should just redirect to other words, use a
     <code>target</code>:</p>
