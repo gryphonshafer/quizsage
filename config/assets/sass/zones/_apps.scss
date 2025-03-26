@@ -230,6 +230,20 @@ div#queries {
                     }
                 }
 
+                &.direct {
+                    font-weight: bold;
+                    div {
+                        font-weight: normal;
+                    }
+                }
+
+                &.reverse {
+                    font-style: italic;
+                    div {
+                        font-style: normal;
+                    }
+                }
+
                 div.details {
                     font-style      : normal;
                     display         : none;

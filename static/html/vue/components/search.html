@@ -1,11 +1,12 @@
 <div class="search">
     <input type="text" v-model="term" placeholder="Term (Word or Phrase)">
+    <button class="clear" @click="match_terms">Match</button>
     <button class="clear" @click="term = ''">Clear</button>
 
     <p class="terms">
         <span
             v-for="term in matched_terms"
-            :class="[ ...term.types, 'term' ]"
+            :class="[ ...term.types, 'term', term.lookup ]"
         >{{ term.key }}<div class="details">
             <span class="word">{{ term.synonyms.word }}</span>
             <ul>

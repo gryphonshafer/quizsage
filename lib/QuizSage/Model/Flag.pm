@@ -53,7 +53,7 @@ sub thesaurus_patch ( $self, $yaml, $user = undef ) {
 
     my $dq = $self->dq('material');
 
-    my $redirect_id = $dq->prepare_cached('SELECT word_id FROM word WHERE text = ?');
+    my $get_word_id = $dq->prepare_cached('SELECT word_id FROM word WHERE text = ?');
     my $delete_word = $dq->prepare_cached('DELETE FROM word WHERE text = ?');
     my $patch_word  = $dq->prepare_cached(q{
         INSERT INTO word ( redirect_id, meanings, text )
@@ -71,7 +71,7 @@ sub thesaurus_patch ( $self, $yaml, $user = undef ) {
         else {
             my $target;
             if ( defined $patch->{target} ) {
-                $target = $redirect_id->run( $patch->{target} )->value;
+                $target = $get_word_id->run( $patch->{target} )->value;
                 croak("Unable to locate target of $patch->{text}") unless ($target);
             }
 
@@ -86,6 +86,18 @@ sub thesaurus_patch ( $self, $yaml, $user = undef ) {
                     $patch->{text},
                 ) x 2,
             );
+
+            my $word_id = $get_word_id->run( $patch->{text} )->value;
+            my @buffer;
+            for my $synonym ( map { $_->{synonyms}->@* } $patch->{meanings}->@* ) {
+                for my $word ( $synonym->{words}->@* ) {
+                    push( @buffer, [ $word_id, $dq->quote($word), $synonym->{verity} ] );
+                }
+            }
+            $dq->do(
+                'INSERT INTO reverse ( word_id, synonym, verity ) VALUES ' .
+                join( ',', map { '(' . join( ',', @$_ ) . ')' } @buffer )
+            ) if (@buffer);
         }
     }
 

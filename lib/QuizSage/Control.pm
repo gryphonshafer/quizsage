@@ -162,6 +162,7 @@ sub startup ($self) {
         ->to('main#download');
 
     $all->any('/')->to('main#home');
+    $all->any('/synonyms')->to('main#synonyms');
     $all->any( '/set/:type/:name' => [ type => [ qw( theme style ) ] ] )->to('main#set');
 
     $all->any("/user/$_")->to("user#$_") for ( qw( forgot_password login ) );

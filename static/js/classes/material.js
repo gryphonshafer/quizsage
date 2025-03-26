@@ -1,6 +1,6 @@
 export default class Material {
     static default_settings = {
-        minimum_verity: 3,
+        minimum_verity: 0,
         ignored_types : [ 'article', 'preposition' ],
         special_types : ['pronoun'],
     };
@@ -202,7 +202,7 @@ export default class Material {
             .forEach( block => block.special = true );
 
         entry.forEach( range =>
-            range.synonyms = range.synonyms.filter( synonym => synonym.verity <= this.minimum_verity )
+            range.synonyms = range.synonyms.filter( synonym => synonym.verity >= this.minimum_verity )
         );
 
         return { word: key, meanings: entry };

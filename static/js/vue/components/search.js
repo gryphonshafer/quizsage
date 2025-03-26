@@ -32,6 +32,34 @@ export default {
             }
         },
 
+        match_terms() {
+            const synonyms_url = new URL( '../../synonyms', new URL( window.location.href ) );
+
+            synonyms_url.searchParams.append( 'term', this.term );
+
+            synonyms_url.searchParams.append( 'skip_substring_search', 1 );
+            synonyms_url.searchParams.append( 'skip_term_splitting',   1 );
+            synonyms_url.searchParams.append( 'direct_lookup',         1 );
+            synonyms_url.searchParams.append( 'reverse_lookup',        1 );
+
+            fetch(synonyms_url)
+                .then( reply => reply.json() )
+                .then( matches => {
+                    this.matched_terms = matches
+                        .map( match => {
+                            return {
+                                key     : match.text,
+                                types   : match.types,
+                                lookup  : match.lookup,
+                                synonyms: {
+                                    word    : match.text,
+                                    meanings: match.meanings,
+                                },
+                            };
+                        } );
+                } );
+        },
+
         search_material() {
             this.matched_verses = [];
             if ( this.text.length > 3 ) {
