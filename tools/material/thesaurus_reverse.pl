@@ -15,7 +15,7 @@ my @buffer;
 sub write_buffer ( $size = 0 ) {
     if ( @buffer and @buffer > $size ) {
         $dq->do(
-            'INSERT INTO reverse ( word_id, synonym, verity ) VALUES ' .
+            'INSERT OR IGNORE INTO reverse ( word_id, synonym, verity ) VALUES ' .
             join( ',', map { '(' . join( ',', @$_ ) . ')' } @buffer )
         );
         @buffer = ();

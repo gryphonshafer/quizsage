@@ -6,3 +6,4 @@ CREATE TABLE IF NOT EXISTS reverse (
     synonym    TEXT NOT NULL CHECK( LENGTH(synonym) > 0 ),
     verity     INTEGER NOT NULL
 );
+CREATE UNIQUE INDEX IF NOT EXISTS reverse_word_synonym ON reverse ( word_id, synonym );
