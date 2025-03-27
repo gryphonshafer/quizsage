@@ -33,17 +33,22 @@ fun material_json (
     :$user        = undef, # user ID from application database
     :$force       = 0,
 ) {
-    # remove any material JSON files that haven't been accessed in the last N
-    # days, where N is from config: material json atime_life
-    my $now        = time;
-    my $atime_life = conf->get( qw{ material json atime_life } );
-    my $json_path  = path( join( '/',
-        conf->get( qw{ config_app root_dir } ),
-        conf->get( qw{ material json location } ),
-    ) );
-    $json_path->list->grep( sub ($file) {
-        ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
-    } )->each('remove');
+    my $now = time;
+    if ( $now < $time->parse( conf->get( qw{ material json delete_if_before } ) )->{datetime}->epoch ) {
+        $json_path->list->each('remove');
+    }
+    else {
+        # remove any material JSON files that haven't been accessed in the last N
+        # days, where N is from config: material json atime_life
+        my $atime_life = conf->get( qw{ material json atime_life } );
+        my $json_path  = path( join( '/',
+            conf->get( qw{ config_app root_dir } ),
+            conf->get( qw{ material json location } ),
+        ) );
+        $json_path->list->grep( sub ($file) {
+            ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
+        } )->each('remove');
+    }
 
     croak('Must provide either label or description (and not both)')
         if ( not $description and not $label or $description and $label );

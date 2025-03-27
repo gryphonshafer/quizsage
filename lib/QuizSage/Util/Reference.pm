@@ -71,16 +71,21 @@ fun reference_data (
         )
     )->hexdigest, 0, 16 );
 
-    # remove any reference JSON files that haven't been accessed in the last N days
-    my $now        = time;
-    my $atime_life = conf->get( qw{ reference atime_life } );
-    my $json_path  = path( join( '/',
-        conf->get( qw{ config_app root_dir } ),
-        conf->get( qw{ reference location json } ),
-    ) );
-    $json_path->list->grep( sub ($file) {
-        ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
-    } )->each('remove');
+    my $now = time;
+    if ( $now < $time->parse( conf->get( qw{ reference delete_if_before } ) )->{datetime}->epoch ) {
+        $json_path->list->each('remove');
+    }
+    else {
+        # remove any reference JSON files that haven't been accessed in the last N days
+        my $atime_life = conf->get( qw{ reference atime_life } );
+        my $json_path  = path( join( '/',
+            conf->get( qw{ config_app root_dir } ),
+            conf->get( qw{ reference location json } ),
+        ) );
+        $json_path->list->grep( sub ($file) {
+            ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
+        } )->each('remove');
+    }
 
     my $json_file = $json_path->child( $id . '.json' );
     return decode_json( $json_file->slurp ) if ( -f $json_file and not $force );
@@ -337,17 +342,21 @@ fun reference_data (
 }
 
 sub reference_html ( $controller, $reference_data ) {
-    # remove any reference HTML files that haven't been accessed in the last N days
-    my $now        = time;
-    my $atime_life = conf->get( qw{ reference atime_life } );
-    my $html_path  = path( join( '/',
+    my $now       = time;
+    my $html_path = path( join( '/',
         conf->get( qw{ config_app root_dir } ),
         conf->get( qw{ reference location html } ),
     ) );
-
-    $html_path->list->grep( sub ($file) {
-        ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
-    } )->each('remove');
+    if ( $now < $time->parse( conf->get( qw{ reference delete_if_before } ) )->{datetime}->epoch ) {
+        $html_path->list->each('remove');
+    }
+    else {
+        # remove any reference HTML files that haven't been accessed in the last N days
+        my $atime_life = conf->get( qw{ reference atime_life } );
+        $html_path->list->grep( sub ($file) {
+            ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
+        } )->each('remove');
+    }
 
     my $html_file = $html_path->child( $reference_data->{id} . '.html' );
 

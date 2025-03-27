@@ -48,8 +48,10 @@ default:
             location: static/build/material
             path: /build/material
             atime_life: 274
+            delete_if_before: 2025-03-27 18:00
     reference:
         atime_life: 274
+        delete_if_before: 2025-03-27 18:00
         location:
             json: local/reference/json
             html: local/reference/html
@@ -73,7 +75,7 @@ default:
             Mike November
             Oscar Papa
             Romeo Quebec
-    rebuild_stats_before: 2025-03-24 18:00
+    rebuild_stats_if_before: 2025-03-24 18:00
     season_start: 08-01
     thesaurus_patch_log: local/thesaurus_patch.yaml
 www:
