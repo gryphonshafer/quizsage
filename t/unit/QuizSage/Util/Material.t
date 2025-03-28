@@ -1,6 +1,6 @@
 use Test2::V0;
 use exact -conf;
-use Mojo::JSON 'decode_json';
+use Mojo::JSON 'from_json';
 use QuizSage::Model::Label;
 use QuizSage::Util::Material qw{ text2words material_json synonyms_of_term };
 
@@ -43,7 +43,7 @@ is( material_json( label => 'Eph 6:17 NIV', force => 1 ), {
 
 isa_ok( $spew[0], 'Mojo::File' );
 
-is( decode_json( $spew[1] ), hash {
+is( from_json( $spew[1] ), hash {
     bibles      => {
         NIV => hash {
             type => 'primary',

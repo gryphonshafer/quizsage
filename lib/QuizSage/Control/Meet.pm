@@ -1,7 +1,7 @@
 package QuizSage::Control::Meet;
 
 use exact 'Mojolicious::Controller';
-use Mojo::JSON 'encode_json';
+use Mojo::JSON 'to_json';
 use Omniframe::Util::Bcrypt 'bcrypt';
 use QuizSage::Model::Meet;
 use QuizSage::Model::Quiz;
@@ -68,7 +68,7 @@ sub board ($self) {
     );
 
     if ( $self->tx->is_websocket ) {
-        $self->socket( setup => encode_json( {
+        $self->socket( setup => to_json( {
             type => 'board',
             meet => 0 + $self->param('meet_id'),
             room => 0 + $self->param('room_number'),

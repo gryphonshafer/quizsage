@@ -3,7 +3,8 @@ package QuizSage::Control;
 use exact -conf, 'Omniframe::Control';
 use Hash::Merge 'merge';
 use MIME::Base64 'encode_base64';
-use Mojo::JSON 'encode_json';
+use Mojo::JSON 'to_json';
+use Mojo::Util 'encode';
 use Omniframe::Util::File 'opath';
 use QuizSage::Model::User;
 use YAML::XS 'Load';
@@ -19,7 +20,7 @@ sub startup ($self) {
 
     my $api_spec = {};
     opath( 'config/api', { no_check => 1 } )->list_tree->each( sub {
-        $api_spec = merge( $api_spec, Load( $_->slurp ) );
+        $api_spec = merge( $api_spec, Load( encode( 'UTF-8', $_->slurp('UTF-8') ) ) );
     } );
     $self->plugin( OpenAPI => {
         spec     => $api_spec,
@@ -67,7 +68,7 @@ sub startup ($self) {
 
                     $c->res->cookies({
                         name  => 'quizsage_info',
-                        value => encode_base64( encode_json( {
+                        value => encode_base64( to_json( {
                             material_json_path => $self->url_for(
                                 conf->get( qw( material json path ) )
                             ),
@@ -171,7 +172,7 @@ sub startup ($self) {
 
     $all->any( '/api' => sub ($c) {
         (
-            my $font_css = opath('static/externals/google_fonts/css/inter-tight.css')->slurp
+            my $font_css = opath('static/externals/google_fonts/css/inter-tight.css')->slurp('UTF-8')
         ) =~ s|../(externals/google_fonts/fonts/)|$1|g;
 
         $c->stash( font_css => $font_css );

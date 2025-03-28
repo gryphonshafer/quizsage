@@ -2,9 +2,8 @@
 use exact -cli;
 use Bible::OBML::Gateway;
 use File::Path 'make_path';
-use Mojo::ByteStream;
 use Mojo::File 'path';
-use Mojo::JSON qw( encode_json decode_json );
+use Mojo::JSON qw( to_json from_json );
 
 my $opt = options( qw{ dir|d=s status|s=s wait|w=i bible|b=s@ norandom|n } );
 
@@ -34,10 +33,10 @@ unless ( -w $opt->{status} ) {
         )
     ];
 
-    $opt->{status}->spew( encode_json($status) );
+    $opt->{status}->spew( to_json($status), 'UTF-8' );
 }
 else {
-    $status = decode_json( $opt->{status}->slurp );
+    $status = from_json( $opt->{status}->slurp('UTF-8') );
 }
 
 for my $bible ( shuffle(@$status) ) {
@@ -56,7 +55,7 @@ for my $bible ( shuffle(@$status) ) {
             } @{ $bg->structure( $bible->{bible} ) }
         ];
 
-        $opt->{status}->spew( encode_json($status) );
+        $opt->{status}->spew( to_json($status), 'UTF-8' );
     }
 }
 
@@ -100,10 +99,13 @@ for ( my $i = 0; $i < @chapters; $i++ ) {
     sleep $opt->{wait};
 
     try {
-        $chapter->{file}->spew( Mojo::ByteStream->new( $bg->fetch(
-            $chapter->{book_display}  . ' ' . $chapter->{chapter},
-            $chapter->{bible},
-        ) )->encode );
+        $chapter->{file}->spew(
+            $bg->fetch(
+                $chapter->{book_display}  . ' ' . $chapter->{chapter},
+                $chapter->{bible},
+            ),
+            'UTF-8',
+        );
     }
     catch ($e) {
         warn join( ' ',

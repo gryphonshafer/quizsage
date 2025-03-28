@@ -3,7 +3,6 @@ use exact -cli;
 use Bible::OBML;
 use Bible::Reference;
 use File::Path 'make_path';
-use Mojo::ByteStream;
 use Mojo::Collection 'c';
 use Mojo::DOM;
 use Mojo::File 'path';
@@ -50,11 +49,7 @@ $files->each( sub ( $item, $count ) {
     if ( not $pm->start ) {
         my $obml;
         try {
-            $obml = parse(
-                Mojo::ByteStream->new(
-                    $item->{source}->slurp
-                )->decode
-            )
+            $obml = parse( $item->{source}->slurp('UTF-8') );
         }
         catch ($e) {
             $e =~ s/\s+at\s+.+\s+line\s+\d+\.//;
@@ -65,11 +60,7 @@ $files->each( sub ( $item, $count ) {
 
         make_path( $item->{target}->dirname );
 
-        $item->{target}->spew(
-            Mojo::ByteStream->new(
-                $obml
-            )->encode . "\n"
-        );
+        $item->{target}->spew( $obml . "\n", 'UTF-8' );
 
         my $seconds_remaining = int( ( time - $start ) / $count * ( $total - $count ) );
 

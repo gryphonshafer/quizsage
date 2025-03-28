@@ -1,7 +1,8 @@
 package QuizSage::Model::Flag;
 
 use exact -class, -conf;
-use Mojo::JSON qw( encode_json decode_json );
+use Mojo::JSON qw( to_json from_json );
+use Mojo::Util qw( encode decode );
 use Omniframe::Class::Time;
 use Omniframe::Util::File 'opath';
 use YAML::XS qw( Dump Load );
@@ -9,13 +10,13 @@ use YAML::XS qw( Dump Load );
 with 'Omniframe::Role::Model';
 
 sub freeze ( $self, $data ) {
-    $data->{data} = encode_json( $data->{data} );
+    $data->{data} = to_json( $data->{data} );
     undef $data->{data} if ( $data->{data} eq '{}' or $data->{data} eq 'null' );
     return $data;
 }
 
 sub thaw ( $self, $data ) {
-    $data->{data} = ( defined $data->{data} ) ? decode_json( $data->{data} ) : {};
+    $data->{data} = ( defined $data->{data} ) ? from_json( $data->{data} ) : {};
     return $data;
 }
 
@@ -35,7 +36,7 @@ sub thesaurus_patch ( $self, $yaml, $user = undef ) {
     my $input;
 
     try {
-        $input = Load($yaml);
+        $input = Load( encode( 'UTF-8', $yaml ) );
     }
     catch ($e) {
         croak('Submitted YAML was not parse-able');
@@ -80,7 +81,7 @@ sub thesaurus_patch ( $self, $yaml, $user = undef ) {
                     $target,
                     (
                         ( defined $patch->{meanings} )
-                            ? encode_json( $patch->{meanings} )
+                            ? to_json( $patch->{meanings} )
                             : $patch->{meanings}
                     ),
                     $patch->{text},
@@ -94,10 +95,17 @@ sub thesaurus_patch ( $self, $yaml, $user = undef ) {
                     push( @buffer, [ $word_id, $dq->quote($word), $synonym->{verity} ] );
                 }
             }
-            $dq->do(
-                'INSERT INTO reverse ( word_id, synonym, verity ) VALUES ' .
-                join( ',', map { '(' . join( ',', @$_ ) . ')' } @buffer )
-            ) if (@buffer);
+
+            if (@buffer) {
+                my %word_ids = map { $_->[0] => 1 } @buffer;
+                $dq->do(
+                    'DELETE FROM reverse WHERE word_id IN (' . join( ',', keys %word_ids ) . ')'
+                );
+                $dq->do(
+                    'INSERT INTO reverse ( word_id, synonym, verity ) VALUES ' .
+                    join( ',', map { '(' . join( ',', @$_ ) . ')' } @buffer )
+                );
+            }
         }
     }
 
@@ -105,7 +113,7 @@ sub thesaurus_patch ( $self, $yaml, $user = undef ) {
 
     # append to thesaurus patch log
     my $thesaurus_patch_log = opath( conf->get('thesaurus_patch_log'), { no_check => 1 } )->touch;
-    my $thesaurus_patches   = Load( $thesaurus_patch_log->slurp // [] );
+    my $thesaurus_patches   = Load( encode( 'UTF-8', $thesaurus_patch_log->slurp('UTF-8') ) ) // [];
     push( @$thesaurus_patches, {
         time       => $time->set->format('sqlite'),
         patch      => $input,
@@ -113,7 +121,7 @@ sub thesaurus_patch ( $self, $yaml, $user = undef ) {
             ? { map { $_ => $user->data->{$_} } qw( first_name last_name email phone ) }
             : undef,
     } );
-    $thesaurus_patch_log->spew( Dump($thesaurus_patches) );
+    $thesaurus_patch_log->spew( decode( 'UTF-8', Dump($thesaurus_patches) ), 'UTF-8' );
 
     # remove all material JSON files
     opath( conf->get( qw{ material json location } ), { no_check => 1 } )->list->each('remove');

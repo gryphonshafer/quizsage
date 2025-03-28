@@ -3,7 +3,6 @@ use exact -cli;
 use Bible::OBML;
 use Bible::OBML::Gateway;
 use File::Path 'make_path';
-use Mojo::ByteStream;
 use Mojo::File 'path';
 use Parallel::ForkManager;
 
@@ -48,13 +47,7 @@ $files->each( sub ( $item, $count ) {
     if ( not $pm->start ) {
         my $obml;
         try {
-            $obml = $o->html(
-                $bg->parse(
-                    Mojo::ByteStream->new(
-                        $item->{source}->slurp
-                    )->decode
-                )
-            )->obml;
+            $obml = $o->html( $bg->parse( $item->{source}->slurp('UTF-8') )->obml;
         }
         catch ($e) {
             $e =~ s/\s+at\s+.+\s+line\s+\d+\.//;
@@ -65,11 +58,7 @@ $files->each( sub ( $item, $count ) {
 
         make_path( $item->{target}->dirname );
 
-        $item->{target}->spew(
-            Mojo::ByteStream->new(
-                $obml
-            )->encode . "\n"
-        );
+        $item->{target}->spew( $obml . "\n", 'UTF-8' );
 
         my $seconds_remaining = int( ( time - $start ) / $count * ( $total - $count ) );
 

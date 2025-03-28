@@ -1,7 +1,7 @@
 package QuizSage::Model::Meet;
 
 use exact -class, -conf;
-use Mojo::JSON qw( encode_json decode_json );
+use Mojo::JSON qw( to_json from_json );
 use Omniframe::Class::Time;
 use Omniframe::Util::Bcrypt 'bcrypt';
 use Omniframe::Util::Data qw( dataload deepcopy );
@@ -33,7 +33,7 @@ sub freeze ( $self, $data ) {
     }
 
     for ( qw( settings build stats ) ) {
-        $data->{$_} = encode_json( $data->{$_} );
+        $data->{$_} = to_json( $data->{$_} );
         undef $data->{$_} if ( $data->{$_} eq '{}' or $data->{$_} eq 'null' );
     }
 
@@ -41,7 +41,7 @@ sub freeze ( $self, $data ) {
 }
 
 sub thaw ( $self, $data ) {
-    $data->{$_} = ( defined $data->{$_} ) ? decode_json( $data->{$_} ) : {}
+    $data->{$_} = ( defined $data->{$_} ) ? from_json( $data->{$_} ) : {}
         for ( qw( settings build stats ) );
     return $data;
 }

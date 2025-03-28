@@ -3,7 +3,7 @@ package QuizSage::Model::Label;
 use exact -class;
 use Bible::Reference;
 use Math::Prime::Util 'divisors';
-use Mojo::JSON qw( encode_json decode_json );
+use Mojo::JSON qw( to_json from_json );
 
 with 'Omniframe::Role::Model';
 
@@ -288,7 +288,7 @@ sub descriptionize( $self, $input = $self->data->{label}, $user_id = undef ) {
         delete $full_data->{aliases};
     }
 
-    $full_data = decode_json encode_json $full_data;
+    $full_data = from_json to_json $full_data;
 
     my $child_weight_integrate;
     $child_weight_integrate = sub ($parent) {

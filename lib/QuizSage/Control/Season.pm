@@ -2,6 +2,7 @@ package QuizSage::Control::Season;
 
 use exact -conf, 'Mojolicious::Controller';
 use Mojo::File 'path';
+use Mojo::Util 'encode';
 use Omniframe::Class::Time;
 use QuizSage::Model::Meet;
 use QuizSage::Model::Season;
@@ -58,7 +59,7 @@ sub record ($self) {
             }
             elsif ( $self->param('name') ) {
                 try {
-                    $season->data->{settings} = Load( $self->param('settings') )
+                    $season->data->{settings} = Load( encode( 'UTF-8', $self->param('settings') ) )
                         if ( $self->param('settings') );
                     $season->data->{$_} = $self->param($_) for ( qw( name location start days ) );
                     $season->data->{hidden} = ( $self->param('hidden') ) ? 1 : 0;
@@ -75,7 +76,7 @@ sub record ($self) {
                 }
             }
             else {
-                my $yaml = Dump( $season->data->{settings} // '' );
+                my $yaml = decode( 'UTF-8', Dump( $season->data->{settings} // '' ) );
                 $yaml =~ s/^\-+//;
 
                 $self->stash(
@@ -98,7 +99,11 @@ sub record ($self) {
                 maybe location => $self->param('location') || undef,
                 maybe start    => $self->param('start')    || undef,
                 maybe days     => $self->param('days')     || undef,
-                maybe settings => ( ( $self->param('settings') ) ? Load( $self->param('settings') ) : undef ),
+                maybe settings => (
+                    ( $self->param('settings') )
+                        ? Load( encode( 'UTF-8', $self->param('settings') ) )
+                        : undef
+                ),
             });
             return $self->redirect_to('/season/admin');
         }
@@ -114,7 +119,7 @@ sub record ($self) {
     else {
         ( my $yaml = path(
             conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/season.yaml'
-        )->slurp ) =~ s/^\-+//;
+        )->slurp('UTF-8') ) =~ s/^\-+//;
 
         $self->stash(
             name     => ( ( localtime() )[5] + 1900 ) . '-' . ( ( localtime() )[5] + 1901 ),
@@ -137,8 +142,8 @@ sub meet ($self) {
         unless ( $self->param('settings') ) {
             ( my $yaml = path(
                 conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/meet.yaml'
-            )->slurp ) =~ s/^\-+//;
-            my $roster_data = Load($yaml)->{roster}{data};
+            )->slurp('UTF-8') ) =~ s/^\-+//;
+            my $roster_data = Load( encode( 'UTF-8', $yaml ) )->{roster}{data};
             $yaml =~ s/\nroster\s*:.*(?=\n\w)//ms;
 
             my $meet_count = QuizSage::Model::Meet->new
@@ -161,7 +166,7 @@ sub meet ($self) {
                         ->admin_auth( $self->stash('user') )
                 );
 
-                my $settings = Load( $self->param('settings') );
+                my $settings = Load( encode( 'UTF-8', $self->param('settings') ) );
                 $settings->{roster}{data} = $self->param('roster_data');
 
                 $meet->create({
@@ -218,7 +223,7 @@ sub meet ($self) {
 
                 delete $meet->data->{settings}{roster} unless ( $meet->data->{settings}{roster}->%* );
 
-                ( my $yaml = Dump( $meet->data->{settings} ) ) =~ s/^\-+//;
+                ( my $yaml = decode( 'UTF-8', Dump( $meet->data->{settings} ) ) ) =~ s/^\-+//;
 
                 $self->stash(
                     meet          => $meet,
@@ -248,7 +253,7 @@ sub meet ($self) {
                         $meet->swap_draw_parts( $self->param('bracket_name'), $set_pairs, $quiz_pairs );
                     }
 
-                    my $settings = Load( $self->param('settings') );
+                    my $settings = Load( encode( 'UTF-8', $self->param('settings') ) );
 
                     $settings->{roster}{data}          = $self->param('roster_data');
                     $settings->{roster}{default_bible} = $self->param('default_bible');

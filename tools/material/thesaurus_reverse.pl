@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use exact -cli, -conf;
 use Omniframe;
-use Mojo::JSON 'decode_json';
+use Mojo::JSON 'from_json';
 
 my $opt = options('buffer|b=i');
 $opt->{buffer} //= 25_000;
@@ -24,7 +24,7 @@ sub write_buffer ( $size = 0 ) {
 
 $dq->sql('SELECT word_id, meanings FROM word WHERE meanings IS NOT NULL')->run->each( sub ($row) {
     my $data     = $row->data;
-    my $meanings = decode_json( $data->{meanings} );
+    my $meanings = from_json( $data->{meanings} );
 
     for my $synonym ( map { $_->{synonyms}->@* } $meanings->@* ) {
         for my $word ( $synonym->{words}->@* ) {

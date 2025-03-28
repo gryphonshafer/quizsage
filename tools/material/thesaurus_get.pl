@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 use exact -cli, -conf;
-use Mojo::JSON 'encode_json';
+use Mojo::JSON 'to_json';
 use Mojo::UserAgent;
 use Mojo::Util 'trim';
 use Omniframe;
@@ -134,7 +134,7 @@ for ( my $i = 0; $i < @words_to; $i++ ) {
         $dq->begin_work;
 
         try {
-            $insert_text_meanings->run( $text, encode_json $meanings );
+            $insert_text_meanings->run( $text, to_json $meanings );
         }
         catch ($e) {
             die $e unless ( $e =~ /DBD::SQLite::st execute failed: UNIQUE constraint failed/ );

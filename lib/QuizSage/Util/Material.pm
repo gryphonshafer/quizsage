@@ -4,7 +4,8 @@ use exact -conf, -fun;
 use Digest;
 use File::Path 'make_path';
 use Mojo::File 'path';
-use Mojo::JSON qw( encode_json decode_json );
+use Mojo::JSON qw( to_json from_json );
+use Omniframe::Class::Time;
 use QuizSage::Model::Label;
 
 exact->exportable( qw{ text2words material_json synonyms_of_term } );
@@ -27,28 +28,29 @@ sub text2words ( $text, $skip_lc = 0 ) {
     return [ split( /\s/, $text ) ];
 }
 
+my $time = Omniframe::Class::Time->new;
+
 fun material_json (
     :$description = undef, # assumed to be canonical
     :$label       = undef, # not required to be canonical
     :$user        = undef, # user ID from application database
     :$force       = 0,
 ) {
-    my $now = time;
-    if ( $now < $time->parse( conf->get( qw{ material json delete_if_before } ) )->{datetime}->epoch ) {
-        $json_path->list->each('remove');
-    }
-    else {
-        # remove any material JSON files that haven't been accessed in the last N
-        # days, where N is from config: material json atime_life
-        my $atime_life = conf->get( qw{ material json atime_life } );
-        my $json_path  = path( join( '/',
-            conf->get( qw{ config_app root_dir } ),
-            conf->get( qw{ material json location } ),
-        ) );
-        $json_path->list->grep( sub ($file) {
-            ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
-        } )->each('remove');
-    }
+    my $now       = time;
+    my $json_path = path( join( '/',
+        conf->get( qw{ config_app root_dir } ),
+        conf->get( qw{ material json location } ),
+    ) );
+    my $delete_if_before = $time->parse( conf->get( qw{ material json delete_if_before } ) )->{datetime}->epoch;
+    $json_path->list->grep( sub ($file) {
+        $file->stat->atime < $delete_if_before
+    } )->each('remove');
+    # remove any material JSON files that haven't been accessed in the last N
+    # days, where N is from config: material json atime_life
+    my $atime_life = conf->get( qw{ material json atime_life } );
+    $json_path->list->grep( sub ($file) {
+        ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
+    } )->each('remove');
 
     croak('Must provide either label or description (and not both)')
         if ( not $description and not $label or $description and $label );
@@ -154,7 +156,7 @@ fun material_json (
                 ];
                 $_;
             }
-            decode_json( $synonym->{meanings} )->@*
+            from_json( $synonym->{meanings} )->@*
         ];
         next unless ( $synonym->{meanings}->@* );
 
@@ -164,7 +166,7 @@ fun material_json (
 
     # save data to JSON file and return path/name
     make_path( $json_file->dirname ) unless ( -d $json_file->dirname );
-    $json_file->spew( encode_json($data) );
+    $json_file->spew( to_json($data), 'UTF-8' );
 
     return $return;
 }
@@ -297,7 +299,7 @@ sub synonyms_of_term ( $term, $settings = {} ) {
                         grep { $_->{verity} >= $settings->{minimum_verity} } $_->{synonyms}->@*
                     ];
                     $_;
-                } decode_json( $_->{meanings} )->@*
+                } from_json( $_->{meanings} )->@*
             ];
             $_;
         }

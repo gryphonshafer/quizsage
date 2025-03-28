@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
 use exact -cli, -conf;
-use Mojo::ByteStream;
 use Mojo::File 'path';
 use Text::Unidecode 'unidecode';
 use Omniframe;
@@ -41,7 +40,7 @@ my $books  = { map { @$_ } @{ $dq->sql('SELECT name, book_id FROM book')->run->a
 my $last_book = '';
 for my $bible (@bibles) {
     path( $obml_dir . '/' . $bible )->list_tree->grep( qr/\.obml$/ )->each( sub {
-        my $obml = unidecode( Mojo::ByteStream->new( $_->slurp )->decode->to_string );
+        my $obml = unidecode( $_->slurp('UTF-8') );
         my ( $book, $chapter ) = $obml =~ /~\s*([^~]+?)\s*(\d*)\s*~/ms;
         $chapter ||= 1;
 

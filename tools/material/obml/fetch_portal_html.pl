@@ -4,7 +4,7 @@ use File::Path 'make_path';
 use Mojo::File 'path';
 use Mojo::URL;
 use Mojo::UserAgent;
-use Mojo::JSON qw( encode_json decode_json );
+use Mojo::JSON qw( to_json from_json );
 
 my $opt = options( qw{ dir|d=s wait|w=i bible|b=s@ structure|s=s } );
 
@@ -21,10 +21,10 @@ $opt->{structure} = path( $opt->{structure} );
 $opt->{structure}->dirname->make_path;
 
 my $structure;
-$structure = decode_json $opt->{structure}->slurp if ( -f $opt->{structure} );
+$structure = from_json $opt->{structure}->slurp('UTF-8') if ( -f $opt->{structure} );
 
 sub save {
-    $opt->{structure}->spew( encode_json $structure );
+    $opt->{structure}->spew( to_json($structure), 'UTF-8' );
 }
 
 my $gets_count;
@@ -91,7 +91,8 @@ for my $version ( $structure->{versions}->@* ) {
                         version => $version->{acronym},
                         search  => $book->{name} . ' ' . $chapter,
                     },
-                )->body
+                )->body,
+                'UTF-8',
             );
         }
     }
