@@ -4,7 +4,7 @@ use exact 'Mojolicious::Controller';
 use Mojo::File 'path';
 use Mojo::JSON 'from_json';
 use QuizSage::Model::Label;
-use QuizSage::Util::Material 'material_json';
+use QuizSage::Util::Material qw( material_json synonyms_of_term );
 use QuizSage::Util::Reference qw( reference_data reference_html );
 
 my $label = QuizSage::Model::Label->new;
@@ -67,6 +67,20 @@ sub html ($self) {
     ) );
 }
 
+sub synonyms ($self) {
+    $self->openapi->valid_input or return;
+
+    my $params = $self->req->params->to_hash;
+    for ( qw( ignored_types special_types ) ) {
+        $params->{$_} = [ $params->{$_} ] if ( not ref $params->{$_} );
+    }
+
+    $self->render( openapi => synonyms_of_term(
+        delete $params->{term},
+        $params,
+    ) );
+}
+
 1;
 
 =head1 NAME
@@ -100,6 +114,11 @@ L<QuizSage::Util::Reference>.
 This endpoint wraps the C<reference_data> function from
 L<QuizSage::Util::Reference> but renders the data returned from it into HTML,
 then returns that HTML.
+
+=head2 synonyms
+
+This endpoint wraps the C<synonyms_of_term> function from
+L<QuizSage::Util::Material>.
 
 =head1 INHERITANCE
 

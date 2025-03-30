@@ -284,6 +284,152 @@ paths:
                                 type: string
                                 example: >-
                                     "<!DOCTYPE html><html>...</html>"
+    /material/synonyms:
+        get:
+            summary: Returns a list synonym objects for a given term.
+            description: |-
+                This endpoint will search the materials database for all "forward"
+                and "reverse" matching synonyms of a term (which can be a string
+                of a partial word, single word, or multiple space-separated
+                words).
+            tags:
+                - Bible Materials
+            operationId: material_synonyms
+            x-mojo-to: api-material#synonyms
+            parameters:
+              - name: term
+                in: query
+                description: |-
+                    Term to search against; is a string of a partial word,
+                    single word, or multiple space-separated words.
+                required: true
+                schema:
+                    type: string
+                    example: faith
+              - name: case_sensitive
+                in: query
+                description: |-
+                    Boolean that indicates if the term (and/or substrings of
+                    the term) should be matched case sensitively.
+                schema:
+                    type: boolean
+                    default: 'false'
+              - name: skip_substring_search
+                in: query
+                description: |-
+                    Boolean that indicates if searching for substrings from
+                    the term is skipped.
+                schema:
+                    type: boolean
+                    default: true
+              - name: skip_term_splitting
+                in: query
+                description: |-
+                    Boolean that indicates if term splitting is skipped. Term
+                    splitting splits the term into words base on spaces.
+                schema:
+                    type: boolean
+                    default: true
+              - name: minimum_verity
+                in: query
+                description: |-
+                    Filter all results with verity levels above this minimum.
+                    Verity levels are 1, 2, and 3, with 3 being the strongest
+                    matches and 1 being the weakest matches.
+                schema:
+                    type: integer
+                    example: 0
+                    default: '0'
+              - name: direct_lookup
+                in: query
+                description: |-
+                    Include a "direct" or "forward" search for synonyms. Either
+                    this and/or `reverse_lookup` must be true.
+                schema:
+                    type: boolean
+                    default: true
+              - name: reverse_lookup
+                in: query
+                description: |-
+                    Include a "reverse" search for synonyms. Either this and/or
+                    `direct_lookup` must be true.
+                schema:
+                    type: boolean
+                    default: true
+              - name: ignored_types
+                in: query
+                description: |-
+                    Word types that should be considered "ignored" for the
+                    purposes of the data descriptions returned in the payload.
+                schema:
+                    type: array
+                    items:
+                        type: string
+                    default:
+                        - article
+                        - preposition
+              - name: special_types
+                in: query
+                description: |-
+                    Word types that should be considered "special" for the
+                    purposes of the data descriptions returned in the payload.
+                schema:
+                    type: array
+                    items:
+                        type: string
+                    default:
+                        - pronoun
+            responses:
+                '200':
+                    description: List of synonym objects.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        lookup:
+                                            type: string
+                                        meanings:
+                                            type: array
+                                            items:
+                                                type: object
+                                                properties:
+                                                    type:
+                                                        type: string
+                                                    word:
+                                                        type: string
+                                                    synonyms:
+                                                        type: array
+                                                        items:
+                                                            type: object
+                                                            properties:
+                                                                verity:
+                                                                    type: integer
+                                                                words:
+                                                                    type: array
+                                                                    items:
+                                                                        type: string
+                                        text:
+                                            type: string
+                                        types:
+                                            type: array
+                                            items:
+                                                type: string
+                                example:
+                                  - text: faith
+                                    lookup: direct
+                                    types: []
+                                    meanings:
+                                      - type: noun
+                                        word: trust in something
+                                        synonyms:
+                                          - verity: 3
+                                            words:
+                                                - acceptance
+                                                - belief
+                                                - confidence
 components:
     parameters:
         bible_acronym:
