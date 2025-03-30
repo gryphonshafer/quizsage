@@ -4,10 +4,11 @@ use exact -conf, -fun;
 use Digest;
 use File::Path 'make_path';
 use Mojo::File 'path';
-use Mojo::JSON qw( encode_json decode_json );
+use Mojo::JSON qw( to_json from_json );
+use Omniframe::Class::Time;
 use QuizSage::Model::Label;
 
-exact->exportable( qw{ text2words material_json } );
+exact->exportable( qw{ text2words material_json synonyms_of_term } );
 
 sub text2words ( $text, $skip_lc = 0 ) {
     $text = lc $text unless ($skip_lc);
@@ -27,20 +28,26 @@ sub text2words ( $text, $skip_lc = 0 ) {
     return [ split( /\s/, $text ) ];
 }
 
+my $time = Omniframe::Class::Time->new;
+
 fun material_json (
     :$description = undef, # assumed to be canonical
     :$label       = undef, # not required to be canonical
     :$user        = undef, # user ID from application database
     :$force       = 0,
 ) {
-    # remove any material JSON files that haven't been accessed in the last N
-    # days, where N is from config: material json atime_life
-    my $now        = time;
-    my $atime_life = conf->get( qw{ material json atime_life } );
-    my $json_path  = path( join( '/',
+    my $now       = time;
+    my $json_path = path( join( '/',
         conf->get( qw{ config_app root_dir } ),
         conf->get( qw{ material json location } ),
     ) );
+    my $delete_if_before = $time->parse( conf->get( qw{ material json delete_if_before } ) )->{datetime}->epoch;
+    $json_path->list->grep( sub ($file) {
+        $file->stat->atime < $delete_if_before
+    } )->each('remove');
+    # remove any material JSON files that haven't been accessed in the last N
+    # days, where N is from config: material json atime_life
+    my $atime_life = conf->get( qw{ material json atime_life } );
     $json_path->list->grep( sub ($file) {
         ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
     } )->each('remove');
@@ -145,14 +152,11 @@ fun material_json (
             map {
                 $_->{synonyms} = [
                     grep { $_->{words}->@* }
-                    map {
-                        $_->{words} = [ grep { not /\s/ } $_->{words}->@* ];
-                        $_;
-                    } $_->{synonyms}->@*
+                    $_->{synonyms}->@*
                 ];
                 $_;
             }
-            decode_json( $synonym->{meanings} )->@*
+            from_json( $synonym->{meanings} )->@*
         ];
         next unless ( $synonym->{meanings}->@* );
 
@@ -162,9 +166,145 @@ fun material_json (
 
     # save data to JSON file and return path/name
     make_path( $json_file->dirname ) unless ( -d $json_file->dirname );
-    $json_file->spew( encode_json($data) );
+    $json_file->spew( to_json($data), 'UTF-8' );
 
     return $return;
+}
+
+sub synonyms_of_term ( $term, $settings = {} ) {
+    croak('Term must be provided') unless ( length $term );
+
+    for (
+        [ case_sensitive        => 0 ],
+        [ skip_substring_search => 0 ],
+        [ skip_term_splitting   => 0 ],
+        [ minimum_verity        => 0 ],
+        [ direct_lookup         => 1 ],
+        [ reverse_lookup        => 1 ],
+    ) {
+        $settings->{ $_->[0] } = $_->[1] if ( not exists $settings->{ $_->[0] } );
+    }
+    $settings->{ignored_types} //= [ 'article', 'preposition' ];
+    $settings->{special_types} //= ['pronoun'];
+
+    my $matches;
+    my @terms = ( $settings->{skip_term_splitting} ) ? $term : do {
+        my @split = grep { /\w/ } split( /\s+/, $term );
+        ( @split > 1 ) ? ( $term, @split ) : $term;
+    };
+
+    my $dq = QuizSage::Model::Label->new->dq('material');
+
+    if ( $settings->{direct_lookup} ) {
+        for my $match (
+            map {
+                $_->{lookup} = 'direct';
+                $_;
+            }
+            $dq->get(
+                'word',
+                [ qw( word_id redirect_id text meanings ) ],
+                {
+                    -and => {
+                        -or => {
+                            redirect_id => { '!=', undef },
+                            meanings    => { '!=', undef },
+                        },
+                        ( $settings->{case_sensitive} )
+                            ? ( text =>
+                                ( $settings->{skip_substring_search} )
+                                    ? { -in   => \@terms }
+                                    : { -glob => [ map { '*' . $_ . '*' } @terms ] }
+                            )
+                            : ( 'LOWER(text)' =>
+                                ( $settings->{skip_substring_search} )
+                                    ? { '='   => [ map { \[ 'LOWER(?)', $_             ] } @terms ] }
+                                    : { -glob => [ map { \[ 'LOWER(?)', '*' . $_ . '*' ] } @terms ] }
+                            )
+                    },
+                },
+            )->run->all({})->@*
+        ) {
+            if ( $match->{redirect_id} ) {
+                push( @$matches, $dq->get(
+                    'word',
+                    [ qw( word_id text meanings ) ],
+                    { word_id => $match->{redirect_id} }
+                )->run->first({}) ) if ( not grep { $_->{word_id} == $match->{redirect_id} } @$matches );
+            }
+            else {
+                push( @$matches, $match );
+            }
+        }
+    }
+
+    push( @$matches,
+        map {
+            $_->{lookup} = 'reverse';
+            $_;
+        }
+        $dq->get(
+            'word',
+            [ qw( text meanings ) ],
+            {
+                -and => [
+                    word_id => { -not_in => [ map { $_->{word_id } } @$matches ] },
+                    word_id => { -in     =>
+                        scalar $dq->get(
+                            'reverse',
+                            [ \q{ DISTINCT word_id } ],
+                            {
+                                ( maybe verity => ( $settings->{minimum_verity} || undef ) ),
+                                ( $settings->{case_sensitive} )
+                                    ? ( synonym =>
+                                        ( $settings->{skip_substring_search} )
+                                            ? { -in   => \@terms }
+                                            : { -glob => [ map { '*' . $_ . '*' } @terms ] }
+                                    )
+                                    : ( 'LOWER(synonym)' =>
+                                        ( $settings->{skip_substring_search} )
+                                            ? { '='   => [ map { \[ 'LOWER(?)', $_             ] } @terms ] }
+                                            : { -glob => [ map { \[ 'LOWER(?)', '*' . $_ . '*' ] } @terms ] }
+                                    )
+                            },
+                        )->run->column,
+                    },
+                ],
+            },
+        )->run->all({})->@*
+    ) if ( $settings->{reverse_lookup} );
+
+    return [
+        map {
+            $_->{types} = [];
+            for my $type ( qw( ignored special ) ) {
+                push( @{ $_->{types} }, $type ) if (
+                    grep {
+                        my $meaning = $_;
+                        grep { $meaning->{type} eq $_ } $settings->{ $type . '_types' }->@*;
+                    } $_->{meanings}->@*
+                );
+            }
+            $_;
+        }
+        grep { $_->{meanings}->@* }
+        map {
+            delete $_->{word_id};
+            delete $_->{redirect_id};
+
+            $_->{meanings} = [
+                grep { $_->{synonyms}->@* }
+                map {
+                    $_->{synonyms} = [
+                        grep { $_->{verity} >= $settings->{minimum_verity} } $_->{synonyms}->@*
+                    ];
+                    $_;
+                } from_json( $_->{meanings} )->@*
+            ];
+            $_;
+        }
+        @$matches
+    ];
 }
 
 1;
@@ -175,13 +315,27 @@ QuizSage::Util::Material
 
 =head1 SYNOPSIS
 
-    use QuizSage::Util::Material qw( material_json text2words );
+    use QuizSage::Util::Material qw( material_json text2words synonyms_of_term );
 
     my @words = text2words(
         q{Jesus asked, "What's (the meaning of) this: 'I and my Father are one.'"}
     )->@*;
 
     my %results = material_json( 'Acts 1-20 NIV', 'force' )->%*;
+
+    my $thesaurus_matches = synonyms_of_term(
+        'faith',
+        {
+            case_sensitive        => 0,
+            skip_substring_search => 0,
+            skip_term_splitting   => 0,
+            minimum_verity        => 0,
+            direct_lookup         => 1,
+            reverse_lookup        => 1,
+            ignored_types         => [ 'article', 'preposition' ],
+            special_types         => ['pronoun'],
+        },
+    );
 
 =head1 DESCRIPTION
 
@@ -276,3 +430,23 @@ from the string.
 
 You can optionally pass in a true second value, which will cause the function
 to skip lower-casing words.
+
+=head2 synonyms_of_term
+
+This method requires a term (which is a string of a partial word, single word,
+or multiple space-separated words) and an optional settings hashref. It will
+return thesaurus matches based on the input.
+
+    my $thesaurus_matches = synonyms_of_term(
+        'faith',
+        {
+            case_sensitive        => 0,
+            skip_substring_search => 0,
+            skip_term_splitting   => 0,
+            minimum_verity        => 0,
+            direct_lookup         => 1,
+            reverse_lookup        => 1,
+            ignored_types         => [ 'article', 'preposition' ],
+            special_types         => ['pronoun'],
+        },
+    );

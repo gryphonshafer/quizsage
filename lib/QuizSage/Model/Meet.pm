@@ -1,7 +1,7 @@
 package QuizSage::Model::Meet;
 
 use exact -class, -conf;
-use Mojo::JSON qw( encode_json decode_json );
+use Mojo::JSON qw( to_json from_json );
 use Omniframe::Class::Time;
 use Omniframe::Util::Bcrypt 'bcrypt';
 use Omniframe::Util::Data qw( dataload deepcopy );
@@ -33,7 +33,7 @@ sub freeze ( $self, $data ) {
     }
 
     for ( qw( settings build stats ) ) {
-        $data->{$_} = encode_json( $data->{$_} );
+        $data->{$_} = to_json( $data->{$_} );
         undef $data->{$_} if ( $data->{$_} eq '{}' or $data->{$_} eq 'null' );
     }
 
@@ -41,7 +41,7 @@ sub freeze ( $self, $data ) {
 }
 
 sub thaw ( $self, $data ) {
-    $data->{$_} = ( defined $data->{$_} ) ? decode_json( $data->{$_} ) : {}
+    $data->{$_} = ( defined $data->{$_} ) ? from_json( $data->{$_} ) : {}
         for ( qw( settings build stats ) );
     return $data;
 }
@@ -336,7 +336,7 @@ sub stats ( $self, $rebuild = 0 ) {
         not $rebuild and
         $self->data->{stats}->%* and
         $time->parse( $self->data->{last_modified} )->{datetime}->epoch >
-        $time->parse( conf->get('rebuild_stats_before') )->{datetime}->epoch
+        $time->parse( conf->get('rebuild_stats_if_before') )->{datetime}->epoch
     );
 
     my $build        = deepcopy( $self->data->{build} );
@@ -552,7 +552,8 @@ sub stats ( $self, $rebuild = 0 ) {
             $points += $_ for ( $quizzer->{$_}->@* );
             $_ => $points / @{ $quizzer->{$_} };
         } keys %$quizzer;
-        push( @boosts, $points_avg{multiple} / $points_avg{singular} ) if ( $points_avg{singular} );
+        push( @boosts, $points_avg{multiple} / $points_avg{singular} )
+            if ( $points_avg{multiple} and $points_avg{singular} );
     }
     my $factor;
     if (@boosts) {
@@ -660,7 +661,7 @@ sub stats ( $self, $rebuild = 0 ) {
 
             for my $team ( $orgs->{$org_name}{teams}->@* ) {
                 $org_data->{points_sum} += $team->{points_sum};
-                $org_data->{quizzes}    += scalar( $team->{quizzes}->@* )
+                $org_data->{quizzes}    += scalar( $team->{quizzes}->@* );
             }
 
             $org_data->{points_avg} = ( $org_data->{quizzes} )
@@ -671,6 +672,51 @@ sub stats ( $self, $rebuild = 0 ) {
         }
         keys %$orgs
     ];
+
+    my $rookies_of_the_meets_from_previous_meets = [];
+    for my $previous_meet (
+        $self->new->every_data(
+            {
+                season_id => $self->data->{season_id},
+                start     => { '<' => $self->data->{start} },
+            },
+            {
+                order_by => 'start',
+            },
+        )->@*
+    ) {
+        for my $rookie (
+            grep {
+                grep { $_ eq 'Rookie' } $_->{tags}->@*
+            } $previous_meet->{stats}{quizzers}->@*
+        ) {
+            if ( not grep { $_ eq $rookie->{name} } @$rookies_of_the_meets_from_previous_meets ) {
+                push( @$rookies_of_the_meets_from_previous_meets, $rookie->{name} );
+                last;
+            }
+        }
+    }
+    for my $rookie (
+        grep {
+            grep { $_ eq 'Rookie' } $_->{tags}->@*
+        } $stats->{quizzers}->@*
+    ) {
+        if ( not grep { $_ eq $rookie->{name} } @$rookies_of_the_meets_from_previous_meets ) {
+            $stats->{meta}{rookie_of_the_meet} = {
+                map { $_ => $rookie->{$_} } qw(
+                    name
+                    points_avg
+                    points_avg_raw
+                    points_sum
+                    points_sum_raw
+                    team_name
+                    vra_sum
+                )
+            };
+
+            last;
+        }
+    }
 
     $self->data->{stats}         = $stats;
     $self->data->{last_modified} = \q{ STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' ) },

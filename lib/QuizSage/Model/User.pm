@@ -2,7 +2,7 @@ package QuizSage::Model::User;
 
 use exact -class, -conf;
 use Email::Address;
-use Mojo::JSON qw( encode_json decode_json );
+use Mojo::JSON qw( to_json from_json );
 use Mojo::Util qw( b64_encode b64_decode );
 use Omniframe::Class::Email;
 use Omniframe::Util::Bcrypt 'bcrypt';
@@ -36,25 +36,25 @@ sub freeze ( $self, $data ) {
         croak('Phone supplied is not at least 10 digits in length') unless ( length $data->{phone} >= 10 );
     }
 
-    $data->{settings} = encode_json( $data->{settings} );
+    $data->{settings} = to_json( $data->{settings} );
     undef $data->{settings} if ( $data->{settings} eq '{}' or $data->{settings} eq 'null' );
 
     return $data;
 }
 
 sub thaw ( $self, $data ) {
-    $data->{settings} = ( defined $data->{settings} ) ? decode_json( $data->{settings} ) : {};
+    $data->{settings} = ( defined $data->{settings} ) ? from_json( $data->{settings} ) : {};
     return $data;
 }
 
 sub _encode_token ($user_id) {
-    return b64_encode( encrypt( encode_json( [ $user_id, time ] ) ) );
+    return b64_encode( encrypt( to_json( [ $user_id, time ] ) ) );
 }
 
 sub _decode_token ($token) {
     my $data;
     try {
-        $data = decode_json( decrypt( b64_decode($token) ) );
+        $data = from_json( decrypt( b64_decode($token) ) );
     }
     catch ($e) {}
 

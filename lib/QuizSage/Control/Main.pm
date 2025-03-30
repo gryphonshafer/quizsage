@@ -6,7 +6,7 @@ use QuizSage::Model::Memory;
 use QuizSage::Model::Quiz;
 use QuizSage::Model::Season;
 use QuizSage::Model::User;
-use QuizSage::Util::Material 'material_json';
+use QuizSage::Util::Material qw( material_json synonyms_of_term );
 
 sub home ($self) {
     $self->stash(
@@ -151,6 +151,36 @@ sub download ($self) {
     }
 }
 
+sub synonyms ($self) {
+    my $settings = {
+        map { $_ => $self->param($_) }
+        grep { defined $self->param($_) } qw(
+            case_sensitive
+            skip_substring_search
+            skip_term_splitting
+            minimum_verity
+            direct_lookup
+            reverse_lookup
+        )
+    };
+    for ( qw(
+        ignored_types
+        special_types
+    ) ) {
+        $settings->{$_} = $self->every_param($_) if ( defined $self->param($_) );
+    }
+
+    my $matches = [];
+    try {
+        $matches = synonyms_of_term( $self->param('term'), $settings );
+    }
+    catch ($e) {
+        $self->notice( 'Synonyms error: ' . deat $e );
+    }
+
+    $self->render( json => $matches );
+}
+
 1;
 
 =head1 NAME
@@ -184,6 +214,15 @@ This method handles setting up settings for various other parts of QuizSage.
 =head2 download
 
 This method supports the download page.
+
+=head2 synonyms
+
+This method requires a C<term> parameter be provided, which is a word, portion
+of a word, or a string of space-separated words. The C<synonyms_of_term> method
+from L<QuizSage::Util::Material> gets called, and the matches are returned as
+JSON.
+
+You can optionally also set any settings via parameters.
 
 =head1 INHERITANCE
 

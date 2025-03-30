@@ -5,7 +5,7 @@ use DateTime;
 use QuizSage::Model::Label;
 use QuizSage::Model::Memory;
 use QuizSage::Model::User;
-use Mojo::JSON 'decode_json';
+use Mojo::JSON 'from_json';
 
 sub memorize ($self) {
     my $memory = QuizSage::Model::Memory->new;
@@ -142,7 +142,7 @@ sub state ($self) {
         return $self->redirect_to('/memory/state');
     }
     elsif ( $self->param('shared_from_labels') ) {
-        my @persons = map { decode_json($_) } $self->every_param('persons')->@*;
+        my @persons = map { from_json($_) } $self->every_param('persons')->@*;
 
         my @names = map { $_->{name} } @persons;
         @names = map { $_->[0] } sort { $a->[1] <=> $b->[1] } map { [ $_, rand ] } @names;

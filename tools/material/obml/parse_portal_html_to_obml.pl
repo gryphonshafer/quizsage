@@ -3,12 +3,11 @@ use exact -cli;
 use Bible::OBML;
 use Bible::Reference;
 use File::Path 'make_path';
-use Mojo::ByteStream;
 use Mojo::Collection 'c';
 use Mojo::DOM;
 use Mojo::File 'path';
 use Parallel::ForkManager;
-use Mojo::JSON 'decode_json';
+use Mojo::JSON 'from_json';
 
 my $opt = options( qw{ source|s=s obml|o=s bible|b=s@ target|t=s force|f forks|k } );
 
@@ -51,9 +50,7 @@ $files->each( sub ( $item, $count ) {
     if ( not $pm->start ) {
         my $obml;
         try {
-            $obml = parse(
-                $item->{source}->slurp
-            )
+            $obml = parse( $item->{source}->slurp('UTF-8') );
         }
         catch ($e) {
             $e =~ s/\s+at\s+.+\s+line\s+\d+\.//;
@@ -64,11 +61,7 @@ $files->each( sub ( $item, $count ) {
 
         make_path( $item->{target}->dirname );
 
-        $item->{target}->spew(
-            Mojo::ByteStream->new(
-                $obml
-            )->encode . "\n"
-        );
+        $item->{target}->spew( $obml . "\n", 'UTF-8' );
 
         my $seconds_remaining = int( ( time - $start ) / $count * ( $total - $count ) );
 
@@ -99,7 +92,7 @@ sub _retag ( $tag, $retag ) {
 sub parse ($html) {
     return unless ($html);
 
-    my $data = decode_json(
+    my $data = from_json(
         Mojo::DOM->new($html)->at('script#__NEXT_DATA__')->text
     )->{props}{pageProps}{result}{data}[0]{results}[0];
 

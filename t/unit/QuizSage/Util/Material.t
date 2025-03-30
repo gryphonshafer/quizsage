@@ -1,8 +1,8 @@
 use Test2::V0;
 use exact -conf;
-use Mojo::JSON 'decode_json';
+use Mojo::JSON 'from_json';
 use QuizSage::Model::Label;
-use QuizSage::Util::Material qw{ text2words material_json };
+use QuizSage::Util::Material qw{ text2words material_json synonyms_of_term };
 
 my @spew;
 my $mock_mojo_file  = mock 'Mojo::File' => ( override => [ spew => sub { @spew = @_ } ] );
@@ -43,7 +43,7 @@ is( material_json( label => 'Eph 6:17 NIV', force => 1 ), {
 
 isa_ok( $spew[0], 'Mojo::File' );
 
-is( decode_json( $spew[1] ), hash {
+is( from_json( $spew[1] ), hash {
     bibles      => {
         NIV => hash {
             type => 'primary',
@@ -74,5 +74,10 @@ is(
     [ qw( jesus asked what's the meaning of this i and my father are one ) ],
     'text2words again',
 );
+
+ok(
+    lives { synonyms_of_term('faith') },
+    q{synonyms_of_term('faith')},
+) or note $@;
 
 done_testing;

@@ -115,7 +115,7 @@ export default Pinia.defineStore( 'store', {
             selected: {
                 bible: (current)
                     ? current.event.query.bible
-                    : quiz.queries.material.bibles.find( (bible) => bible.type == 'primary' ).name,
+                    : quiz.queries.material.bibles.find( bible => bible.type == 'primary' ).name,
                 type: {
                     synonymous_verbatim_open_book: '',
                 },
@@ -191,8 +191,17 @@ export default Pinia.defineStore( 'store', {
         },
 
         view_query(record) {
-            this.selected.bible = record.bible;
+            if ( ! record.query ) return;
             update_current( this, record.id );
+
+            this.selected.bible =
+                ( this.current.event.quizzer_id ) ? this.teams
+                    .find( team => team.id == this.current.event.team_id )
+                    .quizzers
+                    .find( quizzer => quizzer.id == this.current.event.quizzer_id )
+                    .bible :
+                ( record.bible ) ? record.bible :
+                quiz.queries.material.bibles.find( bible => bible.type == 'primary' ).name;
 
             this.selected.type.with_reference                = false;
             this.selected.type.add_verse                     = false;

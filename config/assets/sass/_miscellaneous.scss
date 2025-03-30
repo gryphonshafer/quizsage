@@ -23,6 +23,10 @@
     white-space: nowrap;
 }
 
+.tight_lines {
+    line-height: 1em;
+}
+
 .blank_cell {
     @include theme.apply( themes.$themes ) {
         background: theme.get('blank_cell');

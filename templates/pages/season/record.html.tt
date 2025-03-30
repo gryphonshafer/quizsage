@@ -40,7 +40,7 @@
 [% IF season %]
     <div class="admin column">
         [% confirm_js = BLOCK %]
-            window.addEventListener( 'load', () => {
+            window.addEventListener( 'DOMContentLoaded', () => {
                 window.document.querySelectorAll('a.confirm').forEach( a => {
                     a.onclick = () => {
                         if ( window.omniframe && omniframe.memo ) omniframe.memo({

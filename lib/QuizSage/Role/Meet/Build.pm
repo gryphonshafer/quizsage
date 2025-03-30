@@ -1,7 +1,7 @@
 package QuizSage::Role::Meet::Build;
 
 use exact -role, -conf;
-use Mojo::JSON 'decode_json';
+use Mojo::JSON 'from_json';
 use Omniframe::Class::Javascript;
 use Omniframe::Class::Time;
 use Omniframe::Util::Data qw( dataload deepcopy );
@@ -618,7 +618,7 @@ sub add_distributions ( $self, $build_settings ) {
                 ( $build_settings->{per_quiz} // {} )->{material};
 
             $material_json_bibles->{ $material->{json_file}->to_string } //= do {
-                my $bibles = decode_json( $material->{json_file}->slurp )->{bibles};
+                my $bibles = from_json( $material->{json_file}->slurp('UTF-8') )->{bibles};
                 [ grep { $bibles->{$_}{type} eq 'primary' } keys %$bibles ];
             };
 

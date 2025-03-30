@@ -1,6 +1,6 @@
 export default class Material {
     static default_settings = {
-        minimum_verity: 3,
+        minimum_verity: 0,
         ignored_types : [ 'article', 'preposition' ],
         special_types : ['pronoun'],
     };
@@ -202,10 +202,60 @@ export default class Material {
             .forEach( block => block.special = true );
 
         entry.forEach( range =>
-            range.synonyms = range.synonyms.filter( synonym => synonym.verity <= this.minimum_verity )
+            range.synonyms = range.synonyms.filter( synonym => synonym.verity >= this.minimum_verity )
         );
 
         return { word: key, meanings: entry };
+    }
+
+    synonyms_of_term(term) {
+        term = term.toLowerCase();
+
+        const keys = [];
+
+        const key = Object.keys( this.data.thesaurus ).find( e => e.toLowerCase() == term );
+        if (key) keys.push(key);
+
+        Object.keys( this.data.thesaurus )
+            .filter( key => key.toLowerCase().includes(term) )
+            .forEach( key => {
+                if (
+                    key &&
+                    ! keys.map( e => e.toLowerCase() ).includes( key.toLowerCase() )
+                ) keys.push(key);
+            } );
+
+        term
+            .split(/\s+/)
+            .forEach( word => {
+                const key = Object.keys( this.data.thesaurus ).find( key => key.toLowerCase() == word );
+                if (
+                    key &&
+                    ! keys.map( e => e.toLowerCase() ).includes( key.toLowerCase() )
+                ) keys.push(key);
+            } );
+
+        return keys.map( key => {
+            const node = {
+                key     : key,
+                synonyms: this.synonyms_of_word(key),
+                types   : [],
+            };
+
+            if (
+                node.synonyms.meanings.find(
+                    block => this.ignored_types.find( type => type == block.type )
+                )
+            ) node.types.push('ignored');
+
+            if (
+                node.synonyms.meanings.find(
+                    block => this.special_types.find( type => type == block.type )
+                )
+            ) node.types.push('special');
+
+            return node;
+        } );
     }
 
     // given a verse reference, return the synonyms at or above a given verity

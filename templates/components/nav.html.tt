@@ -1,5 +1,5 @@
 [% set_theme_setup = BLOCK %]
-    window.addEventListener( 'load', () => {
+    window.addEventListener( 'DOMContentLoaded', () => {
         const html_class_list = window.document.querySelector('html').classList;
 
         window.document.querySelectorAll('a.set').forEach( node => {

@@ -1,7 +1,7 @@
 package QuizSage::Model::Season;
 
 use exact -class, -conf;
-use Mojo::JSON qw( encode_json decode_json );
+use Mojo::JSON qw( to_json from_json );
 use Omniframe::Class::Time;
 use Omniframe::Util::Data qw( dataload deepcopy );
 use QuizSage::Model::Meet;
@@ -21,7 +21,7 @@ sub freeze ( $self, $data ) {
         if ( $self->is_dirty( 'start', $data ) );
 
     for ( qw( settings stats ) ) {
-        $data->{$_} = encode_json( $data->{$_} );
+        $data->{$_} = to_json( $data->{$_} );
         undef $data->{$_} if ( $data->{$_} eq '{}' or $data->{$_} eq 'null' );
     }
 
@@ -29,7 +29,7 @@ sub freeze ( $self, $data ) {
 }
 
 sub thaw ( $self, $data ) {
-    $data->{$_} = ( defined $data->{$_} ) ? decode_json( $data->{$_} ) : {} for ( qw( settings stats ) );
+    $data->{$_} = ( defined $data->{$_} ) ? from_json( $data->{$_} ) : {} for ( qw( settings stats ) );
     return $data;
 }
 
@@ -74,7 +74,7 @@ sub stats ( $self, $rebuild = 0 ) {
         not $rebuild and
         $self->data->{stats}->%* and
         $time->parse( $self->data->{last_modified} )->{datetime}->epoch >
-        $time->parse( conf->get('rebuild_stats_before') )->{datetime}->epoch
+        $time->parse( conf->get('rebuild_stats_if_before') )->{datetime}->epoch
     );
 
     my $meets = QuizSage::Model::Meet->new->every({ season_id => $self->id, hidden => 0 });
@@ -97,7 +97,13 @@ sub stats ( $self, $rebuild = 0 ) {
 
     my $quizzers_meet_data;
     for my $meet (@$meets) {
-        my $meet_stats = $meet->stats;
+        my $meet_stats = $meet->stats($rebuild);
+
+        push( @{ $stats->{rookies_of_the_meets} }, +{
+            rookie => $meet_stats->{meta}{rookie_of_the_meet},
+            meet   => +{ map { $_ => $meet->data->{$_} } qw( meet_id name location start days ) },
+        } );
+
         for my $quizzer ( $meet_stats->{quizzers}->@* ) {
             $quizzers_meet_data->{ $quizzer->{name} }{ $meet->data->{name} } = {
                 map { $_ => $quizzer->{$_} } qw( points_avg points_sum vra_sum tags team_name )

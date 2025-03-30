@@ -2,7 +2,7 @@ use Test2::V0;
 use exact -conf, -me;
 use Omniframe::Class::Javascript;
 use Mojo::File 'path';
-use Mojo::JSON 'decode_json';
+use Mojo::JSON 'from_json';
 
 my $out = Omniframe::Class::Javascript->new(
     basepath  => conf->get( qw( config_app root_dir ) ) . '/static/js',
@@ -39,7 +39,7 @@ my $out = Omniframe::Class::Javascript->new(
         } );
     },
     {
-        material => decode_json path( me('./material.json') )->slurp,
+        material => from_json( path( me('./material.json') )->slurp('UTF-8') ),
     },
 )->[0][0];
 

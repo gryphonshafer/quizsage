@@ -1,7 +1,7 @@
 package QuizSage::Model::Quiz;
 
 use exact -class, -conf;
-use Mojo::JSON qw( encode_json decode_json );
+use Mojo::JSON qw( to_json from_json );
 use Omniframe::Class::Javascript;
 use Omniframe::Mojo::Socket;
 use QuizSage::Model::Label;
@@ -24,7 +24,7 @@ after [ qw( create save delete ) ] => sub ( $self, @params ) {
     return unless ( defined $self->data->{settings}{room} );
 
     $self->socket->message(
-        encode_json( {
+        to_json( {
             type => 'board',
             meet => 0 + $self->data->{meet_id},
             room => 0 + $self->data->{settings}{room},
@@ -35,7 +35,7 @@ after [ qw( create save delete ) ] => sub ( $self, @params ) {
 
 sub freeze ( $self, $data ) {
     for ( qw( settings state ) ) {
-        $data->{$_} = encode_json( $data->{$_} );
+        $data->{$_} = to_json( $data->{$_} );
         undef $data->{$_} if ( $data->{$_} eq '{}' or $data->{$_} eq 'null' );
     }
 
@@ -43,7 +43,7 @@ sub freeze ( $self, $data ) {
 }
 
 sub thaw ( $self, $data ) {
-    $data->{$_} = ( defined $data->{$_} ) ? decode_json( $data->{$_} ) : {}
+    $data->{$_} = ( defined $data->{$_} ) ? from_json( $data->{$_} ) : {}
         for ( qw( settings state ) );
 
     return $data;

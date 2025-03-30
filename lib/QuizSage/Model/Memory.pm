@@ -3,7 +3,7 @@ package QuizSage::Model::Memory;
 use exact -class, -conf;
 use Bible::Reference;
 use DateTime;
-use Mojo::JSON 'encode_json';
+use Mojo::JSON 'to_json';
 use Omniframe::Class::Time;
 use QuizSage::Model::Label;
 use QuizSage::Model::Season;
@@ -61,7 +61,7 @@ sub to_memorize ( $self, $user ) {
                 +{
                     %$reference,
                     text      => ( $sth_text->run( $book, $chapter, $verse, $_ )->value // '' ),
-                    reference => encode_json($reference),
+                    reference => to_json($reference),
                     ( $sth_level->run( $user->id, $book, $chapter, $verse, $_ )->first({}) // {} )->%*,
                 };
             } @bibles;
@@ -219,7 +219,7 @@ sub state ( $self, $user ) {
                     $self->report( $_->{user_id} )->%*,
                     user   => $_,
                     tiles  => $self->tiles( $_->{user_id}, 'months', 9 ),
-                    json   => encode_json({
+                    json   => to_json({
                         id   => $_->{user_id},
                         name => $_->{first_name} . ' ' . $_->{last_name},
                     }),

@@ -4,11 +4,14 @@ use exact -conf, -fun;
 use Digest;
 use File::Path 'make_path';
 use Mojo::File 'path';
-use Mojo::JSON qw( encode_json decode_json );
+use Mojo::JSON qw( to_json from_json );
+use Omniframe::Class::Time;
 use QuizSage::Model::Label;
 use QuizSage::Util::Material 'text2words';
 
 exact->exportable( qw( reference_data reference_html ) );
+
+my $time = Omniframe::Class::Time->new;
 
 fun reference_data (
     :$material_label = undef, # material label/description
@@ -71,19 +74,23 @@ fun reference_data (
         )
     )->hexdigest, 0, 16 );
 
-    # remove any reference JSON files that haven't been accessed in the last N days
-    my $now        = time;
-    my $atime_life = conf->get( qw{ reference atime_life } );
-    my $json_path  = path( join( '/',
+    my $now       = time;
+    my $json_path = path( join( '/',
         conf->get( qw{ config_app root_dir } ),
         conf->get( qw{ reference location json } ),
     ) );
+    my $delete_if_before = $time->parse( conf->get( qw{ reference delete_if_before } ) )->{datetime}->epoch;
+    $json_path->list->grep( sub ($file) {
+        $file->stat->atime < $delete_if_before
+    } )->each('remove');
+    # remove any reference JSON files that haven't been accessed in the last N days
+    my $atime_life = conf->get( qw{ reference atime_life } );
     $json_path->list->grep( sub ($file) {
         ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
     } )->each('remove');
 
     my $json_file = $json_path->child( $id . '.json' );
-    return decode_json( $json_file->slurp ) if ( -f $json_file and not $force );
+    return from_json( $json_file->slurp('UTF-8') ) if ( -f $json_file and not $force );
 
     my $dq      = $mlabel->dq('material');
     my $content = [
@@ -331,20 +338,23 @@ fun reference_data (
     $data->{bible} = shift @{ $data->{bibles} };
 
     make_path( $json_file->dirname ) unless ( -d $json_file->dirname );
-    $json_file->spew( encode_json($data) );
+    $json_file->spew( to_json($data), 'UTF-8' );
 
     return $data;
 }
 
 sub reference_html ( $controller, $reference_data ) {
-    # remove any reference HTML files that haven't been accessed in the last N days
-    my $now        = time;
-    my $atime_life = conf->get( qw{ reference atime_life } );
-    my $html_path  = path( join( '/',
+    my $now       = time;
+    my $html_path = path( join( '/',
         conf->get( qw{ config_app root_dir } ),
         conf->get( qw{ reference location html } ),
     ) );
-
+    my $delete_if_before = $time->parse( conf->get( qw{ reference delete_if_before } ) )->{datetime}->epoch;
+    $html_path->list->grep( sub ($file) {
+        $file->stat->atime < $delete_if_before
+    } )->each('remove');
+    # remove any reference HTML files that haven't been accessed in the last N days
+    my $atime_life = conf->get( qw{ reference atime_life } );
     $html_path->list->grep( sub ($file) {
         ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
     } )->each('remove');
@@ -367,10 +377,10 @@ sub reference_html ( $controller, $reference_data ) {
         );
 
         make_path( $html_file->dirname ) unless ( -d $html_file->dirname );
-        $html_file->spew($html);
+        $html_file->spew( $html, 'UTF-8' );
     }
     else {
-        $html = $html_file->slurp;
+        $html = $html_file->slurp('UTF-8');
     }
 
     return $html;

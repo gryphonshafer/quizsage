@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use exact -conf, -cli;
 use Mojo::File 'path';
-use Mojo::JSON 'decode_json';
+use Mojo::JSON 'from_json';
 use Omniframe::Class::Javascript;
 use QuizSage::Model::Meet;
 use QuizSage::Model::Quiz;
@@ -117,11 +117,11 @@ for my $quiz_data (@$meet_data) {
         \,
         {
             material => {
-                data => decode_json( path( join( '/',
+                data => from_json( path( join( '/',
                     $root_dir,
                     conf->get( qw( material json location ) ),
                     $quiz_settings->{material}{id} . '.json',
-                ) )->slurp ),
+                ) )->slurp('UTF-8') ),
             },
             quiz => {
                 teams        => $quiz_settings->{teams},
@@ -156,7 +156,7 @@ for my $quiz_data (@$meet_data) {
 $meet->save if ( $opt->{database} );
 
 sub parse_meet_data ($meet_data_file) {
-    my $data = path($meet_data_file)->slurp;
+    my $data = path($meet_data_file)->slurp('UTF-8');
     $data =~ s/^\s*#.*?\n//mg;
     $data =~ s/#\N+//mg;
 

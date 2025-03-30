@@ -28,54 +28,54 @@
         each meaning of the word):
     </p>
     <pre>
-    - text: see
-      meanings:
-        - word: perceive with eyes
-          type: verb
-          synonyms:
-            - verity: 3
-              words:
-                  - look
-                  - notice
-                  - view
-            - verity: 2
-              words:
-                  - mark
-                  - note
-                  - stare
-            - verity: 1
-              words:
-                  - be apprised of
-                  - pay attention to
-                  - take notice
-        - word: appreciate, comprehen
-          type: verb
-          synonyms:
-            - verity: 3
-              words:
-                  - catch
-                  - determine
-                  - discover
-              - verity: 2
-              words:
-                  - grasp
-                  - imagine
-                  - investigate
-              - verity: 1
-              words:
-                  - get the drift
-                  - get the hang of
-                  - make out</pre>
+- text: see
+  meanings:
+  - word: perceive with eyes
+    type: verb
+    synonyms:
+    - verity: 3
+      words:
+      - look
+      - notice
+      - view
+    - verity: 2
+      words:
+      - mark
+      - note
+      - stare
+    - verity: 1
+      words:
+      - be apprised of
+      - pay attention to
+      - take notice
+  - word: appreciate, comprehen
+    type: verb
+    synonyms:
+    - verity: 3
+      words:
+      - catch
+      - determine
+      - discover
+    - verity: 2
+      words:
+      - grasp
+      - imagine
+      - investigate
+    - verity: 1
+      words:
+      - get the drift
+      - get the hang of
+      - make out</pre>
 
     <p>For words that should just redirect to other words, use a
     <code>target</code>:</p>
     <pre>
-    - text: saw
-      target: see</pre>
+- text: saw
+  target: see</pre>
 
     <p>To ensure a word does not exist in the thesaurus, define only the word:</p>
     <pre>
-    - text: Gryphon</pre>
+- text: Gryphon</pre>
 
     <p>
         Note that it's entirely reasonable (and recommended) to setup 2 entries
@@ -83,35 +83,36 @@
     </p>
 
     <pre>
-    - text: Christ
-      meanings:
-        - word: Jesus Christ
-          type: noun
-          synonyms:
-            - verity: 1
-              words:
-                  - Emmanuel
-                  - Good Shepherd
-                  - Jesus
-                  - King of Kings
-                  - Lamb of God
-                  - Light of the World
-                  - lord
-                  - Lord of Lords
-                  - messiah
-                  - Prince of Peace
-                  - prophet
-                  - redeemer
-                  - savior
-                  - Son of Man
-    - text: christ
-      target: Christ</pre>
+- text: Christ
+  meanings:
+  - word: Jesus Christ
+    type: noun
+    synonyms:
+    - verity: 1
+      words:
+      - Emmanuel
+      - Good Shepherd
+      - Jesus
+      - King of Kings
+      - Lamb of God
+      - Light of the World
+      - lord
+      - Lord of Lords
+      - messiah
+      - Prince of Peace
+      - prophet
+      - redeemer
+      - savior
+      - Son of Man
+- text: christ
+  target: Christ</pre>
 </details>
 
 <form method="post">
     <fieldset>
         <legend>[% page.title %]</legend>
-        <textarea class="max_width" name="yaml"></textarea>
+        <textarea class="max_width thesaurus" name="yaml"></textarea>
+        <br>
         <input type="submit" value="Submit">
     </fieldset>
 </form>

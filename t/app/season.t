@@ -25,7 +25,7 @@ mojo->app->hook( before_routes => sub ($c) { $c->session( user_id => $user->id )
 
 mojo->get_ok( '/season/' . $season->id . '/stats' )
     ->status_is(200)
-    ->text_like( 'details:nth-of-type(1) summary', qr/^\s*All\s*Quizzers\s*by\s*Points\s*Average\s*$/ )
-    ->text_is( 'details:last-of-type summary', 'Quizzers with VRAs' );
+    ->text_is( 'details:nth-of-type(1) summary', 'Quizzers by Points Average' )
+    ->text_is( 'details:last-of-type summary', 'Rookies of the Meets' );
 
 teardown;

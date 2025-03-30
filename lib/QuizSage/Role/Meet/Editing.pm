@@ -1,7 +1,7 @@
 package QuizSage::Role::Meet::Editing;
 
 use exact -role;
-use Mojo::JSON 'decode_json';
+use Mojo::JSON 'from_json';
 use QuizSage::Model::Label;
 use QuizSage::Model::Quiz;
 use YAML::XS qw( Dump Load );
@@ -20,7 +20,7 @@ sub save_after_edit ( $self, $user_id = undef ) {
     my $label        = QuizSage::Model::Label->new( maybe user_id => $user_id );
 
     my $get_settings = sub {
-        my $settings = decode_json $self->saved_data->{settings};
+        my $settings = from_json $self->saved_data->{settings};
         for ( $settings, $settings->{brackets}->@* ) {
             $_->{material} = $label->canonicalize( $_->{material} ) if ( $_->{material} );
         }

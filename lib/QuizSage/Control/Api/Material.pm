@@ -2,7 +2,7 @@ package QuizSage::Control::Api::Material;
 
 use exact 'Mojolicious::Controller';
 use Mojo::File 'path';
-use Mojo::JSON 'decode_json';
+use Mojo::JSON 'from_json';
 use QuizSage::Model::Label;
 use QuizSage::Util::Material 'material_json';
 use QuizSage::Util::Reference qw( reference_data reference_html );
@@ -16,13 +16,13 @@ sub bibles ($self) {
 
 sub payload ($self) {
     $self->openapi->valid_input or return;
-    $self->render( openapi => decode_json(
+    $self->render( openapi => from_json(
         path(
             material_json(
                 label => $self->param('label'),
                 user  => $self->session('user_id'),
             )->{json_file}
-        )->slurp
+        )->slurp('UTF-8')
     ) );
 }
 

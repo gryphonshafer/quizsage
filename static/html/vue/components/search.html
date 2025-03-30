@@ -1,15 +1,53 @@
 <div class="search">
+    <input type="text" v-model="term" placeholder="Term (Word or Phrase)">
+    <button class="clear" @click="match_terms">Match</button>
+    <button class="clear" @click="term = ''">Clear</button>
+
+    <p class="terms">
+        <span
+            v-for="term in matched_terms"
+            :class="[ ...term.types, 'term', term.lookup ]"
+        >{{ term.key }}<div class="details">
+            <span class="word">{{ term.synonyms.word }}</span>
+            <ul>
+                <li v-for="meaning in term.synonyms.meanings">
+                    <i>
+                        {{ meaning.type }} -
+                        <template v-if="! meaning.ignored">
+                            {{ meaning.word }}
+                        </template>
+                        <template v-else>
+                            ignored ({{ meaning.word }})
+                        </template>
+                    </i>
+
+                    <ul v-if="! meaning.ignored && meaning.type != 'pron.'">
+                        <li v-for="
+                            set in meaning.synonyms
+                                .sort( ( a, b ) => b.verity - a.verity )
+                        ">
+                            {{ set.verity }}: {{ set.words.join(', ') }}
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <span class="flag material-symbols-outlined" @click="flag(item)">flag</span>
+        </div></span>
+    </p>
+
+    <br>
+
+    <input type="text" v-model="text" placeholder="Search Verse Text">
+    <button class="clear" @click="text = ''">Clear</button>
+    <label><input type="checkbox" v-model="exact"> Exact</label>
+
+    <br>
+
     <button
         v-for="bible in material.bibles"
         :class="{ selected: bible.name == selected_bible }"
         @click="selected_bible = bible.name"
     >{{ bible.name + ( ( bible.type == 'auxiliary' ) ? '*' : '' ) }}</button>
-
-    <br>
-
-    <input type="text" v-model="text" placeholder="Search Text">
-    <label><input type="checkbox" v-model="exact"> Exact</label>
-    <button class="clear" @click="text = ''">Clear</button>
 
     <table v-if="matched_verses.length">
         <tbody class="no_header">

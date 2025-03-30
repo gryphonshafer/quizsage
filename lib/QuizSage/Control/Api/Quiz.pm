@@ -2,7 +2,7 @@ package QuizSage::Control::Api::Quiz;
 
 use exact -conf, 'Mojolicious::Controller';
 use Mojo::File 'path';
-use Mojo::JSON 'decode_json';
+use Mojo::JSON 'from_json';
 use QuizSage::Model::Quiz;
 use QuizSage::Util::Material 'material_json';
 use Omniframe;
@@ -37,13 +37,13 @@ sub verses ($self) {
             $root_dir . '/ocjs/lib/Model/Quiz/material.js',
             {
                 count         => $self->param('count'),
-                material_data => decode_json(
+                material_data => from_json(
                     path(
                         material_json(
                             label => $self->param('label'),
                             user  => $self->session('user_id'),
                         )->{json_file}
-                    )->slurp
+                    )->slurp('UTF-8')
                 ),
             },
         )->[0][0]
