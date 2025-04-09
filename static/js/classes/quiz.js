@@ -171,6 +171,18 @@ export default class Quiz {
 
         let scoring_message = this.scoring.score(this);
 
+
+
+
+
+
+
+
+
+
+
+
+
         if (
             scoring_message && (
                 this.state.events.at(-1).action == 'correct' ||
@@ -203,7 +215,10 @@ export default class Quiz {
         if ( ! record.query ) {
             const found_index = this.state.query_cache.findIndex( query =>
                 record.type.substr( 0, 1 ) == query.type.substr( 0, 1 ) &&
-                record.bible == query.bible
+                (
+                    ! record.bible ||
+                    record.bible == query.bible
+                )
             );
 
             if ( found_index > -1 ) {
