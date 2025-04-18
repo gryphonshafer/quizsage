@@ -5,7 +5,7 @@
     <p>
         Enter a test material label or description into the label/description
         input field, then run a label/description test.
-        For details about how label and description can be written, consult the
+        For details about how a label and description can be written, consult the
         <a href="[% c.url_for('/docs/material_labels.md') %]">material labels documentation</a>.
     </p>
 </details>

@@ -81,6 +81,37 @@ sub editor ($self) {
     }
 }
 
+sub fabricate ($self) {
+    if ( $self->param('range') or $self->param('sizes') ) {
+        my ( $range, $sizes, $lists ) = QuizSage::Model::Label->new->fabricate(
+            $self->param('range'),
+            $self->param('sizes'),
+        );
+        $self->stash(
+            range => $range,
+            sizes => join( ' ', @$sizes ),
+            lists => $lists,
+        );
+    }
+    elsif ( my @lists = sort { $a <=> $b } grep { /^\d+$/ } keys $self->req->params->to_hash->%* ) {
+        my $bible_ref = QuizSage::Model::Label->new->bible_ref;
+        $self->stash(
+            lists => [
+                sort { $a->{size} <=> $b->{size} }
+                map {
+                    +{
+                        refs => $bible_ref->clear->add_detail(0)->simplify(1)->in( $self->param($_) )->refs,
+                        size => scalar(
+                            $bible_ref->clear->add_detail(1)->simplify(0)
+                                ->in( $self->param($_) )->as_verses->@*
+                        ),
+                    };
+                } @lists
+            ]
+        );
+    }
+}
+
 1;
 
 =head1 NAME
@@ -102,6 +133,11 @@ label/description input and gets back a canonical label and description.
 =head2 editor
 
 This controller handles editing material labels.
+
+=head2 fabricate
+
+This controller handles "fabricating" (or semi-automatically constructing)
+material labels.
 
 =head1 INHERITANCE
 

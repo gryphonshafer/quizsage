@@ -1,0 +1,43 @@
+[% page.title = 'Label Fabrication' %]
+
+<details>
+    <summary>Instructions</summary>
+    <p>
+        Enter a material label or description as the reference range, and enter
+        desired sizes of fabricated labels, like "100 300".
+        For details about how a label and description can be written, consult the
+        <a href="[% c.url_for('/docs/material_labels.md') %]">material labels documentation</a>.
+    </p>
+</details>
+
+<form method="post">
+    <fieldset>
+        <legend>Fabrication Scope Inputs</legend>
+        <label>Reference Range: <input type="text" name="range" value="[% range %]"></label>
+        <label>Label Sizes: <input type="text" name="sizes" value="[% sizes %]"></label>
+        <input type="submit" value="Fabricate Labels">
+    </fieldset>
+</form>
+
+[% IF lists AND lists.size > 0 %]
+    <form method="post">
+        <h2>Fabricated Labels</h2>
+        [% FOR label IN lists %]
+            <p>
+                <b>
+                    [% UNLESS loop.last %]
+                        Club [% label.size %]
+                    [% ELSE %]
+                        Full Material ([% label.size %])
+                    [% END %]
+                </b>
+                <br>
+                <textarea class="fabrication" name="[% label.size %]">[% label.refs %]</textarea>
+
+                [% IF loop.last %]
+                    <input type="submit" value="Re-Fabricate Labels">
+                [% END %]
+            </p>
+        [% END %]
+    </form>
+[% END %]

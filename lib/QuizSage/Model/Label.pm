@@ -498,6 +498,70 @@ sub _sort_ranges ( $self, $ranges ) {
     ];
 }
 
+sub fabricate ( $self, $range = undef, $sizes = undef ) {
+    $sizes = {
+        map { $_ => 1 }
+        grep { $_ and $_ > 0 }
+        map {
+            s/,//;
+            0 + ( $_ || 0 );
+        }
+        split( /[^\d,\.]/, $sizes // '' )
+    };
+    $sizes = [ sort { $a <=> $b } keys %$sizes ];
+
+    my ( $refs, $lists ) = ( '', [] );
+    if ($range) {
+        $refs = $self->bible_ref->clear->simplify(1)->in($range)->refs;
+
+        my $sth = $self->dq('material')->sql(q{
+            SELECT popularity
+            FROM popularity
+            JOIN book USING (book_id)
+            WHERE
+                book.name = ? AND
+                popularity.chapter = ? AND
+                popularity.verse = ?
+        });
+
+        my $verses = [
+            sort { $b->[1] <=> $a->[1] }
+            map {
+                /^(?<book>.+?)\s(?<chapter>\d+):(?<verse>\d+)$/;
+                [ $_, $sth->run( $+{book}, $+{chapter}, $+{verse} )->value ];
+            }
+            $self->bible_ref->clear->simplify(0)->in($range)->as_verses->@*
+        ];
+        my $total_verses = @$verses;
+
+        for my $size (@$sizes) {
+            my $prior_verses_count = 0;
+            my @prior_verses_refs  = map {
+                $prior_verses_count += $_->{size};
+                $_->{refs};
+            } @$lists;
+
+            my @new_verses = splice( @$verses, 0, $size - $prior_verses_count );
+
+            push( @$lists, {
+                size => $prior_verses_count + scalar(@new_verses),
+                refs => $self->bible_ref->clear
+                    ->simplify(1)
+                    ->in( join( ';', @prior_verses_refs, map { $_->[0] } @new_verses ) )
+                    ->refs,
+            } );
+            last unless (@$verses);
+        }
+
+        push( @$lists => {
+            refs => $refs,
+            size => $total_verses,
+        } ) if (@$verses);
+    }
+
+    return $refs, $sizes, $lists;
+}
+
 1;
 
 =head1 NAME
@@ -613,6 +677,10 @@ You can alternatively explicitly pass the user ID.
 
 Return a canonically formatted string given the input of a data structure you
 might get from calling C<parse> on a string coming out of C<descriptionize>.
+
+=head2 fabricate
+
+Use the material database's popularity data to fabricate list labels.
 
 =head1 WITH ROLE
 

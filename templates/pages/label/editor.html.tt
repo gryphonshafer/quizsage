@@ -3,7 +3,7 @@
 <details>
     <summary>Instructions</summary>
     <p>
-        For details about how label and description can be written, consult the
+        For details about how a label and description can be written, consult the
         <a href="[% c.url_for('/docs/material_labels.md') %]">material labels documentation</a>.
     </p>
     <p>

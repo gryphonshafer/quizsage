@@ -131,7 +131,7 @@ sub startup ($self) {
         ) ] ]
     )->to('main#setup');
 
-    $users->any("/label/$_")->to("label#$_") for ( qw( tester editor ) );
+    $users->any("/label/$_")->to("label#$_") for ( qw( tester editor fabricate ) );
 
     $users->any("/quiz/$_")->to("quiz#$_") for ( qw( teams build ) );
 

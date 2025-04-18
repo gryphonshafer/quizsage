@@ -127,6 +127,7 @@
         [% IF user %]
             <li><a href="[% c.url_for('/season/admin') %]">Season Admin.</a></li>
             <li>[% PROCESS icon_link.html.tt, data = [ ['Flag List'], '/flag/list', 'flag' ] %]</li>
+            <li><a href="[% c.url_for('/label/fabricate') %]">Fabricate Labels</a></li>
             <li><a href="[% c.url_for('/download') %]">Download Databases</a></li>
 
             [% UNLESS meet_id %]
