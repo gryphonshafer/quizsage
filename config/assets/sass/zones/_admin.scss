@@ -1,3 +1,6 @@
+@use 'theme';
+@use 'themes';
+
 form.admin {
     margin-right: 1em;
 
@@ -52,4 +55,61 @@ textarea.thesaurus {
     font-family: monospace;
     line-height: 1em;
     height     : 40em !important;
+}
+
+textarea.fabrication {
+    width : calc( 100vw - 3em );
+    height: 8em;
+}
+
+form#fabrication_analysis {
+    fieldset.lengths {
+        input {
+            text-align: right;
+        }
+
+        span {
+            display      : inline-block;
+            width        : 1.25em;
+            text-align   : center;
+            margin-left  : 0.25em;
+            padding      : 0.125em 0.25em 0.125em 0.25em;
+            line-height  : 1em;
+            border-radius: 0.5em;
+            border       : 1px solid;
+
+            @include theme.apply( themes.$themes ) {
+                background-color: theme.get('form_elements_background');
+            }
+
+            @include theme.apply( themes.$themes ) {
+                border-color: theme.get('lines');
+            }
+        }
+    }
+
+    table td {
+        &.blank {
+            background-color: transparent !important;
+            border          : none !important;
+        }
+
+        &.append_left_border {
+            border-left: 1px solid !important;
+
+            @include theme.apply( themes.$themes ) {
+                border-left-color: theme.get('lines') !important;
+            }
+        }
+
+        &.input {
+            padding: 0;
+
+            input {
+                border-radius: 0px !important;
+                text-align: right;
+                width: 5em;
+            }
+        }
+    }
 }

@@ -10,7 +10,7 @@
     </p>
 </details>
 
-<form method="post">
+<form>
     <fieldset>
         <legend>Fabrication Scope Inputs</legend>
         <label>Reference Range: <input type="text" name="range" value="[% range %]"></label>
@@ -20,7 +20,7 @@
 </form>
 
 [% IF lists AND lists.size > 0 %]
-    <form method="post">
+    <form id="fabrication_analysis">
         <h2>Fabricated Labels</h2>
         [% FOR label IN lists %]
             <p>
@@ -39,5 +39,230 @@
                 [% END %]
             </p>
         [% END %]
+
+        <fieldset class="lengths">
+            <legend>Lengths</legend>
+            <label>
+                Months:
+                <input type="range" name="months" min="1" max="12" value="6">
+                <span class="months">6</span>
+            </label>
+            <label>
+                Queries:
+                <input type="range" name="queries" min="1" max="40" value="12">
+                <span class="queries">12</span>
+            </label>
+            <label>
+                Brackets:
+                <input type="range" name="brackets" min="1" max="7" value="3">
+                <span class="brackets">3</span>
+            </label>
+        </fieldset>
+
+        <table class="memorization">
+            <thead>
+                <tr>
+                    <th>Memorization</th>
+                    [% FOR list IN lists %]
+                        <th>[% list.size %]</th>
+                    [% END %]
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>% of Total</td>
+                    [% FOR list IN lists %]
+                        <td class="right">[%
+                            value = list.size / lists.-1.size * 100;
+                            UNLESS loop.last;
+                                value | format('%0.1f');
+                            ELSE;
+                                value;
+                            END;
+                        %]%</td>
+                    [% END %]
+                </tr>
+                <tr>
+                    <td>Verses per Week</td>
+                    [% FOR list IN lists %]
+                        <td class="right">-</td>
+                    [% END %]
+                </tr>
+            </tbody>
+        </table>
+
+        <table class="brackets">
+            <thead>
+                <tr>
+                    <th>Label</th>
+                    [% FOR list IN lists %]
+                        <th>[% list.size %]</th>
+                    [% END %]
+                    <th>Weight #</th>
+                    <th>Weight %</th>
+
+                    [% FOR list IN lists %]
+                        <th>[% list.size %]</th>
+                    [% END %]
+                </tr>
+            </thead>
+            <tbody>
+                [% FOR list IN lists %]
+                    [% list_count = loop.count %]
+                    <tr>
+                        <td>
+                            [% UNLESS loop.last %]
+                                Club [% list.size %]
+                            [% ELSE %]
+                                Full Material ([% list.size %])
+                            [% END %]
+                        </td>
+                        [% row_total = 0 %]
+                        [% FOR list IN lists %]
+                            <td class="right">
+                                [% UNLESS loop.count > list_count %]
+                                    [% list.size - row_total %]
+                                [% END %]
+                            </td>
+                            [% row_total = row_total + list.size %]
+                        [% END %]
+                        <td class="input"><input type="text" value="1"></td>
+                        <td class="right">-</td>
+                        [% FOR list IN lists %]
+                            <td class="right">-</td>
+                        [% END %]
+                    </tr>
+                [% END %]
+                <tr>
+                    <td class="blank" rowspan="2" colspan="[% lists.size + 1 %]"></td>
+                    <td class="right">-</td>
+                    <td class="blank append_left_border"></td>
+                    [% FOR list IN lists %]
+                        <td class="right">-</td>
+                    [% END %]
+                </tr>
+                <tr>
+                    <td class="blank" colspan="2"></td>
+                    [% FOR list IN lists %]
+                        <td class="right">-</td>
+                    [% END %]
+                </tr>
+            </tbody>
+        </table>
     </form>
 [% END %]
+
+[% fabrication_analysis = BLOCK %]
+    let form, memorization, months, queries, brackets, brackets_value;
+
+    function percent(value) {
+        return Math.floor( value * 1000 ) / 10 + '%';
+    }
+
+    function set_brackets_tables() {
+        if ( brackets_value != brackets.value ) {
+            if ( brackets_value < brackets.value ) {
+                const table_brackets        = [ ...form.querySelectorAll('table.brackets') ].pop();
+                const table_brackets_parent = table_brackets.parentNode;
+
+                for ( let i = 1; i <= brackets.value - brackets_value; i++ )
+                    table_brackets_parent.appendChild( table_brackets.cloneNode(true) );
+            }
+            else {
+                const table_brackets = [ ...form.querySelectorAll('table.brackets') ];
+                for ( let i = 1; i <= brackets_value - brackets.value; i++ )
+                    table_brackets.pop().remove();
+            }
+            brackets_value = brackets.value;
+        }
+
+        form.querySelectorAll('table.brackets input')
+            .forEach( element => element.addEventListener( 'input', () => {
+                element.value = parseInt( element.value ) || 0;
+                calculate_fabrication_analysis();
+            } ) );
+    }
+
+    function calculate_fabrication_analysis() {
+        const list_sizes = [
+            ...memorization.querySelectorAll('thead tr:first-child th:not(:first-child)')
+        ].map( element => parseInt( element.textContent ) );
+
+        memorization.querySelectorAll('tbody tr:last-child td:not(:first-child)')
+            .forEach( ( element, index ) => {
+                element.textContent = Math.round( list_sizes[index] / ( months.value * 4.3 ) * 10 ) / 10;
+            } );
+
+        form.querySelectorAll('table.brackets').forEach( bracket => {
+            let total_weights = 0;
+
+            const weights = [ ...bracket.querySelectorAll('input') ].map( input => {
+                let weight = parseInt( input.value );
+                total_weights += weight;
+                return weight;
+            } );
+
+            bracket.querySelector('tbody tr:nth-last-child(2) td:nth-child(2)').textContent = total_weights;
+
+            const weight_fields = [ ...bracket.querySelectorAll(
+                'tbody tr td:nth-last-child(' + ( list_sizes.length + 1 ) + ')'
+            ) ];
+            weights.forEach( ( weight, index ) =>
+                weight_fields[index].textContent = percent( weight / total_weights ) );
+
+            const trs           = [ ...bracket.querySelectorAll('tbody tr') ];
+            const td_selector   = 'td:nth-last-child(-n+' + list_sizes.length + ')';
+            const probabilities = list_sizes.map( list_size => 0 );
+
+            list_sizes.forEach( ( list_size, list_index ) => {
+                let total_list_size   = 0;
+                let probabilities_sum = 0;
+
+                const tr = trs.shift();
+                tr.querySelectorAll(td_selector)
+                    .forEach( ( td, td_index ) => {
+                        if ( list_index >= td_index ) {
+                            const probability =
+                                weights[list_index] / total_weights *
+                                ( list_sizes[td_index] - total_list_size )
+                                / list_sizes[list_index];
+
+                            probabilities[td_index] += probability;
+
+                            td.textContent = percent(probability);
+                            total_list_size += list_sizes[td_index];
+                        }
+                        else {
+                            td.textContent = '';
+                        }
+                    } );
+            } );
+
+            trs.shift().querySelectorAll(td_selector).forEach( ( td, td_index ) =>
+                td.textContent = percent( probabilities[td_index] ) );
+
+            trs.shift().querySelectorAll(td_selector).forEach( ( td, td_index ) =>
+                td.textContent = Math.floor( probabilities[td_index] * queries.value * 10 ) / 10 );
+        } );
+    }
+
+    window.addEventListener( 'DOMContentLoaded', () => {
+        form           = window.document.querySelector('form#fabrication_analysis');
+        memorization   = form.querySelector('table.memorization');
+        months         = form.querySelector('fieldset.lengths input[name="months"]');
+        queries        = form.querySelector('fieldset.lengths input[name="queries"]');
+        brackets       = form.querySelector('fieldset.lengths input[name="brackets"]');
+        brackets_value = 1;
+
+        form.querySelectorAll('fieldset.lengths input')
+            .forEach( element => element.addEventListener( 'input', () => {
+                form.querySelector( 'span.' + element.name ).textContent = element.value;
+                set_brackets_tables();
+                calculate_fabrication_analysis();
+            } ) );
+
+        set_brackets_tables();
+        calculate_fabrication_analysis();
+    } );
+[% END %]
+[% page.js.inline.push(fabrication_analysis) %]
