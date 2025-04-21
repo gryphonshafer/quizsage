@@ -8,19 +8,32 @@
         For details about how a label and description can be written, consult the
         <a href="[% c.url_for('/docs/material_labels.md') %]">material labels documentation</a>.
     </p>
+
+    <p>
+        <b>Important to note:</b> The material label fabrication is done by
+        comparing verse content in chunks to ngrams generated from a corpus of
+        English books published over the past 100+ years or so, roughly. The
+        theory being that if an ngram is more represented in this corpus than
+        another, it will signify a more often quoted verse, and therefore a
+        correlated effect is the verse's generally considered stand-alone
+        significance (within the corpus). <i>However, there are a number of
+        ways this process is flawed.</i> For example, if a particular ngram is
+        oft written as an English idiom in the corpus, this will cause verses
+        this this idiom to be over-represented. <i>It is therefore <b>highly</b>
+        encouraged that the automatic fabrication not be use without review and
+        editing.</i>
+    </p>
 </details>
 
-<form>
+<form id="fabrication_analysis">
     <fieldset>
         <legend>Fabrication Scope Inputs</legend>
         <label>Reference Range: <input type="text" name="range" value="[% range %]"></label>
         <label>Label Sizes: <input type="text" name="sizes" value="[% sizes %]"></label>
         <input type="submit" value="Fabricate Labels">
     </fieldset>
-</form>
 
-[% IF lists AND lists.size > 0 %]
-    <form id="fabrication_analysis">
+    [% IF lists AND lists.size > 0 %]
         <h2>Fabricated Labels</h2>
         [% FOR label IN lists %]
             <p>
@@ -31,9 +44,10 @@
                         Full Material ([% label.size %])
                     [% END %]
                 </b>
+                &mdash;
+                <a href="[% c.url_for('/reference/lookup/setup') %]"><i>Lookup</i></a>
                 <br>
                 <textarea class="fabrication" name="[% label.size %]">[% label.refs %]</textarea>
-
                 [% IF loop.last %]
                     <input type="submit" value="Re-Fabricate Labels">
                 [% END %]
@@ -44,18 +58,18 @@
             <legend>Lengths</legend>
             <label>
                 Months:
-                <input type="range" name="months" min="1" max="12" value="6">
-                <span class="months">6</span>
+                <input type="range" name="months" min="1" max="12" value="[% months || 6 %]">
+                <span class="months">[% months || 6 %]</span>
             </label>
             <label>
                 Queries:
-                <input type="range" name="queries" min="1" max="40" value="12">
-                <span class="queries">12</span>
+                <input type="range" name="queries" min="1" max="40" value="[% queries || 12 %]">
+                <span class="queries">[% queries || 12 %]</span>
             </label>
             <label>
                 Brackets:
-                <input type="range" name="brackets" min="1" max="7" value="3">
-                <span class="brackets">3</span>
+                <input type="range" name="brackets" min="1" max="7" value="[% brackets || 3 %]">
+                <span class="brackets">[% brackets || 3 %]</span>
             </label>
         </fieldset>
 
@@ -149,120 +163,150 @@
                 </tr>
             </tbody>
         </table>
-    </form>
-[% END %]
 
-[% fabrication_analysis = BLOCK %]
-    let form, memorization, months, queries, brackets, brackets_value;
+        [% fabrication_analysis = BLOCK %]
+            let form, memorization, months, queries, brackets, brackets_value;
 
-    function percent(value) {
-        return Math.floor( value * 1000 ) / 10 + '%';
-    }
-
-    function set_brackets_tables() {
-        if ( brackets_value != brackets.value ) {
-            if ( brackets_value < brackets.value ) {
-                const table_brackets        = [ ...form.querySelectorAll('table.brackets') ].pop();
-                const table_brackets_parent = table_brackets.parentNode;
-
-                for ( let i = 1; i <= brackets.value - brackets_value; i++ )
-                    table_brackets_parent.appendChild( table_brackets.cloneNode(true) );
+            function percent(value) {
+                return Math.floor( value * 1000 ) / 10 + '%';
             }
-            else {
-                const table_brackets = [ ...form.querySelectorAll('table.brackets') ];
-                for ( let i = 1; i <= brackets_value - brackets.value; i++ )
-                    table_brackets.pop().remove();
-            }
-            brackets_value = brackets.value;
-        }
 
-        form.querySelectorAll('table.brackets input')
-            .forEach( element => element.addEventListener( 'input', () => {
-                element.value = parseInt( element.value ) || 0;
-                calculate_fabrication_analysis();
-            } ) );
-    }
+            function set_brackets_tables() {
+                memorization ||= form.querySelector('table.memorization');
+                months       ||= form.querySelector('fieldset.lengths input[name="months"]');
+                queries      ||= form.querySelector('fieldset.lengths input[name="queries"]');
+                brackets     ||= form.querySelector('fieldset.lengths input[name="brackets"]');
 
-    function calculate_fabrication_analysis() {
-        const list_sizes = [
-            ...memorization.querySelectorAll('thead tr:first-child th:not(:first-child)')
-        ].map( element => parseInt( element.textContent ) );
+                if ( ! brackets ) return;
 
-        memorization.querySelectorAll('tbody tr:last-child td:not(:first-child)')
-            .forEach( ( element, index ) => {
-                element.textContent = Math.round( list_sizes[index] / ( months.value * 4.3 ) * 10 ) / 10;
-            } );
+                if ( brackets_value != brackets.value ) {
+                    if ( brackets_value < brackets.value ) {
+                        const table_brackets        = [ ...form.querySelectorAll('table.brackets') ].pop();
+                        const table_brackets_parent = table_brackets.parentNode;
 
-        form.querySelectorAll('table.brackets').forEach( bracket => {
-            let total_weights = 0;
+                        for ( let i = 1; i <= brackets.value - brackets_value; i++ )
+                            table_brackets_parent.appendChild( table_brackets.cloneNode(true) );
+                    }
+                    else {
+                        const table_brackets = [ ...form.querySelectorAll('table.brackets') ];
+                        for ( let i = 1; i <= brackets_value - brackets.value; i++ )
+                            table_brackets.pop().remove();
+                    }
+                    brackets_value = brackets.value;
+                }
 
-            const weights = [ ...bracket.querySelectorAll('input') ].map( input => {
-                let weight = parseInt( input.value );
-                total_weights += weight;
-                return weight;
-            } );
+                let   input_count = 0;
+                const doc_url     = new URL( window.document.location.href );
 
-            bracket.querySelector('tbody tr:nth-last-child(2) td:nth-child(2)').textContent = total_weights;
+                form.querySelectorAll('table.brackets input')
+                    .forEach( element => {
+                        input_count++;
+                        element.name  = 'weight_' + input_count;
+                        element.value = doc_url.searchParams.get( element.name );
 
-            const weight_fields = [ ...bracket.querySelectorAll(
-                'tbody tr td:nth-last-child(' + ( list_sizes.length + 1 ) + ')'
-            ) ];
-            weights.forEach( ( weight, index ) =>
-                weight_fields[index].textContent = percent( weight / total_weights ) );
-
-            const trs           = [ ...bracket.querySelectorAll('tbody tr') ];
-            const td_selector   = 'td:nth-last-child(-n+' + list_sizes.length + ')';
-            const probabilities = list_sizes.map( list_size => 0 );
-
-            list_sizes.forEach( ( list_size, list_index ) => {
-                let total_list_size   = 0;
-                let probabilities_sum = 0;
-
-                const tr = trs.shift();
-                tr.querySelectorAll(td_selector)
-                    .forEach( ( td, td_index ) => {
-                        if ( list_index >= td_index ) {
-                            const probability =
-                                weights[list_index] / total_weights *
-                                ( list_sizes[td_index] - total_list_size )
-                                / list_sizes[list_index];
-
-                            probabilities[td_index] += probability;
-
-                            td.textContent = percent(probability);
-                            total_list_size += list_sizes[td_index];
-                        }
-                        else {
-                            td.textContent = '';
-                        }
+                        element.addEventListener( 'input', () => {
+                            element.value = parseInt( element.value ) || 0;
+                            doc_url.searchParams.set( element.name, element.value || 1 );
+                        } );
                     } );
-            } );
+            }
 
-            trs.shift().querySelectorAll(td_selector).forEach( ( td, td_index ) =>
-                td.textContent = percent( probabilities[td_index] ) );
+            function calculate_fabrication_analysis() {
+                if ( ! memorization ) return;
 
-            trs.shift().querySelectorAll(td_selector).forEach( ( td, td_index ) =>
-                td.textContent = Math.floor( probabilities[td_index] * queries.value * 10 ) / 10 );
-        } );
-    }
+                const list_sizes = [
+                    ...memorization.querySelectorAll('thead tr:first-child th:not(:first-child)')
+                ].map( element => parseInt( element.textContent ) );
 
-    window.addEventListener( 'DOMContentLoaded', () => {
-        form           = window.document.querySelector('form#fabrication_analysis');
-        memorization   = form.querySelector('table.memorization');
-        months         = form.querySelector('fieldset.lengths input[name="months"]');
-        queries        = form.querySelector('fieldset.lengths input[name="queries"]');
-        brackets       = form.querySelector('fieldset.lengths input[name="brackets"]');
-        brackets_value = 1;
+                memorization.querySelectorAll('tbody tr:last-child td:not(:first-child)')
+                    .forEach( ( element, index ) => {
+                        element.textContent =
+                            Math.round( list_sizes[index] / ( months.value * 4.3 ) * 10 ) / 10;
+                    } );
 
-        form.querySelectorAll('fieldset.lengths input')
-            .forEach( element => element.addEventListener( 'input', () => {
-                form.querySelector( 'span.' + element.name ).textContent = element.value;
+                form.querySelectorAll('table.brackets').forEach( bracket => {
+                    let total_weights = 0;
+
+                    const weights = [ ...bracket.querySelectorAll('input') ].map( input => {
+                        let weight = parseInt( input.value );
+                        total_weights += weight;
+                        return weight;
+                    } );
+
+                    bracket.querySelector(
+                        'tbody tr:nth-last-child(2) td:nth-child(2)'
+                    ).textContent = total_weights;
+
+                    const weight_fields = [ ...bracket.querySelectorAll(
+                        'tbody tr td:nth-last-child(' + ( list_sizes.length + 1 ) + ')'
+                    ) ];
+                    weights.forEach( ( weight, index ) =>
+                        weight_fields[index].textContent = percent( weight / total_weights ) );
+
+                    const trs           = [ ...bracket.querySelectorAll('tbody tr') ];
+                    const td_selector   = 'td:nth-last-child(-n+' + list_sizes.length + ')';
+                    const probabilities = list_sizes.map( list_size => 0 );
+
+                    list_sizes.forEach( ( list_size, list_index ) => {
+                        let total_list_size   = 0;
+                        let probabilities_sum = 0;
+
+                        const tr = trs.shift();
+                        tr.querySelectorAll(td_selector)
+                            .forEach( ( td, td_index ) => {
+                                if ( list_index >= td_index ) {
+                                    const probability =
+                                        weights[list_index] / total_weights *
+                                        ( list_sizes[td_index] - total_list_size )
+                                        / list_sizes[list_index];
+
+                                    probabilities[td_index] += probability;
+
+                                    td.textContent = percent(probability);
+                                    total_list_size += list_sizes[td_index];
+                                }
+                                else {
+                                    td.textContent = '';
+                                }
+                            } );
+                    } );
+
+                    trs.shift().querySelectorAll(td_selector).forEach( ( td, td_index ) =>
+                        td.textContent = percent( probabilities[td_index] ) );
+
+                    trs.shift().querySelectorAll(td_selector).forEach( ( td, td_index ) =>
+                        td.textContent = Math.floor( probabilities[td_index] * queries.value * 10 ) / 10 );
+                } );
+            }
+
+            window.addEventListener( 'DOMContentLoaded', () => {
+                form           = window.document.querySelector('form#fabrication_analysis');
+                brackets_value = 1;
+
+                form.querySelectorAll('fieldset.lengths input')
+                    .forEach( element => element.addEventListener( 'input', () => {
+                        form.querySelector( 'span.' + element.name ).textContent = element.value;
+                        set_brackets_tables();
+                        calculate_fabrication_analysis();
+                    } ) );
+
                 set_brackets_tables();
                 calculate_fabrication_analysis();
-            } ) );
 
-        set_brackets_tables();
-        calculate_fabrication_analysis();
-    } );
-[% END %]
-[% page.js.inline.push(fabrication_analysis) %]
+                form.querySelectorAll('textarea').forEach( textarea => {
+                    const a = textarea.previousElementSibling.previousElementSibling;
+                    const a_url = new URL( a.href );
+                    a_url.searchParams.set( 'label', textarea.value );
+                    a.href = a_url.toString();
+
+                    textarea.addEventListener( 'input', () => {
+                        const this_a_url = new URL( a.href );
+                        this_a_url.searchParams.set( 'label', textarea.value );
+                        a.href = this_a_url.toString();
+                    } );
+                } );
+            } );
+        [% END %]
+        [% page.js.inline.push(fabrication_analysis) %]
+    [% END %]
+</form>

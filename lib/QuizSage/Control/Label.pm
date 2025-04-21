@@ -82,6 +82,8 @@ sub editor ($self) {
 }
 
 sub fabricate ($self) {
+    $self->stash( $self->req->params->to_hash->%* );
+
     if ( $self->param('range') or $self->param('sizes') ) {
         my ( $range, $sizes, $lists ) = QuizSage::Model::Label->new->fabricate(
             $self->param('range'),
