@@ -80,8 +80,8 @@ sub setup ($self) {
     ) {
         my $parsed_label = $label->parse( $settings->{material_label} );
 
-        $settings->{material_label} .= ' ' . $settings->{bible}
-            if ( not $parsed_label->{bibles} and $settings->{bible} );
+        $settings->{material_label} .= ' ' . ( $settings->{bible} // $quiz_defaults->{bible} )
+            if ( not $parsed_label->{bibles} );
         $settings->{material_label} = $label->canonicalize( $settings->{material_label} );
 
         if ( $self->stash('setup_label') eq 'ref_gen' ) {
