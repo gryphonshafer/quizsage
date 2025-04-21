@@ -174,7 +174,7 @@
         </table>
     [% END %]
 
-    [% IF usage.size > 0 %]
+    [% IF usage AND usage.size > 0 %]
         <h2>Global Usage Metrics</h2>
 
         <table>
