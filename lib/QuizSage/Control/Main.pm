@@ -11,7 +11,6 @@ use QuizSage::Util::Material qw( material_json synonyms_of_term );
 sub home ($self) {
     $self->stash(
         seasons => QuizSage::Model::Season->new->seasons,
-        usage   => QuizSage::Model::Memory->new->usage,
     ) if ( $self->stash('user') );
 }
 
