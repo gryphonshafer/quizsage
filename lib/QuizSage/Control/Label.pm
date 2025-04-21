@@ -82,12 +82,15 @@ sub editor ($self) {
 }
 
 sub fabricate ($self) {
-    $self->stash( $self->req->params->to_hash->%* );
+    my $params       = $self->req->params->to_hash;
+    my $first_button = delete $params->{first_button};
 
-    if ( $self->param('range') or $self->param('sizes') ) {
+    $self->stash($params);
+
+    if ( $first_button and ( $params->{range} or $params->{sizes} ) ) {
         my ( $range, $sizes, $lists ) = QuizSage::Model::Label->new->fabricate(
-            $self->param('range'),
-            $self->param('sizes'),
+            $params->{range},
+            $params->{sizes},
         );
         $self->stash(
             range => $range,
@@ -95,17 +98,17 @@ sub fabricate ($self) {
             lists => $lists,
         );
     }
-    elsif ( my @lists = sort { $a <=> $b } grep { /^\d+$/ } keys $self->req->params->to_hash->%* ) {
+    elsif ( my @lists = sort { $a <=> $b } grep { /^\d+$/ } keys $params->%* ) {
         my $bible_ref = QuizSage::Model::Label->new->bible_ref;
         $self->stash(
             lists => [
                 sort { $a->{size} <=> $b->{size} }
                 map {
                     +{
-                        refs => $bible_ref->clear->add_detail(0)->simplify(1)->in( $self->param($_) )->refs,
+                        refs => $bible_ref->clear->add_detail(0)->simplify(1)->in( $params->{$_} )->refs,
                         size => scalar(
                             $bible_ref->clear->add_detail(1)->simplify(0)
-                                ->in( $self->param($_) )->as_verses->@*
+                                ->in( $params->{$_} )->as_verses->@*
                         ),
                     };
                 } @lists

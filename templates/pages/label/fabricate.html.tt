@@ -30,7 +30,8 @@
         <legend>Fabrication Scope Inputs</legend>
         <label>Reference Range: <input type="text" name="range" value="[% range %]"></label>
         <label>Label Sizes: <input type="text" name="sizes" value="[% sizes %]"></label>
-        <input type="submit" value="Fabricate Labels">
+        <input type="hidden" name="first_button" value="1">
+        <input type="submit" value="Fabricate Labels" id="fabrication_analysis_first_button">
     </fieldset>
 
     [% IF lists AND lists.size > 0 %]
@@ -45,7 +46,9 @@
                     [% END %]
                 </b>
                 &mdash;
-                <a href="[% c.url_for('/reference/lookup/setup') %]"><i>Lookup</i></a>
+                <a href="[% c.url_for('/reference/lookup/setup') %]"><i>Material Lookup</i></a>
+                &mdash;
+                <a href="[% c.url_for('/label/tester') %]"><i>Label Tester</i></a>
                 <br>
                 <textarea class="fabrication" name="[% label.size %]">[% label.refs %]</textarea>
                 [% IF loop.last %]
@@ -138,7 +141,7 @@
                                     [% list.size - row_total %]
                                 [% END %]
                             </td>
-                            [% row_total = row_total + list.size %]
+                            [% row_total = list.size   %]
                         [% END %]
                         <td class="input"><input type="text" value="1"></td>
                         <td class="right">-</td>
@@ -252,24 +255,23 @@
                     const probabilities = list_sizes.map( list_size => 0 );
 
                     list_sizes.forEach( ( list_size, list_index ) => {
-                        let total_list_size   = 0;
-                        let probabilities_sum = 0;
-
                         const tr = trs.shift();
                         tr.querySelectorAll(td_selector)
                             .forEach( ( td, td_index ) => {
                                 if ( list_index >= td_index ) {
                                     const probability =
-                                        (total_weights) ?
+                                        (total_weights) ? (
                                             weights[list_index] / total_weights *
-                                            ( list_sizes[td_index] - total_list_size )
+                                            (
+                                                list_sizes[td_index] - (
+                                                    ( td_index > 0 ) ? list_sizes[ td_index - 1 ] : 0
+                                                )
+                                            )
                                             / list_sizes[list_index]
-                                        : 0;
+                                        ) : 0;
 
                                     probabilities[td_index] += probability;
-
                                     td.textContent = percent(probability);
-                                    total_list_size += list_sizes[td_index];
                                 }
                                 else {
                                     td.textContent = '';
@@ -289,6 +291,11 @@
                 form           = window.document.querySelector('form#fabrication_analysis');
                 brackets_value = 1;
 
+                form.addEventListener( 'submit', function (event) {
+                    form.querySelector('input[name="first_button"]').value =
+                        ( event.submitter.id == 'fabrication_analysis_first_button' ) ? 1 : 0;
+                } );
+
                 form.querySelectorAll('fieldset.lengths input')
                     .forEach( element => element.addEventListener( 'input', () => {
                         form.querySelector( 'span.' + element.name ).textContent = element.value;
@@ -299,17 +306,16 @@
                 set_brackets_tables();
                 calculate_fabrication_analysis();
 
-                form.querySelectorAll('textarea').forEach( textarea => {
-                    const a = textarea.previousElementSibling.previousElementSibling;
-                    const a_url = new URL( a.href );
-                    a_url.searchParams.set( 'label', textarea.value );
-                    a.href = a_url.toString();
-
-                    textarea.addEventListener( 'input', () => {
-                        const this_a_url = new URL( a.href );
-                        this_a_url.searchParams.set( 'label', textarea.value );
-                        a.href = this_a_url.toString();
+                function textarea_input_to_a_href(textarea) {
+                    textarea.parentNode.querySelectorAll('a').forEach( a => {
+                        const a_url = new URL( a.href );
+                        a_url.searchParams.set( 'label', textarea.value );
+                        a.href = a_url.toString();
                     } );
+                }
+                form.querySelectorAll('textarea').forEach( textarea => {
+                    textarea.addEventListener( 'input', () => textarea_input_to_a_href(textarea) );
+                    textarea_input_to_a_href(textarea);
                 } );
             } );
         [% END %]

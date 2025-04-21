@@ -535,21 +535,20 @@ sub fabricate ( $self, $range = undef, $sizes = undef ) {
         my $total_verses = @$verses;
 
         for my $size (@$sizes) {
-            my $prior_verses_count = 0;
-            my @prior_verses_refs  = map {
-                $prior_verses_count += $_->{size};
-                $_->{refs};
-            } @$lists;
-
-            my @new_verses = splice( @$verses, 0, $size - $prior_verses_count );
+            my $prior_verses_count = ( (@$lists) ? $lists->[-1]{size} : 0 );
+            my @new_verses         = splice( @$verses, 0, $size - $prior_verses_count );
 
             push( @$lists, {
                 size => $prior_verses_count + scalar(@new_verses),
                 refs => $self->bible_ref->clear
                     ->simplify(1)
-                    ->in( join( ';', @prior_verses_refs, map { $_->[0] } @new_verses ) )
+                    ->in( join( ';',
+                        ( map { $_->{refs} } @$lists ),
+                        ( map { $_->[0] } @new_verses ),
+                    ) )
                     ->refs,
             } );
+
             last unless (@$verses);
         }
 

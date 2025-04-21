@@ -43,3 +43,12 @@
 </form>
 
 [% PROCESS labels_bibles.html.tt %]
+
+[% de_label_url = BLOCK %]
+    window.addEventListener( 'DOMContentLoaded', () => {
+        const url = new URL( window.document.location.href );
+        url.searchParams.delete('label');
+        window.history.replaceState( {}, '', url.toString() );
+    } );
+[% END %]
+[% page.js.inline.push(de_label_url) %]
