@@ -202,11 +202,12 @@
                     .forEach( element => {
                         input_count++;
                         element.name  = 'weight_' + input_count;
-                        element.value = doc_url.searchParams.get( element.name );
+                        element.value = doc_url.searchParams.get( element.name ) || 1;
 
                         element.addEventListener( 'input', () => {
-                            element.value = parseInt( element.value ) || 0;
-                            doc_url.searchParams.set( element.name, element.value || 1 );
+                            element.value = parseInt( element.value );
+                            doc_url.searchParams.set( element.name, element.value || 0 );
+                            calculate_fabrication_analysis();
                         } );
                     } );
             }
@@ -241,7 +242,10 @@
                         'tbody tr td:nth-last-child(' + ( list_sizes.length + 1 ) + ')'
                     ) ];
                     weights.forEach( ( weight, index ) =>
-                        weight_fields[index].textContent = percent( weight / total_weights ) );
+                        weight_fields[index].textContent = percent(
+                            (total_weights) ? weight / total_weights : 0
+                        )
+                    );
 
                     const trs           = [ ...bracket.querySelectorAll('tbody tr') ];
                     const td_selector   = 'td:nth-last-child(-n+' + list_sizes.length + ')';
@@ -256,9 +260,11 @@
                             .forEach( ( td, td_index ) => {
                                 if ( list_index >= td_index ) {
                                     const probability =
-                                        weights[list_index] / total_weights *
-                                        ( list_sizes[td_index] - total_list_size )
-                                        / list_sizes[list_index];
+                                        (total_weights) ?
+                                            weights[list_index] / total_weights *
+                                            ( list_sizes[td_index] - total_list_size )
+                                            / list_sizes[list_index]
+                                        : 0;
 
                                     probabilities[td_index] += probability;
 
