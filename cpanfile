@@ -1,6 +1,7 @@
 requires 'Bible::OBML', '2.09';
 requires 'Bible::OBML::Gateway', '2.10';
 requires 'Bible::Reference', '1.17';
+requires 'DateTime::Duration';
 requires 'Email::Address', '1.913';
 requires 'File::Path', '2.18';
 requires 'Hash::Merge', '0.302';
