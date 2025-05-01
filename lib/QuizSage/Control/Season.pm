@@ -2,7 +2,7 @@ package QuizSage::Control::Season;
 
 use exact -conf, 'Mojolicious::Controller';
 use Mojo::File 'path';
-use Mojo::Util 'encode';
+use Mojo::Util qw( encode decode );
 use Omniframe::Class::Time;
 use QuizSage::Model::Meet;
 use QuizSage::Model::Season;
