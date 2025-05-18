@@ -31,6 +31,9 @@ default:
                 - static/js
                 - templates
                 - ../omniframe
+        csrf:
+            exclude:
+                - ^/api/v\d+/
     email:
         from: QuizSage <example@example.org>
     bcrypt:
