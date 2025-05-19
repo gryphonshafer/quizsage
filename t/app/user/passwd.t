@@ -5,12 +5,12 @@ use QuizSage::Model::User;
 use QuizSage::Test;
 
 setup;
-
 my ( $user, $email ) = user;
+my $csrf = csrf;
 
 mojo->app->hook( before_routes => sub ($c) { $c->set_captcha_value(1234567) } );
 
-mojo->post_ok( '/user/forgot_password' => form => { email => $email } )
+mojo->post_ok( '/user/forgot_password', form => { email => $email, @$csrf } )
     ->status_is(200)
     ->content_like( qr|
         \bomniframe\s*\.\s*memo\s*\([\s\{"]+
@@ -18,7 +18,7 @@ mojo->post_ok( '/user/forgot_password' => form => { email => $email } )
         message[":\s]+The\s+captcha\s+sequence\s+provided\s+does\s+not\s+match
     |x );
 
-mojo->post_ok( '/user/forgot_password' => form => { email => $email, captcha => 1234567 } )
+mojo->post_ok( '/user/forgot_password', form => { email => $email, captcha => 1234567, @$csrf } )
     ->status_is(302)
     ->header_is( location => url('/') )
     ->get_ok('/')
@@ -29,7 +29,14 @@ mojo->post_ok( '/user/forgot_password' => form => { email => $email, captcha => 
         message[":\s]+Sent\s+email\s+to:
     |x );
 
-mojo->post_ok( '/user/forgot_password' => form => { email => 'not_exists_' . $email, captcha => 1234567 } )
+mojo->post_ok(
+    '/user/forgot_password',
+    form => {
+        email   => 'not_exists_' . $email,
+        captcha => 1234567,
+        @$csrf,
+    }
+)
     ->status_is(200)
     ->content_like( qr|
         \bomniframe\s*\.\s*memo\s*\([\s\{"]+
@@ -43,7 +50,7 @@ my $bad_token              = QuizSage::Model::User::_encode_token(0);
 
 mojo->post_ok(
     '/user/reset_password/' . $bad_token,
-    form => { passwd => 'new_poor_but_long_password' },
+    form => { passwd => 'new_poor_but_long_password', @$csrf },
 )
     ->status_is(200)
     ->content_like( qr|
@@ -54,7 +61,7 @@ mojo->post_ok(
 
 mojo->post_ok(
     '/user/reset_password/' . $good_token,
-    form => { passwd => 'short' },
+    form => { passwd => 'short', @$csrf },
 )
     ->status_is(200)
     ->content_like( qr|
@@ -68,7 +75,7 @@ is( $old_password_encrypted, $new_password_encrypted, 'password not changed' );
 
 mojo->post_ok(
     '/user/reset_password/' . $good_token,
-    form => { passwd => 'new_poor_but_long_password' },
+    form => { passwd => 'new_poor_but_long_password', @$csrf },
 )
     ->status_is(302)
     ->header_is( location => url('/') )

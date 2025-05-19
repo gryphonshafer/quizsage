@@ -4,6 +4,7 @@ use Omniframe::Test::App;
 use QuizSage::Test;
 
 setup;
+my $csrf = csrf;
 
 mojo->get_ok('/user/create')
     ->status_is(200)
@@ -31,6 +32,7 @@ mojo->post_ok(
             first_name => 'First Name',
             last_name  => 'Last Name',
             phone      => '1234567890',
+            @$csrf,
         },
     )
     ->status_is(200)
@@ -49,6 +51,7 @@ mojo->post_ok(
             last_name  => 'Last Name',
             phone      => '123',
             captcha    => 1234567,
+            @$csrf,
         },
     )
     ->status_is(200)
@@ -67,6 +70,7 @@ mojo->post_ok(
             last_name  => 'Last Name',
             phone      => '1234567890',
             captcha    => 1234567,
+            @$csrf,
         },
     )
     ->status_is(302)
@@ -98,7 +102,7 @@ is(
 my $good_token = QuizSage::Model::User::_encode_token( $user->{user_id} );
 my $bad_token  = QuizSage::Model::User::_encode_token(0);
 
-mojo->post_ok( '/user/verify/' . $bad_token )
+mojo->post_ok( '/user/verify/' . $bad_token, form => {@$csrf} )
     ->status_is(302)
     ->header_is( location => url('/') )
     ->get_ok('/')
@@ -115,7 +119,7 @@ is(
     'user not verified (yet)',
 );
 
-mojo->post_ok( '/user/verify/' . $good_token )
+mojo->post_ok( '/user/verify/' . $good_token, form => {@$csrf} )
     ->status_is(302)
     ->header_is( location => url('/') )
     ->get_ok('/')

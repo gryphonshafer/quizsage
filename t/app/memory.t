@@ -4,7 +4,6 @@ use Omniframe::Test::App;
 use QuizSage::Test;
 
 setup;
-
 my ($user) = user;
 
 mojo->get_ok($_)

@@ -6,8 +6,8 @@ use QuizSage::Model::Quiz;
 use QuizSage::Test;
 
 setup;
-
 my ($user) = user;
+my $csrf = csrf;
 
 my $qm_auth   = 0;
 my $mock_user = mock $user => ( override => [ qm_auth => sub { $qm_auth } ] );
@@ -31,13 +31,13 @@ my $mock_quiz = mock 'QuizSage::Model::Quiz' => ( override => [
 
 mojo->app->hook( before_routes => sub ($c) { $c->session( user_id => $user->id ) } );
 
-mojo->post_ok( '/quiz/build', form => { meet => 42 } )
+mojo->post_ok( '/quiz/build', form => { meet => 42, @$csrf } )
     ->status_is(302)
     ->header_is( location => url('/meet/42') );
 
 $qm_auth = 1;
 
-mojo->post_ok( '/quiz/build', form => { meet => 42 } )
+mojo->post_ok( '/quiz/build', form => { meet => 42, @$csrf } )
     ->status_is(302)
     ->header_is( location => url('/meet/42') );
 
@@ -48,6 +48,7 @@ mojo->post_ok(
     form => {
         meet => 42,
         team => [ 'Team 1', 'Team 2', 'Team 3' ],
+        @$csrf,
     },
 )
     ->status_is(302)

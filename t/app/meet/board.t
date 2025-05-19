@@ -7,7 +7,6 @@ use QuizSage::Model::Quiz;
 use QuizSage::Test;
 
 setup;
-
 my ($user) = user;
 mojo->app->hook( before_routes => sub ($c) { $c->session( user_id => $user->id ) } );
 

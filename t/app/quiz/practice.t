@@ -6,8 +6,8 @@ use QuizSage::Model::Quiz;
 use QuizSage::Test;
 
 setup;
-
 my ($user) = user;
+my $csrf = csrf;
 
 my $dom;
 mojo->app->hook( before_routes => sub ($c) { $c->session( user_id => $user->id ) } );
@@ -35,6 +35,7 @@ mojo->post_ok(
         default_bible  => $default_bible,
         roster_data    => $roster_data,
         material_label => $material_label,
+        @$csrf,
     },
 )
     ->status_is(302)
@@ -50,6 +51,7 @@ mojo->post_ok(
     '/drill/setup',
     form => {
         material_label => $drill_material_label,
+        @$csrf,
     },
 )
     ->status_is(302)

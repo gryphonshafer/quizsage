@@ -5,6 +5,7 @@ use QuizSage::Test;
 
 setup;
 my ( $user, $email, $passwd ) = user;
+my $csrf = csrf;
 
 mojo->get_ok('/api/v1/bible/books')->status_is(401);
 
@@ -13,6 +14,7 @@ mojo->post_ok(
     form => {
         email  => $email,
         passwd => $passwd,
+        @$csrf,
     },
 );
 

@@ -6,8 +6,8 @@ use QuizSage::Model::Meet;
 use QuizSage::Test;
 
 setup;
-
 my ($user) = user;
+my $csrf = csrf;
 
 is(
     $user->data->{settings}{meet_passwd},
@@ -15,7 +15,7 @@ is(
     'meet_password not yet set',
 );
 
-mojo->post_ok( '/meet/passwd', form => { meet_passwd => 'test_meet_passwd' } )
+mojo->post_ok( '/meet/passwd', form => { meet_passwd => 'test_meet_passwd', @$csrf } )
     ->status_is(302)
     ->header_is( location => url('/') )
     ->get_ok('/')
@@ -28,7 +28,7 @@ mojo->post_ok( '/meet/passwd', form => { meet_passwd => 'test_meet_passwd' } )
 
 mojo->app->hook( before_routes => sub ($c) { $c->session( user_id => $user->id ) } );
 
-mojo->post_ok( '/meet/passwd', form => { meet_passwd => 'test_meet_passwd' } )
+mojo->post_ok( '/meet/passwd', form => { meet_passwd => 'test_meet_passwd', @$csrf } )
     ->status_is(302)
     ->header_is( location => url('/') )
     ->get_ok('/')

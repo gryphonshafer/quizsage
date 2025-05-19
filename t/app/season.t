@@ -5,7 +5,6 @@ use QuizSage::Model::Season;
 use QuizSage::Test;
 
 setup;
-
 my ($user) = user;
 
 my $season = QuizSage::Model::Season->new->create({ name => 'Season Test' });

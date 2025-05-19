@@ -4,14 +4,15 @@ use Omniframe::Test::App;
 use QuizSage::Test;
 
 setup;
-
 my ( $user, $email, $passwd ) = user;
+my $csrf = csrf;
 
 mojo->post_ok(
         '/user/login',
         form => {
             email  => $email,
             passwd => $passwd,
+            @$csrf,
         },
     )
     ->status_is(302)
@@ -30,6 +31,7 @@ mojo->post_ok(
             first_name => 'New First Name',
             last_name  => 'New Last Name',
             phone      => '4567891230',
+            @$csrf,
         },
     )
     ->status_is(302)
@@ -58,8 +60,10 @@ is(
 );
 
 mojo->post_ok(
-        '/user/profile' => form => {
+        '/user/profile',
+        form => {
             passwd => 'short',
+            @$csrf,
         },
     )
     ->status_is(200)

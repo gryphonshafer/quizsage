@@ -5,8 +5,8 @@ use QuizSage::Model::Quiz;
 use QuizSage::Test;
 
 setup;
-
 my ($user) = user;
+my $csrf = csrf;
 
 my $meet_id   = 0;
 my $mock_quiz = mock 'QuizSage::Model::Quiz' => ( override => [
@@ -27,7 +27,7 @@ mojo->get_ok('/quiz/42.json')
     ->status_is(200)
     ->json_has('/json_material_path');
 
-mojo->post_ok('/quiz/save/42')
+mojo->post_ok( '/quiz/save/42', form => {@$csrf} )
     ->status_is(200)
     ->json_is( '/quiz_data_saved', 0 );
 
