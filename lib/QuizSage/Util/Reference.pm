@@ -14,16 +14,18 @@ exact->exportable( qw( reference_data reference_html ) );
 my $time = Omniframe::Class::Time->new;
 
 fun reference_data (
-    :$material_label = undef, # material label/description
-    :$user_id        = undef, # user ID from application database
-    :$bible          = undef, # acronym for memorized Bible
-    :$cover          = 1,     # boolean; include cover page
-    :$reference      = 1,     # boolean; include reference section
-    :$whole          = 5,     # words for whole section
-    :$chapter        = 3,     # words for chapter section
-    :$phrases        = 4,     # words for phrases section
-    :$concordance    = 0,     # boolean; include concordance
-    :$force          = 0,     # force data regeneration (and update JSON cache file)
+    :$material_label    = undef,       # material label/description
+    :$user_id           = undef,       # user ID from application database
+    :$bible             = undef,       # acronym for memorized Bible
+    :$cover             = 1,           # boolean; include cover page
+    :$reference         = 1,           # boolean; include reference section
+    :$reference_scope   = 'memorized', # enum: memorized, all
+    :$whole             = 5,           # words for whole section
+    :$chapter           = 3,           # words for chapter section
+    :$phrases           = 4,           # words for phrases section
+    :$concordance       = 0,           # boolean; include concordance
+    :$concordance_scope = 'memorized', # enum: memorized, all
+    :$force             = 0,           # force data regeneration (and update JSON cache file)
 
     :$page_width               = 8.5,
     :$page_height              = 11,
@@ -57,10 +59,12 @@ fun reference_data (
             join( ',', @$bibles ),
             $cover,
             $reference,
+            $reference_scope,
             $whole,
             $chapter,
             $phrases,
             $concordance,
+            $concordance_scope,
             $page_width,
             $page_height,
             $page_right_margin_left,
@@ -152,16 +156,19 @@ fun reference_data (
 
     push( $data->{sections}->@*, {
         header => 'Reference Material',
-        blocks => [ {
-            header => $bible,
-            rows   => [ map { [
-                {
-                    class => 'ref',
-                    text  => $bible . ' ' . $_->{ref_short},
-                },
-                $_->{bibles}{$bible}{text},
-            ] } $content->@* ],
-        } ],
+        blocks => [ map {
+            my $bible = $_;
+            +{
+                header => $bible,
+                rows   => [ map { [
+                    {
+                        class => 'ref',
+                        text  => $bible . ' ' . $_->{ref_short},
+                    },
+                    $_->{bibles}{$bible}{text},
+                ] } $content->@* ],
+            };
+        } ( $reference_scope eq 'memorized' ) ? $bible : @$bibles ],
     } ) if $reference;
 
     push( $data->{sections}->@*, {
@@ -332,7 +339,7 @@ fun reference_data (
                     } sort keys %$these_words
                 ],
             };
-        } @$bibles ],
+        } ( $concordance_scope eq 'memorized' ) ? $bible : @$bibles ],
     } ) if $concordance;
 
     $data->{bible} = shift @{ $data->{bibles} };
@@ -397,16 +404,18 @@ QuizSage::Util::Reference
     use QuizSage::Util::Reference 'reference_data';
 
     my $reference_data = reference_data(
-        label        => 'Luke ESV NIV', # material label/description
-        user_id      => 42,             # user ID from application database
-        bible        => 'NIV',          # acronym for memorized Bible
-        cover        => 1,              # boolean; include cover page
-        reference    => 1,              # boolean; include reference section
-        whole        => 5,              # words for whole section
-        chapter      => 3,              # words for chapter section
-        phrases      => 4,              # words for phrases section
-        concordance  => 0,              # boolean; include concordance
-        force        => 0,              # force data regeneration
+        label             => 'Luke ESV NIV', # material label/description
+        user_id           => 42,             # user ID from application database
+        bible             => 'NIV',          # acronym for memorized Bible
+        cover             => 1,              # boolean; include cover page
+        reference         => 1,              # boolean; include reference section
+        reference_scope   => 'memorized',    # enum: memorized, all
+        whole             => 5,              # words for whole section
+        chapter           => 3,              # words for chapter section
+        phrases           => 4,              # words for phrases section
+        concordance       => 0,              # boolean; include concordance
+        concordance_scope => 'memorized',    # enum: memorized, all
+        force             => 0,              # force data regeneration
     );
 
 =head1 DESCRIPTION
@@ -420,16 +429,18 @@ This package provides exportable reference material functions.
 This function generates reference material.
 
     my $reference_data = reference_data(
-        label        => 'Luke ESV NIV', # material label/description
-        user_id      => 42,             # user ID from application database
-        bible        => 'NIV',          # acronym for memorized Bible
-        cover        => 1,              # boolean; include cover page
-        reference    => 1,              # boolean; include reference section
-        whole        => 5,              # words for whole section
-        chapter      => 3,              # words for chapter section
-        phrases      => 4,              # words for phrases section
-        concordance  => 0,              # boolean; include concordance
-        force        => 0,              # force data regeneration
+        label             => 'Luke ESV NIV', # material label/description
+        user_id           => 42,             # user ID from application database
+        bible             => 'NIV',          # acronym for memorized Bible
+        cover             => 1,              # boolean; include cover page
+        reference         => 1,              # boolean; include reference section
+        reference_scope   => 'memorized',    # enum: memorized, all
+        whole             => 5,              # words for whole section
+        chapter           => 3,              # words for chapter section
+        phrases           => 4,              # words for phrases section
+        concordance       => 0,              # boolean; include concordance
+        concordance_scope => 'memorized',    # enum: memorized, all
+        force             => 0,              # force data regeneration
     );
 
 =head2 reference_html

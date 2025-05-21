@@ -91,6 +91,8 @@ sub setup ($self) {
             $settings->{concordance} = ( $self->req->param('concordance') ) ? 1 : 0;
 
             $settings->{$_} = $self->req->param($_) for ( qw(
+                reference_scope
+                concordance_scope
                 page_width
                 page_height
                 page_right_margin_left

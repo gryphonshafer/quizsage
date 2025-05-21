@@ -141,11 +141,15 @@
 
             <label>
                 <input type="checkbox" name="cover" checked>
-                Include Cover Page
+                Cover Page
             </label>
             <label>
                 <input type="checkbox" name="reference" checked>
-                Reference Material
+                Reference Material for
+                <select name="reference_scope">
+                    <option value="memorized">Memorized Bible</option>
+                    <option value="all">All Bibles</option>
+                </select>
             </label>
             <label>
                 <input type="checkbox" name="whole" checked>
@@ -162,7 +166,11 @@
             </label>
             <label>
                 <input type="checkbox" name="concordance">
-                Include Concordance
+                Concordance for
+                <select name="concordance_scope">
+                    <option value="memorized">Memorized Bible</option>
+                    <option value="all">All Bibles</option>
+                </select>
             </label>
         </fieldset>
 
