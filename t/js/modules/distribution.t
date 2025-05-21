@@ -40,6 +40,8 @@ ok(
 );
 
 is( scalar( grep { $_->{type} eq 'Q' } @$distribution ), 3, '25% of queries are Q' );
-isnt( $distribution->[0]{bible}, $distribution->[1]{bible}, 'bibles rotate' );
+
+my @bibles = grep { defined } map { $_->{bible} } @$distribution;
+isnt( $bibles[0], $bibles[1], 'bibles rotate' );
 
 done_testing;
