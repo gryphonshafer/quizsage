@@ -32,8 +32,13 @@ export default function (data) {
         fetch(
             new URL( '../../flag/add', import.meta.url ),
             {
-                method: 'POST',
-                body  : JSON.stringify( JSON.parse( JSON.stringify(data) ) ),
+                method : 'POST',
+                body   : JSON.stringify( JSON.parse( JSON.stringify(data) ) ),
+                headers: {
+                    'X-CSRF-Token': window.document
+                        .querySelector('meta[name="X-CSRF-Token"]')
+                        .getAttribute('content'),
+                },
             },
         );
         window.document.body.removeChild( elements.dialog );

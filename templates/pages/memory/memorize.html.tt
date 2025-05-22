@@ -82,8 +82,13 @@
                     fetch(
                         window.document.location.href,
                         {
-                            method: 'POST',
-                            body  : JSON.stringify(data),
+                            method : 'POST',
+                            body   : JSON.stringify(data),
+                            headers: {
+                                'X-CSRF-Token': window.document
+                                    .querySelector('meta[name="X-CSRF-Token"]')
+                                    .getAttribute('content'),
+                            },
                         },
                     );
                 };
@@ -93,12 +98,16 @@
             window.document.querySelectorAll('div#memorize form').forEach( form => {
                 form.querySelector('button').onclick = () => {
                     form.style.display = 'none';
-
                     fetch(
                         review_url.toString(),
                         {
-                            method: 'POST',
-                            body  : new FormData(form),
+                            method : 'POST',
+                            body   : new FormData(form),
+                            headers: {
+                                'X-CSRF-Token': window.document
+                                    .querySelector('meta[name="X-CSRF-Token"]')
+                                    .getAttribute('content'),
+                            },
                         },
                     );
 

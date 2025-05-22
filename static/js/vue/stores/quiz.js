@@ -231,8 +231,13 @@ export default Pinia.defineStore( 'store', {
             fetch(
                 new URL( '../../../quiz/save/' + miscellaneous.quiz_id, import.meta.url ),
                 {
-                    method: 'POST',
-                    body  : JSON.stringify( quiz.state ),
+                    method : 'POST',
+                    body   : JSON.stringify( quiz.state ),
+                    headers: {
+                        'X-CSRF-Token': window.document
+                            .querySelector('meta[name="X-CSRF-Token"]')
+                            .getAttribute('content'),
+                    },
                 },
             );
         },

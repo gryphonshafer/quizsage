@@ -50,7 +50,12 @@ sub startup ($self) {
     } );
 
     my $all = $self->routes->under( sub ($c) {
-        $c->stash( page => { wrappers => ['page.html.tt'] } );
+        $c->stash( page => {} ) unless ( $c->stash('page') );
+        $c->stash('page')->{wrappers} = ['page.html.tt'];
+        push( $c->stash('page')->{meta}->@*, {
+            name    => $c->csrf->header,
+            content => $c->csrf->token,
+        } );
 
         if ( my $user_id = $c->session('user_id') ) {
             try {
