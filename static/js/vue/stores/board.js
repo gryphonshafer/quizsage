@@ -63,8 +63,21 @@ const store = Pinia.defineStore( 'store', {
     },
 } );
 
+let received_an_on_close = false;
 omniframe.websocket.start({
-    path     : url.pathname + url.search,
+    path: url.pathname + url.search,
+
+    onclose: () => {
+        received_an_on_close = true;
+    },
+
+    onopen: () => {
+        if (received_an_on_close) {
+            fetch( url.pathname + url.search + '/poke' );
+            received_an_on_close = false;
+        }
+    },
+
     onmessage: (fresh_quiz_data) => {
         if (fresh_quiz_data) {
             store().$patch({

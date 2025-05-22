@@ -111,6 +111,7 @@ sub startup ($self) {
     $users
         ->any( '/meet/:meet_id/board/:room_number' => [ format => ['json'] ] )
         ->to( 'meet#board', format => undef );
+    $users->any('/meet/:meet_id/board/:room_number/poke')->to('meet#board_poke');
     $users->any( '/meet/:meet_id/' . $_ )->to( 'meet#' . $_ ) for ( qw( state roster distribution stats ) );
 
     $users->any(
