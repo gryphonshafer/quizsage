@@ -17,15 +17,16 @@ sub login ($self) {
 
         $self->info( $response->{message} );
         $self->session( user_id => $user->id );
+
+        $self->render( openapi => $response );
     }
     catch ($e) {
         $response->{message} = 'Login failure for ' . $self->param('email');
         $response->{success} = 0;
 
         $self->notice( $response->{message} );
+        $self->render( status => 401, openapi => $response );
     }
-
-    $self->render( openapi => $response );
 }
 
 sub logout ($self) {
