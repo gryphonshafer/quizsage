@@ -90,7 +90,7 @@
     [% END %]
 [% END %]
 
-[% IF labels %]
+[% IF labels AND labels.size %]
     <h2 class="labels">Labels</h2>
     <ol type="a">
         [% FOR label IN labels %]
