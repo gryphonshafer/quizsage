@@ -147,10 +147,14 @@ paths:
                 - $ref: '#/components/parameters/bible_acronym'
                 - $ref: '#/components/parameters/cover'
                 - $ref: '#/components/parameters/reference'
+                - $ref: '#/components/parameters/reference_scope'
                 - $ref: '#/components/parameters/whole'
                 - $ref: '#/components/parameters/chapter'
                 - $ref: '#/components/parameters/phrases'
                 - $ref: '#/components/parameters/concordance'
+                - $ref: '#/components/parameters/concordance_scope'
+                - $ref: '#/components/parameters/mark_unique'
+                - $ref: '#/components/parameters/labels_to_markup'
                 - $ref: '#/components/parameters/page_width'
                 - $ref: '#/components/parameters/page_height'
                 - $ref: '#/components/parameters/page_right_margin_left'
@@ -261,10 +265,14 @@ paths:
                 - $ref: '#/components/parameters/bible_acronym'
                 - $ref: '#/components/parameters/cover'
                 - $ref: '#/components/parameters/reference'
+                - $ref: '#/components/parameters/reference_scope'
                 - $ref: '#/components/parameters/whole'
                 - $ref: '#/components/parameters/chapter'
                 - $ref: '#/components/parameters/phrases'
                 - $ref: '#/components/parameters/concordance'
+                - $ref: '#/components/parameters/concordance_scope'
+                - $ref: '#/components/parameters/mark_unique'
+                - $ref: '#/components/parameters/labels_to_markup'
                 - $ref: '#/components/parameters/page_width'
                 - $ref: '#/components/parameters/page_height'
                 - $ref: '#/components/parameters/page_right_margin_left'
@@ -462,6 +470,17 @@ components:
             schema:
                 type: boolean
                 default: true
+        reference_scope:
+            name: reference_scope
+            in: query
+            description: Scope of reference material.
+            example: memorized
+            schema:
+                type: string
+                default: memorized
+                enum:
+                    - memorized
+                    - all
         whole:
             name: whole
             in: query
@@ -494,6 +513,31 @@ components:
             schema:
                 type: boolean
                 default: false
+        concordance_scope:
+            name: concordance_scope
+            in: query
+            description: Scope of concordance material.
+            example: memorized
+            schema:
+                type: string
+                default: memorized
+                enum:
+                    - memorized
+                    - all
+        mark_unique:
+            name: mark_unique
+            in: query
+            description: Mark unique words.
+            example: 'false'
+            schema:
+                type: boolean
+                default: false
+        labels_to_markup:
+            name: labels_to_markup
+            in: query
+            description: Label names to markup.
+            schema:
+                type: string
         page_width:
             name: page_width
             in: query

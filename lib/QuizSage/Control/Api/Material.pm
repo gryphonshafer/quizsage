@@ -34,10 +34,14 @@ sub _get_reference_data ($self) {
             bible
             cover
             reference
+            reference_scope
             whole
             chapter
             phrases
             concordance
+            concordance_scope
+            mark_unique
+            labels_to_markup
             force
             page_width
             page_height
