@@ -171,18 +171,6 @@ export default class Quiz {
 
         let scoring_message = this.scoring.score(this);
 
-
-
-
-
-
-
-
-
-
-
-
-
         if (
             scoring_message && (
                 this.state.events.at(-1).action == 'correct' ||
@@ -307,5 +295,10 @@ export default class Quiz {
     delete_last_action() {
         this.state.events.pop();
         this.#build_board();
+
+        const record = this.state.board.find( record => record.current );
+        if ( record && record.query && record.query.original ) {
+            this.queries.remove_verse( record.query );
+        }
     }
 }
