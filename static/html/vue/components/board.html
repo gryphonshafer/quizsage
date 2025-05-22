@@ -3,8 +3,18 @@
         <tr>
             <td colspan="3" rowspan="5" class="top_left_corner"></td>
             <template v-for="team in teams">
-                <td :colspan="team.quizzers.length" class="team_name">{{ team.name }}</td>
-                <td class="center team_score_position">
+                <td
+                    :colspan="team.quizzers.length"
+                    :class="{
+                        team_name           : true,
+                        not_trigger_eligible: ! team.trigger_eligible,
+                    }"
+                >{{ team.name }}</td>
+                <td :class="{
+                    center              : true,
+                    team_score_position : true,
+                    not_trigger_eligible: ! team.trigger_eligible,
+                }">
                     {{ ( team.score.position == 0 ) ? '' : team.score.position }}<sup>{{
                         ( team.score.position == 0 ) ? '' :
                         ( team.score.position == 1 ) ? 'st' :
@@ -16,10 +26,20 @@
         </tr>
         <tr>
             <template v-for="team in teams">
-                <td class="center" v-for="quizzer in team.quizzers">
+                <td
+                    v-for="quizzer in team.quizzers"
+                    :class="{
+                        not_trigger_eligible: ! team.trigger_eligible || ! quizzer.trigger_eligible,
+                        center              : true,
+                    }"
+                >
                     {{ quizzer.score.points }} ({{ quizzer.score.team_points }})
                 </td>
-                <td class="center team_score_points">{{ team.score.points }}</td>
+                <td :class="{
+                    center              : true,
+                    team_score_points   : true,
+                    not_trigger_eligible: ! team.trigger_eligible,
+                }">{{ team.score.points }}</td>
             </template>
         </tr>
         <tr class="vertical">
@@ -27,12 +47,18 @@
                 <td v-for="quizzer in team.quizzers"
                     @click="select_quizzer( quizzer.id, team.id )"
                     :class="{
-                        selected : selected.quizzer_id && quizzer.id && selected.quizzer_id == quizzer.id,
                         clickable: true,
+                        selected :
+                            selected.quizzer_id && quizzer.id && selected.quizzer_id == quizzer.id,
+                        not_trigger_eligible: ! team.trigger_eligible || ! quizzer.trigger_eligible,
                     }"
                 >{{ quizzer.name }}</td>
 
-                <td rowspan="3">
+                <td rowspan="3"
+                    :class="{
+                        not_trigger_eligible: ! team.trigger_eligible,
+                    }"
+                >
                     <span
                         :title="'Timeouts Remaining: ' + team.timeouts_remaining"
                         >TOsR: {{ team.timeouts_remaining }}</span>
@@ -45,12 +71,24 @@
         </tr>
         <tr>
             <template v-for="team in teams">
-                <td class="center" v-for="quizzer in team.quizzers">{{ quizzer.bible }}</td>
+                <td
+                    v-for="quizzer in team.quizzers"
+                    :class="{
+                        center              : true,
+                        not_trigger_eligible: ! team.trigger_eligible || ! quizzer.trigger_eligible,
+                    }"
+                >{{ quizzer.bible }}</td>
             </template>
         </tr>
         <tr>
             <template v-for="team in teams">
-                <td class="center" v-for="quizzer in team.quizzers">
+                <td
+                    v-for="quizzer in team.quizzers"
+                    :class="{
+                        center              : true,
+                        not_trigger_eligible: ! team.trigger_eligible || ! quizzer.trigger_eligible,
+                    }"
+                >
                     {{ quizzer.score.correct }} ({{ quizzer.score.open_book }})
                 </td>
             </template>
@@ -71,10 +109,21 @@
             <td>{{ record.type }}</td>
             <td>{{ record.bible }}</td>
             <template v-for="team in teams">
-                <td class="center" v-for="quizzer in team.quizzers">{{
+                <td
+                    v-for="quizzer in team.quizzers"
+                    :class="{
+                        center              : true,
+                        not_trigger_eligible: ! team.trigger_eligible || ! quizzer.trigger_eligible,
+                    }"
+                >{{
                     ( quizzer.id == record.quizzer_id ) ? record.quizzer_label : ''
                 }}</td>
-                <td class="center">{{ ( team.id == record.team_id ) ? record.team_label : '' }}</td>
+                <td
+                    :class="{
+                        center              : true,
+                        not_trigger_eligible: ! team.trigger_eligible,
+                    }"
+                >{{ ( team.id == record.team_id ) ? record.team_label : '' }}</td>
             </template>
         </tr>
     </tbody>

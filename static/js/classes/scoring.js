@@ -35,12 +35,15 @@ export default class Scoring {
                 bonuses      : 0,
                 open_book    : 0,
             };
-            team.quizzers.forEach( quizzer => quizzer.score = {
-                points     : 0,
-                team_points: 0,
-                correct    : 0,
-                incorrect  : 0,
-                open_book  : 0,
+            team.quizzers.forEach( quizzer => {
+                quizzer.trigger_eligible = true;
+                quizzer.score            = {
+                    points     : 0,
+                    team_points: 0,
+                    correct    : 0,
+                    incorrect  : 0,
+                    open_book  : 0,
+                };
             } );
         } );
 
@@ -96,10 +99,12 @@ export default class Scoring {
                     ! quizzer.score.open_book
                 ) ? this.ceiling_bonus : 0;
 
-                if ( quizzer.score.correct + quizzer.score.open_book >= this.ceiling_full ) message =
-                    'Ceiling reached: ' + quizzer.name + '<br>'
+                if ( quizzer.score.correct + quizzer.score.open_book >= this.ceiling_full ) {
+                    quizzer.trigger_eligible = false;
+                    message = 'Ceiling reached: ' + quizzer.name + '<br>'
                         + '<i>(' + quizzer.score.correct + ' correct '
                         + 'with ' + quizzer.score.open_book + ' open book)</i>';
+                }
 
                 if (
                     event.type.indexOf('O') != -1 &&
