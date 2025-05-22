@@ -48,7 +48,12 @@
                 <tr>
                     [% FOR cell IN row %]
                         [% IF cell.text %]
-                            <td class="[% cell.class %]">[% cell.text %]</td>
+                            <td class="[% cell.class %]">
+                                [% cell.text %]
+                                [% IF cell.labels AND cell.labels.size %]
+                                    <sup>[% cell.labels.join('') %]</sup>
+                                [% END %]
+                            </td>
                         [% ELSE %]
                             <td>[% cell %]</td>
                         [% END %]
@@ -70,7 +75,12 @@
                 <table>
                     [% FOR verse IN entry.verses %]
                         <tr>
-                            <td class="ref">[% verse.ref_short %]</td>
+                            <td class="ref">
+                                [% block.header %] [% verse.ref_short %]
+                                [% IF verse.labels AND verse.labels.size %]
+                                    <sup>[% verse.labels.join('') %]</sup>
+                                [% END %]
+                            </td>
                             <td>[% verse.text %]</td>
                         </tr>
                     [% END %]
@@ -78,6 +88,18 @@
             [% END %]
         [% END %]
     [% END %]
+[% END %]
+
+[% IF labels %]
+    <h2 class="labels">Labels</h2>
+    <ol type="a">
+        [% FOR label IN labels %]
+            <li>
+                <b>[% label.name %]</b><br>
+                [% label.description %]
+            </li>
+        [% END %]
+    </ol>
 [% END %]
 
 [% page.header_html = BLOCK %]
@@ -126,6 +148,10 @@
         margin     : 0 0 -1em 0;
     }
 
+    h2.labels {
+        margin-bottom: 0;
+    }
+
     h3 {
         font-size : 18px;
         text-align: right;
@@ -163,6 +189,10 @@
         width      : 6rem;
         font-size  : 13px;
         line-height: 19px;
+    }
+
+    span.word {
+        font-weight: bold;
     }
 
     @media print {

@@ -141,7 +141,7 @@
 
             <label>
                 <input type="checkbox" name="cover" checked>
-                Cover Page
+                Title Block (Print Cover Page)
             </label>
             <label>
                 <input type="checkbox" name="reference" checked>
@@ -171,6 +171,11 @@
                     <option value="memorized">Memorized Bible</option>
                     <option value="all">All Bibles</option>
                 </select>
+            </label>
+            <label>
+                <input type="checkbox" name="mark_unique">
+                Mark Unique Words
+                <br><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Uses exponential time with material length)</i>
             </label>
         </fieldset>
 
@@ -212,6 +217,13 @@
             ">Material Label/Description Tester</a>
         </p>
     </fieldset>
+
+    [% IF setup_label == 'ref_gen' %]
+        <fieldset>
+            <legend>Labels to Markup</legend>
+            <textarea name="labels_to_markup">[% labels_to_markup %]</textarea>
+        </fieldset>
+    [% END %]
 </form>
 
 <form class="hidden" id="label_tester" method="post" action="[% c.url_for('/label/tester') %]">

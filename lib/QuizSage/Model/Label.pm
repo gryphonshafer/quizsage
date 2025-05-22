@@ -56,6 +56,18 @@ sub aliases ( $self, $user_id = $self->user_id ) {
     )->run->all({});
 }
 
+sub identify_aliases ( $self, $string = '', $user_id = $self->user_id ) {
+    return [
+        sort { $a cmp $b }
+        grep {
+            ( my $alias_name = $_ ) =~ s/\s+/\\s+/g;
+            $string =~ /\b$alias_name\b/i
+        }
+        map { $_->{name} }
+        $self->aliases->@*
+    ];
+}
+
 sub parse ( $self, $input = $self->data->{label}, $user_id = undef ) {
     my $user_aliases;
     unless ($user_id) {
@@ -631,6 +643,13 @@ at the time.
 You can alternatively explicitly pass the user ID.
 
     my $aliases = $label->aliases(42);
+
+=head2 identify_aliases
+
+Identifies alias names within a string and returns them in alphabetical order in
+an arrayref.
+
+    my $identified_aliases = $label->identify_aliases('Alias Name');
 
 =head2 parse
 

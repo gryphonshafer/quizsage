@@ -2,6 +2,7 @@ package QuizSage::Control::Main;
 
 use exact -conf, 'Mojolicious::Controller';
 use Mojo::File 'path';
+use QuizSage::Model::Label;
 use QuizSage::Model::Memory;
 use QuizSage::Model::Quiz;
 use QuizSage::Model::Season;
@@ -84,11 +85,15 @@ sub setup ($self) {
         $settings->{material_label} = $label->canonicalize( $settings->{material_label} );
 
         if ( $self->stash('setup_label') eq 'ref_gen' ) {
-            $settings->{cover}     = ( $self->req->param('cover')     ) ? 1 : 0;
-            $settings->{reference} = ( $self->req->param('reference') ) ? 1 : 0;
-            $settings->{$_}        = ( $self->req->param($_) ) ? 0 + $self->req->param( $_ . '_number' ) : 0
+            $settings->{$_} = ( $self->req->param($_) ) ? 1 : 0 for ( qw(
+                cover
+                reference
+                concordance
+                mark_unique
+            ) );
+
+            $settings->{$_} = ( $self->req->param($_) ) ? 0 + $self->req->param( $_ . '_number' ) : 0
                 for ( qw( whole chapter phrases ) );
-            $settings->{concordance} = ( $self->req->param('concordance') ) ? 1 : 0;
 
             $settings->{$_} = $self->req->param($_) for ( qw(
                 reference_scope
@@ -104,6 +109,10 @@ sub setup ($self) {
                 page_left_margin_top
                 page_left_margin_bottom
             ) );
+
+            $settings->{labels_to_markup} = ( $self->req->param('labels_to_markup') )
+                ? join( "\n", $label->identify_aliases( $self->req->param('labels_to_markup') )->@* )
+                : '';
         }
 
         $user->data->{settings}{ $self->stash('setup_label') } = $settings;

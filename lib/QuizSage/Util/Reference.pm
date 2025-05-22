@@ -25,6 +25,8 @@ fun reference_data (
     :$phrases           = 4,           # words for phrases section
     :$concordance       = 0,           # boolean; include concordance
     :$concordance_scope = 'memorized', # enum: memorized, all
+    :$mark_unique       = 0,           # boolean; mark unique words and 2-word phrases
+    :$labels_to_markup  = '',          # labels to markup
     :$force             = 0,           # force data regeneration (and update JSON cache file)
 
     :$page_width               = 8.5,
@@ -65,6 +67,8 @@ fun reference_data (
             $phrases,
             $concordance,
             $concordance_scope,
+            $mark_unique,
+            $labels_to_markup,
             $page_width,
             $page_height,
             $page_right_margin_left,
@@ -96,6 +100,31 @@ fun reference_data (
     my $json_file = $json_path->child( $id . '.json' );
     return from_json( $json_file->slurp('UTF-8') ) if ( -f $json_file and not $force );
 
+    $labels_to_markup = ($labels_to_markup) ? [
+        map {
+            my $label = $mlabel->new->load({ name => $_ });
+            +{
+                name        => $_,
+                description => $label->descriptionize,
+                verses      => [
+                    $mlabel->bible_ref->clear->simplify(0)->acronyms(1)->in(
+                        $label->data->{label}
+                    )->as_verses
+                ],
+            };
+        }
+        $mlabel->identify_aliases($labels_to_markup)->@*
+    ] : [];
+
+    my $labels_for_ref = sub ($ref_short) {
+        return [
+            map { chr( $_ + 96 ) }
+            grep {
+                grep { $ref_short eq $_ } $labels_to_markup->[ $_ - 1 ]{verses}->@*
+            } 1 .. @$labels_to_markup
+        ];
+    };
+
     my $dq      = $mlabel->dq('material');
     my $content = [
         grep {
@@ -104,12 +133,14 @@ fun reference_data (
         }
         map {
             /^(?<book>.+)\s+(?<chapter>\d+):(?<verse>\d+)$/;
+            my $ref_short = $mlabel->bible_ref->clear->simplify(0)->acronyms(1)->in($_)->refs;
             +{
                 ref_long  => $_,
-                ref_short => $mlabel->bible_ref->clear->simplify(0)->acronyms(1)->in($_)->refs,
+                ref_short => $ref_short,
                 book      => $+{book},
                 chapter   => $+{chapter},
                 verse     => $+{verse},
+                labels    => $labels_for_ref->($ref_short),
                 bibles    => {
                     map {
                         $_->{words}  = text2words $_->{text};
@@ -136,11 +167,39 @@ fun reference_data (
         } $mlabel->bible_ref->clear->simplify(0)->acronyms(0)->in($description)->as_verses->@*
     ];
 
+    my $uniques = {};
+    if ($mark_unique) {
+        for my $verse (@$content) {
+            for my $bible ( keys $verse->{bibles}->%* ) {
+                my %words = map { $_ => 1 } $verse->{bibles}{$bible}{words}->@*;
+                my @words = keys %words;
+                $uniques->{$bible}{ $words[$_] }++ for ( 0 .. @words - 1 );
+            }
+        }
+
+        for my $bible ( keys %$uniques ) {
+            $uniques->{$bible} = [
+                grep { $uniques->{$bible}{$_} == 1 }
+                keys %{ $uniques->{$bible} }
+            ];
+        }
+
+        for my $verse (@$content) {
+            for my $bible ( keys $verse->{bibles}->%* ) {
+                $verse->{bibles}{$bible}{text} =~ s|\b($_)\b|\*$1/\*|gi for ( $uniques->{$bible}->@* );
+                $verse->{bibles}{$bible}{text} =~ s|/\*|</span>|g;
+                $verse->{bibles}{$bible}{text} =~ s|\*|<span class="word">|g;
+            }
+        }
+    }
+
     my $data = {
         description => $description,
         cover       => $cover,
         bibles      => $bibles,
         id          => $id,
+        labels      => $labels_to_markup,
+        uniques     => $uniques,
 
         page_width               => $page_width,
         page_height              => $page_height,
@@ -162,8 +221,9 @@ fun reference_data (
                 header => $bible,
                 rows   => [ map { [
                     {
-                        class => 'ref',
-                        text  => $bible . ' ' . $_->{ref_short},
+                        class  => 'ref',
+                        text   => $bible . ' ' . $_->{ref_short},
+                        labels => $_->{labels},
                     },
                     $_->{bibles}{$bible}{text},
                 ] } $content->@* ],
@@ -187,8 +247,9 @@ fun reference_data (
                             ( $this_bible eq $bible )
                                 ? (
                                     {
-                                        class => 'ref',
-                                        text  => $this_bible . ' ' . $this_data->[0],
+                                        class  => 'ref',
+                                        text   => $this_bible . ' ' . $this_data->[0],
+                                        labels => $this_data->[2],
                                     },
                                     $this_data->[1]{text},
                                 )
@@ -198,8 +259,9 @@ fun reference_data (
                                         grep { defined } @{ $this_data->[1]{words} }[ 0 .. $whole - 1 ]
                                     ),
                                     {
-                                        class => 'ref',
-                                        text  => $this_bible . ' ' . $this_data->[0],
+                                        class  => 'ref',
+                                        text   => $this_bible . ' ' . $this_data->[0],
+                                        labels => $this_data->[2],
                                     },
                                     (
                                         grep { $_->{ref_short} eq $this_data->[0] } $content->@*
@@ -211,6 +273,7 @@ fun reference_data (
                     map { [
                         $_->{ref_short},
                         $_->{bibles}{$this_bible},
+                        $_->{labels},
                     ] } $content->@*,
                 ],
             };
@@ -248,8 +311,11 @@ fun reference_data (
                             [
                                 $phrase,
                                 {
-                                    class => 'ref',
-                                    text  => $this_bible . ' ' . $these_phrases->{$this_chapter}{$phrase}[0],
+                                    class  => 'ref',
+                                    text   => $this_bible . ' ' . $these_phrases->{$this_chapter}{$phrase}[0],
+                                    labels => $labels_for_ref->(
+                                        $these_phrases->{$this_chapter}{$phrase}[0]
+                                    ),
                                 },
                                 (
                                     grep {
@@ -293,8 +359,9 @@ fun reference_data (
                         [
                             $phrase,
                             {
-                                class => 'ref',
-                                text  => $this_bible . ' ' . $these_phrases->{$phrase}[0],
+                                class  => 'ref',
+                                text   => $this_bible . ' ' . $these_phrases->{$phrase}[0],
+                                labels => $labels_for_ref->( $these_phrases->{$phrase}[0] ),
                             },
                             (
                                 grep { $_->{ref_short} eq $these_phrases->{$phrase}[0] } $content->@*
@@ -329,6 +396,7 @@ fun reference_data (
                                     +{
                                         ref_short => $_->{ref_short},
                                         text      => $_->{bibles}{$bible}{text},
+                                        labels    => $labels_for_ref->( $_->{ref_short} ),
                                     };
                                 }
                                 grep {
@@ -350,7 +418,7 @@ fun reference_data (
     return $data;
 }
 
-sub reference_html ( $controller, $reference_data ) {
+sub reference_html ( $controller, $reference_data, $force = 0 ) {
     my $now       = time;
     my $html_path = path( join( '/',
         conf->get( qw{ config_app root_dir } ),
@@ -369,7 +437,7 @@ sub reference_html ( $controller, $reference_data ) {
     my $html_file = $html_path->child( $reference_data->{id} . '.html' );
 
     my $html;
-    unless ( -f $html_file ) {
+    unless ( -f $html_file and not $force ) {
         $html = $controller->app->tt_html(
             'reference/generator.html.tt',
             {
@@ -415,6 +483,8 @@ QuizSage::Util::Reference
         phrases           => 4,              # words for phrases section
         concordance       => 0,              # boolean; include concordance
         concordance_scope => 'memorized',    # enum: memorized, all
+        mark_unique       => 0,              # boolean; mark unique words and 2-word phrases
+        labels_to_markup  => undef,          # labels to markup
         force             => 0,              # force data regeneration
     );
 
@@ -440,6 +510,8 @@ This function generates reference material.
         phrases           => 4,              # words for phrases section
         concordance       => 0,              # boolean; include concordance
         concordance_scope => 'memorized',    # enum: memorized, all
+        mark_unique       => 0,              # boolean; mark unique words and 2-word phrases
+        labels_to_markup  => undef,          # labels to markup
         force             => 0,              # force data regeneration
     );
 

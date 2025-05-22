@@ -58,6 +58,8 @@ mojo->get_ok(
             cover
             description
             id
+            labels
+            uniques
             page_width
             page_height
             page_left_margin_bottom
