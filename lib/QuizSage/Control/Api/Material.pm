@@ -16,14 +16,28 @@ sub bibles ($self) {
 
 sub payload ($self) {
     $self->openapi->valid_input or return;
-    $self->render( openapi => from_json(
-        path(
-            material_json(
-                label => $self->param('label'),
-                user  => $self->session('user_id'),
-            )->{json_file}
-        )->slurp('UTF-8')
-    ) );
+
+    try {
+        $self->render( openapi => from_json(
+            path(
+                material_json(
+                    label => $self->param('label'),
+                    user  => $self->session('user_id'),
+                )->{json_file}
+            )->slurp('UTF-8')
+        ) );
+    }
+    catch ($e) {
+        $self->render(
+            status  => 400,
+            openapi => {
+                errors => [ {
+                    message => deat($e),
+                    path    => $self->req->url->path->to_string,
+                } ],
+            },
+        );
+    }
 }
 
 sub _get_reference_data ($self) {
