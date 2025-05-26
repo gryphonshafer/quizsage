@@ -82,24 +82,6 @@ sub board ($self) {
     }
 }
 
-sub board_poke ($self) {
-    my $quiz = QuizSage::Model::Quiz->new->latest_quiz_in_meet_room(
-        $self->param('meet_id'),
-        $self->param('room_number'),
-    );
-
-    $self->socket( message =>
-        to_json( {
-            type => 'board',
-            meet => 0 + $self->param('meet_id'),
-            room => 0 + $self->param('room_number'),
-        } ),
-        $quiz->data->{ ( $quiz->data->{state} ) ? 'state' : 'settings' },
-    );
-
-    $self->render( json => $quiz->data );
-}
-
 1;
 
 =head1 NAME
@@ -146,14 +128,6 @@ C<meet_id> and C<room_number> parameters. Based on these, it'll either load the
 latest quiz for the meet and room into the stash as C<quiz> (if a web page is
 requested), return quiz data in JSON (if JSON is requested), or setup a web
 socket for the meet and room (if a web socket is requested).
-
-=head2 board_poke
-
-This controller handler powers a "poke" request, expected from a previously
-running board that experienced a web socket C<onclose> event followed by an
-C<onopen> event. This second event should fire this poke method, which will then
-message quiz data to the web socket. Thus, if there's any web sockets that loose
-network for a time and come back, they should quickly get the latest board data.
 
 =head1 INHERITANCE
 

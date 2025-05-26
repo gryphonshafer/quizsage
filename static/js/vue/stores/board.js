@@ -63,32 +63,32 @@ const store = Pinia.defineStore( 'store', {
     },
 } );
 
+function handle_fresh_quiz_data (quiz_data) {
+    if ( quiz_data && quiz_data.teams && quiz_data.board ) {
+        store().$patch({
+            teams: quiz_data.teams,
+            board: quiz_data.board,
+        });
+        set_board_scale( quiz_data.teams );
+    }
+    else {
+        window.location.reload();
+    }
+}
+
 let received_an_on_close = false;
 omniframe.websocket.start({
-    path: url.pathname + url.search,
-
-    onclose: () => {
-        received_an_on_close = true;
-    },
-
-    onopen: () => {
+    path     : url.pathname + url.search,
+    onmessage: quiz_data => handle_fresh_quiz_data(quiz_data),
+    onclose  : () => received_an_on_close = true,
+    onopen   : () => {
         if (received_an_on_close) {
-            fetch( url.pathname + url.search + '/poke' );
+            fetch( url.pathname + url.search + '.json' )
+                .then( reply => reply.json() )
+                .then( quiz_data => handle_fresh_quiz_data(
+                    ( quiz_data.state ) ? quiz_data.state : quiz_data.settings
+                ) );
             received_an_on_close = false;
-        }
-    },
-
-    onmessage: (fresh_quiz_data) => {
-        if (fresh_quiz_data) {
-            store().$patch({
-                teams: fresh_quiz_data.teams,
-                board: fresh_quiz_data.board,
-            });
-
-            set_board_scale( fresh_quiz_data.teams );
-        }
-        else {
-            window.location.reload();
         }
     },
 });
