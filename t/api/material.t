@@ -91,7 +91,7 @@ mojo->get_ok(
     },
 )
     ->status_is(200)
-    ->text_like( title => qr/Ro; Jam NIV with ESV/ )
+    ->text_like( title => qr/Ro 12:1-5; Jam 1:2-4 NIV with ESV/ )
     ->text_like( h2 => qr/Reference Material/ );
 
 teardown;
