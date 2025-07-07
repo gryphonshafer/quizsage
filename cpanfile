@@ -1,6 +1,6 @@
 requires 'Bible::OBML', '2.09';
 requires 'Bible::OBML::Gateway', '2.10';
-requires 'Bible::Reference', '1.17';
+requires 'Bible::Reference', '1.19';
 requires 'DateTime::Duration', '1.66';
 requires 'Email::Address', '1.913';
 requires 'File::Path', '2.18';
