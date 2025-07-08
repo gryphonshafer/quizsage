@@ -6,7 +6,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                perl-version: [ devel, 40, 38, 36, 34, 32 ]
+                perl-version: [ 40, 38, 36, 34, 32 ]
         container:
             image: |-
                 perldocker/perl-tester:${{
@@ -53,4 +53,4 @@ jobs:
                 HARNESS_PERL_SWITCHES=-MDevel::Cover=+ignore,'/lib/Omniframe\\b'
                 prove --recurse --lib --failures --jobs 4 --timer t
             - run: cover -report codecov
-              if: env.CODECOV_TOKEN != null && ( matrix.perl-version == 'devel' || matrix.perl-version >= 26 )
+              if: env.CODECOV_TOKEN != null && matrix.perl-version >= 26
