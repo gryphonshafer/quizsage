@@ -49,9 +49,6 @@ Translations
 Description
 : Range set and translation set
 
-Hash
-: First 16 characters of a SHA-256 of a description
-
 Intersection
 : `~` followed by a reference set
 
@@ -153,3 +150,17 @@ parents:
     - Alias: `Luke (1) John (3)`
     - Parent Label: `Alias; Acts`
     - Description: `Luke; John; Acts`
+
+## Add Verses Syntax for Parsing
+
+For any complete label that gets parsed, an optional add verses suffix will
+result in inclusion of the next number of verses within a given book for every
+verse the label includes. For example:
+
+- Label: `1 Cor 16:15-16 (1) 1 Cor 16:15-16, 19, 22-24 (1) NIV +2 Verses`
+- Description: `1 Corinthians 16:15-18 (1) 1 Corinthians 16:15-24 (1) NIV`
+
+The add verses suffix needs to be in the form "+N Verses" where "Verses" can be
+replaced with "v", "Verse", etc. Spacing within the suffix is ignored.
+
+Note that a canonical label will not include an add verses syntax.

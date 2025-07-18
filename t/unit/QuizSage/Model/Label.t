@@ -248,4 +248,16 @@ is(
     'parent without weights and child with weights',
 );
 
+is(
+    $obj->canonicalize('1 Corinthians 16:15-16 (1) 1 Corinthians 16:15-16, 19, 22-24 (1) NIV +2 Verses'),
+    '1 Corinthians 16:15-18 (1) 1 Corinthians 16:15-24 (1) NIV',
+    'add verses suffix +2',
+);
+
+is(
+    $obj->canonicalize('1 Corinthians 15:57 (1) 1 Corinthians 15:57 (1) NIV + 400ver'),
+    '1 Corinthians 15:57-58; 16 (1) 1 Corinthians 15:57-58; 16 (1) NIV',
+    'add verses suffix +400',
+);
+
 done_testing;

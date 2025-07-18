@@ -138,6 +138,18 @@ sub parse ( $self, $input = $self->data->{label}, $user_id = undef ) {
     delete $data->{bibles}{auxiliary} unless ( $data->{bibles}{auxiliary}->@* );
     delete $data->{bibles}            unless ( keys $data->{bibles}->%*       );
 
+    # Add verses notation (i.e. "+1 verse" or "+ 1 V") pulled out and remembered
+    my ( $add_verses, $bible_structure );
+    for my $input (@input) {
+        next if ( not $input or ref $input );
+        while ( $input =~ s/\s*\+\s*(\d+)\s*ve?r?s?e?s?//i ) {
+            $add_verses = $1 if ( not $add_verses or $1 > $add_verses );
+        }
+    }
+    $bible_structure = {
+        map { $_->[0] => $_->[1] } $self->bible_ref->get_bible_structure->@*
+    } if ($add_verses);
+
     # Intersections and filters pulled out and canonicalized
     #     a. All intersection reference sets are merged to a single intersection
     #     b. All filter reference sets are merged to a single filter
@@ -199,7 +211,32 @@ sub parse ( $self, $input = $self->data->{label}, $user_id = undef ) {
                     join( '; ',
                         grep { /\S/ }
                         $self->bible_ref->clear->simplify(1)->in(
-                            join( ' ', grep { not ref $_ } @content )
+                            ($add_verses)
+                                ? join( '; ',
+                                    map {
+                                        /^(?<book>.+)\s(?<chapter>\d+):(?<verse>\d+)$/;
+                                        my $ref    = {%+};
+                                        my @verses = $_;
+                                        my $book   = $bible_structure->{ $+{book} };
+                                        for ( 1 .. $add_verses ) {
+                                            $ref->{verse}++;
+                                            if ( $ref->{verse} > $book->[ $ref->{chapter} - 1 ] ) {
+                                                $ref->{chapter}++;
+                                                $ref->{verse} = 1;
+                                            }
+                                            last unless ( $book->[ $ref->{chapter} - 1 ] );
+                                            push(
+                                                @verses,
+                                                $ref->{book} . ' ' . $ref->{chapter} . ':' . $ref->{verse},
+                                            );
+                                        }
+                                        join( '; ', @verses );
+                                    }
+                                    $self->bible_ref->clear->in(
+                                        join( ' ', grep { not ref $_ } @content )
+                                    )->as_verses->@*
+                                )
+                                : join( ' ', grep { not ref $_ } @content )
                         )->refs
                     ),
                 ),
