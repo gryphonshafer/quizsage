@@ -52,7 +52,7 @@
                             selected.quizzer_id && quizzer.id && selected.quizzer_id == quizzer.id,
                         not_trigger_eligible: ! team.trigger_eligible || ! quizzer.trigger_eligible,
                     }"
-                >{{ quizzer.name }}</td>
+                ><div>{{ quizzer.name }}</div></td>
 
                 <td rowspan="3"
                     :class="{

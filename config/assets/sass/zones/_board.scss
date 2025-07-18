@@ -60,9 +60,17 @@ table.board {
 
     @-moz-document url-prefix() {
         tr.vertical td, td.vertical {
-            vertical-align: top;
-            padding       : 0.3em 0 0.3em 1em;
+            padding-left: 0.125em;
+            width       : 3em;
         }
+    }
+
+    tr.vertical td[rowspan="3"] {
+        white-space: nowrap;
+    }
+
+    tr.vertical td.clickable div {
+        min-height: 4em;
     }
 
     tr.center td, td.center {
