@@ -187,3 +187,8 @@ textarea.max_width {
     width : calc( 100vw - 5em );
     height: 20em;
 }
+
+iframe.instructional_video {
+    min-width : 560px;
+    min-height: 315px;
+}
