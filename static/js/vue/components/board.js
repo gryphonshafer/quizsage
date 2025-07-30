@@ -35,6 +35,15 @@ export default {
                 ) this.$root.$refs.controls.select_type('with_reference');
             }
         },
+
+        not_trigger_eligible( team, quizzer = null ) {
+            return (
+                ( this.is_quiz_done() ) ? false :
+                ( ! quizzer )
+                    ? ! team.trigger_eligible
+                    : ! team.trigger_eligible || ! quizzer.trigger_eligible
+            );
+        }
     },
 
     watch: {

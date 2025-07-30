@@ -7,13 +7,13 @@
                     :colspan="team.quizzers.length"
                     :class="{
                         team_name           : true,
-                        not_trigger_eligible: ! team.trigger_eligible,
+                        not_trigger_eligible: not_trigger_eligible(team),
                     }"
                 >{{ team.name }}</td>
                 <td :class="{
                     center              : true,
                     team_score_position : true,
-                    not_trigger_eligible: ! team.trigger_eligible,
+                    not_trigger_eligible: not_trigger_eligible(team),
                 }">
                     {{ ( team.score.position == 0 ) ? '' : team.score.position }}<sup>{{
                         ( team.score.position == 0 ) ? '' :
@@ -29,7 +29,7 @@
                 <td
                     v-for="quizzer in team.quizzers"
                     :class="{
-                        not_trigger_eligible: ! team.trigger_eligible || ! quizzer.trigger_eligible,
+                        not_trigger_eligible: not_trigger_eligible( team, quizzer ),
                         center              : true,
                     }"
                 >
@@ -38,7 +38,7 @@
                 <td :class="{
                     center              : true,
                     team_score_points   : true,
-                    not_trigger_eligible: ! team.trigger_eligible,
+                    not_trigger_eligible: not_trigger_eligible(team),
                 }">{{ team.score.points }}</td>
             </template>
         </tr>
@@ -50,13 +50,13 @@
                         clickable: true,
                         selected :
                             selected.quizzer_id && quizzer.id && selected.quizzer_id == quizzer.id,
-                        not_trigger_eligible: ! team.trigger_eligible || ! quizzer.trigger_eligible,
+                        not_trigger_eligible: not_trigger_eligible( team, quizzer ),
                     }"
                 ><div>{{ quizzer.name }}</div></td>
 
                 <td rowspan="3"
                     :class="{
-                        not_trigger_eligible: ! team.trigger_eligible,
+                        not_trigger_eligible: not_trigger_eligible(team),
                     }"
                 >
                     <span
@@ -75,7 +75,7 @@
                     v-for="quizzer in team.quizzers"
                     :class="{
                         center              : true,
-                        not_trigger_eligible: ! team.trigger_eligible || ! quizzer.trigger_eligible,
+                        not_trigger_eligible: not_trigger_eligible( team, quizzer ),
                     }"
                 >{{ quizzer.bible }}</td>
             </template>
@@ -86,7 +86,7 @@
                     v-for="quizzer in team.quizzers"
                     :class="{
                         center              : true,
-                        not_trigger_eligible: ! team.trigger_eligible || ! quizzer.trigger_eligible,
+                        not_trigger_eligible: not_trigger_eligible( team, quizzer ),
                     }"
                 >
                     {{ quizzer.score.correct }} ({{ quizzer.score.open_book }})
@@ -113,7 +113,7 @@
                     v-for="quizzer in team.quizzers"
                     :class="{
                         center              : true,
-                        not_trigger_eligible: ! team.trigger_eligible || ! quizzer.trigger_eligible,
+                        not_trigger_eligible: not_trigger_eligible( team, quizzer ),
                     }"
                 >{{
                     ( quizzer.id == record.quizzer_id ) ? record.quizzer_label : ''
@@ -121,7 +121,7 @@
                 <td
                     :class="{
                         center              : true,
-                        not_trigger_eligible: ! team.trigger_eligible,
+                        not_trigger_eligible: not_trigger_eligible(team),
                     }"
                 >{{ ( team.id == record.team_id ) ? record.team_label : '' }}</td>
             </template>
