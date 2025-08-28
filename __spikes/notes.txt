@@ -1,0 +1,215 @@
+Wisdom Verses
+    James 1:5-8
+Awesome Verses
+    Ephesians 6:10-17; Wisdom Verses
+Primes
+    Ephesians 6:1, 3, 5, 7, 11; Romans 12:1, 3, 5, 7, 11; James 1:1, 3, 5, 7, 11
+Awesome Verses Without Primes
+    Awesome Verses | Primes
+James Stuff
+    James 1:2-18 ~ James 1:5-25; Primes | James 1:13-15
+James Things
+    James 1:26; James Stuff
+Alias
+    Luke John
+
+--------------------------------------------------------------------------------------------------------------
+
+James 1:2-3; Rom 12:1, 2, 3, 4; Jam 1:4; Roma 12:5
+    Romans 12:1-5; James 1:2-4
+
+James 1:2-3 NIV NASB* Rom 12:1 NOTREALTRANSLATION ESV
+    Romans 12:1; James 1:2-3 ESV NASB* NIV
+
+Jam 1:4; Roma 12:5 (20%) James 1:2-3; Rom 12:1, 2, 3, 4 (80%) Awesome Verses
+    Romans 12:1-4; James 1:2-3 (4) Romans 12:5; James 1:4 (1) Awesome Verses (1)
+
+James 1 ~ James 1:2-4 | James 1:3 ~ Romans 12
+    James 1 ~ Romans 12; James 1:2-4 | James 1:3
+
+Awesome Verses; Romans 12:1-2
+    Romans 12:1-2; Awesome Verses
+
+James 1:2-3; NIV NASB* Roma 12:5 (20%)
+Rom 12:1, 2, 3, 4; NOTREALTRANSLATION Jam 1:4-10; Rom 12:5-6 (80%)
+Stuff and Things and Awesome Verses Without Primes and Words To Ignore
+~ James 1:2-7 | James 1:3 ESV (1) ~ Romans 12 (5) | Wisdom Verses (15)
+    Romans 12:1-6; James 1:4-10 (4) Romans 12:5; James 1:2-3 (1) Awesome Verses Without Primes (1)
+    ~ Romans 12; James 1:2-7 | James 1:3; Wisdom Verses ESV NASB* NIV
+
+James 1:27; James Things ~ James 1:5-11, 26-27 | James 1:11
+
+James 1:2 (1) (1)
+    James 1:2
+
+1 Corinthians 16:15-16 (1) 1 Corinthians 16:15-16, 19, 22-24 (1) NIV +1 Verses
+    1 Corinthians 16:15-16 (1) 1 Corinthians 16:15-16, 19, 22-24 (1) + 1 Verses NIV
+
+1 Corinthians 15:57 (1) 1 Corinthians 15:57 (1) NIV + 400ver
+    1 Corinthians 15:57 (1) 1 Corinthians 15:57 (1) + 400 Verses NIV
+
+“Distributed property”
+    Luke 1-17 (1) Luke 18-19 (2) / Club 100 (1) Club 300 (2) All (3) | Luke 2 + 1 Verse
+        Luke 1-17 ~ Club 100 (1)
+        Luke 1-17 ~ Club 300 (2)
+        Luke 1-17 (3)
+        Luke 18-19 ~ Club 100 (2)
+        Luke 18-19 ~ Club 300 (4)
+        Luke 18-19 (6)
+
+    ("All" is a special/reserved alias referring to everything in a given set forward of a distribute action,
+        thus requiring a preceding distribute action, which itself requires a preceding set)
+
+Parentheses (which are unnamed/anonymous aliases/labels)
+    { Luke 1 (1) Luke 2 (3) } (1) { Luke 3 (1) Luke 4 (3) } (2)
+        Luke 1 (1) Luke 2 (3) Luke 3 (2) Luke 4 (6)
+
+    { Luke 1 ~ Club 100 } Luke 2 (1) Luke 3 (2) Luke 4 ~ Club 300 (3)
+        { Luke 1 ~ Club 100 } Luke 2 (1)
+        Luke 3 (2)
+        Luke 4 ~ Club 300 (3)
+
+    { Luke 1 Luke 2 (1) } { { Luke 3 Luke 4 (2) } } ~ Luke 1:3-4:5
+        Luke 1 Luke 2 (1)
+        Luke 3 Luke 4 (2)
+        ~ Luke 1:3-4:5
+
+    { Luke 1 (1) Luke 2 (3) } (1) { Luke 3 (1) Luke 4 (3) } (2) ~ Luke 1:3-4:5
+        { Luke 1 (1) Luke 2 (3) } (1)
+        { Luke 3 (1) Luke 4 (3) } (2)
+        ~ Luke 1:3-4:5
+
+Explicit parts are defined by curly braces
+Implicit parts are sections of a label separated by an included weight or intersticial action
+
+Set order matters: (the following are not the same)
+    Luke 1 ~ Club 100 John 2 (1) Mark (1)
+    Luke 1; John 2 ~ Club 100 (1) Mark (1)
+
+--------------------------------------------------------------------------------------------------------------
+
+# - If both the parent and child labels lack weights,
+#   replace the child label name with its contents
+#     - Alias: `Luke John`
+#     - Parent Label: `Alias; Acts; Jude`
+#     - Description: `Luke; John; Acts; Jude`
+
+is(
+    $obj->descriptionize('Alias; Acts; Jude'),
+    'Luke; John; Acts; Jude',
+    'both parent and alias without weights',
+);
+
+# - If the parent has weights but the child label lacks weights,
+#   replace the child label name with its contents
+#     - Alias: `Luke John`
+#     - Parent Label: `Alias (1) Acts (2) Jude (3)`
+#     - Description: `Luke; John (1) Acts (2) Jude (3)`
+
+is(
+    $obj->descriptionize('Alias (1) Acts (2) Jude (3)'),
+    'Luke; John (1) Acts (2) Jude (3)',
+    'parent with weights alias without weights',
+);
+
+$obj->user_aliases([
+    {
+        name  => 'Alias',
+        label => 'Luke (1) John (3)',
+    },
+]);
+
+# - If both the parent and child labels have weights,
+#   and the label is the only reference in its range,
+#   proportionally cascade the child label weights
+#     - Alias: `Luke (1) John (3)`
+#     - Parent Label: `Alias (1) Acts (1)`
+#     - Mental Model: `{ Luke (1) John (3) } (1) Acts (1)`
+#     - Description: `Luke (1) John (3) Acts (4)`
+
+is(
+    $obj->descriptionize('Alias (1) Acts (1)'),
+    'Luke (1) John (3) Acts (4)',
+    'both the parent and child labels have weights; solo label reference',
+);
+
+# - If both the parent and child labels have weights,
+#   but the label is not the only reference in its range,
+#   drop the child weights
+#     - Alias: `Luke (1) John (3)`
+#     - Parent Label: `Alias; Acts (1) Jude (1)`
+#     - Description: `Luke; John; Acts (1) Jude (1)`
+
+is(
+    $obj->descriptionize('Alias; Acts (1) Jude (1)'),
+    'Luke; John; Acts (1) Jude (1)',
+    'both the parent and child labels have weights; not solo label reference',
+);
+
+# - If the parent label lacks weights but the child label has weights,
+#   drop the child weights
+#     - Alias: `Luke (1) John (3)`
+#     - Parent Label: `Alias; Acts`
+#     - Description: `Luke; John; Acts`
+
+is(
+    $obj->descriptionize('Alias; Acts'),
+    'Luke; John; Acts',
+    'parent without weights and child with weights',
+);
+
+--------------------------------------------------------------------------------------------------------------
+
+- parse
+- format
+- descriptionize
+
+--------------------------------------------------------------------------------------------------------------
+
+references               <-- anything that fully parses in Bible::Reference
+bibles                   <-- uc acronyms maybe postfixed with *; must have at least 1 primary
+weight       --> (1)     <-- defaults to 1 if a weight doesn't exist for a thing that needs a weight
+block        --> {items} <-- explicit grouping and order of operations
+                             must start with a reference or block
+                             must contain a weight (defaults to 1)
+alias                    <-- named (and saved) block
+
+filter       --> | block
+intersection --> ~ block
+distributive --> / block
+addition     --> +N Verses <-- adds the following N verses to each verse of the preceding block (implicit or explicit)
+
+item                     <-- any: reference, filter, intersection, distributive, addition, block, alias
+
+can contain anything except bibles (must contain a reference or alias)
+
+description  --> can contain only references, weights, and bibles (must have a reference)
+label        --> value of an alias, optionally with a bibles suffix
+
+Meet 2
+Romans 1-5 (1) Romans 6-10 (1) / Club 100 (3) Club 300 (2) All (1)
+
+Preliminary     = "Club 100 (3) Club 300 (2) All (1)"
+Meet 2 Material = "Romans 1-5 (1) Romans 6-10 (1)"
+
+Meet 2 Material / Preliminary
+
+"All", "Full", "Full Material", "Everything", "Each", "Every" <-- text that means each part of the block preceding the distributive
+
+descriptionalization and canonicalization
+    references are biblically sorted (internally), simplified, with full book names
+    weights simplified
+    weight blocks are sorted by reference
+    bibles at the end and sorted primary before auxiliary then alphabetically; must have at least 1 primary
+    multiple filters and intersections in the same context are merged (with filters in front of intersections)
+    anything in a description, alias, or label that isn't understood is ignored/removed
+    everything preceding a weight (up to either another weight or a distributive) is an implicit block
+
+descriptionalization
+    everything not a reference, weight, or bible converted down to these elements
+
+canonicalization
+    remove filters and intersections that don't cause changes
+    unnecessary blocks are removed
+        don't have weights or have only a single weight internally
+        don't have a filter, intersection, distributive, or addition internally
