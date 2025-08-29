@@ -47,14 +47,24 @@ sub editor ($self) {
         if ( not $data->{label} ) {
             $self->flash( memo => { class => 'error', message => 'Unable to parse the material label' } );
         }
-        elsif ( not $self->param('id') ) {
-            $label->create($data);
-        }
         else {
-            $label->load({
-                label_id => $self->param('id'),
-                user_id  => $self->stash('user')->id,
-            })->save($data);
+            try {
+                if ( not $self->param('id') ) {
+                    $label->create($data);
+                }
+                else {
+                    $label->load({
+                        label_id => $self->param('id'),
+                        user_id  => $self->stash('user')->id,
+                    })->save($data);
+                }
+            }
+            catch ($e) {
+                $self->flash( memo => {
+                    class   => 'error',
+                    message => 'Failed to save label (likely due to a name conflict)',
+                } );
+            }
         }
         $self->redirect_to('/label/editor');
     }
