@@ -14,3 +14,4 @@ requires 'Parallel::ForkManager', '2.03';
 requires 'Text::Unidecode', '1.30';
 requires 'exact::fun', '1.01';
 requires 'exact::me', '1.05';
+requires 'Parse::RecDescent';
