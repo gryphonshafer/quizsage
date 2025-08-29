@@ -59,7 +59,7 @@ my $label_prd_obj = Parse::RecDescent->new( q{
         { +{ type => 'intersection', value => $item[2] } }
 
     addition: '+' number maybe_verse_abbrv
-        { +{ type => 'addition', value => $item[2] } }
+        { +{ type => 'addition', amount => $item[2] } }
 
     text: anything_left_over
         { +{ type => 'text', value => $item[1] } }
@@ -146,24 +146,53 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id ) 
         if ( ref $node eq 'ARRAY' ) {
             $nodes->($_) for (@$node);
 
-            # TODO: divisors-ize the weights across any weight_sets
+            # set weights via lowest common denominator (from largest common factor)
+            if ( my @weighted_sets = grep { $_->{type} and $_->{type} eq 'weighted_set' } @$node ) {
+                $_->{weight} =~ s/\D+//g for (@weighted_sets);
+                my %factors;
+                $factors{$_}++ for ( map { divisors( $_->{weight} ) } @weighted_sets );
+                my ($largest_common_factor) =
+                    sort { $b <=> $a }
+                    grep { $factors{$_} == @weighted_sets }
+                    keys %factors;
+                $_->{weight} /= $largest_common_factor for (@weighted_sets);
+
+                # find any text of block nodes after weighted blocks and move them into a weighted block of 1
+                for ( 0 .. $#{$node} ) {
+                    my $this = $node->[$_];
+                    next unless ( $this->{type} and ( $this->{type} eq 'text' or $this->{type} eq 'block' ) );
+
+                    splice( @$node, $_, $#{$node}, {
+                        type   => 'weighted_block',
+                        weight => 1,
+                        parts  => [ @$node[ $_ .. $#{$node} ] ],
+                    } );
+                    last;
+                }
+
+                # remove weight if there's only 1 weighted set of anything that can be weighted in the node
+                my @weighted_set_indexes =
+                    grep { $node->[$_]{type} and $node->[$_]{type} eq 'weighted_set' }
+                    0 .. $#{$node};
+                splice( @$node, $weighted_set_indexes[0], 1, $node->[ $weighted_set_indexes[0] ]{parts}->@* )
+                    if ( @weighted_set_indexes == 1 );
+            }
         }
         elsif ( ref $node eq 'HASH' ) {
-            if ( $node->{type} eq 'weighted_set' ) {
-                # set weights to clean numbers
-                $node->{weight} =~ s/\D+//g;
-                $node->{weight} = 0 + $node->{weight};
-            }
             if (
                 $node->{type} eq 'text' or
                 $node->{type} eq 'filter' or
                 $node->{type} eq 'intersection'
             ) {
-                # clean the spacing of values
-                $node->{value} =~ s/\s+/ /g;
-                $node->{value} =~ s/(?:^\s+|\s+$)//g;
+                while ( $node->{value} =~ s/([\x{E000}-\x{F8FF}])// ) {
+                    if ( my $alias = $tokenized_aliases->[ ord($1) - 57344 ] ) {
+                        # TODO: descriptionalize alias labels
+                        push( $node->{aliases}->@*, { map { $_ => $alias->{$_} } qw( name label ) } );
+                    }
+                }
 
-                # TODO: insert aliases after each is passed through parse()
+                my $refs = $self->bible_ref->clear->simplify(1)->in( delete $node->{value} )->refs;
+                $node->{refs} = $refs if ($refs);
             }
             else {
                 $nodes->( $node->{$_} ) for ( keys %$node );
@@ -175,6 +204,15 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id ) 
     # TODO: optimize
         # remove sections without data (i.e. text sections with values of nothing, blocks with no parts, etc.)
         # remove outer blocks that have nothing but a single inner block
+
+        # Intersections and filters pulled out and canonicalized
+        #     a. All intersection reference sets are merged to a single intersection
+        #     b. All filter reference sets are merged to a single filter
+        #     c. Canonicalize intersections and filters
+        #         i.   Pull out embedded labels
+        #         ii.  Reference canonicalize remaining text (no acronyms, sorting, add detail, simplify)
+        #         iii. Append sorted embedded labels
+        #     d. If there is both an intersection and a filter, the intersection is listed first
 
     $data->{bibles} = $bibles if ($bibles);
     return $data;
