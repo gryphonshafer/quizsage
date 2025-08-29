@@ -4,6 +4,7 @@ use exact -class;
 use Bible::Reference;
 use Math::Prime::Util 'divisors';
 use Mojo::JSON qw( to_json from_json );
+use Parse::RecDescent;
 
 with 'Omniframe::Role::Model';
 
@@ -31,6 +32,45 @@ has 'bibles' => sub ($self) {
         ORDER BY LENGTH(acronym) DESC, acronym
     })->run->all({});
 };
+
+my $label_prd_obj = Parse::RecDescent->new( q{
+    label: distributive | part(s)
+
+    distributive: part(s) '/' part(s)
+        { [ +{ type => $item[0], prefix => $item[1], suffix => $item[3] } ] }
+
+    part: weighted_set | block | filter | intersection | addition | text
+        { $item[1] }
+
+    weighted_set: weighted_parts '(' weight ')'
+        { +{ type => $item[0], parts => $item[1], weight => $item[3] } }
+
+    weighted_parts: ( block | filter | intersection | addition | text )(s)
+
+    weight: contains_a_number
+
+    block: '[' label ']'
+        { +{ type => $item[0], parts => $item[2] } }
+
+    filter: '|' anything_left_over
+        { +{ type => 'filter', value => $item[2] } }
+
+    intersection: '~' anything_left_over
+        { +{ type => 'intersection', value => $item[2] } }
+
+    addition: '+' number maybe_verse_abbrv
+        { +{ type => 'addition', value => $item[2] } }
+
+    text: anything_left_over
+        { +{ type => 'text', value => $item[1] } }
+
+    contains_a_number : /(?=.*\d)[^)]*/
+    anything_left_over: /[^\/\[\]|~\(\)\+]+/
+    number            : /\d+/
+    maybe_verse_abbrv : /(?:v[ers]+)?/i
+    start             : label /\Z/
+        { +{ type => 'label', parts => $item[1] } }
+} );
 
 sub aliases ( $self, $user_id = $self->user_id ) {
     return $self->dq->get(
@@ -66,6 +106,78 @@ sub identify_aliases ( $self, $string = '', $user_id = $self->user_id ) {
         map { $_->{name} }
         $self->aliases->@*
     ];
+}
+
+sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id ) {
+    return {} unless ( defined $input );
+
+    # get aliases
+    my $aliases =
+        ( $self->user_aliases and $user_id and $self->user_id and $user_id == $self->user_id )
+            ? $self->user_aliases :
+        ( not $self->user_aliases and $user_id and $self->user_id and $user_id == $self->user_id )
+            ? $self->user_aliases( $self->aliases($user_id) )->user_aliases :
+            $self->aliases($user_id);
+
+    # tokenize any aliases
+    my $tokenized_aliases = [];
+    for my $alias (@$aliases) {
+        ( my $regex_core = quotemeta( $alias->{name} ) ) =~ s/\s+/s+/g;
+        my $chr = chr( 57344 + @$tokenized_aliases );
+        push( @$tokenized_aliases, $alias ) if ( $input =~ s/(?<=^|\b|\W)$regex_core(?=$|\b|\W)/ $chr /gi );
+    }
+
+    # store off any bibles
+    my $bibles;
+    if ( ref $self->bible_acronyms eq 'ARRAY' and $self->bible_acronyms->@* ) {
+        my $bible_re = '\b(?<bible>(?:' . join( '|', $self->bible_acronyms->@* ) . ')(?:(?:\s*\*+)|\b))';
+        while ( $input =~ s/$bible_re//i ) {
+            my $bible = uc $+{bible};
+            $bibles->{ ( $bible =~ s/\s*\*+// ) ? 'auxiliary' : 'primary' }{$bible} = 1;
+        }
+    }
+
+    # parse input into a data structure
+    my $data = $label_prd_obj->start($input) // {};
+
+    # cleanup nodes of the data structure
+    my $nodes;
+    $nodes = sub ($node) {
+        if ( ref $node eq 'ARRAY' ) {
+            $nodes->($_) for (@$node);
+
+            # TODO: divisors-ize the weights across any weight_sets
+        }
+        elsif ( ref $node eq 'HASH' ) {
+            if ( $node->{type} eq 'weighted_set' ) {
+                # set weights to clean numbers
+                $node->{weight} =~ s/\D+//g;
+                $node->{weight} = 0 + $node->{weight};
+            }
+            if (
+                $node->{type} eq 'text' or
+                $node->{type} eq 'filter' or
+                $node->{type} eq 'intersection'
+            ) {
+                # clean the spacing of values
+                $node->{value} =~ s/\s+/ /g;
+                $node->{value} =~ s/(?:^\s+|\s+$)//g;
+
+                # TODO: insert aliases after each is passed through parse()
+            }
+            else {
+                $nodes->( $node->{$_} ) for ( keys %$node );
+            }
+        }
+    };
+    $nodes->($data);
+
+    # TODO: optimize
+        # remove sections without data (i.e. text sections with values of nothing, blocks with no parts, etc.)
+        # remove outer blocks that have nothing but a single inner block
+
+    $data->{bibles} = $bibles if ($bibles);
+    return $data;
 }
 
 sub parse ( $self, $input = $self->data->{label}, $user_id = undef ) {

@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-use exact -conf, -fun;
+use exact -conf;
 use DDP;
 use lib '.';
 use Label_v2;
