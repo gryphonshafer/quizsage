@@ -111,7 +111,7 @@ sub identify_aliases ( $self, $string = '', $user_id = $self->user_id ) {
 sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $aliases = undef ) {
     return {} unless ( defined $input );
 
-    # get aliases
+    # get aliases to use for this parsing
     $aliases //=
         ( $self->user_aliases and $user_id and $self->user_id and $user_id == $self->user_id )
             ? $self->user_aliases :
@@ -138,93 +138,122 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
     }
 
     # parse input into a data structure
-    my $data = $label_prd_obj->start($input) // {};
+    my $data = $label_prd_obj->start($input);
+    return { error => 'Failed to parse input string' } unless $data;
 
     # cleanup nodes of the data structure
-    my $nodes;
-    $nodes = sub ($node) {
-        if ( ref $node eq 'ARRAY' ) {
-            $nodes->($_) for (@$node);
+    try {
+        my $nodes;
+        $nodes = sub ($node) {
+            if ( ref $node eq 'ARRAY' ) {
+                $nodes->($_) for (@$node);
 
-            # set weights via lowest common denominator (from largest common factor)
-            if ( my @weighted_sets = grep { $_->{type} and $_->{type} eq 'weighted_set' } @$node ) {
-                $_->{weight} =~ s/\D+//g for (@weighted_sets);
-                my %factors;
-                $factors{$_}++ for ( map { divisors( $_->{weight} ) } @weighted_sets );
-                my ($largest_common_factor) =
-                    sort { $b <=> $a }
-                    grep { $factors{$_} == @weighted_sets }
-                    keys %factors;
-                $_->{weight} /= $largest_common_factor for (@weighted_sets);
+                # set weights via lowest common denominator (from largest common factor)
+                if ( my @weighted_sets = grep { $_->{type} and $_->{type} eq 'weighted_set' } @$node ) {
+                    $_->{weight} =~ s/\D+//g for (@weighted_sets);
+                    my %factors;
+                    $factors{$_}++ for ( map { divisors( $_->{weight} ) } @weighted_sets );
+                    my ($largest_common_factor) =
+                        sort { $b <=> $a }
+                        grep { $factors{$_} == @weighted_sets }
+                        keys %factors;
+                    $_->{weight} /= $largest_common_factor for (@weighted_sets);
 
-                # find any text of block nodes after weighted blocks and move them into a weighted block of 1
-                for ( 0 .. $#{$node} ) {
-                    my $this = $node->[$_];
-                    next unless ( $this->{type} and ( $this->{type} eq 'text' or $this->{type} eq 'block' ) );
+                    # find any text of block nodes after weighted blocks and move into a weighted block of 1
+                    for ( 0 .. $#{$node} ) {
+                        my $this = $node->[$_];
+                        next unless (
+                            $this->{type} and
+                            ( $this->{type} eq 'text' or $this->{type} eq 'block' )
+                        );
 
-                    splice( @$node, $_, $#{$node}, {
-                        type   => 'weighted_block',
-                        weight => 1,
-                        parts  => [ @$node[ $_ .. $#{$node} ] ],
-                    } );
-                    last;
-                }
-
-                # remove weight if there's only 1 weighted set of anything that can be weighted in the node
-                my @weighted_set_indexes =
-                    grep { $node->[$_]{type} and $node->[$_]{type} eq 'weighted_set' }
-                    0 .. $#{$node};
-                splice( @$node, $weighted_set_indexes[0], 1, $node->[ $weighted_set_indexes[0] ]{parts}->@* )
-                    if ( @weighted_set_indexes == 1 );
-            }
-        }
-        elsif ( ref $node eq 'HASH' ) {
-            if (
-                $node->{type} and (
-                    $node->{type} eq 'text' or
-                    $node->{type} eq 'filter' or
-                    $node->{type} eq 'intersection'
-                )
-            ) {
-                while ( $node->{value} =~ s/([\x{E000}-\x{F8FF}])// ) {
-                    if ( my $alias = $tokenized_aliases->[ ord($1) - 57344 ] ) {
-                        try {
-                            use warnings FATAL => 'recursion';
-                            $alias->{value} //= $self->__parse( $alias->{label}, undef, $aliases );
-                        }
-                        catch ($e) {
-                            die "Aliases reference each other to cause deep recursion\n"
-                                if ( index( $e, 'Deep recursion ' ) == 0 );
-                            die $e;
-                        }
-
-                        push( $node->{aliases}->@*, { map { $_ => $alias->{$_} } qw( name label value ) } );
+                        splice( @$node, $_, $#{$node}, {
+                            type   => 'weighted_block',
+                            weight => 1,
+                            parts  => [ @$node[ $_ .. $#{$node} ] ],
+                        } );
+                        last;
                     }
+
+                    # remove weight if there's only 1 weighted set of anything that can be weighted in node
+                    my @weighted_set_indexes =
+                        grep { $node->[$_]{type} and $node->[$_]{type} eq 'weighted_set' }
+                        0 .. $#{$node};
+                    splice(
+                        @$node,
+                        $weighted_set_indexes[0],
+                        1,
+                        $node->[ $weighted_set_indexes[0] ]{parts}->@*,
+                    ) if ( @weighted_set_indexes == 1 );
                 }
-
-                # canonicalize refs
-                my $refs = $self->bible_ref->clear->simplify(1)->in( delete $node->{value} )->refs;
-                $node->{refs} = $refs if ($refs);
             }
-            else {
-                $nodes->( $node->{$_} ) for ( keys %$node );
+            elsif ( ref $node eq 'HASH' ) {
+                if (
+                    $node->{type} and (
+                        $node->{type} eq 'text' or
+                        $node->{type} eq 'filter' or
+                        $node->{type} eq 'intersection'
+                    )
+                ) {
+                    die 'Failed to parse ' . $node->{type} . ' node' unless ( defined $node->{value} );
+
+                    # detokenize any aliases
+                    while ( $node->{value} =~ s/([\x{E000}-\x{F8FF}])// ) {
+                        if ( my $alias = $tokenized_aliases->[ ord($1) - 57344 ] ) {
+                            {
+                                use warnings FATAL => 'recursion';
+                                $alias->{value} //= $self->__parse( $alias->{label}, undef, $aliases );
+                            }
+                            push( $node->{aliases}->@*, {
+                                map { $_ => $alias->{$_} } qw( name label value )
+                            } );
+                        }
+                    }
+                    # sort any aliases by name
+                    $node->{aliases} = [ sort {
+                        $a->{name} cmp $b->{name}
+                    } $node->{aliases}->@* ] if ( $node->{aliases} );
+
+                    $node->{special} = 'All' if ( $node->{value} =~ s/\b(?:
+                        All|
+                        Full|
+                        Full\s+Material|
+                        Everything|
+                        Each|
+                        Every
+                    )\b//ix );
+
+                    # canonicalize refs
+                    my $refs = $self->bible_ref->clear->simplify(1)->in( delete $node->{value} )->refs;
+                    $node->{refs} = $refs if ($refs);
+
+                    die 'Failed to parse ' . $node->{type} . ' node'
+                        unless ( $node->{refs} or $node->{aliases} or $node->{special} );
+                }
+                else {
+                    $nodes->( $node->{$_} ) for ( keys %$node );
+                }
             }
-        }
-    };
-    $nodes->($data);
+        };
+        $nodes->($data);
+    }
+    catch ($e) {
+        return {
+            error => (
+                ( index( $e, 'Deep recursion ' ) == 0 )
+                    ? 'Aliases reference each other to cause deep recursion'
+                    : deat $e,
+            ),
+        };
+    }
 
-    # TODO: optimize
-        # remove sections without data (i.e. text sections with values of nothing, blocks with no parts, etc.)
-        # remove outer blocks that have nothing but a single inner block
-
-        # Intersections and filters pulled out and canonicalized
-        #     a. All intersection reference sets are merged to a single intersection
-        #     b. All filter reference sets are merged to a single filter
-        #     c. Canonicalize intersections and filters
-        #         i.   Pull out embedded labels
-        #         ii.  Reference canonicalize remaining text (no acronyms, sorting, add detail, simplify)
-        #         iii. Append sorted embedded labels
-        #     d. If there is both an intersection and a filter, the intersection is listed first
+    # TODO: simplify
+        # block that wraps only a single block removed
+        # block that doesn't need to be a block de-blocked
+            # dn't have weights or have only a single weight internally
+            # dn't have a filter, intersection, distributive, or addition internally
+        # multiple intersections and/or filters in a single scope merged to a single intersection and/or filter
+        # remove filters and intersections that don't cause changes
 
     $data->{bibles} = $bibles if ($bibles);
     return $data;
