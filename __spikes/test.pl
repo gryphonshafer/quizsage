@@ -1,7 +1,10 @@
 #!/usr/bin/env perl
 use exact -conf;
-use DDP;
 use QuizSage::Model::Label;
+use DDP;
+use YAML::XS 'Dump';
+
+local $YAML::XS::Indent = 4;
 
 my $label = QuizSage::Model::Label->new(
     user_id      => 1,
@@ -50,6 +53,7 @@ for (
 ) {
     say '>>> ' . $_;
     my $r = $label->__parse($_); #. ' ESV NIV NIV84*' );
-    p $r;
-    <STDIN>;
+    # say Dump $r;
+    say Dump $r if ( $r->{error} );
+    # <STDIN>;
 }
