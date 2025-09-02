@@ -108,11 +108,11 @@ sub identify_aliases ( $self, $string = '', $user_id = $self->user_id ) {
     ];
 }
 
-sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id ) {
+sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $aliases = undef ) {
     return {} unless ( defined $input );
 
     # get aliases
-    my $aliases =
+    $aliases //=
         ( $self->user_aliases and $user_id and $self->user_id and $user_id == $self->user_id )
             ? $self->user_aliases :
         ( not $self->user_aliases and $user_id and $self->user_id and $user_id == $self->user_id )
@@ -180,17 +180,29 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id ) 
         }
         elsif ( ref $node eq 'HASH' ) {
             if (
-                $node->{type} eq 'text' or
-                $node->{type} eq 'filter' or
-                $node->{type} eq 'intersection'
+                $node->{type} and (
+                    $node->{type} eq 'text' or
+                    $node->{type} eq 'filter' or
+                    $node->{type} eq 'intersection'
+                )
             ) {
                 while ( $node->{value} =~ s/([\x{E000}-\x{F8FF}])// ) {
                     if ( my $alias = $tokenized_aliases->[ ord($1) - 57344 ] ) {
-                        # TODO: descriptionalize alias labels
-                        push( $node->{aliases}->@*, { map { $_ => $alias->{$_} } qw( name label ) } );
+                        try {
+                            use warnings FATAL => 'recursion';
+                            $alias->{value} //= $self->__parse( $alias->{label}, undef, $aliases );
+                        }
+                        catch ($e) {
+                            die "Aliases reference each other to cause deep recursion\n"
+                                if ( index( $e, 'Deep recursion ' ) == 0 );
+                            die $e;
+                        }
+
+                        push( $node->{aliases}->@*, { map { $_ => $alias->{$_} } qw( name label value ) } );
                     }
                 }
 
+                # canonicalize refs
                 my $refs = $self->bible_ref->clear->simplify(1)->in( delete $node->{value} )->refs;
                 $node->{refs} = $refs if ($refs);
             }
