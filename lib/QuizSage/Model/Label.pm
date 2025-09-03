@@ -262,9 +262,23 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
 
     # simplify nodes of the data structure
     my $simplify_nodes;
-    $simplify_nodes = sub ( $node, @parents ) {
+    $simplify_nodes = sub ($node) {
         if ( ref $node eq 'ARRAY' ) {
-            $simplify_nodes->( $_, $node, @parents ) for (@$node);
+            $simplify_nodes->($_) for (@$node);
+
+            # block that doesn't need to be a block de-blocked
+            splice( @$node, $_, 1, $node->[$_]{parts}->@* ) for (
+                grep {
+                    $node->[$_]{type} and $node->[$_]{type} eq 'block' and
+                    not grep {
+                        $_->{type} eq 'filter' or
+                        $_->{type} eq 'intersection' or
+                        $_->{type} eq 'addition' or
+                        $_->{type} eq 'distributive'
+                    } $node->[$_]{parts}->@*
+                }
+                0 .. $#{$node}
+            );
         }
         elsif ( ref $node eq 'HASH' ) {
             # block that wraps only a single block removed
@@ -274,18 +288,14 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
                 $node->{parts}[0]{type} and $node->{parts}[0]{type} eq 'block'
             );
 
-            # TODO:
-            # block that doesn't need to be a block de-blocked
-                # doesn't have weights or have only a single weight internally
-                # doesn't have a filter, intersection, distributive, or addition internally
-            if ( $node->{type} and $node->{type} eq 'block' ) {
-                # TODO:
-            }
+            # MAYBE TODO: block that doesn't need to be a block de-blocked
+            # that doesn't have weights or have only a single weight internally
 
             # TODO: multiple intersections and/or filters in a single scope merged to a single intersection and/or filter
+
             # TODO: remove filters and intersections that don't cause changes
 
-            $simplify_nodes->( $node->{$_}, $node, @parents ) for ( keys %$node );
+            $simplify_nodes->( $node->{$_} ) for ( keys %$node );
         }
     };
     $simplify_nodes->($data);
