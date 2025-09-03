@@ -1,0 +1,396 @@
+---
+aliases:
+  - name: Club (10)
+    label: Romans 1:1-10
+  - name: Club [20]
+    label: Romans 1:1-20
+  - name: Club <30>
+    label: Romans 1:1-30
+  - name: Very Early Cor
+    label: 1 Corinthians 1-2
+  - name: Early Cor
+    label: 1 Corinthians 3-4; Very Early Cor
+
+cases:
+  - input: >
+        Romans 1-3; James 1:2-2:12
+    # canonical: >
+        #
+    parse:
+        type: label
+        parts:
+          - type: text
+            refs: Romans 1-3; James 1:2-27; 2:1-12
+
+  - input: >
+        Romans 1-3 (40%) James 1:2-2:12 (60%)
+    # canonical: >
+        #
+    parse:
+        type: label
+        parts:
+          - type: weighted_set
+            weight: 2
+            parts:
+              - type: text
+                refs: Romans 1-3
+          - type: weighted_set
+            weight: 3
+            parts:
+              - type: text
+                refs: James 1:2-27; 2:1-12
+
+  - input: >
+        Romans 1-3; James 1:2-2:12 | Romans 2-6
+    # canonical: >
+        #
+    parse:
+        type: label
+        parts:
+          - type: text
+            refs: Romans 1-3; James 1:2-27; 2:1-12
+          - type: filter
+            refs: Romans 2-6
+
+  - input: >
+        Romans 1-3 (40%) James 1:2-2:12 (60%) Romans 2-6 [ Romans 2-6 ]
+    # canonical: >
+        #
+    parse:
+        type: label
+        parts:
+          - type: weighted_set
+            weight: 2
+            parts:
+              - type: text
+                refs: Romans 1-3
+          - type: weighted_set
+            weight: 3
+            parts:
+              - type: text
+                refs: James 1:2-27; 2:1-12
+          - type: weighted_block
+            weight: 1
+            parts:
+              - type: text
+                refs: Romans 2-6
+              - type: block
+                parts:
+                  - refs: Romans 2-6
+                    type: text
+
+  - input: >
+        Romans 1-3 (40%) James 1:2-2:12 (60%) ~ Romans 2-6
+    # canonical: >
+        #
+    parse:
+        type: label
+        parts:
+          - type: weighted_set
+            weight: 2
+            parts:
+              - type: text
+                refs: Romans 1-3
+          - type: weighted_set
+            weight: 3
+            parts:
+              - type: text
+                refs: James 1:2-27; 2:1-12
+          - type: intersection
+            refs: Romans 2-6
+
+  - input: >
+        Romans 1-5 ~ Romans 4-7 (1)
+    # canonical: >
+        #
+    parse:
+        type: label
+        parts:
+          - type: text
+            refs: Romans 1-5
+          - type: intersection
+            refs: Romans 4-7
+
+  - input: >
+        Romans 1-3 ~ Romans 2-6 (40%) James 1:2-2:12 +1 verse (60%)
+    # canonical: >
+        #
+    parse:
+        type: label
+        parts:
+          - type: weighted_set
+            weight: 2
+            parts:
+              - type: text
+                refs: Romans 1-3
+              - type: intersection
+                refs: Romans 2-6
+          - type: weighted_set
+            weight: 3
+            parts:
+              - type: text
+                refs: James 1:2-27; 2:1-12
+              - type: addition
+                amount: 1
+
+  - input: >
+        [ Romans 1-5 (30%) Romans 6-10 (70%) ] +1 Verse
+    # canonical: >
+        #
+    parse:
+        type: label
+        parts:
+          - type: block
+            parts:
+              - type: weighted_set
+                weight: 3
+                parts:
+                  - type: text
+                    refs: Romans 1-5
+              - type: weighted_set
+                weight: 7
+                parts:
+                  - type: text
+                    refs: Romans 6-10
+          - type: addition
+            amount: 1
+
+  - input: >
+        Romans 1-5 [ Romans 6-10 | Romans 18 ] ~ Romans 4-7
+    # canonical: >
+        #
+    parse:
+        type: label
+        parts:
+          - type: text
+            refs: Romans 1-5
+          - type: block
+            parts:
+              - type: text
+                refs: Romans 6-10
+              - type: filter
+                refs: Romans 18
+          - type: intersection
+            refs: Romans 4-7
+
+  - input: >
+        Romans 1-5 (3) [ [ Romans 6-10 ] | Romans 18 ] (1) ~ Romans 4-7
+    # canonical: >
+        #
+    parse:
+        type: label
+        parts:
+          - type: weighted_set
+            weight: 3
+            parts:
+              - type: text
+                refs: Romans 1-5
+          - type: weighted_set
+            weight: 1
+            parts:
+              - type: block
+                parts:
+                  - type: block
+                    parts:
+                      - type: text
+                        refs: Romans 6-10
+                  - type: filter
+                    refs: Romans 18
+          - type: intersection
+            refs: Romans 4-7
+
+  - input: >
+        1 Cor | Early Cor
+    # canonical: >
+        #
+    parse:
+        type: label
+        parts:
+          - type: text
+            refs: 1 Corinthians
+          - type: filter
+            aliases:
+              - name: Early Cor
+                label: 1 Corinthians 3-4; Very Early Cor
+                value:
+                    type: label
+                    parts:
+                      - type: text
+                        refs: 1 Corinthians 3-4
+                        aliases:
+                          - name: Very Early Cor
+                            label: 1 Corinthians 1-2
+                            value:
+                                type: label
+                                parts:
+                                  - type: text
+                                    refs: 1 Corinthians 1-2
+
+  - input: >
+        James 2; Club (10); Romans 2 ~ Romans 1-3; Club [20]; James 1-3
+    # canonical: >
+        #
+    parse:
+        type: label
+        parts:
+          - type: text
+            refs: Romans 2; James 2
+            aliases:
+              - name: Club (10)
+                label: Romans 1:1-10
+                value:
+                    type: label
+                    parts:
+                      - type: text
+                        refs: Romans 1:1-10
+          - type: intersection
+            refs: Romans 1-3; James 1-3
+            aliases:
+              - name: Club [20]
+                label: Romans 1:1-20
+                value:
+                    type: label
+                    parts:
+                      - type: text
+                        refs: Romans 1:1-20
+
+  - input: >
+        Romans 1 (1) / Club (10) (1)
+    # canonical: >
+        #
+    parse:
+        type: label
+        parts:
+          - type: distributive
+            prefix:
+              - type: text
+                refs: Romans 1
+            suffix:
+              - type: text
+                aliases:
+                  - name: Club (10)
+                    label: Romans 1:1-10
+                    value:
+                        type: label
+                        parts:
+                          - type: text
+                            refs: Romans 1:1-10
+
+  - input: >
+        Romans 1-5 (1) Romans 6-10 (2) / Club (10) (3) All (4)
+    # canonical: >
+        #
+    parse:
+        type: label
+        parts:
+          - type: distributive
+            prefix:
+              - type: weighted_set
+                weight: 1
+                parts:
+                  - type: text
+                    refs: Romans 1-5
+              - type: weighted_set
+                weight: 2
+                parts:
+                  - type: text
+                    refs: Romans 6-10
+            suffix:
+              - type: weighted_set
+                weight: 3
+                parts:
+                  - type: text
+                    aliases:
+                      - name: Club (10)
+                        label: Romans 1:1-10
+                        value:
+                            type: label
+                            parts:
+                              - type: text
+                                refs: Romans 1:1-10
+              - type: weighted_set
+                weight: 4
+                parts:
+                  - type: text
+                    special: All
+
+  - input: >
+        Romans 1-5 (1) Romans 6-10 (2) [ Romans 11-13 (3) / Club (10) (4) All (5) ]
+    # canonical: >
+        #
+    parse:
+        type: label
+        parts:
+          - type: weighted_set
+            weight: 1
+            parts:
+              - type: text
+                refs: Romans 1-5
+          - type: weighted_set
+            weight: 2
+            parts:
+              - type: text
+                refs: Romans 6-10
+          - type: weighted_block
+            weight: 1
+            parts:
+              - type: block
+                parts:
+                  - type: distributive
+                    prefix:
+                      - type: text
+                        refs: Romans 11-13
+                    suffix:
+                      - type: weighted_set
+                        weight: 4
+                        parts:
+                          - type: text
+                            aliases:
+                              - name: Club (10)
+                                label: Romans 1:1-10
+                                value:
+                                    type: label
+                                    parts:
+                                      - type: text
+                                        refs: Romans 1:1-10
+                      - type: weighted_set
+                        weight: 5
+                        parts:
+                          - type: text
+                            special: All
+
+  - input: >
+        [ Romans 1 (1) / Club (10) (1) ] / Club [20] (2)
+    # canonical: >
+        #
+    parse:
+        type: label
+        parts:
+          - type: distributive
+            prefix:
+              - type: block
+                parts:
+                  - type: distributive
+                    prefix:
+                      - type: text
+                        refs: Romans 1
+                    suffix:
+                      - type: text
+                        aliases:
+                          - name: Club (10)
+                            label: Romans 1:1-10
+                            value:
+                                type: label
+                                parts:
+                                  - type: text
+                                    refs: Romans 1:1-10
+            suffix:
+              - type: text
+                aliases:
+                  - name: Club [20]
+                    label: Romans 1:1-20
+                    value:
+                        type: label
+                        parts:
+                          - type: text
+                            refs: Romans 1:1-20
