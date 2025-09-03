@@ -258,10 +258,8 @@ cases:
               - type: weighted_set
                 weight: 1
                 parts:
-                  - type: block                                                 # TODO: remove this block
-                    parts:
-                      - type: text
-                        refs: Romans 5-6
+                  - type: text
+                    refs: Romans 5-6
 
       - name: remove weight if there's only 1 weighted set
         input: >-
@@ -273,15 +271,21 @@ cases:
 
     simplify:
 
+      - name: block that doesn't need to be a block
+        input: >-
+            [ Rom 1-2 ]
+        parse:
+            parts:
+              - type: text
+                refs: Romans 1-2
+
       - name: block that wraps only a single block
         input: >-
             [ [ Rom 1-2 ] (1) ] (1)
         parse:
             parts:
-              - type: block
-                parts:
-                  - type: text
-                    refs: Romans 1-2
+              - type: text
+                refs: Romans 1-2
 
 #-------------------------------------------------------------------------------------------------------------
 
