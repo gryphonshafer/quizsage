@@ -143,10 +143,10 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
 
     # cleanup nodes of the data structure
     try {
-        my $nodes;
-        $nodes = sub ($node) {
+        my $cleanup_nodes;
+        $cleanup_nodes = sub ($node) {
             if ( ref $node eq 'ARRAY' ) {
-                $nodes->($_) for (@$node);
+                $cleanup_nodes->($_) for (@$node);
 
                 # set weights via lowest common denominator (from largest common factor)
                 if ( my @weighted_sets = grep { $_->{type} and $_->{type} eq 'weighted_set' } @$node ) {
@@ -177,7 +177,12 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
 
                     # remove weight if there's only 1 weighted set of anything that can be weighted in node
                     my @weighted_set_indexes =
-                        grep { $node->[$_]{type} and $node->[$_]{type} eq 'weighted_set' }
+                        grep {
+                            $node->[$_]{type} and (
+                                $node->[$_]{type} eq 'weighted_set' or
+                                $node->[$_]{type} eq 'weighted_block'
+                            )
+                        }
                         0 .. $#{$node};
                     splice(
                         @$node,
@@ -189,11 +194,9 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
             }
             elsif ( ref $node eq 'HASH' ) {
                 if (
-                    $node->{type} and (
-                        $node->{type} eq 'text' or
-                        $node->{type} eq 'filter' or
-                        $node->{type} eq 'intersection'
-                    )
+                    $node->{type} eq 'text' or
+                    $node->{type} eq 'filter' or
+                    $node->{type} eq 'intersection'
                 ) {
                     die 'Failed to parse ' . $node->{type} . ' node' unless ( defined $node->{value} );
 
@@ -231,11 +234,11 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
                         unless ( $node->{refs} or $node->{aliases} or $node->{special} );
                 }
                 else {
-                    $nodes->( $node->{$_} ) for ( keys %$node );
+                    $cleanup_nodes->( $node->{$_} ) for ( keys %$node );
                 }
             }
         };
-        $nodes->($data);
+        $cleanup_nodes->($data);
     }
     catch ($e) {
         return {
@@ -247,13 +250,35 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
         };
     }
 
-    # TODO: simplify
-        # block that wraps only a single block removed
-        # block that doesn't need to be a block de-blocked
-            # dn't have weights or have only a single weight internally
-            # dn't have a filter, intersection, distributive, or addition internally
-        # multiple intersections and/or filters in a single scope merged to a single intersection and/or filter
-        # remove filters and intersections that don't cause changes
+    # simplify nodes of the data structure
+    my $simplify_nodes;
+    $simplify_nodes = sub ( $node, @parents ) {
+        if ( ref $node eq 'ARRAY' ) {
+            $simplify_nodes->( $_, $node, @parents ) for (@$node);
+        }
+        elsif ( ref $node eq 'HASH' ) {
+            # block that wraps only a single block removed
+            $node->{parts} = $node->{parts}[0]{parts} while (
+                $node->{type} and $node->{type} eq 'block' and
+                $node->{parts}->@* == 1 and
+                $node->{parts}[0]{type} and $node->{parts}[0]{type} eq 'block'
+            );
+
+            # TODO:
+            # block that doesn't need to be a block de-blocked
+                # doesn't have weights or have only a single weight internally
+                # doesn't have a filter, intersection, distributive, or addition internally
+            if ( $node->{type} and $node->{type} eq 'block' ) {
+                # TODO:
+            }
+
+            # TODO: multiple intersections and/or filters in a single scope merged to a single intersection and/or filter
+            # TODO: remove filters and intersections that don't cause changes
+
+            $simplify_nodes->( $node->{$_}, $node, @parents ) for ( keys %$node );
+        }
+    };
+    $simplify_nodes->($data);
 
     $data->{bibles} = $bibles if ($bibles);
     return $data;
