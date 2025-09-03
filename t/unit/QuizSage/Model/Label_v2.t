@@ -13,11 +13,18 @@ $obj->bible_acronyms( [ qw( ESV NASB NIV NIV84 ) ] );
 $obj->user_id(1);
 $obj->user_aliases( $test_data->{aliases} );
 
-for ( $test_data->{cases}->@* ) {
-    my $parse = $obj->__parse( $_->{input} );
-    # warn YAML::XS::Dump($parse) . "\n";
-    is( $parse, $_->{parse}, 'Parse: ' . $_->{input} );
-    # is( $obj->__canonicalize($parse), $_->{canonical}, 'Canonical: ' . $_->{canonical} );
+for my $case_set_name ( sort keys $test_data->{cases}->%* ) {
+    for my $case ( $test_data->{cases}{$case_set_name}->@* ) {
+        my $parse = $obj->__parse( $case->{input} );
+        # warn YAML::XS::Dump($parse) . "\n";
+        is(
+            $parse,
+            $case->{parse},
+            'Parse: ' .
+                ucfirst($case_set_name) . ' - ' .
+                ucfirst( $case->{name} ) . ' = "' . $case->{input} . '"',
+        );
+    }
 }
 
 done_testing;

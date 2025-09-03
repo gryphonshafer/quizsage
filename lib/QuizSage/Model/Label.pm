@@ -136,12 +136,17 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
             $bibles->{ ( $bible =~ s/\s*\*+// ) ? 'auxiliary' : 'primary' }{$bible} = 1;
         }
     }
+    if ($bibles) {
+        $bibles->{primary}   = [ sort keys $bibles->{primary}->%*   ] if ( $bibles->{primary}   );
+        $bibles->{auxiliary} = [ sort keys $bibles->{auxiliary}->%* ] if ( $bibles->{auxiliary} );
+    }
 
     # parse input into a data structure
     my $data = $label_prd_obj->start($input);
     return { error => 'Failed to parse input string' } unless $data;
 
     # cleanup nodes of the data structure
+    $data = $data->{parts};
     try {
         my $cleanup_nodes;
         $cleanup_nodes = sub ($node) {
@@ -159,7 +164,7 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
                         keys %factors;
                     $_->{weight} /= $largest_common_factor for (@weighted_sets);
 
-                    # find any text of block nodes after weighted blocks and move into a weighted block of 1
+                    # find any text or block nodes after weighted blocks and move into a weighted block of 1
                     for ( 0 .. $#{$node} ) {
                         my $this = $node->[$_];
                         next unless (
@@ -168,7 +173,7 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
                         );
 
                         splice( @$node, $_, $#{$node}, {
-                            type   => 'weighted_block',
+                            type   => 'weighted_set',
                             weight => 1,
                             parts  => [ @$node[ $_ .. $#{$node} ] ],
                         } );
@@ -177,12 +182,7 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
 
                     # remove weight if there's only 1 weighted set of anything that can be weighted in node
                     my @weighted_set_indexes =
-                        grep {
-                            $node->[$_]{type} and (
-                                $node->[$_]{type} eq 'weighted_set' or
-                                $node->[$_]{type} eq 'weighted_block'
-                            )
-                        }
+                        grep { $node->[$_]{type} and $node->[$_]{type} eq 'weighted_set' }
                         0 .. $#{$node};
                     splice(
                         @$node,
@@ -205,17 +205,27 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
                         if ( my $alias = $tokenized_aliases->[ ord($1) - 57344 ] ) {
                             {
                                 use warnings FATAL => 'recursion';
-                                $alias->{value} //= $self->__parse( $alias->{label}, undef, $aliases );
+                                $alias->{parts} //= $self->__parse( $alias->{label}, undef, $aliases )->{parts};
                             }
                             push( $node->{aliases}->@*, {
-                                map { $_ => $alias->{$_} } qw( name label value )
+                                map { $_ => $alias->{$_} } qw( name label parts )
                             } );
                         }
                     }
+
                     # sort any aliases by name
-                    $node->{aliases} = [ sort {
-                        $a->{name} cmp $b->{name}
-                    } $node->{aliases}->@* ] if ( $node->{aliases} );
+                    $node->{aliases} = [
+                        map { $_->[1] }
+                        sort {
+                            $a->[0] cmp $b->[0] or
+                            $a->[1]{name} cmp $b->[1]{name}
+                        }
+                        map {
+                            ( my $sort = $_->{name} ) =~ s/[^\w\s]+//g;
+                            [ $sort, $_ ];
+                        }
+                        $node->{aliases}->@*
+                    ] if ( $node->{aliases} );
 
                     $node->{special} = 'All' if ( $node->{value} =~ s/\b(?:
                         All|
@@ -280,8 +290,10 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
     };
     $simplify_nodes->($data);
 
-    $data->{bibles} = $bibles if ($bibles);
-    return $data;
+    return {
+        parts        => $data,
+        maybe bibles => $bibles,
+    }
 }
 
 sub parse ( $self, $input = $self->data->{label}, $user_id = undef ) {
