@@ -13,7 +13,7 @@ aliases:
 
 cases:
 
-    - basic:
+  - basic:
 
       - name: references
         input: >-
@@ -216,7 +216,7 @@ cases:
                       - type: text
                         special: All
 
-    - cleanup:
+  - cleanup:
 
       - name: set weights via lowest common denominator
         input: >-
@@ -284,7 +284,7 @@ cases:
               - type: text
                 refs: Romans 1-2
 
-    - simplify:
+  - simplify:
 
       - name: block that doesn't need to be a block
         input: >-
@@ -320,49 +320,47 @@ cases:
                       - type: text
                         refs: Romans 1:1-20
 
-#-------------------------------------------------------------------------------------------------------------
+  - edge:
 
-  # - name: unnamed
-  #   input: >-
-  #       Romans 1-3 ~ Romans 2-6 (40%) James 1:2-2:12 +1 verse (60%)
-  #   parse:
-  #       type: label
-  #       parts:
-  #         - type: weighted_set
-  #           weight: 2
-  #           parts:
-  #             - type: text
-  #               refs: Romans 1-3
-  #             - type: intersection
-  #               refs: Romans 2-6
-  #         - type: weighted_set
-  #           weight: 3
-  #           parts:
-  #             - type: text
-  #               refs: James 1:2-27; 2:1-12
-  #             - type: addition
-  #               amount: 1
+        - name: addition in a weight
+          input: >-
+              Romans 1-3 ~ Romans 2-6 (40%) James 1:2-2:12 +1 verse (60%)
+          parse:
+              parts:
+                - type: weighted_set
+                  weight: 2
+                  parts:
+                    - type: text
+                      refs: Romans 1-3
+                    - type: intersection
+                      refs: Romans 2-6
+                - type: weighted_set
+                  weight: 3
+                  parts:
+                    - type: text
+                      refs: James 1:2-27; 2:1-12
+                    - type: addition
+                      amount: 1
 
-  # - name: unnamed
-  #   input: >-
-  #       [ Romans 1-5 (30%) Romans 6-10 (70%) ] +1 Verse
-  #   parse:
-  #       type: label
-  #       parts:
-  #         - type: block
-  #           parts:
-  #             - type: weighted_set
-  #               weight: 3
-  #               parts:
-  #                 - type: text
-  #                   refs: Romans 1-5
-  #             - type: weighted_set
-  #               weight: 7
-  #               parts:
-  #                 - type: text
-  #                   refs: Romans 6-10
-  #         - type: addition
-  #           amount: 1
+        - name: block with addition
+          input: >-
+              [ Romans 1-5 (30%) Romans 6-10 (70%) ] +1 Verse
+          parse:
+              parts:
+                - type: block
+                  parts:
+                    - type: weighted_set
+                      weight: 3
+                      parts:
+                        - type: text
+                          refs: Romans 1-5
+                    - type: weighted_set
+                      weight: 7
+                      parts:
+                        - type: text
+                          refs: Romans 6-10
+                - type: addition
+                  amount: 1
 
   # - name: unnamed
   #   input: >-

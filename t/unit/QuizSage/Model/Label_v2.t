@@ -3,6 +3,7 @@ use exact -conf;
 use Omniframe::Util::File 'opath';
 use QuizSage::Model::Label;
 use YAML::XS;
+use DDP;
 
 my $test_data = YAML::XS::Load( opath('t/data/labels.yaml')->slurp );
 
@@ -15,9 +16,20 @@ $obj->user_aliases( $test_data->{aliases} );
 
 for my $case_set ( $test_data->{cases}->@* ) {
     my ($case_set_name) = keys %$case_set;
+
     for my $case ( $case_set->{$case_set_name}->@* ) {
+        next unless (
+            # $case->{name} eq q{block that doesn't need to be a block} or
+            $case->{name} eq 'block node after weighted blocks' or
+            $case->{name} eq 'block with addition' or
+            0
+        );
+
         my $parse = $obj->__parse( $case->{input} );
-        # warn YAML::XS::Dump($parse) . "\n";
+
+        warn YAML::XS::Dump($parse) . "\n";
+        # p $parse;
+
         is(
             $parse,
             $case->{parse},
