@@ -143,7 +143,34 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
 
     # parse input into a data structure
     my $data = $label_prd_obj->start($input);
-    return { error => 'Failed to parse input string' } unless $data;
+
+    return ($data)
+        ? {
+            parts        => $self->_parts_cleanup_and_simplify( $data, $aliases, $tokenized_aliases ),
+            maybe bibles => $bibles,
+        }
+        : { error => 'Failed to parse input string' };
+}
+
+sub _parts_cleanup_and_simplify ( $self, $data, $aliases, $tokenized_aliases ) {
+    my $sort_aliases = sub ($aliases) {
+        return [
+            map { $_->[1] }
+            sort {
+                $a->[0] cmp $b->[0] or
+                $a->[1]{name} cmp $b->[1]{name}
+            }
+            map {
+                ( my $sort = $_->{name} ) =~ s/[^\w\s]+//g;
+                [ $sort, $_ ];
+            }
+            @$aliases
+        ];
+    };
+
+    my $canonicalize_refs = sub (@refs) {
+        return $self->bible_ref->clear->simplify(1)->in( join( ';', @refs ) )->refs;
+    };
 
     # cleanup nodes of the data structure
     $data = $data->{parts};
@@ -214,18 +241,7 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
                     }
 
                     # sort any aliases by name
-                    $node->{aliases} = [
-                        map { $_->[1] }
-                        sort {
-                            $a->[0] cmp $b->[0] or
-                            $a->[1]{name} cmp $b->[1]{name}
-                        }
-                        map {
-                            ( my $sort = $_->{name} ) =~ s/[^\w\s]+//g;
-                            [ $sort, $_ ];
-                        }
-                        $node->{aliases}->@*
-                    ] if ( $node->{aliases} );
+                    $node->{aliases} = $sort_aliases->( $node->{aliases} ) if ( $node->{aliases} );
 
                     $node->{special} = 'All' if ( $node->{value} =~ s/\b(?:
                         All|
@@ -237,7 +253,7 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
                     )\b//ix );
 
                     # canonicalize refs
-                    my $refs = $self->bible_ref->clear->simplify(1)->in( delete $node->{value} )->refs;
+                    my $refs = $canonicalize_refs->( delete $node->{value} );
                     $node->{refs} = $refs if ($refs);
 
                     die 'Failed to parse ' . $node->{type} . ' node'
@@ -279,6 +295,73 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
                 }
                 0 .. $#{$node}
             );
+
+#             # multiple intersections/filters in single scope merged
+#             my $certain_nodes = {
+#                 map {
+#                     my $type = $_;
+#                     $type => [ grep { $_->{type} and $_->{type} eq $type } @$node ];
+#                 }
+#                 qw( intersection filter )
+#             };
+#             if (
+#                 $certain_nodes->{intersection}->@* > 1 or
+#                 $certain_nodes->{filter}->@* > 1
+#             ) {
+# $self->warn($node);
+
+#                 @$node =
+#                     grep {
+#                         not $_->{type} or
+#                         $_->{type} ne 'intersection' and $_->{type} ne 'filter'
+#                     } @$node;
+
+# $self->warn($node);
+
+# map {
+#     my $type = $_;
+
+#     my $refs = $canonicalize_refs->(
+#         map { $part->{refs} } grep { $part->{refs} } $certain_nodes->{$type}->@*
+#     );
+
+#     my $aliases = $sort_aliases->(
+#         [ map { $part->{aliases}->@* } grep { $part->{aliases} } $certain_nodes->{$type}->@* ]
+#     );
+
+#     # my $everything_else =
+#     #     grep { $part->{refs} } $certain_nodes->{$type}->@*;
+
+#     # ~ Rom 1; Rom 5 [ Rom 2 | Rom 2:5 ]
+# }
+# qw( intersection filter );
+
+                # for my $type ( qw( intersection filter ) ) {
+                #     my @things = grep { $_->{type} and $_->{type} eq $type } $node->{parts}->@*;
+                #     if (@things) {
+                #         my @aliases =
+                #             map { $_->{aliases}->@* }
+                #             grep { $_->{type} and $_->{type} eq 'text' and $_->{aliases} }
+                #             @things;
+
+                #         push( @{ $node->{parts} }, {
+                #             type       => $type,
+                #             maybe refs => (
+                #                 $self->bible_ref->clear->simplify(1)->in(
+                #                     join( ';',
+                #                         map { $_->{refs} }
+                #                         grep { $_->{type} and $_->{type} eq 'text' and $_->{refs} }
+                #                         @things
+                #                     )
+                #                 )->refs || undef
+                #             ),
+                #             maybe aliases => ( (@aliases) ? \@aliases : undef ),
+                #             grep { not $_->{type} or $_->{type} ne 'text' } @things,
+                #         } );
+                #     }
+                # }
+            # }
+
         }
         elsif ( ref $node eq 'HASH' ) {
             # block that wraps only a single block removed
@@ -288,11 +371,6 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
                 $node->{parts}[0]{type} and $node->{parts}[0]{type} eq 'block'
             );
 
-            # MAYBE TODO: block that doesn't need to be a block de-blocked
-            # that doesn't have weights or have only a single weight internally
-
-            # TODO: multiple intersections and/or filters in a single scope merged to a single intersection and/or filter
-
             # TODO: remove filters and intersections that don't cause changes
 
             $simplify_nodes->( $node->{$_} ) for ( keys %$node );
@@ -300,10 +378,7 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
     };
     $simplify_nodes->($data);
 
-    return {
-        parts        => $data,
-        maybe bibles => $bibles,
-    }
+    return $data;
 }
 
 sub parse ( $self, $input = $self->data->{label}, $user_id = undef ) {
