@@ -13,8 +13,9 @@ $obj->bible_acronyms( [ qw( ESV NASB NIV NIV84 ) ] );
 $obj->user_id(1);
 $obj->user_aliases( $test_data->{aliases} );
 
-for my $case_set_name ( sort keys $test_data->{cases}->%* ) {
-    for my $case ( $test_data->{cases}{$case_set_name}->@* ) {
+for my $case_set ( $test_data->{cases}->@* ) {
+    my ($case_set_name) = keys %$case_set;
+    for my $case ( $case_set->{$case_set_name}->@* ) {
         my $parse = $obj->__parse( $case->{input} );
         # warn YAML::XS::Dump($parse) . "\n";
         is(
