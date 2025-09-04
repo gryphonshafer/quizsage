@@ -330,7 +330,7 @@ sub _parts_cleanup_and_simplify ( $self, $data, $aliases, $tokenized_aliases ) {
             }
         }
         elsif ( ref $node eq 'HASH' ) {
-            # block that wraps only a single block removed
+            block that wraps only a single block removed
             $node->{parts} = $node->{parts}[0]{parts} while (
                 $node->{type} and $node->{type} eq 'block' and
                 $node->{parts}->@* == 1 and
