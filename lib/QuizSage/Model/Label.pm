@@ -296,72 +296,38 @@ sub _parts_cleanup_and_simplify ( $self, $data, $aliases, $tokenized_aliases ) {
                 0 .. $#{$node}
             );
 
-#             # multiple intersections/filters in single scope merged
-#             my $certain_nodes = {
-#                 map {
-#                     my $type = $_;
-#                     $type => [ grep { $_->{type} and $_->{type} eq $type } @$node ];
-#                 }
-#                 qw( intersection filter )
-#             };
-#             if (
-#                 $certain_nodes->{intersection}->@* > 1 or
-#                 $certain_nodes->{filter}->@* > 1
-#             ) {
-# $self->warn($node);
+            # multiple intersections/filters in single scope merged
+            my $certain_nodes = {
+                map {
+                    my $type = $_;
+                    $type => [ grep { $_->{type} and $_->{type} eq $type } @$node ];
+                }
+                qw( intersection filter )
+            };
+            if (
+                $certain_nodes->{intersection}->@* > 1 or
+                $certain_nodes->{filter}->@* > 1
+            ) {
+                @$node =
+                    grep {
+                        not $_->{type} or
+                        $_->{type} ne 'intersection' and $_->{type} ne 'filter'
+                    } @$node;
 
-#                 @$node =
-#                     grep {
-#                         not $_->{type} or
-#                         $_->{type} ne 'intersection' and $_->{type} ne 'filter'
-#                     } @$node;
-
-# $self->warn($node);
-
-# map {
-#     my $type = $_;
-
-#     my $refs = $canonicalize_refs->(
-#         map { $part->{refs} } grep { $part->{refs} } $certain_nodes->{$type}->@*
-#     );
-
-#     my $aliases = $sort_aliases->(
-#         [ map { $part->{aliases}->@* } grep { $part->{aliases} } $certain_nodes->{$type}->@* ]
-#     );
-
-#     # my $everything_else =
-#     #     grep { $part->{refs} } $certain_nodes->{$type}->@*;
-
-#     # ~ Rom 1; Rom 5 [ Rom 2 | Rom 2:5 ]
-# }
-# qw( intersection filter );
-
-                # for my $type ( qw( intersection filter ) ) {
-                #     my @things = grep { $_->{type} and $_->{type} eq $type } $node->{parts}->@*;
-                #     if (@things) {
-                #         my @aliases =
-                #             map { $_->{aliases}->@* }
-                #             grep { $_->{type} and $_->{type} eq 'text' and $_->{aliases} }
-                #             @things;
-
-                #         push( @{ $node->{parts} }, {
-                #             type       => $type,
-                #             maybe refs => (
-                #                 $self->bible_ref->clear->simplify(1)->in(
-                #                     join( ';',
-                #                         map { $_->{refs} }
-                #                         grep { $_->{type} and $_->{type} eq 'text' and $_->{refs} }
-                #                         @things
-                #                     )
-                #                 )->refs || undef
-                #             ),
-                #             maybe aliases => ( (@aliases) ? \@aliases : undef ),
-                #             grep { not $_->{type} or $_->{type} ne 'text' } @things,
-                #         } );
-                #     }
-                # }
-            # }
-
+                for my $type ( qw( intersection filter ) ) {
+                    my $refs = $canonicalize_refs->(
+                        map { $_->{refs} } grep { $_->{refs} } $certain_nodes->{$type}->@*
+                    );
+                    my $aliases = $sort_aliases->( [
+                        map { $_->{aliases}->@* } grep { $_->{aliases} } $certain_nodes->{$type}->@*
+                    ] );
+                    push( @$node, {
+                        type          => $type,
+                        maybe refs    => ( $refs // undef ),
+                        maybe aliases => ( (@$aliases) ? $aliases : undef ),
+                    } );
+                }
+            }
         }
         elsif ( ref $node eq 'HASH' ) {
             # block that wraps only a single block removed
@@ -370,8 +336,6 @@ sub _parts_cleanup_and_simplify ( $self, $data, $aliases, $tokenized_aliases ) {
                 $node->{parts}->@* == 1 and
                 $node->{parts}[0]{type} and $node->{parts}[0]{type} eq 'block'
             );
-
-            # TODO: remove filters and intersections that don't cause changes
 
             $simplify_nodes->( $node->{$_} ) for ( keys %$node );
         }
