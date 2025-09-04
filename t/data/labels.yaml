@@ -157,6 +157,21 @@ cases:
                       - type: text
                         refs: Romans 1:1-30
 
+      - name: alias inside intersection
+        input: >-
+            Rom 1 ~ Club [20]
+        parse:
+            parts:
+              - type: text
+                refs: Romans 1
+              - type: intersection
+                aliases:
+                  - name: Club [20]
+                    label: Romans 1:1-20
+                    parts:
+                      - type: text
+                        refs: Romans 1:1-20
+
       - name: distributive with aliases and special
         input: >-
             Rom 1 (1) Rom 2 (1) / Club (10) (1) Club [20] (2) All (3)
@@ -286,6 +301,26 @@ cases:
             parts:
               - type: text
                 refs: Romans 1-2
+
+      # - name: multiple intersections/filters in single scope merged
+      #   input: >-
+      #       Rom 1-10 | Rom 2 ~ Rom 3-5 | Rom 3 ~ Rom 4-6
+      #   parse:
+      #       parts:
+      #         - type: text
+      #           refs: Romans 1-10
+      #         - type: intersection
+      #           refs: Romans 3-6
+
+      #         - type: block
+      #           parts:
+      #             - type: text
+      #               refs: Romans 6-10
+      #             - type: filter
+      #               refs: Romans 9
+
+      #         - type: filter
+      #           refs: Romans 2-3
 
 #-------------------------------------------------------------------------------------------------------------
 
