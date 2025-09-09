@@ -89,15 +89,13 @@ cases:
         parse:
             parts:
               - type: text
-                refs: Romans 1-5
+                refs: Romans 1-5; 11
               - type: block
                 parts:
                   - type: text
                     refs: Romans 6-10
                   - type: filter
                     refs: Romans 9
-              - type: text
-                refs: Romans 11
 
       - name: alias
         input: >-
@@ -342,51 +340,46 @@ cases:
                     - type: addition
                       amount: 1
 
-        # - name: block with addition
-        #   input: >-
-        #       [ Romans 1-5 (30%) Romans 6-10 (70%) ] +1 Verse
-        #   parse:
-        #       parts:
-        #         - type: block
-        #           parts:
-        #             - type: weighted_set
-        #               weight: 3
-        #               parts:
-        #                 - type: text
-        #                   refs: Romans 1-5
-        #             - type: weighted_set
-        #               weight: 7
-        #               parts:
-        #                 - type: text
-        #                   refs: Romans 6-10
-        #         - type: addition
-        #           amount: 1
+        - name: block with addition
+          input: >-
+              [ Romans 1-5 (30%) Romans 6-10 (70%) ] +1 Verse
+          parse:
+              parts:
+                - type: block
+                  parts:
+                    - type: weighted_set
+                      weight: 3
+                      parts:
+                        - type: text
+                          refs: Romans 1-5
+                    - type: weighted_set
+                      weight: 7
+                      parts:
+                        - type: text
+                          refs: Romans 6-10
+                - type: addition
+                  amount: 1
 
-  # - name: unnamed
-  #   input: >-
-  #       Rom 1-3 (40%) Jam 1:2-2:12 (60%) Rom 4-6 [ Rom 7-8 ]
-  #   parse:
-  #       type: label
-  #       parts:
-  #         - type: weighted_set
-  #           weight: 2
-  #           parts:
-  #             - type: text
-  #               refs: Romans 1-3
-  #         - type: weighted_set
-  #           weight: 3
-  #           parts:
-  #             - type: text
-  #               refs: James 1:2-27; 2:1-12
-  #         - type: weighted_block
-  #           weight: 1
-  #           parts:
-  #             - type: text
-  #               refs: Romans 4-6
-  #             - type: block
-  #               parts:
-  #                 - refs: Romans 7-8
-  #                   type: text
+        - name: unweighted set with unnecessary block
+          input: >-
+              Rom 1-3 (40%) Jam 1:2-2:12 (60%) Rom 4-6 [ Rom 7-8 ]
+          parse:
+              parts:
+                - type: weighted_set
+                  weight: 2
+                  parts:
+                    - type: text
+                      refs: Romans 1-3
+                - type: weighted_set
+                  weight: 3
+                  parts:
+                    - type: text
+                      refs: James 1:2-27; 2:1-12
+                - type: weighted_set
+                  weight: 1
+                  parts:
+                    - type: text
+                      refs: Romans 4-8
 
   # - name: unnamed
   #   input: >-
