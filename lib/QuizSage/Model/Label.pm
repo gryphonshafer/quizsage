@@ -232,7 +232,11 @@ sub _parts_cleanup_and_simplify ( $self, $data, $aliases, $tokenized_aliases ) {
                         if ( my $alias = $tokenized_aliases->[ ord($1) - 57344 ] ) {
                             {
                                 use warnings FATAL => 'recursion';
-                                $alias->{parts} //= $self->__parse( $alias->{label}, undef, $aliases )->{parts};
+                                $alias->{parts} //= $self->__parse(
+                                    $alias->{label},
+                                    undef,
+                                    $aliases,
+                                )->{parts};
                             }
                             push( $node->{aliases}->@*, {
                                 map { $_ => $alias->{$_} } qw( name label parts )
@@ -330,7 +334,7 @@ sub _parts_cleanup_and_simplify ( $self, $data, $aliases, $tokenized_aliases ) {
             }
         }
         elsif ( ref $node eq 'HASH' ) {
-            block that wraps only a single block removed
+            # block that wraps only a single block removed
             $node->{parts} = $node->{parts}[0]{parts} while (
                 $node->{type} and $node->{type} eq 'block' and
                 $node->{parts}->@* == 1 and
