@@ -294,7 +294,8 @@ sub _parts_cleanup_and_simplify ( $self, $data, $aliases, $tokenized_aliases ) {
                         $_->{type} eq 'filter' or
                         $_->{type} eq 'intersection' or
                         $_->{type} eq 'addition' or
-                        $_->{type} eq 'distributive'
+                        $_->{type} eq 'distributive' or
+                        $_->{type} eq 'weighted_set'
                     } $node->[$_]{parts}->@*
                 }
                 0 .. $#{$node}
@@ -306,30 +307,44 @@ sub _parts_cleanup_and_simplify ( $self, $data, $aliases, $tokenized_aliases ) {
                     my $type = $_;
                     $type => [ grep { $_->{type} and $_->{type} eq $type } @$node ];
                 }
-                qw( intersection filter )
+                qw( text intersection filter )
             };
             if (
+                $certain_nodes->{text}->@* > 1 or
                 $certain_nodes->{intersection}->@* > 1 or
                 $certain_nodes->{filter}->@* > 1
             ) {
-                @$node =
+                my @leftovers =
                     grep {
                         not $_->{type} or
-                        $_->{type} ne 'intersection' and $_->{type} ne 'filter'
+                        $_->{type} ne 'text' and $_->{type} ne 'intersection' and $_->{type} ne 'filter'
                     } @$node;
 
-                for my $type ( qw( intersection filter ) ) {
+                @$node = ();
+
+                my $type_simplify = sub ($type) {
                     my $refs = $canonicalize_refs->(
                         map { $_->{refs} } grep { $_->{refs} } $certain_nodes->{$type}->@*
                     );
+
                     my $aliases = $sort_aliases->( [
                         map { $_->{aliases}->@* } grep { $_->{aliases} } $certain_nodes->{$type}->@*
                     ] );
+
                     push( @$node, {
                         type          => $type,
                         maybe refs    => ( $refs // undef ),
                         maybe aliases => ( (@$aliases) ? $aliases : undef ),
                     } );
+                };
+
+                $type_simplify->('text') if ( $certain_nodes->{'text'}->@* );
+
+                push( @$node, @leftovers );
+
+                for my $type ( qw( intersection filter ) ) {
+                    next unless ( $certain_nodes->{$type}->@* );
+                    $type_simplify->($type) if ( $certain_nodes->{$type}->@* );
                 }
             }
         }
