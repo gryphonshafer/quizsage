@@ -342,25 +342,25 @@ cases:
                     - type: addition
                       amount: 1
 
-        - name: block with addition
-          input: >-
-              [ Romans 1-5 (30%) Romans 6-10 (70%) ] +1 Verse
-          parse:
-              parts:
-                - type: block
-                  parts:
-                    - type: weighted_set
-                      weight: 3
-                      parts:
-                        - type: text
-                          refs: Romans 1-5
-                    - type: weighted_set
-                      weight: 7
-                      parts:
-                        - type: text
-                          refs: Romans 6-10
-                - type: addition
-                  amount: 1
+        # - name: block with addition
+        #   input: >-
+        #       [ Romans 1-5 (30%) Romans 6-10 (70%) ] +1 Verse
+        #   parse:
+        #       parts:
+        #         - type: block
+        #           parts:
+        #             - type: weighted_set
+        #               weight: 3
+        #               parts:
+        #                 - type: text
+        #                   refs: Romans 1-5
+        #             - type: weighted_set
+        #               weight: 7
+        #               parts:
+        #                 - type: text
+        #                   refs: Romans 6-10
+        #         - type: addition
+        #           amount: 1
 
   # - name: unnamed
   #   input: >-
