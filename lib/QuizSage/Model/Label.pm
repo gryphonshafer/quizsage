@@ -146,34 +146,39 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
 
     return ($data)
         ? {
-            parts        => $self->_parts_cleanup_and_simplify( $data, $aliases, $tokenized_aliases ),
+            parts => $self->_parse_parts_simplify(
+                $self->_parse_parts_cleanup(
+                    $data->{parts},
+                    $aliases,
+                    $tokenized_aliases,
+                ),
+                $aliases,
+            ),
             maybe bibles => $bibles,
         }
         : { error => 'Failed to parse input string' };
 }
 
-sub _parts_cleanup_and_simplify ( $self, $data, $aliases, $tokenized_aliases ) {
-    my $sort_aliases = sub ($aliases) {
-        return [
-            map { $_->[1] }
-            sort {
-                $a->[0] cmp $b->[0] or
-                $a->[1]{name} cmp $b->[1]{name}
-            }
-            map {
-                ( my $sort = $_->{name} ) =~ s/[^\w\s]+//g;
-                [ $sort, $_ ];
-            }
-            @$aliases
-        ];
-    };
+sub _sort_aliases_for_display ($aliases) {
+    return [
+        map { $_->[1] }
+        sort {
+            $a->[0] cmp $b->[0] or
+            $a->[1]{name} cmp $b->[1]{name}
+        }
+        map {
+            ( my $sort = $_->{name} ) =~ s/[^\w\s]+//g;
+            [ $sort, $_ ];
+        }
+        @$aliases
+    ];
+}
 
-    my $canonicalize_refs = sub (@refs) {
-        return $self->bible_ref->clear->simplify(1)->in( join( ';', @refs ) )->refs;
-    };
+sub _canonicalize_refs ( $self, @refs ) {
+    return $self->bible_ref->clear->simplify(1)->in( join( ';', @refs ) )->refs;
+}
 
-    # cleanup nodes of the data structure
-    $data = $data->{parts};
+sub _parse_parts_cleanup ( $self, $parts, $aliases, $tokenized_aliases ) {
     try {
         my $cleanup_nodes;
         $cleanup_nodes = sub ($node) {
@@ -245,7 +250,7 @@ sub _parts_cleanup_and_simplify ( $self, $data, $aliases, $tokenized_aliases ) {
                     }
 
                     # sort any aliases by name
-                    $node->{aliases} = $sort_aliases->( $node->{aliases} ) if ( $node->{aliases} );
+                    $node->{aliases} = _sort_aliases_for_display( $node->{aliases} ) if ( $node->{aliases} );
 
                     $node->{special} = 'All' if ( $node->{value} =~ s/\b(?:
                         All|
@@ -257,7 +262,7 @@ sub _parts_cleanup_and_simplify ( $self, $data, $aliases, $tokenized_aliases ) {
                     )\b//ix );
 
                     # canonicalize refs
-                    my $refs = $canonicalize_refs->( delete $node->{value} );
+                    my $refs = $self->_canonicalize_refs( delete $node->{value} );
                     $node->{refs} = $refs if ($refs);
 
                     die 'Failed to parse ' . $node->{type} . ' node'
@@ -268,7 +273,7 @@ sub _parts_cleanup_and_simplify ( $self, $data, $aliases, $tokenized_aliases ) {
                 }
             }
         };
-        $cleanup_nodes->($data);
+        $cleanup_nodes->($parts);
     }
     catch ($e) {
         return {
@@ -280,6 +285,10 @@ sub _parts_cleanup_and_simplify ( $self, $data, $aliases, $tokenized_aliases ) {
         };
     }
 
+    return $parts;
+}
+
+sub _parse_parts_simplify ( $self, $parts, $aliases ) {
     # simplify nodes of the data structure
     my $simplify_nodes;
     $simplify_nodes = sub ($node) {
@@ -323,11 +332,11 @@ sub _parts_cleanup_and_simplify ( $self, $data, $aliases, $tokenized_aliases ) {
                 @$node = ();
 
                 my $type_simplify = sub ($type) {
-                    my $refs = $canonicalize_refs->(
+                    my $refs = $self->_canonicalize_refs(
                         map { $_->{refs} } grep { $_->{refs} } $certain_nodes->{$type}->@*
                     );
 
-                    my $aliases = $sort_aliases->( [
+                    my $aliases = _sort_aliases_for_display( [
                         map { $_->{aliases}->@* } grep { $_->{aliases} } $certain_nodes->{$type}->@*
                     ] );
 
@@ -359,9 +368,9 @@ sub _parts_cleanup_and_simplify ( $self, $data, $aliases, $tokenized_aliases ) {
             $simplify_nodes->( $node->{$_} ) for ( keys %$node );
         }
     };
-    $simplify_nodes->($data);
+    $simplify_nodes->($parts);
 
-    return $data;
+    return $parts;
 }
 
 sub parse ( $self, $input = $self->data->{label}, $user_id = undef ) {
