@@ -4,6 +4,7 @@ use exact -class;
 use Bible::Reference;
 use Math::Prime::Util 'divisors';
 use Mojo::JSON qw( to_json from_json );
+use Omniframe::Util::Data 'node_descend';
 use Parse::RecDescent;
 
 with 'Omniframe::Role::Model';
@@ -96,7 +97,11 @@ sub aliases ( $self, $user_id = $self->user_id ) {
     )->run->all({});
 }
 
-sub identify_aliases ( $self, $string = '', $user_id = $self->user_id ) {
+sub identify_aliases (
+    $self,
+    $string  = '',
+    $user_id = $self->user_id,
+) {
     return [
         sort { $a cmp $b }
         grep {
@@ -108,7 +113,12 @@ sub identify_aliases ( $self, $string = '', $user_id = $self->user_id ) {
     ];
 }
 
-sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $aliases = undef ) {
+sub __parse (
+    $self,
+    $input   = $self->data->{label},
+    $user_id = $self->user_id,
+    $aliases = undef,
+) {
     return {} unless ( defined $input );
 
     # get aliases to use for this parsing
@@ -146,13 +156,15 @@ sub __parse ( $self, $input = $self->data->{label}, $user_id = $self->user_id, $
 
     return ($data)
         ? {
-            parts => $self->_parse_parts_simplify(
-                $self->_parse_parts_cleanup(
-                    $data->{parts},
+            parts => $self->_parse_parts_compress(
+                $self->_parse_parts_simplify(
+                    $self->_parse_parts_cleanup(
+                        $data->{parts},
+                        $aliases,
+                        $tokenized_aliases,
+                    ),
                     $aliases,
-                    $tokenized_aliases,
-                ),
-                $aliases,
+                )
             ),
             maybe bibles => $bibles,
         }
@@ -180,11 +192,9 @@ sub _canonicalize_refs ( $self, @refs ) {
 
 sub _parse_parts_cleanup ( $self, $parts, $aliases, $tokenized_aliases ) {
     try {
-        my $cleanup_nodes;
-        $cleanup_nodes = sub ($node) {
-            if ( ref $node eq 'ARRAY' ) {
-                $cleanup_nodes->($_) for (@$node);
-
+        node_descend(
+            $parts,
+            [ 'post', 'array', sub ($node) {
                 # set weights via lowest common denominator (from largest common factor)
                 if ( my @weighted_sets = grep { $_->{type} and $_->{type} eq 'weighted_set' } @$node ) {
                     $_->{weight} =~ s/\D+//g for (@weighted_sets);
@@ -223,8 +233,8 @@ sub _parse_parts_cleanup ( $self, $parts, $aliases, $tokenized_aliases ) {
                         $node->[ $weighted_set_indexes[0] ]{parts}->@*,
                     ) if ( @weighted_set_indexes == 1 );
                 }
-            }
-            elsif ( ref $node eq 'HASH' ) {
+            } ],
+            [ 'wrap', 'hash', sub ( $node, $callback ) {
                 if (
                     $node->{type} eq 'text' or
                     $node->{type} eq 'filter' or
@@ -269,11 +279,10 @@ sub _parse_parts_cleanup ( $self, $parts, $aliases, $tokenized_aliases ) {
                         unless ( $node->{refs} or $node->{aliases} or $node->{special} );
                 }
                 else {
-                    $cleanup_nodes->( $node->{$_} ) for ( keys %$node );
+                    $callback->();
                 }
-            }
-        };
-        $cleanup_nodes->($parts);
+            } ],
+        );
     }
     catch ($e) {
         return {
@@ -289,12 +298,9 @@ sub _parse_parts_cleanup ( $self, $parts, $aliases, $tokenized_aliases ) {
 }
 
 sub _parse_parts_simplify ( $self, $parts, $aliases ) {
-    # simplify nodes of the data structure
-    my $simplify_nodes;
-    $simplify_nodes = sub ($node) {
-        if ( ref $node eq 'ARRAY' ) {
-            $simplify_nodes->($_) for (@$node);
-
+    return node_descend(
+        $parts,
+        [ 'post', 'array', sub ($node) {
             # block that doesn't need to be a block de-blocked
             splice( @$node, $_, 1, $node->[$_]{parts}->@* ) for (
                 grep {
@@ -356,21 +362,42 @@ sub _parse_parts_simplify ( $self, $parts, $aliases ) {
                     $type_simplify->($type) if ( $certain_nodes->{$type}->@* );
                 }
             }
-        }
-        elsif ( ref $node eq 'HASH' ) {
+        } ],
+        [ 'pre', 'hash', sub ($node) {
             # block that wraps only a single block removed
             $node->{parts} = $node->{parts}[0]{parts} while (
                 $node->{type} and $node->{type} eq 'block' and
                 $node->{parts}->@* == 1 and
                 $node->{parts}[0]{type} and $node->{parts}[0]{type} eq 'block'
             );
+        } ],
+    );
+}
 
-            $simplify_nodes->( $node->{$_} ) for ( keys %$node );
-        }
-    };
-    $simplify_nodes->($parts);
+sub _parse_parts_compress ( $self, $parts ) {
+    return node_descend(
+        $parts,
+        [ 'post', 'array', sub ($node) {
+            # if a parts hash contains only text, intersections, and filters
+            # which themselves don't contain any aliases, then compress into a
+            # single text with refs
+            if (
+                @$node and not grep {
+                    $_->{type}
+                    and $_->{type} ne 'text' and $_->{type} ne 'intersection' and $_->{type} ne 'filter'
+                    and not $_->{aliases}
+                } @$node
+            ) {
+                # $self->warn($node);
+            }
+        } ],
+    );
+}
 
-    return $parts;
+sub __format ( $self, $parse ) {
+    node_descend(
+        $parse->{parts},
+    );
 }
 
 sub parse ( $self, $input = $self->data->{label}, $user_id = undef ) {

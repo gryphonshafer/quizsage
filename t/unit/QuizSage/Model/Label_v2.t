@@ -18,7 +18,7 @@ for my $case_set ( $test_data->{cases}->@* ) {
     my ($case_set_name) = keys %$case_set;
 
     for my $case ( $case_set->{$case_set_name}->@* ) {
-        # next unless ( $case->{name} eq 'block with filter' );
+        # next unless ( $case->{name} eq 'filter' );
 
         my $parse = $obj->__parse( $case->{input} );
 
@@ -32,6 +32,8 @@ for my $case_set ( $test_data->{cases}->@* ) {
                 ucfirst($case_set_name) . ' - ' .
                 ucfirst( $case->{name} ) . ' = "' . $case->{input} . '"',
         );
+
+        $obj->__format($parse);
     }
 }
 
