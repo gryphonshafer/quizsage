@@ -334,7 +334,7 @@ cases:
 
         - name: addition in a weight
           input: >-
-              Romans 1-3 ~ Romans 2-6 (40%) James 1:2-2:12 +1 verse (60%)
+              Rom 1-3 ~ Rom 2-6 (40%) Jam 1:2-2:12 +1 verse (60%)
           parse:
               parts:
                 - type: weighted_set
@@ -354,7 +354,7 @@ cases:
 
         - name: block with addition
           input: >-
-              [ Romans 1-5 (30%) Romans 6-10 (70%) ] +1 Verse
+              [ Rom 1-5 (30%) Rom 6-10 (70%) ] +1 Verse
           parse:
               parts:
                 - type: block
@@ -395,7 +395,7 @@ cases:
 
         - name: nested block with filter
           input: >-
-              Romans 1-5 (3) [ [ Romans 6-10 ] | Romans 18 ] (1) ~ Romans 4-7
+              Rom 1-5 (3) [ [ Rom 6-10 ] | Rom 18 ] (1) ~ Rom 4-7
           parse:
               parts:
                 - type: weighted_set
@@ -417,7 +417,7 @@ cases:
 
         - name: block with distributive
           input: >-
-              Romans 1-5 (1) Romans 6-10 (2) [ Romans 11-13 (3) / Club (10) (4) All (5) ]
+              Rom 1-5 (1) Rom 6-10 (2) [ Rom 11-13 (3) / Club (10) (4) All (5) ]
           parse:
               parts:
                 - type: weighted_set
@@ -458,7 +458,7 @@ cases:
 
         - name: block with nested distributive
           input: >-
-              [ Romans 1 (1) / Club (10) (1) ] / Club [20] (2)
+              [ Rom 1 (1) / Club (10) (1) ] / Club [20] (2)
           parse:
               parts:
                 - type: distributive
@@ -485,3 +485,20 @@ cases:
                           parts:
                             - type: text
                               refs: Romans 1:1-20
+
+        - name: block with nested distributive
+          input: >-
+              Rom ~ Club (10) + 1
+          parse:
+              parts:
+                - type: text
+                  refs: Romans
+                - type: intersection
+                  aliases:
+                    - name: Club (10)
+                      label: Romans 1:1-10
+                      parts:
+                        - type: text
+                          refs: Romans 1:1-10
+                - type: addition
+                  amount: 1
