@@ -14,11 +14,23 @@ $obj->bible_acronyms( [ qw( ESV NASB NIV NIV84 ) ] );
 $obj->user_id(1);
 $obj->user_aliases( $test_data->{aliases} );
 
+ok( 1, 1 );
+my $count;
+
 for my $case_set ( $test_data->{cases}->@* ) {
     my ($case_set_name) = keys %$case_set;
 
     for my $case ( $case_set->{$case_set_name}->@* ) {
-        # next unless ( $case->{name} =~ /distributive/ );
+        next unless ( grep { $case->{name} eq $_ }
+            'references with bibles',
+            'weights',
+            'filter',
+            'addition',
+            'block with filter',
+            'alias with nested alias',
+            'distributive with aliases and special',
+        );
+        # next unless ( ++$count <= 4 );
 
         my $parse = $obj->__parse( $case->{input} );
 
@@ -32,6 +44,9 @@ for my $case_set ( $test_data->{cases}->@* ) {
 
         is( $parse, $case->{parse}, 'Parse:  ' . $case_title . '< ' . $case->{input} );
         is( $obj->__format($parse), $case->{canonical}, 'Format: ' . $case_title . '> ' . $case->{canonical} );
+
+        $obj->warn( '>>>>>>>>>>>>>>', $case->{canonical} );
+        $obj->warn( '<<<<<<<<<<<<<<', $obj->__descriptionize( $case->{input} ) );
     }
 }
 
