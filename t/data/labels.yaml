@@ -85,13 +85,13 @@ cases:
 
       - name: addition
         input: >-
-            Rom 1-3 + 1 verse
+            Rom 1:1-5, 31-32; 2:10-15; 16:25, 27 + 1 verse
         canonical: >-
-            Romans 1-3 +1
+            Romans 1:1-5, 31-32; 2:10-15; 16:25, 27 +1
         parse:
             parts:
               - type: text
-                refs: Romans 1-3
+                refs: Romans 1:1-5, 31-32; 2:10-15; 16:25, 27
               - type: addition
                 amount: 1
 
@@ -129,13 +129,13 @@ cases:
 
       - name: alias with nested alias
         input: >-
-            1 Cor; Early Cor
+            1 Cor 5-6; Early Cor
         canonical: >-
-            1 Corinthians; Early Cor
+            1 Corinthians 5-6; Early Cor
         parse:
             parts:
               - type: text
-                refs: 1 Corinthians
+                refs: 1 Corinthians 5-6
                 aliases:
                   - name: Early Cor
                     label: 1 Corinthians 3-4; Very Early Cor
