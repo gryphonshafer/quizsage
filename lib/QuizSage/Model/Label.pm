@@ -4,7 +4,7 @@ use exact -class;
 use Bible::Reference;
 use Math::Prime::Util 'divisors';
 use Mojo::JSON qw( to_json from_json );
-use Omniframe::Util::Data 'node_descend';
+use Omniframe::Util::Data qw( deepcopy node_descend );
 use Parse::RecDescent;
 
 with 'Omniframe::Role::Model';
@@ -196,7 +196,7 @@ sub _parse_parts_cleanup ( $self, $parts, $aliases, $tokenized_aliases ) {
             $parts,
             [ 'post', 'array', sub ($node) {
                 # set weights via lowest common denominator (from largest common factor)
-                if ( my @weighted_sets = grep { $_->{type} and $_->{type} eq 'weighted_set' } @$node ) {
+                if ( my @weighted_sets = grep { $_->{type} eq 'weighted_set' } @$node ) {
                     $_->{weight} =~ s/\D+//g for (@weighted_sets);
                     my %factors;
                     $factors{$_}++ for ( map { divisors( $_->{weight} ) } @weighted_sets );
@@ -209,10 +209,7 @@ sub _parse_parts_cleanup ( $self, $parts, $aliases, $tokenized_aliases ) {
                     # find any text or block nodes after weighted blocks and move into a weighted block of 1
                     for ( 0 .. $#{$node} ) {
                         my $this = $node->[$_];
-                        next unless (
-                            $this->{type} and
-                            ( $this->{type} eq 'text' or $this->{type} eq 'block' )
-                        );
+                        next unless ( $this->{type} eq 'text' or $this->{type} eq 'block' );
 
                         splice( @$node, $_, $#{$node}, {
                             type   => 'weighted_set',
@@ -224,7 +221,7 @@ sub _parse_parts_cleanup ( $self, $parts, $aliases, $tokenized_aliases ) {
 
                     # remove weight if there's only 1 weighted set of anything that can be weighted in node
                     my @weighted_set_indexes =
-                        grep { $node->[$_]{type} and $node->[$_]{type} eq 'weighted_set' }
+                        grep { $node->[$_]{type} eq 'weighted_set' }
                         0 .. $#{$node};
                     splice(
                         @$node,
@@ -331,8 +328,9 @@ sub _parse_parts_simplify ( $self, $parts, $aliases ) {
             ) {
                 my @leftovers =
                     grep {
-                        not $_->{type} or
-                        $_->{type} ne 'text' and $_->{type} ne 'intersection' and $_->{type} ne 'filter'
+                        $_->{type} ne 'text' and
+                        $_->{type} ne 'intersection' and
+                        $_->{type} ne 'filter'
                     } @$node;
 
                 @$node = ();
@@ -395,8 +393,60 @@ sub _parse_parts_compress ( $self, $parts ) {
 }
 
 sub __format ( $self, $parse ) {
-    node_descend(
-        $parse->{parts},
+    return join( ' ', map { $_ // '______UNDEF_0' }
+        node_descend(
+            deepcopy( $parse->{parts} ),
+            [ 'pre', 'hash', sub ($node) {
+                if (
+                    $node->{type} eq 'text' or
+                    $node->{type} eq 'filter' or
+                    $node->{type} eq 'intersection'
+                ) {
+                    %$node = (
+                        value => join( ' ', grep { defined }
+                            (
+                                ( $node->{type} eq 'filter'       ) ? '|' :
+                                ( $node->{type} eq 'intersection' ) ? '~' : undef
+                            ),
+                            join( '; ', grep { defined }
+                                ( $node->{refs}    // undef ),
+                                ( $node->{special} // undef ),
+                                map { $_->{name} } $node->{aliases}->@*,
+                            ),
+                        )
+                    );
+                }
+                elsif ( $node->{type} eq 'addition' ) {
+                    %$node = ( value => '+' . $node->{amount} );
+                }
+            } ],
+            [ 'post', 'hash', sub ($node) {
+                if ( $node->{type} ) {
+                    if ( $node->{type} eq 'weighted_set' and not grep { ref $_ } $node->{parts}->@* ) {
+                        %$node = ( value => join( ' ',
+                            $node->{parts}->@*, '(' . $node->{weight} . ')',
+                        ) );
+                    }
+                    elsif ( $node->{type} eq 'block' and not grep { ref $_ } $node->{parts}->@* ) {
+                        %$node = ( value => join( ' ', '[', $node->{parts}->@*, ']' ) );
+                    }
+                    elsif (
+                        $node->{type} eq 'distributive'
+                        and not grep { ref $_ } $node->{prefix}->@*
+                        and not grep { ref $_ } $node->{suffix}->@*
+                    ) {
+                        %$node = ( value => join( ' ',
+                            $node->{prefix}->@*, '/', $node->{suffix}->@*
+                        ) );
+                    }
+                }
+            } ],
+            [ 'post', 'array', sub ($node) {
+                @$node = map { $_->{value} // '______UNDEF_1' } @$node;
+            } ],
+        )->@*,
+        ( sort @{ $parse->{bibles}{primary} // [] } ),
+        ( map { $_ . '*' } sort @{ $parse->{bibles}{auxiliary} // [] } ),
     );
 }
 

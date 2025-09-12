@@ -18,22 +18,20 @@ for my $case_set ( $test_data->{cases}->@* ) {
     my ($case_set_name) = keys %$case_set;
 
     for my $case ( $case_set->{$case_set_name}->@* ) {
-        # next unless ( $case->{name} eq 'filter' );
+        # next unless ( $case->{name} =~ /distributive/ );
 
         my $parse = $obj->__parse( $case->{input} );
 
         # warn YAML::XS::Dump($parse) . "\n";
         # p $parse;
 
-        is(
-            $parse,
-            $case->{parse},
-            'Parse: ' .
-                ucfirst($case_set_name) . ' - ' .
-                ucfirst( $case->{name} ) . ' = "' . $case->{input} . '"',
+        my $case_title = sprintf( '%-10s - %-40s ',
+            ucfirst($case_set_name),
+            ucfirst( $case->{name} ),
         );
 
-        $obj->__format($parse);
+        is( $parse, $case->{parse}, 'Parse:  ' . $case_title . '< ' . $case->{input} );
+        is( $obj->__format($parse), $case->{canonical}, 'Format: ' . $case_title . '> ' . $case->{canonical} );
     }
 }
 
