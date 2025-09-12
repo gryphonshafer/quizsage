@@ -18,6 +18,8 @@ cases:
       - name: references
         input: >-
             Rom 1-3; Jam 1:2-2:12
+        canonical: >-
+            Romans 1-3; James 1:2-27; 2:1-12
         parse:
             parts:
               - type: text
@@ -26,6 +28,8 @@ cases:
       - name: references with bibles
         input: >-
             Rom 1-3 NIV84* NIV Jam 1:2-2:12 ESV
+        canonical: >-
+            Romans 1-3; James 1:2-27; 2:1-12 ESV NIV NIV84*
         parse:
             parts:
               - type: text
@@ -40,6 +44,8 @@ cases:
       - name: weights
         input: >-
             Roms 1-3 (2) Jam 1:2-2:12 (3)
+        canonical: >-
+            Romans 1-3 (2) James 1:2-27; 2:1-12 (3)
         parse:
             parts:
               - type: weighted_set
@@ -56,6 +62,8 @@ cases:
       - name: filter
         input: >-
             Rom 1-3; Jam 1:2-2:12 | Rom 2-6
+        canonical: >-
+            Romans 1-3; James 1:2-27; 2:1-12 | Romans 2-6
         parse:
             parts:
               - type: text
@@ -66,6 +74,8 @@ cases:
       - name: intersection
         input: >-
             Rom 1-3 ~ Rom 2-6
+        canonical: >-
+            Romans 1-3 ~ Romans 2-6
         parse:
             parts:
               - type: text
@@ -76,6 +86,8 @@ cases:
       - name: addition
         input: >-
             Rom 1-3 + 1 verse
+        canonical: >-
+            Romans 1-3 +1
         parse:
             parts:
               - type: text
@@ -86,6 +98,8 @@ cases:
       - name: block with filter
         input: >-
             Rom 1-5 [ Rom 6-10 | Rom 9 ] Rom 11
+        canonical: >-
+            Romans 1-5; 11 [ Romans 6-10 | Romans 9 ]
         parse:
             parts:
               - type: text
@@ -100,6 +114,8 @@ cases:
       - name: alias
         input: >-
             1 Cor; Very Early Cor
+        canonical: >-
+            1 Corinthians; Very Early Cor
         parse:
             parts:
               - type: text
@@ -114,6 +130,8 @@ cases:
       - name: alias with nested alias
         input: >-
             1 Cor; Early Cor
+        canonical: >-
+            1 Corinthians; Early Cor
         parse:
             parts:
               - type: text
@@ -134,6 +152,8 @@ cases:
       - name: aliases with confusing syntax
         input: >-
             Jam 2; Club (10); Rom 2; Club [20]; Jam 1; Club <30>; Rom 3
+        canonical: >-
+            Romans 2-3; James 1-2; Club (10); Club [20]; Club <30>
         parse:
             parts:
               - type: text
@@ -158,6 +178,8 @@ cases:
       - name: alias inside intersection
         input: >-
             Rom 1 ~ Club [20]
+        canonical: >-
+            Romans 1 ~ Club [20]
         parse:
             parts:
               - type: text
@@ -173,6 +195,8 @@ cases:
       - name: distributive with aliases and special
         input: >-
             Rom 1 (1) Rom 2 (1) / Club (10) (1) Club [20] (2) All (3)
+        canonical: >-
+            Romans 1 (1) Romans 2 (1) / Club (10) (1) Club [20] (2) All (3)
         parse:
             parts:
               - type: distributive
@@ -216,9 +240,11 @@ cases:
 
   - cleanup:
 
-      - name: set weights via lowest common denominator
+      - name: lowest common denominator weights
         input: >-
             Rom 1-2 (40%) Rom 3-4 (60%)
+        canonical: >-
+            Romans 1-2 (2) Romans 3-4 (3)
         parse:
             parts:
               - type: weighted_set
@@ -235,6 +261,8 @@ cases:
       - name: text node after weighted blocks
         input: >-
             Rom 1-2 (2) Rom 3-4 (3) Rom 5-6
+        canonical: >-
+            Romans 1-2 (2) Romans 3-4 (3) Romans 5-6 (1)
         parse:
             parts:
               - type: weighted_set
@@ -256,6 +284,8 @@ cases:
       - name: block node after weighted blocks
         input: >-
             Rom 1-2 (2) Rom 3-4 (3) [ Rom 5-6 ]
+        canonical: >-
+            Romans 1-2 (2) Romans 3-4 (3) Romans 5-6 (1)
         parse:
             parts:
               - type: weighted_set
@@ -274,9 +304,11 @@ cases:
                   - type: text
                     refs: Romans 5-6
 
-      - name: remove weight if there's only 1 weighted set
+      - name: remove weight if only 1 set
         input: >-
             Rom 1-2 (2)
+        canonical: >-
+            Romans 1-2
         parse:
             parts:
               - type: text
@@ -287,6 +319,8 @@ cases:
       - name: block that doesn't need to be a block
         input: >-
             [ Rom 1-2 ]
+        canonical: >-
+            Romans 1-2
         parse:
             parts:
               - type: text
@@ -295,14 +329,18 @@ cases:
       - name: block that wraps only a single block
         input: >-
             [ [ Rom 1-2 ] (1) ] (1)
+        canonical: >-
+            Romans 1-2
         parse:
             parts:
               - type: text
                 refs: Romans 1-2
 
-      - name: multiple intersections/filters in single scope merged
+      - name: merge single scope intersections/filters
         input: >-
             Rom 1-10 | Rom 2 ~ Rom 3-5 | Club [20] ~ Rom 4-6
+        canonical: >-
+            Romans 1-10 ~ Romans 3-6 | Romans 2; Club [20]
         parse:
             parts:
               - type: text
@@ -323,6 +361,8 @@ cases:
         - name: intersection with weight
           input: >-
               Romans 1-5 ~ Romans 4-7 (1)
+          canonical: >-
+              Romans 1-5 ~ Romans 4-7
           parse:
               parts:
                 - type: text
@@ -335,6 +375,8 @@ cases:
         - name: addition in a weight
           input: >-
               Rom 1-3 ~ Rom 2-6 (40%) Jam 1:2-2:12 +1 verse (60%)
+          canonical: >-
+              Romans 1-3 ~ Romans 2-6 (2) James 1:2-27; 2:1-12 +1 (3)
           parse:
               parts:
                 - type: weighted_set
@@ -355,6 +397,8 @@ cases:
         - name: block with addition
           input: >-
               [ Rom 1-5 (30%) Rom 6-10 (70%) ] +1 Verse
+          canonical: >-
+              [ Romans 1-5 (3) Romans 6-10 (7) ] +1
           parse:
               parts:
                 - type: block
@@ -375,6 +419,8 @@ cases:
         - name: unweighted set with unnecessary block
           input: >-
               Rom 1-3 (40%) Jam 1:2-2:12 (60%) Rom 4-6 [ Rom 7-8 ]
+          canonical: >-
+              Romans 1-3 (2) James 1:2-27; 2:1-12 (3) Romans 4-8 (1)
           parse:
               parts:
                 - type: weighted_set
@@ -396,6 +442,8 @@ cases:
         - name: nested block with filter
           input: >-
               Rom 1-5 (3) [ [ Rom 6-10 ] | Rom 18 ] (1) ~ Rom 4-7
+          canonical: >-
+              Romans 1-5 (3) [ Romans 6-10 | Romans 18 ] (1) ~ Romans 4-7
           parse:
               parts:
                 - type: weighted_set
@@ -418,6 +466,8 @@ cases:
         - name: block with distributive
           input: >-
               Rom 1-5 (1) Rom 6-10 (2) [ Rom 11-13 (3) / Club (10) (4) All (5) ]
+          canonical: >-
+              Romans 1-5 (1) Romans 6-10 (2) [ Romans 11-13 / Club (10) (4) All (5) ] (1)
           parse:
               parts:
                 - type: weighted_set
@@ -459,6 +509,8 @@ cases:
         - name: block with nested distributive
           input: >-
               [ Rom 1 (1) / Club (10) (1) ] / Club [20] (2)
+          canonical: >-
+              [ Romans 1 / Club (10) ] / Club [20]
           parse:
               parts:
                 - type: distributive
@@ -486,9 +538,11 @@ cases:
                             - type: text
                               refs: Romans 1:1-20
 
-        - name: block with nested distributive
+        - name: intersection followed by addition
           input: >-
               Rom ~ Club (10) + 1
+          canonical: >-
+              Romans ~ Club (10) +1
           parse:
               parts:
                 - type: text
