@@ -291,14 +291,18 @@ fun reference_data (
             my @chapters;
 
             for my $verse ( $content->@* ) {
-                my @phrases      = $verse->{bibles}{$this_bible}{words}->@*;
                 my $this_chapter = $verse->{book} . ' ' . $verse->{chapter};
-
                 push( @chapters, $this_chapter ) unless ( $these_phrases->{$this_chapter} );
-                push(
-                    $these_phrases->{$this_chapter}->{ join( ' ', splice( @phrases, 0, $chapter ) ) }->@*,
-                    $verse->{ref_short},
-                ) while ( @phrases >= $chapter );
+                for my $i ( 0 .. $verse->{bibles}{$this_bible}{words}->@* - $chapter + 1 ) {
+                    my $j = $i + $chapter - 1;
+                    last if ( $j >= $verse->{bibles}{$this_bible}{words}->@* );
+                    push(
+                        $these_phrases->{$this_chapter}{
+                            join( ' ', @{ $verse->{bibles}{$this_bible}{words} }[ $i .. $j ] )
+                        }->@*,
+                        $verse->{ref_short},
+                    );
+                }
             }
 
             map {
@@ -344,11 +348,16 @@ fun reference_data (
             my $these_phrases;
 
             for my $verse ( $content->@* ) {
-                my @phrases = $verse->{bibles}{$this_bible}{words}->@*;
-                push(
-                    $these_phrases->{ join( ' ', splice( @phrases, 0, $phrases ) ) }->@*,
-                    $verse->{ref_short},
-                ) while ( @phrases >= $phrases );
+                for my $i ( 0 .. $verse->{bibles}{$this_bible}{words}->@* - $phrases + 1 ) {
+                    my $j = $i + $phrases - 1;
+                    last if ( $j >= $verse->{bibles}{$this_bible}{words}->@* );
+                    push(
+                        $these_phrases->{
+                            join( ' ', @{ $verse->{bibles}{$this_bible}{words} }[ $i .. $j ] )
+                        }->@*,
+                        $verse->{ref_short},
+                    );
+                }
             }
 
             +{
