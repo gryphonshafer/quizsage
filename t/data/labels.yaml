@@ -3,9 +3,9 @@ aliases:
   - name: Club (10)
     label: Romans 1:1-10
   - name: Club [20]
-    label: Romans 1:1-20
+    label: Romans 1:11-20
   - name: Club <30>
-    label: Romans 1:1-30
+    label: Romans 1:21-30
   - name: Very Early Cor
     label: 1 Corinthians 1-2
   - name: Early Cor
@@ -20,6 +20,8 @@ cases:
             Rom 1-3; Jam 1:2-2:12
         canonical: >-
             Romans 1-3; James 1:2-27; 2:1-12
+        description: >-
+            Romans 1-3; James 1:2-27; 2:1-12
         parse:
             parts:
               - type: text
@@ -29,6 +31,8 @@ cases:
         input: >-
             Rom 1-3 NIV84* NIV Jam 1:2-2:12 ESV
         canonical: >-
+            Romans 1-3; James 1:2-27; 2:1-12 ESV NIV NIV84*
+        description: >-
             Romans 1-3; James 1:2-27; 2:1-12 ESV NIV NIV84*
         parse:
             parts:
@@ -45,6 +49,8 @@ cases:
         input: >-
             Roms 1-3 (2) Jam 1:2-2:12 (3)
         canonical: >-
+            Romans 1-3 (2) James 1:2-27; 2:1-12 (3)
+        description: >-
             Romans 1-3 (2) James 1:2-27; 2:1-12 (3)
         parse:
             parts:
@@ -64,6 +70,8 @@ cases:
             Rom 1-3; Jam 1:2-2:12 | Rom 2-6
         canonical: >-
             Romans 1-3; James 1:2-27; 2:1-12 | Romans 2-6
+        description: >-
+            Romans 1; James 1:2-27; 2:1-12
         parse:
             parts:
               - type: text
@@ -76,6 +84,8 @@ cases:
             Rom 1-3 ~ Rom 2-6
         canonical: >-
             Romans 1-3 ~ Romans 2-6
+        description: >-
+            Romans 2-3
         parse:
             parts:
               - type: text
@@ -88,6 +98,8 @@ cases:
             Rom 1:1-5, 31-32; 2:10-15; 16:25, 27 + 1 verse
         canonical: >-
             Romans 1:1-5, 31-32; 2:10-15; 16:25, 27 +1
+        description: >-
+            Romans 1:1-6, 31-32; 2:1, 10-16; 16:25-27
         parse:
             parts:
               - type: text
@@ -100,6 +112,8 @@ cases:
             Rom 1-5 [ Rom 6-10 | Rom 9 ] Rom 11
         canonical: >-
             Romans 1-5; 11 [ Romans 6-10 | Romans 9 ]
+        description: >-
+            Romans 1-8; 10-11
         parse:
             parts:
               - type: text
@@ -113,13 +127,15 @@ cases:
 
       - name: alias
         input: >-
-            1 Cor; Very Early Cor
+            1 Cor 3-4; Very Early Cor
         canonical: >-
-            1 Corinthians; Very Early Cor
+            1 Corinthians 3-4; Very Early Cor
+        description: >-
+            1 Corinthians 1-4
         parse:
             parts:
               - type: text
-                refs: 1 Corinthians
+                refs: 1 Corinthians 3-4
                 aliases:
                   - name: Very Early Cor
                     label: 1 Corinthians 1-2
@@ -132,6 +148,8 @@ cases:
             1 Cor 5-6; Early Cor
         canonical: >-
             1 Corinthians 5-6; Early Cor
+        description: >-
+            1 Corinthians 1-6
         parse:
             parts:
               - type: text
@@ -154,6 +172,8 @@ cases:
             Jam 2; Club (10); Rom 2; Club [20]; Jam 1; Club <30>; Rom 3
         canonical: >-
             Romans 2-3; James 1-2; Club (10); Club [20]; Club <30>
+        description: >-
+            Romans 1:1-30; 2-3; James 1-2
         parse:
             parts:
               - type: text
@@ -165,21 +185,23 @@ cases:
                       - type: text
                         refs: Romans 1:1-10
                   - name: Club [20]
-                    label: Romans 1:1-20
+                    label: Romans 1:11-20
                     parts:
                       - type: text
-                        refs: Romans 1:1-20
+                        refs: Romans 1:11-20
                   - name: Club <30>
-                    label: Romans 1:1-30
+                    label: Romans 1:21-30
                     parts:
                       - type: text
-                        refs: Romans 1:1-30
+                        refs: Romans 1:21-30
 
       - name: alias inside intersection
         input: >-
             Rom 1 ~ Club [20]
         canonical: >-
             Romans 1 ~ Club [20]
+        description: >-
+            Romans 1:11-20
         parse:
             parts:
               - type: text
@@ -187,16 +209,18 @@ cases:
               - type: intersection
                 aliases:
                   - name: Club [20]
-                    label: Romans 1:1-20
+                    label: Romans 1:11-20
                     parts:
                       - type: text
-                        refs: Romans 1:1-20
+                        refs: Romans 1:11-20
 
       - name: distributive with aliases and special
         input: >-
             Rom 1 (1) Rom 2 (1) / Club (10) (1) Club [20] (2) All (3)
         canonical: >-
             Romans 1 (1) Romans 2 (1) / Club (10) (1) Club [20] (2) All (3)
+        description: >-
+            ???
         parse:
             parts:
               - type: distributive
@@ -228,10 +252,10 @@ cases:
                       - type: text
                         aliases:
                           - name: Club [20]
-                            label: Romans 1:1-20
+                            label: Romans 1:11-20
                             parts:
                               - type: text
-                                refs: Romans 1:1-20
+                                refs: Romans 1:11-20
                   - type: weighted_set
                     weight: 3
                     parts:
@@ -244,6 +268,8 @@ cases:
         input: >-
             Rom 1-2 (40%) Rom 3-4 (60%)
         canonical: >-
+            Romans 1-2 (2) Romans 3-4 (3)
+        description: >-
             Romans 1-2 (2) Romans 3-4 (3)
         parse:
             parts:
@@ -262,6 +288,8 @@ cases:
         input: >-
             Rom 1-2 (2) Rom 3-4 (3) Rom 5-6
         canonical: >-
+            Romans 1-2 (2) Romans 3-4 (3) Romans 5-6 (1)
+        description: >-
             Romans 1-2 (2) Romans 3-4 (3) Romans 5-6 (1)
         parse:
             parts:
@@ -286,6 +314,8 @@ cases:
             Rom 1-2 (2) Rom 3-4 (3) [ Rom 5-6 ]
         canonical: >-
             Romans 1-2 (2) Romans 3-4 (3) Romans 5-6 (1)
+        description: >-
+            Romans 1-2 (2) Romans 3-4 (3) Romans 5-6 (1)
         parse:
             parts:
               - type: weighted_set
@@ -309,6 +339,8 @@ cases:
             Rom 1-2 (2)
         canonical: >-
             Romans 1-2
+        description: >-
+            Romans 1-2
         parse:
             parts:
               - type: text
@@ -321,6 +353,8 @@ cases:
             [ Rom 1-2 ]
         canonical: >-
             Romans 1-2
+        description: >-
+            Romans 1-2
         parse:
             parts:
               - type: text
@@ -330,6 +364,8 @@ cases:
         input: >-
             [ [ Rom 1-2 ] (1) ] (1)
         canonical: >-
+            Romans 1-2
+        description: >-
             Romans 1-2
         parse:
             parts:
@@ -341,6 +377,8 @@ cases:
             Rom 1-10 | Rom 2 ~ Rom 3-5 | Club [20] ~ Rom 4-6
         canonical: >-
             Romans 1-10 ~ Romans 3-6 | Romans 2; Club [20]
+        description: >-
+            Romans 3-6
         parse:
             parts:
               - type: text
@@ -351,10 +389,10 @@ cases:
                 refs: Romans 2
                 aliases:
                   - name: Club [20]
-                    label: Romans 1:1-20
+                    label: Romans 1:11-20
                     parts:
                       - type: text
-                        refs: Romans 1:1-20
+                        refs: Romans 1:11-20
 
   - invalidish:
 
@@ -363,6 +401,8 @@ cases:
               Romans 1-5 ~ Romans 4-7 (1)
           canonical: >-
               Romans 1-5 ~ Romans 4-7
+          description: >-
+              Romans 4-5
           parse:
               parts:
                 - type: text
@@ -377,6 +417,8 @@ cases:
               Rom 1-3 ~ Rom 2-6 (40%) Jam 1:2-2:12 +1 verse (60%)
           canonical: >-
               Romans 1-3 ~ Romans 2-6 (2) James 1:2-27; 2:1-12 +1 (3)
+          description: >-
+              Romans 2-3 (2) James 1:2-27; 2:1-13 (3)
           parse:
               parts:
                 - type: weighted_set
@@ -399,6 +441,8 @@ cases:
               [ Rom 1-5 (30%) Rom 6-10 (70%) ] +1 Verse
           canonical: >-
               [ Romans 1-5 (3) Romans 6-10 (7) ] +1
+          description: >-
+              Romans 1-5; 6:1 (3) Romans 6-10; 11:1 (7)
           parse:
               parts:
                 - type: block
@@ -420,6 +464,8 @@ cases:
           input: >-
               Rom 1-3 (40%) Jam 1:2-2:12 (60%) Rom 4-6 [ Rom 7-8 ]
           canonical: >-
+              Romans 1-3 (2) James 1:2-27; 2:1-12 (3) Romans 4-8 (1)
+          description: >-
               Romans 1-3 (2) James 1:2-27; 2:1-12 (3) Romans 4-8 (1)
           parse:
               parts:
@@ -444,6 +490,8 @@ cases:
               Rom 1-5 (3) [ [ Rom 6-10 ] | Rom 18 ] (1) ~ Rom 4-7
           canonical: >-
               Romans 1-5 (3) [ Romans 6-10 | Romans 18 ] (1) ~ Romans 4-7
+          description: >-
+              Romans 4-5 (3) Romans 6-7 (1)
           parse:
               parts:
                 - type: weighted_set
@@ -468,6 +516,8 @@ cases:
               Rom 1-5 (1) Rom 6-10 (2) [ Rom 11-13 (3) / Club (10) (4) All (5) ]
           canonical: >-
               Romans 1-5 (1) Romans 6-10 (2) [ Romans 11-13 / Club (10) (4) All (5) ] (1)
+          description: >-
+              ???
           parse:
               parts:
                 - type: weighted_set
@@ -511,6 +561,8 @@ cases:
               [ Rom 1 (1) / Club (10) (1) ] / Club [20] (2)
           canonical: >-
               [ Romans 1 / Club (10) ] / Club [20]
+          description: >-
+              ???
           parse:
               parts:
                 - type: distributive
@@ -533,16 +585,18 @@ cases:
                     - type: text
                       aliases:
                         - name: Club [20]
-                          label: Romans 1:1-20
+                          label: Romans 1:11-20
                           parts:
                             - type: text
-                              refs: Romans 1:1-20
+                              refs: Romans 1:11-20
 
         - name: intersection followed by addition
           input: >-
               Rom ~ Club (10) + 1
           canonical: >-
               Romans ~ Club (10) +1
+          description: >-
+              Romans 1:1-11
           parse:
               parts:
                 - type: text

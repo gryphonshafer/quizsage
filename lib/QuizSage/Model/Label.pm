@@ -469,114 +469,144 @@ sub __format ( $self, $parse ) {
 }
 
 sub __descriptionize( $self, $input = $self->data->{label}, $user_id = $self->user_id ) {
-    my $parse = $self->__parse( $input, $user_id );
+    my $parse = deepcopy $self->__parse( $input, $user_id );
 
-    return # join( ' ',
-        node_descend(
-            deepcopy( $parse->{parts} ),
-            [ 'post', 'hash', sub ($node) {
-                if ( $node->{type} ) {
-                    if (
-                        $node->{type} eq 'text' or
-                        $node->{type} eq 'filter' or
-                        $node->{type} eq 'intersection'
-                    ) {
-                        # if ( not $node->{aliases} ) {
-                        #     %$node = ( value => $node->{refs} );
-                        # }
-                        # elsif ( not grep { grep { not exists $_->{value} } $_->{parts}->@* } $node->{aliases}->@* ) {
-                        #     %$node = ( value => join( '; ',
-                        #         $node->{refs},
-                        #         map { map { $_->{value} } $_->{parts}->@* } $node->{aliases}->@*
-                        #     ) );
-                        # }
-                        %$node = (
-                            type          => $node->{type},
-                            maybe special => $node->{special},
-                            maybe value   => join( '; ', grep { defined }
-                                $node->{refs},
-                                map { $_->{parts}->@* } @{ $node->{aliases} // [] },
-                            ) || undef,
-                        );
-                    }
-                    # elsif ( $node->{type} eq 'weighted_set' and not grep { ref $_ } $node->{parts}->@* ) {
-                    #     # %$node = (
-                    #     #     type   => $node->{type},
-                    #     #     weight => $node->{weight},
-                    #     #     value  => delete $node->{parts} } )
-                    #     # );
+    my $ranges = [ map {
+        ( not ( ref $_ eq 'HASH' and $_->{weight} ) )
+            ? { range  => $_ }
+            : {
+                range  => $_->{value},
+                weight => $_->{weight},
+            }
+    } node_descend(
+        $parse->{parts},
+        [ 'post', 'hash', sub ($node) {
+            if ( $node->{type} ) {
+                if (
+                    $node->{type} eq 'text' or
+                    $node->{type} eq 'filter' or
+                    $node->{type} eq 'intersection'
+                ) {
+                    # if ( not $node->{aliases} ) {
+                    #     %$node = ( value => $node->{refs} );
                     # }
-                    # elsif ( $node->{type} eq 'weighted_set' and $node->{parts} and $node->{parts}->@* ) {
-                    #     $node->{value} = $merge_run->( delete $node->{parts} );
+                    # elsif ( not grep { grep { not exists $_->{value} } $_->{parts}->@* } $node->{aliases}->@* ) {
+                    #     %$node = ( value => join( '; ',
+                    #         $node->{refs},
+                    #         map { map { $_->{value} } $_->{parts}->@* } $node->{aliases}->@*
+                    #     ) );
                     # }
-                    elsif ( $node->{parts} and $node->{parts}->@* ) {
-                        ( $node->{value} ) = ( delete $node->{parts} )->@*;
-                    }
+                    %$node = (
+                        type          => $node->{type},
+                        maybe special => $node->{special},
+                        maybe value   => join( '; ', grep { defined }
+                            $node->{refs},
+                            map { $_->{parts}->@* } @{ $node->{aliases} // [] },
+                        ) || undef,
+                    );
                 }
-            } ],
-            [ 'post', 'array', sub ($node) {
-                my %verses;
-                for my $bit (@$node) {
-                    if ( $bit->{type} ) {
-                        if ( $bit->{value} ) {
-                            my $versified_refs = $self->_versify_refs( $bit->{value} );
+                # elsif ( $node->{type} eq 'weighted_set' ) { # and not grep { ref $_ } $node->{parts}->@* ) {
+                #     # %$node = (
+                #     #     type   => $node->{type},
+                #     #     weight => $node->{weight},
+                #     #     value  => delete $node->{parts} } )
+                #     # );
+                # }
+                elsif ( $node->{type} eq 'distributive' ) {
+                    my $all = join( '; ', map { $_->{value} } $node->{prefix}->@* );
+                    %$node = ( parts => [ map {
+                        my $suffix = $_;
+                        map {
+                            my $prefix = $_;
+                            +{
+                                weight => ( $prefix->{weight} // 1 ) * ( $suffix->{weight} // 1 ),
+                                value  => join( '; ', $prefix->{value}, (
+                                    ( ref $suffix->{value} and $suffix->{value}{special} eq 'All' )
+                                        ? $all
+                                        : $suffix->{value}
+                                ) ),
+                            };
+                        } $node->{prefix}->@*;
+                    } $node->{suffix}->@* ] );
+                }
+                elsif ( $node->{parts} and $node->{parts}->@* ) {
+                    $node->{type} = 'text' if ( $node->{type} eq 'block' );
+                    ( $node->{value} ) = ( delete $node->{parts} )->@*;
+                }
+            }
+        } ],
+        [ 'post', 'array', sub ($node) {
+            my %verses;
+            for my $bit (@$node) {
+                if ( $bit->{type} ) {
+                    if ( $bit->{value} ) {
+                        my $versified_refs = $self->_versify_refs( $bit->{value} );
 
-                            if ( $bit->{type} eq 'text' ) {
-                                $verses{$_} = 1 for ( $versified_refs->@* );
-                            }
-                            elsif ( $bit->{type} eq 'filter' ) {
-                                delete $verses{$_} for ( $versified_refs->@* );
-                            }
-                            elsif ( $bit->{type} eq 'intersection' ) {
-                                $verses{$_}++ for ( $versified_refs->@* );
-                                %verses = map { $_ => 1 } grep { $verses{$_} > 1 } keys %verses;
-                            }
+                        if ( $bit->{type} eq 'text' ) {
+                            $verses{$_} = 1 for ( $versified_refs->@* );
                         }
-                        elsif ( $bit->{type} eq 'addition' ) {
-                            %verses =
-                                map {
-                                    /^(?<book>.+)\s(?<chapter>\d+):(?<verse>\d+)$/;
-                                    my $ref    = {%+};
-                                    my @verses = $_;
-                                    my $book   = $self->bible_structure->{ $+{book} };
-                                    for ( 1 .. $bit->{amount} ) {
-                                        $ref->{verse}++;
-                                        if ( $ref->{verse} > $book->[ $ref->{chapter} - 1 ] ) {
-                                            $ref->{chapter}++;
-                                            $ref->{verse} = 1;
-                                        }
-                                        last unless ( $book->[ $ref->{chapter} - 1 ] );
-                                        push(
-                                            @verses,
-                                            $ref->{book} . ' ' . $ref->{chapter} . ':' . $ref->{verse},
-                                        );
+                        elsif ( $bit->{type} eq 'filter' ) {
+                            delete $verses{$_} for ( $versified_refs->@* );
+                        }
+                        elsif ( $bit->{type} eq 'intersection' ) {
+                            $verses{$_}++ for ( $versified_refs->@* );
+                            %verses = map { $_ => 1 } grep { $verses{$_} > 1 } keys %verses;
+                        }
+                    }
+                    elsif ( $bit->{type} eq 'addition' ) {
+                        %verses =
+                            map {
+                                /^(?<book>.+)\s(?<chapter>\d+):(?<verse>\d+)$/;
+                                my $ref    = {%+};
+                                my @verses = $_;
+                                my $book   = $self->bible_structure->{ $+{book} };
+                                for ( 1 .. $bit->{amount} ) {
+                                    $ref->{verse}++;
+                                    if ( $ref->{verse} > $book->[ $ref->{chapter} - 1 ] ) {
+                                        $ref->{chapter}++;
+                                        $ref->{verse} = 1;
                                     }
-                                    map { $_ => 1 } @verses;
+                                    last unless ( $book->[ $ref->{chapter} - 1 ] );
+                                    push(
+                                        @verses,
+                                        $ref->{book} . ' ' . $ref->{chapter} . ':' . $ref->{verse},
+                                    );
                                 }
-                                keys %verses;
-                        }
-                        elsif ( $bit->{type} eq 'block' ) {
-                            $verses{$_} = 1 for ( $self->_versify_refs( $bit->{parts}->@* )->@* );
-                        }
-                        elsif ( $bit->{type} eq 'distributive' ) {
-                            # my @x = map {
-                            #     my $suffix = $_;
-                            #     map {
-                            #         my $prefix = $_;
-                            #         +{
-                            #             weight => $prefix->{weight} * $suffix->{weight},
-                            #         };
-                            #     } $bit->{suffix}->@*;
-                            # } $bit->{suffix}->@*;
-                        }
+                                map { $_ => 1 } @verses;
+                            }
+                            keys %verses;
                     }
                 }
-                @$node = $self->_canonicalize_refs( keys %verses ) if (%verses);
-            } ],
-        ); # ->@*,
-        # ( sort @{ $parse->{bibles}{primary} // [] } ),
-        # ( map { $_ . '*' } sort @{ $parse->{bibles}{auxiliary} // [] } ),
-    # );
+            }
+            @$node = $self->_canonicalize_refs( keys %verses ) if (%verses);
+        } ],
+    )->@* ];
+
+    my $bibles;
+    if ( exists $parse->{bibles} ) {
+        push( @$bibles, sort $parse->{bibles}{primary}->@* ) if ( exists $parse->{bibles}{primary} );
+        push( @$bibles, map { $_ . '*' } sort $parse->{bibles}{auxiliary}->@* )
+            if ( exists $parse->{bibles}{auxiliary} );
+    }
+    $bibles = join( ' ', @$bibles ) if ( $bibles and @$bibles );
+
+    my $description = join( ' ',
+        (
+            map {
+                $_->{range} .
+                    ( ( $_->{weight} ) ? ' (' . $_->{weight} . ')' : '' );
+            } @$ranges
+        ),
+        grep { defined } $bibles,
+    );
+
+    return ( not wantarray ) ? $description : (
+        $description,
+        {
+            ranges       => $ranges,
+            maybe bibles => $parse->{bibles},
+        },
+    );
 }
 
 sub parse ( $self, $input = $self->data->{label}, $user_id = undef ) {
