@@ -610,3 +610,78 @@ cases:
                           refs: Romans 1:1-10
                 - type: addition
                   amount: 1
+
+        - name: weights inside block with weight
+          input: >-
+              [ Rom 1 (1) Rom 2 (3) ] (3) Rom 3 (1)
+          canonical: >-
+              [ Romans 1 (1) Romans 2 (3) ] (3) Romans 3 (1)
+          description: >-
+              Romans 1 (3) Romans 2 (9) Romans 3 (4)
+          parse:
+              parts:
+                - type: weighted_set
+                  weight: 3
+                  parts:
+                    - type: block
+                      parts:
+                        - type: weighted_set
+                          weight: 1
+                          parts:
+                            - type: text
+                              refs: Romans 1
+                        - type: weighted_set
+                          weight: 3
+                          parts:
+                            - type: text
+                              refs: Romans 2
+                - type: weighted_set
+                  weight: 1
+                  parts:
+                    - type: text
+                      refs: Romans 3
+
+        - name: weights inside block without weight
+          input: >-
+              [ Rom 1 (1) Rom 2 (3) ] Rom 3 (1)
+          canonical: >-
+              Romans 1 (1) Romans 2 (3) Romans 3 (1)
+          description: >-
+              Romans 1 (1) Romans 2 (3) Romans 3 (1)
+          parse:
+              parts:
+                - type: weighted_set
+                  weight: 1
+                  parts:
+                    - type: text
+                      refs: Romans 1
+                - type: weighted_set
+                  weight: 3
+                  parts:
+                    - type: text
+                      refs: Romans 2
+                - type: weighted_set
+                  weight: 1
+                  parts:
+                    - type: text
+                      refs: Romans 3
+
+        - name: block with weight
+          input: >-
+              [ Rom 1-2 ] (3) Rom 3 (1)
+          canonical: >-
+              Romans 1-2 (3) Romans 3 (1)
+          description: >-
+              Romans 1-2 (3) Romans 3 (1)
+          parse:
+              parts:
+                - type: weighted_set
+                  weight: 3
+                  parts:
+                    - type: text
+                      refs: Romans 1-2
+                - type: weighted_set
+                  weight: 1
+                  parts:
+                    - type: text
+                      refs: Romans 3

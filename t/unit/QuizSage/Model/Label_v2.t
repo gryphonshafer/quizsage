@@ -61,6 +61,10 @@ for my $case_name (
     # 'block with nested distributive',
 
     'intersection followed by addition',
+
+    # 'weights inside block with weight',
+    # 'weights inside block without weight',
+    # 'block with weight',
 ) {
     my $case          = $cases->{$case_name}{case};
     my $case_set_name = $cases->{$case_name}{case_set_name};
@@ -77,7 +81,7 @@ for my $case_name (
 
     my @description = $obj->__descriptionize( $case->{input} );
 
-    is( $description[0], $case->{description}, 'description: ' . $case_title . '> ' . $case->{description} );
+    is( $description[0], $case->{description}, 'description: ' . $case_title . '> ' . $case->{description} ) if 1;
 
     $obj->warn( {
         in => {
