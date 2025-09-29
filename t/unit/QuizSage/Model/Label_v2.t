@@ -39,7 +39,9 @@ for my $case_name (
     'alias with nested alias',
     'aliases with confusing syntax',
     'alias inside intersection',
-    'distributive with aliases and special',
+
+    'distributive with aliases and special', #................................
+
     'lowest common denominator weights',
     'text node after weighted blocks',
     'block node after weighted blocks',
@@ -50,19 +52,20 @@ for my $case_name (
     'intersection with weight',
     'addition in a weight',
 
-    # 'block with addition', # TODO
+    # 'block with addition', # TODO................................
 
     'unweighted set with unnecessary block',
 
-    # 'nested block with filter', # TODO
-    # 'block with distributive', # TODO
-    # 'block with nested distributive', # TODO
+    # 'nested block with filter', # TODO................................
+    # 'block with distributive', # TODO................................
+    # 'block with nested distributive', # TODO................................
 
     'intersection followed by addition',
 
-    # 'weights inside block with weight', # TODO
-    # 'weights inside block without weight', # TODO
-    # 'block with weight', # TODO
+    # 'weights inside block with weight', # TODO................................
+    # 'weights inside block without weight', # TODO................................
+
+    'block with weight',
 ) {
     my $case          = $cases->{$case_name}{case};
     my $case_set_name = $cases->{$case_name}{case_set_name};
@@ -79,7 +82,7 @@ for my $case_name (
 
     my @description = $obj->__descriptionize( $case->{input} );
 
-    is( $description[0], $case->{description}, 'description: ' . $case_title ) if 0; # . '> ' . $case->{description}
+    is( $description[0], $case->{description}, 'description: ' . $case_title ) if 1; # . '> ' . $case->{description}
 
     $obj->warn( {
         in => {

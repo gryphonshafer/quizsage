@@ -455,8 +455,8 @@ sub __descriptionize( $self, $input = $self->data->{label}, $user_id = $self->us
                 range  => $_->{value},
                 weight => $_->{weight},
             } :
-        ( ref $_ eq 'HASH' and $_->{parts} )
-            ? ( $_->{parts}->@* )
+        ( ref $_ eq 'HASH' and $_->{elements} )
+            ? ( $_->{elements}->@* )
             : { range  => $_ }
     } node_descend(
         $parse->{parts},
@@ -477,9 +477,16 @@ sub __descriptionize( $self, $input = $self->data->{label}, $user_id = $self->us
                     );
                 }
                 elsif ( $node->{type} eq 'distributive' ) {
+                    for ( $node->{prefix}->@*, $node->{suffix}->@* ) {
+                        $_ = {
+                            value  => $_,
+                            weight => 1,
+                        } if ( not ref $_ );
+                    }
+
                     my $all = join( '; ', map { $_->{value} } $node->{prefix}->@* );
 
-                    %$node = ( parts => [ map {
+                    %$node = ( elements => [ map {
                         my $suffix = $_;
 
                         grep { $_->{range} }
@@ -506,7 +513,8 @@ sub __descriptionize( $self, $input = $self->data->{label}, $user_id = $self->us
                         } $node->{prefix}->@*;
                     } $node->{suffix}->@* ] );
                 }
-                elsif ( $node->{parts} and $node->{parts}->@* ) {
+
+                if ( $node->{parts} and $node->{parts}->@* == 1 ) {
                     $node->{type} = 'text' if ( $node->{type} eq 'block' );
                     ( $node->{value} ) = ( delete $node->{parts} )->@*;
                 }
