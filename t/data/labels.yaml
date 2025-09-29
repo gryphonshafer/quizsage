@@ -216,11 +216,13 @@ cases:
 
       - name: distributive with aliases and special
         input: >-
-            Rom 1 (1) Rom 2 (1) / Club (10) (1) Club [20] (2) All (3)
+            Rom 1 (1) Rom 1 (2) / Club (10) (1) Club [20] (2) All (3)
         canonical: >-
-            Romans 1 (1) Romans 2 (1) / Club (10) (1) Club [20] (2) All (3)
+            Romans 1 (1) Romans 1 (2) / Club (10) (1) Club [20] (2) All (3)
         description: >-
-            ???
+            Romans 1:1-10 (1) Romans 1:1-10 (2)
+            Romans 1:11-20 (2) Romans 1:11-20 (4)
+            Romans 1 (3) Romans 1 (6)
         parse:
             parts:
               - type: distributive
@@ -231,10 +233,10 @@ cases:
                       - type: text
                         refs: Romans 1
                   - type: weighted_set
-                    weight: 1
+                    weight: 2
                     parts:
                       - type: text
-                        refs: Romans 2
+                        refs: Romans 1
                 suffix:
                   - type: weighted_set
                     weight: 1

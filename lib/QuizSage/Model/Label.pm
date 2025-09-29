@@ -160,15 +160,13 @@ sub __parse (
 
     return ($data)
         ? {
-            parts => $self->_parse_parts_compress(
-                $self->_parse_parts_simplify(
-                    $self->_parse_parts_cleanup(
-                        $data->{parts},
-                        $aliases,
-                        $tokenized_aliases,
-                    ),
+            parts => $self->_parse_parts_simplify(
+                $self->_parse_parts_cleanup(
+                    $data->{parts},
                     $aliases,
-                )
+                    $tokenized_aliases,
+                ),
+                $aliases,
             ),
             maybe bibles => $bibles,
         }
@@ -388,26 +386,6 @@ sub _parse_parts_simplify ( $self, $parts, $aliases ) {
     );
 }
 
-sub _parse_parts_compress ( $self, $parts ) {
-    return node_descend(
-        $parts,
-        [ 'post', 'array', sub ($node) {
-            # if a parts hash contains only text, intersections, and filters
-            # which themselves don't contain any aliases, then compress into a
-            # single text with refs
-            if (
-                @$node and not grep {
-                    $_->{type}
-                    and $_->{type} ne 'text' and $_->{type} ne 'intersection' and $_->{type} ne 'filter'
-                    and not $_->{aliases}
-                } @$node
-            ) {
-                # $self->warn($node);
-            }
-        } ],
-    );
-}
-
 sub __format ( $self, $parse ) {
     return join( ' ',
         node_descend(
@@ -472,12 +450,14 @@ sub __descriptionize( $self, $input = $self->data->{label}, $user_id = $self->us
     my $parse = deepcopy $self->__parse( $input, $user_id );
 
     my $ranges = [ map {
-        ( not ( ref $_ eq 'HASH' and $_->{weight} ) )
-            ? { range  => $_ }
-            : {
+        ( ref $_ eq 'HASH' and $_->{weight} )
+            ? {
                 range  => $_->{value},
                 weight => $_->{weight},
-            }
+            } :
+        ( ref $_ eq 'HASH' and $_->{parts} )
+            ? ( $_->{parts}->@* )
+            : { range  => $_ }
     } node_descend(
         $parse->{parts},
         [ 'post', 'hash', sub ($node) {
@@ -487,15 +467,6 @@ sub __descriptionize( $self, $input = $self->data->{label}, $user_id = $self->us
                     $node->{type} eq 'filter' or
                     $node->{type} eq 'intersection'
                 ) {
-                    # if ( not $node->{aliases} ) {
-                    #     %$node = ( value => $node->{refs} );
-                    # }
-                    # elsif ( not grep { grep { not exists $_->{value} } $_->{parts}->@* } $node->{aliases}->@* ) {
-                    #     %$node = ( value => join( '; ',
-                    #         $node->{refs},
-                    #         map { map { $_->{value} } $_->{parts}->@* } $node->{aliases}->@*
-                    #     ) );
-                    # }
                     %$node = (
                         type          => $node->{type},
                         maybe special => $node->{special},
@@ -505,26 +476,32 @@ sub __descriptionize( $self, $input = $self->data->{label}, $user_id = $self->us
                         ) || undef,
                     );
                 }
-                # elsif ( $node->{type} eq 'weighted_set' ) { # and not grep { ref $_ } $node->{parts}->@* ) {
-                #     # %$node = (
-                #     #     type   => $node->{type},
-                #     #     weight => $node->{weight},
-                #     #     value  => delete $node->{parts} } )
-                #     # );
-                # }
                 elsif ( $node->{type} eq 'distributive' ) {
                     my $all = join( '; ', map { $_->{value} } $node->{prefix}->@* );
+
                     %$node = ( parts => [ map {
                         my $suffix = $_;
+
+                        grep { $_->{range} }
                         map {
                             my $prefix = $_;
+
+                            my %verses;
+                            $verses{$_}++ for (
+                                map { $self->_versify_refs($_)->@* } (
+                                    $prefix->{value},
+                                    (
+                                        ( ref $suffix->{value} and $suffix->{value}{special} eq 'All' )
+                                            ? $all
+                                            : $suffix->{value}
+                                    ),
+                                )
+                            );
+                            %verses = map { $_ => 1 } grep { $verses{$_} > 1 } keys %verses;
+
                             +{
                                 weight => ( $prefix->{weight} // 1 ) * ( $suffix->{weight} // 1 ),
-                                value  => join( '; ', $prefix->{value}, (
-                                    ( ref $suffix->{value} and $suffix->{value}{special} eq 'All' )
-                                        ? $all
-                                        : $suffix->{value}
-                                ) ),
+                                range  => $self->_canonicalize_refs( keys %verses ),
                             };
                         } $node->{prefix}->@*;
                     } $node->{suffix}->@* ] );
