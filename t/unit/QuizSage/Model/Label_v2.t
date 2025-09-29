@@ -52,7 +52,7 @@ for my $case_name (
     'intersection with weight',
     'addition in a weight',
 
-    # 'block with addition', # TODO................................
+    'block with addition', # ................................
 
     'unweighted set with unnecessary block',
 

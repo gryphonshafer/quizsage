@@ -521,49 +521,50 @@ sub __descriptionize( $self, $input = $self->data->{label}, $user_id = $self->us
             }
         } ],
         [ 'post', 'array', sub ($node) {
-            my %verses;
-            for my $bit (@$node) {
-                if ( $bit->{type} ) {
-                    if ( $bit->{value} ) {
-                        my $versified_refs = $self->_versify_refs( $bit->{value} );
+            # while node array contains a block/weighted_set and a not-block/weighted_set,
+            # find the first not-block/weighted_set and
+            # distribute it into all preceding blocks/weighted_sets
+            my $de_block_needed = 0;
+            while (1) {
+                my @blocks_ids;
+                my $not_block;
 
-                        if ( $bit->{type} eq 'text' ) {
-                            $verses{$_} = 1 for ( $versified_refs->@* );
-                        }
-                        elsif ( $bit->{type} eq 'filter' ) {
-                            delete $verses{$_} for ( $versified_refs->@* );
-                        }
-                        elsif ( $bit->{type} eq 'intersection' ) {
-                            $verses{$_}++ for ( $versified_refs->@* );
-                            %verses = map { $_ => 1 } grep { $verses{$_} > 1 } keys %verses;
-                        }
+                for my $i ( 0 .. @$node - 1 ) {
+                    if ( ref $node->[$i] eq 'HASH' and $node->[$i]{type} and $node->[$i]{type} eq 'block' ) {
+                        push( @blocks_ids, $i );
                     }
-                    elsif ( $bit->{type} eq 'addition' ) {
-                        %verses =
-                            map {
-                                /^(?<book>.+)\s(?<chapter>\d+):(?<verse>\d+)$/;
-                                my $ref    = {%+};
-                                my @verses = $_;
-                                my $book   = $self->bible_structure->{ $+{book} };
-                                for ( 1 .. $bit->{amount} ) {
-                                    $ref->{verse}++;
-                                    if ( $ref->{verse} > $book->[ $ref->{chapter} - 1 ] ) {
-                                        $ref->{chapter}++;
-                                        $ref->{verse} = 1;
-                                    }
-                                    last unless ( $book->[ $ref->{chapter} - 1 ] );
-                                    push(
-                                        @verses,
-                                        $ref->{book} . ' ' . $ref->{chapter} . ':' . $ref->{verse},
-                                    );
-                                }
-                                map { $_ => 1 } @verses;
-                            }
-                            keys %verses;
+                    elsif (@blocks_ids) {
+                        $not_block = splice( @$node, $i, 1 );
+                        last;
+                    }
+                }
+
+                last unless ( @blocks_ids and $not_block );
+
+                for my $i (@blocks_ids) {
+                    for my $part ( $node->[$i]{parts}->@* ) {
+                        ( $part->{value} ) = $self->_descriptionize_array_node( [
+                            { type => 'text', value => $part->{value} },
+                            $not_block,
+                        ] )->@*;
+                    }
+                }
+                $de_block_needed = 1;
+            }
+
+            while ($de_block_needed) {
+                $de_block_needed = 0;
+                for my $i ( 0 .. @$node - 1 ) {
+                    if ( ref $node->[$i] eq 'HASH' and $node->[$i]{type} and $node->[$i]{type} eq 'block' ) {
+                        splice( @$node, $i, 1, $node->[$i]{parts}->@* );
+                        $de_block_needed = 1;
+                        last;
                     }
                 }
             }
-            @$node = $self->_canonicalize_refs( keys %verses ) if (%verses);
+
+            # process the broader array
+            $self->_descriptionize_array_node($node);
         } ],
     )->@* ];
 
@@ -592,6 +593,53 @@ sub __descriptionize( $self, $input = $self->data->{label}, $user_id = $self->us
             maybe bibles => $parse->{bibles},
         },
     );
+}
+
+sub _descriptionize_array_node ( $self, $node ) {
+    my %verses;
+    for my $bit (@$node) {
+        if ( $bit->{type} ) {
+            if ( $bit->{value} ) {
+                my $versified_refs = $self->_versify_refs( $bit->{value} );
+
+                if ( $bit->{type} eq 'text' ) {
+                    $verses{$_} = 1 for ( $versified_refs->@* );
+                }
+                elsif ( $bit->{type} eq 'filter' ) {
+                    delete $verses{$_} for ( $versified_refs->@* );
+                }
+                elsif ( $bit->{type} eq 'intersection' ) {
+                    $verses{$_}++ for ( $versified_refs->@* );
+                    %verses = map { $_ => 1 } grep { $verses{$_} > 1 } keys %verses;
+                }
+            }
+            elsif ( $bit->{type} eq 'addition' ) {
+                %verses =
+                    map {
+                        /^(?<book>.+)\s(?<chapter>\d+):(?<verse>\d+)$/;
+                        my $ref    = {%+};
+                        my @verses = $_;
+                        my $book   = $self->bible_structure->{ $+{book} };
+                        for ( 1 .. $bit->{amount} ) {
+                            $ref->{verse}++;
+                            if ( $ref->{verse} > $book->[ $ref->{chapter} - 1 ] ) {
+                                $ref->{chapter}++;
+                                $ref->{verse} = 1;
+                            }
+                            last unless ( $book->[ $ref->{chapter} - 1 ] );
+                            push(
+                                @verses,
+                                $ref->{book} . ' ' . $ref->{chapter} . ':' . $ref->{verse},
+                            );
+                        }
+                        map { $_ => 1 } @verses;
+                    }
+                    keys %verses;
+            }
+        }
+    }
+    @$node = $self->_canonicalize_refs( keys %verses ) if (%verses);
+    return $node;
 }
 
 sub parse ( $self, $input = $self->data->{label}, $user_id = undef ) {
