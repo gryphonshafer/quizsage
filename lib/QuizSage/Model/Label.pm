@@ -596,49 +596,87 @@ sub __descriptionize( $self, $input = $self->data->{label}, $user_id = $self->us
 }
 
 sub _descriptionize_array_node ( $self, $node ) {
-    my %verses;
-    for my $bit (@$node) {
+    my $verses = {};
+
+    my @sets = map {
+        my $set = $_;
+        $set->{verses}{$_} = 1 for ( $self->_versify_refs( $set->{value} )->@* );
+        $set;
+    } grep { $_->{type} and $_->{type} eq 'weighted_set' } @$node;
+
+    my @not_sets = grep { not ( $_->{type} and $_->{type} eq 'weighted_set' ) } @$node;
+
+    return $node unless (@not_sets);
+
+    my $merge = sub ($code) {
+        unless (@sets) {
+            $code->($verses);
+        }
+        else {
+            $code->( $_->{verses} ) for (@sets);
+        }
+    };
+
+    for my $bit (@not_sets) {
         if ( $bit->{type} ) {
             if ( $bit->{value} ) {
                 my $versified_refs = $self->_versify_refs( $bit->{value} );
 
                 if ( $bit->{type} eq 'text' ) {
-                    $verses{$_} = 1 for ( $versified_refs->@* );
+                    $merge->( sub ($target) { $target->{$_} = 1 for ( $versified_refs->@* ) } );
                 }
                 elsif ( $bit->{type} eq 'filter' ) {
-                    delete $verses{$_} for ( $versified_refs->@* );
+                    $merge->( sub ($target) { delete $target->{$_} for ( $versified_refs->@* ) } );
                 }
                 elsif ( $bit->{type} eq 'intersection' ) {
-                    $verses{$_}++ for ( $versified_refs->@* );
-                    %verses = map { $_ => 1 } grep { $verses{$_} > 1 } keys %verses;
+                    $merge->( sub ($target) {
+                        $target->{$_}++ for ( $versified_refs->@* );
+                        %$target = map { $_ => 1 } grep { $target->{$_} > 1 } keys %$target;
+                    } );
                 }
             }
             elsif ( $bit->{type} eq 'addition' ) {
-                %verses =
-                    map {
-                        /^(?<book>.+)\s(?<chapter>\d+):(?<verse>\d+)$/;
-                        my $ref    = {%+};
-                        my @verses = $_;
-                        my $book   = $self->bible_structure->{ $+{book} };
-                        for ( 1 .. $bit->{amount} ) {
-                            $ref->{verse}++;
-                            if ( $ref->{verse} > $book->[ $ref->{chapter} - 1 ] ) {
-                                $ref->{chapter}++;
-                                $ref->{verse} = 1;
+                $merge->( sub ($target) {
+                    %$target =
+                        map {
+                            /^(?<book>.+)\s(?<chapter>\d+):(?<verse>\d+)$/;
+                            my $ref    = {%+};
+                            my @verses = $_;
+                            my $book   = $self->bible_structure->{ $+{book} };
+                            for ( 1 .. $bit->{amount} ) {
+                                $ref->{verse}++;
+                                if ( $ref->{verse} > $book->[ $ref->{chapter} - 1 ] ) {
+                                    $ref->{chapter}++;
+                                    $ref->{verse} = 1;
+                                }
+                                last unless ( $book->[ $ref->{chapter} - 1 ] );
+                                push(
+                                    @verses,
+                                    $ref->{book} . ' ' . $ref->{chapter} . ':' . $ref->{verse},
+                                );
                             }
-                            last unless ( $book->[ $ref->{chapter} - 1 ] );
-                            push(
-                                @verses,
-                                $ref->{book} . ' ' . $ref->{chapter} . ':' . $ref->{verse},
-                            );
+                            map { $_ => 1 } @verses;
                         }
-                        map { $_ => 1 } @verses;
-                    }
-                    keys %verses;
+                        keys %$target;
+                } );
             }
         }
     }
-    @$node = $self->_canonicalize_refs( keys %verses ) if (%verses);
+
+    unless (@sets) {
+        @$node = $self->_canonicalize_refs( keys %$verses ) if (%$verses);
+    }
+    else {
+        @$node =
+            grep { defined }
+            map {
+                my $set = $_;
+                my $verses = delete $set->{verses};
+                $set->{value} = $self->_canonicalize_refs( keys %$verses );
+                ( $set->{value} ) ? $set : undef;
+            } @sets;
+    }
+
     return $node;
 }
 

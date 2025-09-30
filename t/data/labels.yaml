@@ -513,9 +513,9 @@ cases:
 
         - name: nested block with filter
           input: >-
-              Rom 1-5 (3) [ [ Rom 6-10 ] | Rom 18 ] (1) ~ Rom 4-7
+              Rom 1-5 (3) [ [ Rom 6-10 ] | Rom 8 ] (1) ~ Rom 4-7
           canonical: >-
-              Romans 1-5 (3) [ Romans 6-10 | Romans 18 ] (1) ~ Romans 4-7
+              Romans 1-5 (3) [ Romans 6-10 | Romans 8 ] (1) ~ Romans 4-7
           description: >-
               Romans 4-5 (3) Romans 6-7 (1)
           parse:
@@ -533,7 +533,7 @@ cases:
                         - type: text
                           refs: Romans 6-10
                         - type: filter
-                          refs: Romans 18
+                          refs: Romans 8
                 - type: intersection
                   refs: Romans 4-7
 

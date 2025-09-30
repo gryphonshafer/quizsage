@@ -39,9 +39,7 @@ for my $case_name (
     'alias with nested alias',
     'aliases with confusing syntax',
     'alias inside intersection',
-
     'distributive with aliases and special', #................................
-
     'lowest common denominator weights',
     'text node after weighted blocks',
     'block node after weighted blocks',
@@ -49,21 +47,22 @@ for my $case_name (
     'block that doesn\'t need to be a block',
     'block that wraps only a single block',
     'merge single scope intersections/filters',
+
     'intersection with weight',
+    # 'weights inside block without weight', # TODO................................
+
     'addition in a weight',
-
     'block with addition', # ................................
-
     'unweighted set with unnecessary block',
 
-    # 'nested block with filter', # TODO................................
+    'nested block with filter', # TODO................................
+
     # 'block with distributive', # TODO................................
     # 'block with nested distributive', # TODO................................
 
     'intersection followed by addition',
 
     # 'weights inside block with weight', # TODO................................
-    # 'weights inside block without weight', # TODO................................
 
     'block with weight',
 ) {
