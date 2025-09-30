@@ -117,7 +117,7 @@ sub identify_aliases (
     ];
 }
 
-sub __parse (
+sub parse (
     $self,
     $input   = $self->data->{label},
     $user_id = $self->user_id,
@@ -255,7 +255,7 @@ sub _parse_parts_cleanup ( $self, $parts, $aliases, $tokenized_aliases ) {
                         if ( my $alias = $tokenized_aliases->[ ord($1) - 57344 ] ) {
                             {
                                 use warnings FATAL => 'recursion';
-                                $alias->{parts} //= $self->__parse(
+                                $alias->{parts} //= $self->parse(
                                     $alias->{label},
                                     undef,
                                     $aliases,
@@ -386,7 +386,7 @@ sub _parse_parts_simplify ( $self, $parts, $aliases ) {
     );
 }
 
-sub __format ( $self, $parse ) {
+sub format ( $self, $parse ) {
     return join( ' ',
         node_descend(
             deepcopy( $parse->{parts} ),
@@ -446,8 +446,8 @@ sub __format ( $self, $parse ) {
     );
 }
 
-sub __descriptionize( $self, $input = $self->data->{label}, $user_id = $self->user_id ) {
-    my $parse = deepcopy $self->__parse( $input, $user_id );
+sub descriptionize( $self, $input = $self->data->{label}, $user_id = $self->user_id ) {
+    my $parse = deepcopy $self->parse( $input, $user_id );
 
     my $ranges = [ map {
         ( ref $_ eq 'HASH' and $_->{weight} )
@@ -682,7 +682,7 @@ sub _descriptionize_array_node ( $self, $node ) {
     return $node;
 }
 
-sub parse ( $self, $input = $self->data->{label}, $user_id = undef ) {
+sub __parse ( $self, $input = $self->data->{label}, $user_id = undef ) {
     my $user_aliases;
     unless ($user_id) {
         $self->user_aliases( $self->aliases ) unless ( $self->user_aliases );
@@ -886,7 +886,7 @@ sub canonicalize( $self, $input = $self->data->{label}, $user_id = undef ) {
     return $self->format( $self->parse( $input, $user_id ) );
 }
 
-sub descriptionize( $self, $input = $self->data->{label}, $user_id = undef ) {
+sub __descriptionize( $self, $input = $self->data->{label}, $user_id = undef ) {
     my $full_data = $self->parse( $input, $user_id );
 
     # parse data by alias-node, replacing aliases along the way
@@ -1079,7 +1079,7 @@ sub descriptionize( $self, $input = $self->data->{label}, $user_id = undef ) {
     return $full_data;
 }
 
-sub format( $self, $data ) {
+sub __format( $self, $data ) {
     # Build canonicalized label text
     #     a. Range set
     #     b. Any intersections and filters
