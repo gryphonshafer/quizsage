@@ -586,6 +586,8 @@ sub __descriptionize( $self, $input = $self->data->{label}, $user_id = $self->us
         grep { defined } $bibles,
     );
 
+    return if ( not $description or $description =~ /(?:HASH|ARRAY)\(0x[0-9a-f]+\)/ );
+
     return ( not wantarray ) ? $description : (
         $description,
         {
