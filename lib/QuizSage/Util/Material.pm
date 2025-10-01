@@ -31,17 +31,18 @@ sub text2words ( $text, $skip_lc = 0 ) {
 my $time = Omniframe::Class::Time->new;
 
 fun material_json (
-    :$description = undef, # assumed to be canonical
-    :$label       = undef, # not required to be canonical
-    :$user        = undef, # user ID from application database
-    :$force       = 0,
+    :$label = undef, # not required to be canonical
+    :$user  = undef, # user ID from application database
+    :$force = 0,
 ) {
     my $now       = time;
     my $json_path = path( join( '/',
         conf->get( qw{ config_app root_dir } ),
         conf->get( qw{ material json location } ),
     ) );
-    my $delete_if_before = $time->parse( conf->get( qw{ material json delete_if_before } ) )->{datetime}->epoch;
+    my $delete_if_before = $time->parse(
+        conf->get( qw{ material json delete_if_before } )
+    )->{datetime}->epoch;
     $json_path->list->grep( sub ($file) {
         $file->stat->atime < $delete_if_before
     } )->each('remove');
@@ -52,16 +53,22 @@ fun material_json (
         ( $now - $file->stat->atime ) / ( 60 * 60 * 24 ) > $atime_life
     } )->each('remove');
 
-    croak('Must provide either label or description (and not both)')
-        if ( not $description and not $label or $description and $label );
+    croak('Must provide label') unless ($label);
 
-    my $model_label = QuizSage::Model::Label->new( user_id => $user );
-    $description    = $model_label->descriptionize($label) if ($label);
-    my $id          = substr( Digest->new('SHA-256')->add($description)->hexdigest, 0, 16 );
+    my $model_label            = QuizSage::Model::Label->new( user_id => $user );
+    my $parse                  = $model_label->parse($label);
+    my ( $description, $data ) = $model_label->descriptionate($parse);
 
+    croak('Must supply at least 1 valid reference range') unless ( $data->{ranges} and $data->{ranges}->@* );
+    croak('Must have least 1 primary supported Bible translation by canonical acronym')
+        unless ( $data->{bibles} and $data->{bibles}{primary} and $data->{bibles}{primary}->@* );
+
+    $data->{canonical} = $model_label->format($parse);
+
+    my $id        = substr( Digest->new('SHA-256')->add($description)->hexdigest, 0, 16 );
     my $json_file = $json_path->child( $id . '.json' );
-
-    my $return = {
+    my $return    = {
+        canonical   => $data->{canonical},
         description => $description,
         json_file   => $json_file,
         id          => $id,
@@ -69,26 +76,14 @@ fun material_json (
 
     return $return if ( not $force and -f $json_file );
 
-    # setup data structure
-    my $data = $model_label->parse($description);
-
-    croak('Must supply at least 1 valid reference range') unless ( $data->{ranges} and $data->{ranges}->@* );
-    croak('Must have least 1 primary supported Bible translation by canonical acronym')
-        unless ( $data->{bibles} and $data->{bibles}{primary} and $data->{bibles}{primary}->@* );
-
     $data->{description} = $description;
-
-    for ( $data->{ranges}->@* ) {
-        $_->{range}  = $_->{range}[0];
-        $_->{verses} = $model_label->bible_ref->clear->simplify(0)->in( $_->{range} )->as_verses;
-    }
-
-    $data->{bibles} = {
+    $data->{bibles}      = {
         map { $_->[0] => { type => ( ( $_->[1] ) ? 'auxiliary' : 'primary' ) } }
         sort { $a->[0] cmp $b->[0] }
         ( map { [ $_, 0 ] } $data->{bibles}{primary  }->@* ),
         ( map { [ $_, 1 ] } $data->{bibles}{auxiliary}->@* ),
     };
+    $_->{verses} = $model_label->versify_refs( $_->{range} ) for ( $data->{ranges}->@* );
 
     my $dq_material = $model_label->dq('material');
 
@@ -345,10 +340,10 @@ This package provides exportable utility functions.
 
 =head2 material_json
 
-This function accepts a material C<label> string and C<user> ID or material
-C<description> string and will build a JSON material data file using data from
-the  material database. A material label represents the reference range blocks,
-weights, and translations for the expected output. For example:
+This function accepts a material C<label> string and optional C<user> ID and
+will build a JSON material data file using data from the material database.
+A material label represents the reference range blocks, weights, and
+translations for the expected output. For example:
 
     Romans 1-4; James (1) Romans 5-8 (1) ESV NASB* NASB1995 NIV
 
@@ -356,14 +351,14 @@ The function also accepts an optional C<force> boolean value to indicate if an
 existing JSON file should be rebuilt. (Default is false.)
 
     my %results = material_json(
-        description => 'Acts 1-20 NIV',
-        force       => 1,
+        label => 'Acts 1-20 NIV',
+        force => 1,
     )->%*;
 
-The function returns a hashref with a C<description>, C<json_file>, and C<id>
-keys. The C<description> will be the canonicalized material description, and the
-C<json_file> is the file that was created or recreated. The C<id> is the hash ID
-of the JSON file.
+The function returns a hashref with C<canonical>, C<description>, C<json_file>,
+and C<id> keys. The C<canonical> will be a canonical label, C<description> will
+be the material description, and the C<json_file> is the file that was created
+or recreated. The C<id> is the hash ID of the JSON file.
 
 =head3 JSON DATA STRUCTURE
 

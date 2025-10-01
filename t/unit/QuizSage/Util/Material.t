@@ -19,14 +19,8 @@ imported_ok( qw{ text2words material_json } );
 
 like(
     dies { material_json() },
-    qr/Must provide either label or description/,
-    'Must provide either label or description',
-);
-
-like(
-    dies { material_json( label => 'Test', description => 'Test' ) },
-    qr/Must provide either label or description/,
-    'Must provide either label or description but not both',
+    qr/Must provide label/,
+    'Must provide label',
 );
 
 like(
@@ -36,6 +30,7 @@ like(
 );
 
 is( material_json( label => 'Eph 6:17 NIV', force => 1 ), {
+    canonical   => 'Ephesians 6:17 NIV',
     description => 'Ephesians 6:17 NIV',
     id          => '35bec86e7f147048',
     json_file   => check_isa('Mojo::File'),
@@ -49,6 +44,7 @@ is( from_json( $spew[1] ), hash {
             type => 'primary',
         },
     },
+    canonical   => 'Ephesians 6:17 NIV',
     description => 'Ephesians 6:17 NIV',
     ranges      => [{
         range  => 'Ephesians 6:17',

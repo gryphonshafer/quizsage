@@ -1,10 +1,7 @@
 package QuizSage::Control::Reference;
 
 use exact -conf, 'Mojolicious::Controller';
-use File::Path 'make_path';
-use Mojo::File 'path';
 use Omniframe;
-use QuizSage::Util::Material 'material_json';
 use QuizSage::Util::Reference qw( reference_data reference_html );
 
 sub lookup ($self) {

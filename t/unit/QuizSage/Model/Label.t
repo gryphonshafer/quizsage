@@ -5,11 +5,19 @@ use QuizSage::Model::Label;
 
 my $obj;
 ok( lives { $obj = QuizSage::Model::Label->new }, 'new' ) or note $@;
-
-DOES_ok( $obj, 'Omniframe::Role::Model' );
+DOES_ok( $obj, $_ ) for ( qw(
+    Omniframe::Role::Model
+    QuizSage::Role::Label::Bible
+    QuizSage::Role::Label::Description
+    QuizSage::Role::Label::Parse
+) );
 can_ok( $obj, qw(
-    user_id user_aliases bible_ref bible_structure bible_acronyms bibles
-    aliases identify_aliases parse canonicalize descriptionize fabricate
+    user_id user_aliases
+    aliases identify_aliases format canonicalize descriptionize fabricate
+    bible_ref bible_structure bibles bible_acronyms
+    canonicalize_refs versify_refs
+    descriptionate
+    parse
 ) );
 ref_ok( $obj->aliases, 'ARRAY', 'aliases returns arrayref' );
 ref_ok( $obj->bible_acronyms, 'ARRAY', 'bible_acronyms returns arrayref' );

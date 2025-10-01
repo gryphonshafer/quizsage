@@ -200,7 +200,7 @@ sub ensure_material_json_exists ($self) {
         $self->data->{settings}{material}{id} . '.json',
     ) );
 
-    my $material = material_json( description => $self->data->{settings}{material}{description} );
+    my $material = material_json( label => $self->data->{settings}{material}{description} );
 
     if ( $self->data->{settings}{material}{id} ne $material->{id} ) {
         $self->data->{settings}{material}{id} = $material->{id};
