@@ -39,6 +39,10 @@ sub versify_refs ( $self, @refs ) {
     return $self->bible_ref->clear->simplify(0)->in(@refs)->as_verses;
 }
 
+sub chapterify_refs ( $self, @refs ) {
+    return $self->bible_ref->clear->simplify(1)->in(@refs)->as_chapters;
+}
+
 1;
 
 =head1 NAME
@@ -64,8 +68,9 @@ QuizSage::Role::Label::Bible
 
     sub process_refs ( $self, @refs ) {
         return {
-            canonical_refs => canonicalize_refs(@refs),
-            verses         => versify_refs(@refs),
+            canonical_refs => $self->canonicalize_refs(@refs),
+            verses         => $self->versify_refs(@refs),
+            chapters       => $self->chapterify_refs(@refs),
         };
     }
 
@@ -104,6 +109,11 @@ Bible references string.
 
 This method accepts any number of string inputs and returns an arrayref of
 single-verse Bible references.
+
+=head2 chapterify_refs
+
+This method accepts any number of string inputs and returns an arrayref of
+chapter-level Bible references.
 
 =head1 WITH ROLE
 

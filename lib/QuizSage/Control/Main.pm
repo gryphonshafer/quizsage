@@ -82,52 +82,94 @@ sub setup ($self) {
 
         $settings->{material_label} .= ' ' . ( $settings->{bible} // $quiz_defaults->{bible} )
             if ( not $parsed_label->{bibles} );
+
+        my $material_label_input = $settings->{material_label};
         $settings->{material_label} = $label->canonicalize( $settings->{material_label} );
 
-        if ( $self->stash('setup_label') eq 'ref_gen' ) {
-            $settings->{$_} = ( $self->req->param($_) ) ? 1 : 0 for ( qw(
-                cover
-                reference
-                concordance
-                mark_unique
-            ) );
-
-            $settings->{$_} = ( $self->req->param($_) ) ? 0 + $self->req->param( $_ . '_number' ) : 0
-                for ( qw( whole chapter phrases ) );
-
-            $settings->{$_} = $self->req->param($_) for ( qw(
-                reference_scope
-                concordance_scope
-                page_width
-                page_height
-                page_right_margin_left
-                page_right_margin_right
-                page_right_margin_top
-                page_right_margin_bottom
-                page_left_margin_left
-                page_left_margin_right
-                page_left_margin_top
-                page_left_margin_bottom
-            ) );
-
-            $settings->{labels_to_markup} = ( $self->req->param('labels_to_markup') )
-                ? join( "\n", $label->identify_aliases( $self->req->param('labels_to_markup') )->@* )
-                : '';
+        unless ( $settings->{material_label} ) {
+            $self->notice( 'Label error: ' . $material_label_input );
+            $self->stash(
+                memo => {
+                    class   => 'error',
+                    message =>
+                        'There was an error in parsing the label/description input. ' .
+                        'These sorts of things are usually due to ' .
+                        'mistyped translation acronyms, unrecognized book names, ' .
+                        'syntax error, or extraneous text. ' .
+                        'Check your input and consider consulting the ' .
+                        '<a href="' . $self->url_for('/docs/material_labels.md') .
+                            '">material labels documentation</a>.'
+                },
+                material_label => $material_label_input,
+            );
         }
+        elsif (
+            (
+                $self->stash('setup_label') eq 'queries_drill' or
+                $self->stash('setup_label') eq 'pickup_quiz' and $self->param('generate_queries')
+            )
+            and not $label->is_multi_chapter( $settings->{material_label} )
+        ) {
+            $self->stash(
+                memo => {
+                    class   => 'error',
+                    message =>
+                        'It appears the material label/description does not include multiple chapters. ' .
+                        'Running quizzes or drills requires multiple chapters. ' .
+                        'If you only want to quiz or drill on a single chapter, consult the ' .
+                        '<a href="' . $self->url_for('/docs/material_labels.md') .
+                            '">material labels documentation</a> ' .
+                        'for instructions on how to setup your label/description.'
+                },
+                material_label => $material_label_input,
+            );
+        }
+        else {
+            if ( $self->stash('setup_label') eq 'ref_gen' ) {
+                $settings->{$_} = ( $self->req->param($_) ) ? 1 : 0 for ( qw(
+                    cover
+                    reference
+                    concordance
+                    mark_unique
+                ) );
 
-        $user->data->{settings}{ $self->stash('setup_label') } = $settings;
-        $user->save;
+                $settings->{$_} = ( $self->req->param($_) ) ? 0 + $self->req->param( $_ . '_number' ) : 0
+                    for ( qw( whole chapter phrases ) );
 
-        return $self->redirect_to(
-            ( $self->stash('setup_label') eq 'memorize'      ) ? '/memory/memorize'     :
-            ( $self->stash('setup_label') eq 'queries_drill' ) ? '/drill'               :
-            ( $self->stash('setup_label') eq 'pickup_quiz'   ) ? '/queries'             :
-            ( $self->stash('setup_label') eq 'ref_gen'       ) ? '/reference/generator' :
-            ( $self->stash('setup_label') eq 'lookup'        ) ? '/reference/lookup/' . material_json (
-                label => $settings->{material_label},
-                user  => $user->id,
-            )->{id} : '/'
-        );
+                $settings->{$_} = $self->req->param($_) for ( qw(
+                    reference_scope
+                    concordance_scope
+                    page_width
+                    page_height
+                    page_right_margin_left
+                    page_right_margin_right
+                    page_right_margin_top
+                    page_right_margin_bottom
+                    page_left_margin_left
+                    page_left_margin_right
+                    page_left_margin_top
+                    page_left_margin_bottom
+                ) );
+
+                $settings->{labels_to_markup} = ( $self->req->param('labels_to_markup') )
+                    ? join( "\n", $label->identify_aliases( $self->req->param('labels_to_markup') )->@* )
+                    : '';
+            }
+
+            $user->data->{settings}{ $self->stash('setup_label') } = $settings;
+            $user->save;
+
+            return $self->redirect_to(
+                ( $self->stash('setup_label') eq 'memorize'      ) ? '/memory/memorize'     :
+                ( $self->stash('setup_label') eq 'queries_drill' ) ? '/drill'               :
+                ( $self->stash('setup_label') eq 'pickup_quiz'   ) ? '/queries'             :
+                ( $self->stash('setup_label') eq 'ref_gen'       ) ? '/reference/generator' :
+                ( $self->stash('setup_label') eq 'lookup'        ) ? '/reference/lookup/' . material_json (
+                    label => $settings->{material_label},
+                    user  => $user->id,
+                )->{id} : '/'
+            );
+        }
     }
     elsif ( $self->stash('setup_label') eq 'pickup_quiz' and not $self->param('generate_queries') ) {
         try {
@@ -139,7 +181,7 @@ sub setup ($self) {
             $self->notice( 'Pickup quiz error: ' . $e );
             $self->flash( memo => {
                 class   => 'error',
-                message => 'Pickup quiz settings error: ' . $e,
+                message => 'Pickup quiz settings error: ' . deat $e,
             } );
             return $self->redirect_to('/quiz/pickup/setup');
         }

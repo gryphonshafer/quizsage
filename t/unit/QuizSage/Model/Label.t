@@ -42,4 +42,11 @@ for my $case_set ( $test_data->{cases}->@* ) {
     }
 }
 
+is( $obj->is_multi_chapter( $_->[1] ), $_->[0], 'is_multi_chapter: ' . $_->[1] ) for (
+    [ 0, '1 Cor 1'                          ],
+    [ 1, '1 Cor 1-3'                        ],
+    [ 1, '1 Cor 1 (1) 1 Cor 3 (1)'          ],
+    [ 0, '1 Cor 1:1-5 (1) 1 Cor 1:6-10 (1)' ],
+);
+
 done_testing;

@@ -163,7 +163,7 @@ sub fabricate ( $self, $range = undef, $sizes = undef ) {
                 /^(?<book>.+?)\s(?<chapter>\d+):(?<verse>\d+)$/;
                 [ $_, $sth->run( $+{book}, $+{chapter}, $+{verse} )->value ];
             }
-            $self->bible_ref->clear->simplify(0)->in($range)->as_verses->@*
+            $self->versify_refs($range)->@*
         ];
         my $total_verses = @$verses;
 
@@ -173,13 +173,10 @@ sub fabricate ( $self, $range = undef, $sizes = undef ) {
 
             push( @$lists, {
                 size => $prior_verses_count + scalar(@new_verses),
-                refs => $self->bible_ref->clear
-                    ->simplify(1)
-                    ->in( join( ';',
-                        ( map { $_->{refs} } @$lists ),
-                        ( map { $_->[0] } @new_verses ),
-                    ) )
-                    ->refs,
+                refs => $self->canonicalize_refs(
+                    ( map { $_->{refs} } @$lists ),
+                    ( map { $_->[0] } @new_verses ),
+                ),
             } );
 
             last unless (@$verses);
@@ -192,6 +189,18 @@ sub fabricate ( $self, $range = undef, $sizes = undef ) {
     }
 
     return $refs, $sizes, $lists;
+}
+
+sub is_multi_chapter ( $self, $label = undef ) {
+    $label //= $self->data->{label};
+    try {
+        my ( $description, $structure ) = $self->descriptionate( $self->parse($label) );
+        die unless ( $structure and ref $structure eq 'HASH' and ref $structure->{ranges} eq 'ARRAY' );
+        return ( $self->chapterify_refs( map { $_->{range} } $structure->{ranges}->@* )->@* > 1 ) ? 1 : 0;
+    }
+    catch ($e) {
+        return 0;
+    }
 }
 
 1;
@@ -289,6 +298,12 @@ You can alternatively explicitly pass the user ID.
 =head2 fabricate
 
 Use the material database's popularity data to fabricate list labels.
+
+=head2 is_multi_chapter
+
+Given a label string as input (or if not provided, will try to use a loaded
+object's C<label> data value), this method will return 1 or 0 indicating the
+label contains multiple chapters (versus 1 or none).
 
 =head1 WITH ROLE
 
