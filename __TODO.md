@@ -1,6 +1,8 @@
 - Expand label documentation
 - Single-chapter labels will loudly warn that they’re likely not going to work for drills and quizzes
-- Displaying descriptionizations versus canonicalizations in the web UI
+- Web UI
+    - Displaying descriptionizations versus canonicalizations
+    - Display errors "nicely"
 - Role break-up
     - lib/QuizSage/Model/Meet.pm
 - Manual Checks

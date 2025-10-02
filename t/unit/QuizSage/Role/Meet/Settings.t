@@ -31,7 +31,7 @@ my $sth = $obj->dq('material')->sql(q{
     ON CONFLICT(acronym) DO NOTHING
 });
 
-$sth->run($_) for ( qw( NIV NASB NASB5 ) );
+$sth->run($_) for ( qw( BSB ESV NIV NASB NASB5 ) );
 
 my $roster_data = {
     default_bible => 'NIV',

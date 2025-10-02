@@ -7,6 +7,11 @@ with 'QuizSage::Role::Label::Bible';
 
 sub descriptionate( $self, $parse ) {
     $parse = deepcopy $parse;
+    return if (
+        not $parse or
+        not $parse->{parts} or
+        ( ref $parse->{parts} eq 'HASH' and exists $parse->{parts}{error} )
+    );
 
     my $ranges = [ map {
         ( ref $_ eq 'HASH' and $_->{weight} )
@@ -18,7 +23,7 @@ sub descriptionate( $self, $parse ) {
             ? ( $_->{elements}->@* )
             : { range  => $_ }
     } node_descend(
-        ( $parse->{parts} // [] ),
+        $parse->{parts},
         [ 'post', 'hash', sub ($node) {
             if ( $node->{type} ) {
                 if (

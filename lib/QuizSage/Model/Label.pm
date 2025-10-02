@@ -54,9 +54,16 @@ sub identify_aliases (
 }
 
 sub format ( $self, $parse ) {
+    $parse = deepcopy $parse;
+    return if (
+        not $parse or
+        not $parse->{parts} or
+        ( ref $parse->{parts} eq 'HASH' and exists $parse->{parts}{error} )
+    );
+
     return join( ' ',
         node_descend(
-            deepcopy( $parse->{parts} ),
+            $parse->{parts},
             [ 'pre', 'hash', sub ($node) {
                 if ( $node->{type} ) {
                     if (
