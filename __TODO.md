@@ -1,10 +1,10 @@
+- Role break-up
+    - lib/QuizSage/Model/Meet.pm
 - Expand label documentation
 - Single-chapter labels will loudly warn that they’re likely not going to work for drills and quizzes
 - Web UI
     - Displaying descriptionizations versus canonicalizations
     - Display errors "nicely"
-- Role break-up
-    - lib/QuizSage/Model/Meet.pm
 - Manual Checks
     - Tools
         - tools/analysis/no_triggers.pl

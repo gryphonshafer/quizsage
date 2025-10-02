@@ -11,9 +11,8 @@ with qw(
 );
 
 has 'user_id';
-has 'user_aliases';
 
-sub aliases ( $self, $user_id = $self->user_id ) {
+sub aliases ( $self, $user_id = $self->user_id, $internal_sort = undef ) {
     return $self->dq->get(
         [
             [ [ qw( label l ) ] ],
@@ -29,7 +28,11 @@ sub aliases ( $self, $user_id = $self->user_id ) {
             maybe 'u.user_id' => $user_id,
         ],
         { order_by => [
-            { -desc => { -length => 'l.name' } },
+            {
+                -desc => ($internal_sort)
+                    ? { -length => 'l.name' }
+                    : \'FLOOR( JULIANDAY( l.created ) / 365.25 * 9 )'
+            },
             'l.name',
             'l.public',
             { -desc => 'is_self_made' },
@@ -125,7 +128,7 @@ sub canonicalize( $self, $input = $self->data->{label}, $user_id = undef ) {
 }
 
 sub descriptionize( $self, $input = $self->data->{label}, $user_id = $self->user_id ) {
-    return $self->descriptionate( $self->parse( $input, $user_id ) );
+    return scalar $self->descriptionate( $self->parse( $input, $user_id ) );
 }
 
 sub fabricate ( $self, $range = undef, $sizes = undef ) {
@@ -223,18 +226,12 @@ public (viewable and usable by all, but editable only be the creating user).
 Any text in a label that's not recognized is ignored, including valid aliases
 to which a user doesn't have access.
 
-=head1 ATTRIBUTES
+=head1 ATTRIBUTE
 
 =head2 user_id
 
 Optional user ID used to select private aliases. If not provided, C<aliases>
 will only return public aliases.
-
-=head2 user_aliases
-
-A cache of aliases pulled from C<aliases> based on whatever C<user_id> is set to
-at the time. This is auto-populated once per object as needed. The data is an
-array of hashes.
 
 =head1 OBJECT METHODS
 

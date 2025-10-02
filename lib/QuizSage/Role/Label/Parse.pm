@@ -7,6 +7,8 @@ use Parse::RecDescent;
 
 with 'QuizSage::Role::Label::Bible';
 
+has 'user_aliases';
+
 my $label_prd_obj = Parse::RecDescent->new( q{
     label: distributive | part(s)
 
@@ -62,8 +64,8 @@ sub parse (
         ( $self->user_aliases and $user_id and $self->user_id and $user_id == $self->user_id )
             ? $self->user_aliases :
         ( not $self->user_aliases and $user_id and $self->user_id and $user_id == $self->user_id )
-            ? $self->user_aliases( $self->aliases($user_id) )->user_aliases :
-            $self->aliases($user_id);
+            ? $self->user_aliases( $self->aliases( $user_id, 1 ) )->user_aliases :
+            $self->aliases( $user_id, 1 );
 
     # tokenize any aliases
     my $tokenized_aliases = [];
@@ -331,6 +333,14 @@ QuizSage::Role::Label::Parse
 =head1 DESCRIPTION
 
 This role provides a label parsing method.
+
+=head1 ATTRIBUTE
+
+=head2 user_aliases
+
+A cache of aliases pulled from C<aliases> based on whatever C<user_id> is set to
+at the time. This is auto-populated once per object as needed. The data is an
+array of hashes.
 
 =head1 METHOD
 
