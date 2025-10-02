@@ -34,4 +34,3 @@
         - lib/QuizSage/Model/Memory.pm
         - lib/QuizSage/Model/Quiz.pm
 - Meet Quiz Build needs to throw errors on bad material labels
-- pickup_quiz needs to throw errors on bad material labels

@@ -60,7 +60,7 @@ fun material_json (
     my ( $description, $data ) = $model_label->descriptionate($parse);
 
     croak('Must supply at least 1 valid reference range') unless ( $data->{ranges} and $data->{ranges}->@* );
-    croak('Must have least 1 primary supported Bible translation by canonical acronym')
+    croak('Must have least 1 primary supported canonical Bible acronym')
         unless ( $data->{bibles} and $data->{bibles}{primary} and $data->{bibles}{primary}->@* );
 
     $data->{canonical} = $model_label->format($parse);
@@ -68,7 +68,7 @@ fun material_json (
     my $id        = substr( Digest->new('SHA-256')->add($description)->hexdigest, 0, 16 );
     my $json_file = $json_path->child( $id . '.json' );
     my $return    = {
-        canonical   => $data->{canonical},
+        label       => $data->{canonical},
         description => $description,
         json_file   => $json_file,
         id          => $id,
@@ -355,10 +355,10 @@ existing JSON file should be rebuilt. (Default is false.)
         force => 1,
     )->%*;
 
-The function returns a hashref with C<canonical>, C<description>, C<json_file>,
-and C<id> keys. The C<canonical> will be a canonical label, C<description> will
-be the material description, and the C<json_file> is the file that was created
-or recreated. The C<id> is the hash ID of the JSON file.
+The function returns a hashref with C<label>, C<description>, C<json_file>,
+and C<id> keys. The C<label> will be a canonical label, C<description> will be
+the material description, and the C<json_file> is the file that was created or
+recreated. The C<id> is the hash ID of the JSON file.
 
 =head3 JSON DATA STRUCTURE
 

@@ -61,6 +61,24 @@ sub setup ($self) {
                 ? ( qw( bible material_label ) ) : ('material_label')
         );
 
+    my $setup_error_messages = {
+        label =>
+            'There was an error in parsing the label/description input. ' .
+            'These sorts of things are usually due to ' .
+            'mistyped translation acronyms, unrecognized book names, ' .
+            'syntax error, or extraneous text. ' .
+            'Check your input and consider consulting the ' .
+            '<a href="' . $self->url_for('/docs/material_labels.md') .
+                '">material labels documentation</a>.',
+        not_multi_chapter =>
+            'It appears the material label/description does not include multiple chapters. ' .
+            'Running quizzes or drills requires multiple chapters. ' .
+            'If you only want to quiz or drill on a single chapter, consult the ' .
+            '<a href="' . $self->url_for('/docs/material_labels.md') .
+                '">material labels documentation</a> ' .
+            'for instructions on how to setup your label/description.',
+    };
+
     unless ( $self->param('material_label') or $self->param('roster_data') ) {
         $self->stash(
             label_aliases => $label->aliases,
@@ -91,14 +109,7 @@ sub setup ($self) {
             $self->stash(
                 memo => {
                     class   => 'error',
-                    message =>
-                        'There was an error in parsing the label/description input. ' .
-                        'These sorts of things are usually due to ' .
-                        'mistyped translation acronyms, unrecognized book names, ' .
-                        'syntax error, or extraneous text. ' .
-                        'Check your input and consider consulting the ' .
-                        '<a href="' . $self->url_for('/docs/material_labels.md') .
-                            '">material labels documentation</a>.'
+                    message => $setup_error_messages->{label},
                 },
                 material_label => $material_label_input,
             );
@@ -113,13 +124,7 @@ sub setup ($self) {
             $self->stash(
                 memo => {
                     class   => 'error',
-                    message =>
-                        'It appears the material label/description does not include multiple chapters. ' .
-                        'Running quizzes or drills requires multiple chapters. ' .
-                        'If you only want to quiz or drill on a single chapter, consult the ' .
-                        '<a href="' . $self->url_for('/docs/material_labels.md') .
-                            '">material labels documentation</a> ' .
-                        'for instructions on how to setup your label/description.'
+                    message => $setup_error_messages->{not_multi_chapter},
                 },
                 material_label => $material_label_input,
             );
@@ -179,11 +184,28 @@ sub setup ($self) {
         }
         catch ($e) {
             $self->notice( 'Pickup quiz error: ' . $e );
-            $self->flash( memo => {
-                class   => 'error',
-                message => 'Pickup quiz settings error: ' . deat $e,
-            } );
-            return $self->redirect_to('/quiz/pickup/setup');
+            my $deat_e = deat $e;
+            $self->stash(
+                memo => {
+                    class   => 'error',
+                    message => (
+                        (
+                            $deat_e eq 'Must provide label' or
+                            $deat_e eq 'Must supply at least 1 valid reference range' or
+                            $deat_e eq 'Must have least 1 primary supported canonical Bible acronym'
+                        )
+                            ? $setup_error_messages->{label} :
+                        ( $deat_e eq 'Material must be multi-chapter' )
+                            ? $setup_error_messages->{not_multi_chapter}
+                            : 'Pickup quiz settings error: ' . $deat_e
+                    ),
+                },
+                map { $_ => $settings->{$_} } qw(
+                    material_label
+                    bible
+                    roster_data
+                ),
+            );
         }
     }
 }
