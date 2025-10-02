@@ -5,6 +5,14 @@
 - Web UI
     - Displaying descriptionizations versus canonicalizations
     - Display errors "nicely"
+- API OCD
+- API update
+    - Label
+        - lib/QuizSage/Control/Api/Label.pm
+        - t/api/label.t
+    - Material
+        - lib/QuizSage/Control/Api/Material.pm
+        - t/api/material.t
 - Manual Checks
     - Tools
         - tools/analysis/no_triggers.pl
@@ -25,10 +33,3 @@
         - lib/QuizSage/Model/Label.pm
         - lib/QuizSage/Model/Memory.pm
         - lib/QuizSage/Model/Quiz.pm
-- API update
-    - Label
-        - lib/QuizSage/Control/Api/Label.pm
-        - t/api/label.t
-    - Material
-        - lib/QuizSage/Control/Api/Material.pm
-        - t/api/material.t
