@@ -55,8 +55,12 @@ fun material_json (
 
     croak('Must provide label') unless ($label);
 
-    my $model_label            = QuizSage::Model::Label->new( user_id => $user );
-    my $parse                  = $model_label->parse($label);
+    my $model_label = QuizSage::Model::Label->new( user_id => $user );
+    my $parse       = $model_label->parse($label);
+
+    croak('Failed to parse material label/description')
+        unless ( $parse and ref $parse eq 'HASH' and not exists $parse->{error} );
+
     my ( $description, $data ) = $model_label->descriptionate($parse);
 
     croak('Must supply at least 1 valid reference range') unless ( $data->{ranges} and $data->{ranges}->@* );

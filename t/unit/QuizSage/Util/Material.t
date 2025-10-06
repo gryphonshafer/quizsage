@@ -25,8 +25,8 @@ like(
 
 like(
     dies { material_json( label => 'NIV' ) },
-    qr/Must supply at least 1 valid reference range/,
-    'Must supply at least 1 valid reference range',
+    qr/Failed to parse material label\/description/,
+    'Failed to parse material label/description',
 );
 
 is( material_json( label => 'Eph 6:17 NIV', force => 1 ), {

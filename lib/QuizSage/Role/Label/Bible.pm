@@ -10,6 +10,7 @@ has 'bible_ref' => sub {
         acronyms   => 0,
         sorting    => 1,
         add_detail => 1,
+        simplify   => 0,
     );
 };
 
@@ -32,15 +33,30 @@ has 'bible_acronyms' => sub ($self) {
 };
 
 sub canonicalize_refs ( $self, @refs ) {
-    return $self->bible_ref->clear->simplify(1)->in(@refs)->refs;
+    return $self->bible_ref->clear
+        ->acronyms(0)
+        ->sorting(1)
+        ->add_detail(1)
+        ->simplify(1)
+        ->in(@refs)->refs;
 }
 
 sub versify_refs ( $self, @refs ) {
-    return $self->bible_ref->clear->simplify(0)->in(@refs)->as_verses;
+    return $self->bible_ref->clear
+        ->acronyms(0)
+        ->sorting(1)
+        ->add_detail(1)
+        ->simplify(0)
+        ->in(@refs)->as_verses;
 }
 
 sub chapterify_refs ( $self, @refs ) {
-    return $self->bible_ref->clear->simplify(1)->in(@refs)->as_chapters;
+    return $self->bible_ref->clear
+        ->acronyms(0)
+        ->sorting(1)
+        ->add_detail(1)
+        ->simplify(0)
+        ->in(@refs)->as_chapters;
 }
 
 1;

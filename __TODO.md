@@ -7,30 +7,13 @@
     - Display errors "nicely"
 - API OCD
 - API update
+    - Bible
+        - lib/QuizSage/Control/Api/Bible.pm
+        - t/api/bible.t
     - Label
         - lib/QuizSage/Control/Api/Label.pm
         - t/api/label.t
     - Material
         - lib/QuizSage/Control/Api/Material.pm
         - t/api/material.t
-- Manual Checks
-    - Tools
-        - tools/analysis/no_triggers.pl
-        - tools/analysis/rulings.pl
-        - tools/material/json_build.pl
-        - tools/app/label.pl
-    - Libs
-        - lib/QuizSage/Control/Api/Material.pm
-        - lib/QuizSage/Control/Api/Label.pm
-        - lib/QuizSage/Control/Api/Bible.pm
-        - lib/QuizSage/Control/Label.pm
-        - lib/QuizSage/Control/Memory.pm
-        - lib/QuizSage/Control/Main.pm
-        - lib/QuizSage/Role/Meet/Settings.pm
-        - lib/QuizSage/Role/Meet/Editing.pm
-        - lib/QuizSage/Util/Reference.pm
-        - lib/QuizSage/Util/Material.pm
-        - lib/QuizSage/Model/Label.pm
-        - lib/QuizSage/Model/Memory.pm
-        - lib/QuizSage/Model/Quiz.pm
 - Meet Quiz Build needs to throw errors on bad material labels

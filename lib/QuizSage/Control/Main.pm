@@ -191,6 +191,7 @@ sub setup ($self) {
                     message => (
                         (
                             $deat_e eq 'Must provide label' or
+                            $deat_e eq 'Failed to parse material label/description' or
                             $deat_e eq 'Must supply at least 1 valid reference range' or
                             $deat_e eq 'Must have least 1 primary supported canonical Bible acronym'
                         )

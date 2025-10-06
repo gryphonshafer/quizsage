@@ -14,7 +14,11 @@ for my $alias ( grep { $_->{public} } $label->aliases->@* ) {
     for my $reference (
         $label->bible_ref
             ->clear
-            ->in( map { $_->{range} } $label->parse( $alias->{label} )->{ranges}->@* )
+            ->in(
+                map { $_->{range} } (
+                    $label->descriptionate( $label->parse( $alias->{label} )
+                )[1]->{ranges}->@*
+            )
             ->as_verses
             ->@*
     ) {
