@@ -57,7 +57,9 @@ fun reference_data (
 
     croak('Bible specified does not exist') unless $bible;
 
-    my $description = $mlabel->descriptionate($parse);
+    my ( $description, $structure ) = $mlabel->descriptionate($parse);
+    $description = $mlabel->canonicalize_refs( map { $_->{range} } $structure->{ranges}->@* );
+
     my $bibles      = [ $bible, sort keys %bibles ];
     my $id          = substr( Digest->new('SHA-256')->add(
         join( '|',

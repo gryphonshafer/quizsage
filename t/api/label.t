@@ -40,48 +40,64 @@ mojo->get_ok('/api/v1/label/aliases')->status_is(200)->json_is(
     }
 );
 
-# my $label_form = { form => { label => 'Romans 12:1-5 (2) James 1:2-4 (1) NIV ESV*' } };
+my $label_form = { form => { label => 'Romans 12:1-5 (2) James 1:2-4 (1) NIV ESV*' } };
 
-# mojo
-#     ->get_ok( '/api/v1/label/' . $_, %$label_form )
-#     ->status_is(200)
-#     ->json_like( qr/^Romans 12:1\-5 \(2\) James 1:2\-4 \(1\)/ )
-#     for ( qw( canonicalize descriptionize ) );
+mojo
+    ->get_ok( '/api/v1/label/' . $_, %$label_form )
+    ->status_is(200)
+    ->json_like( qr/^Romans 12:1\-5 \(2\) James 1:2\-4 \(1\)/ )
+    for ( qw( canonicalize descriptionize ) );
 
-# mojo->get_ok( '/api/v1/label/parse', %$label_form )->status_is(200)->json_is(
-#     hash {
-#         field ranges => array {
-#             all_items hash {
-#                 field weight => D();
-#                 field range  => array {
-#                     all_items E();
-#                     etc;
-#                 };
-#             };
-#             etc;
-#         };
-#         etc;
-#     }
-# );
+mojo->get_ok( '/api/v1/label/parse', %$label_form )->status_is(200)->json_is(
+    hash {
+        field parts => array {
+            all_items hash {
+                field type   => 'weighted_set';
+                field weight => D();
+                field parts  => array {
+                    all_items hash {
+                        field type => 'text';
+                        field refs => T();
+                    };
+                    etc;
+                };
+            };
+            etc;
+        };
+        etc;
+    }
+);
 
-# mojo->post_ok(
-#     '/api/v1/label/format',
-#     json => {
-#         bibles => {
-#             primary   => ['NIV'],
-#             auxiliary => ['ESV'],
-#         },
-#         ranges => [
-#             {
-#                 range  => ['Romans 12:1-5'],
-#                 weight => 2
-#             },
-#             {
-#                 range  => ['James 1:2-4'],
-#                 weight => 1
-#             },
-#         ],
-#     },
-# )->status_is(200)->json_is('Romans 12:1-5 (2) James 1:2-4 (1) ESV* NIV');
+mojo->post_ok(
+    '/api/v1/label/format',
+    json => {
+        bibles => {
+            primary   => ['NIV'],
+            auxiliary => ['ESV'],
+        },
+        parts => [
+            {
+                type   => 'weighted_set',
+                weight => 2,
+                parts  => [
+                    {
+                        type => 'text',
+                        refs => 'Romans 12:1-5',
+                    },
+                ],
+            },
+            {
+                type   => 'weighted_set',
+                weight => 1,
+                parts  => [
+                    {
+                        type => 'text',
+                        refs => 'James 1:2-4',
+                    },
+                ],
+            },
+        ],
+    },
+)->status_is(200)->json_is('Romans 12:1-5 (2) James 1:2-4 (1) NIV ESV*');
 
 teardown;

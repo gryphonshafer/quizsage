@@ -1,3 +1,5 @@
+- Launch
+- Set delete_if_before in app.yaml to now-ish
 - Role break-up
     - lib/QuizSage/Model/Meet.pm
 - Expand label documentation
@@ -5,14 +7,3 @@
     - Display "Label" instead of "Description"
         - Drill
         - Quiz
-- API OCD
-- API update
-    - Bible
-        - lib/QuizSage/Control/Api/Bible.pm
-        - t/api/bible.t
-    - Label
-        - lib/QuizSage/Control/Api/Label.pm
-        - t/api/label.t
-    - Material
-        - lib/QuizSage/Control/Api/Material.pm
-        - t/api/material.t
