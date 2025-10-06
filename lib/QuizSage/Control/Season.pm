@@ -191,7 +191,8 @@ sub meet ($self) {
                 return $self->redirect_to('/season/admin');
             }
             catch ($e) {
-                $self->notice($e);
+                $self->notice( deat $e );
+                $meet->delete;
                 $self->flash( memo => {
                     class   => 'error',
                     message => ( length $e < 1024 )

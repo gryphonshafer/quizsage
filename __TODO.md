@@ -1,10 +1,10 @@
 - Role break-up
     - lib/QuizSage/Model/Meet.pm
 - Expand label documentation
-- Single-chapter labels will loudly warn that they’re likely not going to work for drills and quizzes
 - Web UI
-    - Displaying descriptionizations versus canonicalizations
-    - Display errors "nicely"
+    - Display "Label" instead of "Description"
+        - Drill
+        - Quiz
 - API OCD
 - API update
     - Bible
@@ -16,4 +16,3 @@
     - Material
         - lib/QuizSage/Control/Api/Material.pm
         - t/api/material.t
-- Meet Quiz Build needs to throw errors on bad material labels

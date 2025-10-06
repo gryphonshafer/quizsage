@@ -27,7 +27,7 @@ sub to_memorize ( $self, $user ) {
         )
     );
 
-    die "Failed to parse label/description\n" unless ($description);
+    die 'Failed to parse label/description' unless ($description);
 
     my %bibles = map { map { $_ => 1 } $structure->{bibles}{$_}->@* } keys $structure->{bibles}->%*;
     my @bibles = keys %bibles;
