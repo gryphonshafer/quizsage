@@ -33,15 +33,28 @@ export default {
             this.replace_query();
         },
 
-        display_description() {
+        display_label() {
             if ( window.omniframe && omniframe.memo ) {
-                const parts = this.material.data.description.split('\)');
+                const canonical   = this.material.data.canonical.split('\)');
+                const description = this.material.data.description.split('\)');
+
                 omniframe.memo({
-                    class   : 'notice',
-                    messages: [ [
-                        ...parts.slice( 0, -1 ).map( part => part + ')' ),
-                        ...parts.slice(-1),
-                    ] ],
+                    class: 'notice',
+                    message:
+                        '<p><b>Label:</b><br>' +
+                        [
+                            ...canonical.slice( 0, -1 ).map( part => part + ')' ),
+                            ...canonical.slice(-1),
+                        ].join('<br>\n') +
+                        '<br><br><b>Description:</b><br>' +
+                        [
+                            ...description.slice( 0, -1 ).map( part => part + ')' ),
+                            ...description.slice(-1),
+                        ].join('<br>\n') +
+                        '<br><br>' +
+                        '<i>See also: ' +
+                        '<a href="/docs/material_labels.md">Material Labels Documentation</a>' +
+                        '</i>'
                 });
             }
         },

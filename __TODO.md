@@ -3,7 +3,3 @@
 - Role break-up
     - lib/QuizSage/Model/Meet.pm
 - Expand label documentation
-- Web UI
-    - Display "Label" instead of "Description"
-        - Drill
-        - Quiz

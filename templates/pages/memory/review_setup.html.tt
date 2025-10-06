@@ -18,7 +18,7 @@
         The material label/description field must contain a valid, full
         material label or description. For details about how these can be
         written, consult the
-        <a href="/docs/material_labels.md">material labels documentation</a>.
+        <a href="[% c.url_for('/docs/material_labels.md') %]">material labels documentation</a>.
     </p>
 </details>
 
