@@ -2,7 +2,7 @@
 openapi: 3.0.3
 info:
     title: QuizSage API
-    version: 1.1.0
+    version: 1.2.0
     description: |-
         This is the [QuizSage](https://quizsage.org)
         [OpenAPI](https://openapis.org) web service.
