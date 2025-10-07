@@ -1,166 +1,180 @@
-# Material Labels
+# Material Labels and Descriptions
 
-This explains how material labels *(and material descriptions)* are interpreted,
-parsed, canonicalized, and descriptionalized.
+QuizSage supports use of material *labels* and/or material *descriptions* to define the material used and how verses are selected in features like quiz (pick-up or meet), queries drill, initial memorization, and reference tools. Descriptions are required and defined by the [CBQ rule book](https://cbqz.org/rules). Labels are more expressive and therefore more complex than descriptions, though usually shorter and easier to read at a glance. All descriptions are labels, but not all labels are descriptions.
 
-A material label is a string of a restricted syntax that defines how verses are
-selected in a quiz for query generation. A label may be associated with a name
-*(or “alias”)*, and that alias maybe nested in another label. For example,
-`James 1:5` could be a simple label. If named `Wisdom`, it could be used in
-another label. For example, `James 1:2; Wisdom` would be equivalent to
-`James 1:2, 5`.
+## Most Common Simple Uses
 
-Scripture references and associated verse content may be grouped into multiple
-sets, each with a reference range. For example, `Romans 1-4; James` is a single
-reference range. These reference ranges may have different weights, noted as
-positive integers, representing the probability of verse content selection from
-each range in quizzes. For example, `Romans 1-4; James (1) Romans 5-8 (3)`
-contains 2 ranges, the first with a 25% probability of selection and the second
-with a 75% probability of selection. Including all ranges, weights, and
-translations results in a complete material description. For example,
-`Romans 1-4; James (1) Romans 5-8 (3) ESV NASB NIV` is a material description.
+In most cases, a minimum viable description will contain a single reference range followed by a Bible translation acronym. For example:
 
-Translation acronyms may be appended with an asterisk to indicate it’s an
-auxiliary translation. A material description must include at least 1 primary
-(non-auxiliary) translation. For example,
-`Romans 1-4; James (1) Romans 5-8 (3) NASB* NASB1995` is a material description
-where “NASB” is an auxiliary translation and “NASB1995” is a primary
-translation.
+> Ephesians 6 NIV
 
-## Terms and Syntax
+When queries need to be generated (like when using the drills of quiz tools), reference ranges must include multiple chapters. This can be done by simply expanding the range. For example:
 
-Verse
-: A book, chapter, and verse number
-  with the book being the full common name
-  and the chapter and verse separated by a `:`
+> Ephesians 5-6 NIV
 
-Reference
-: String representing 1 or more verses
+But in cases where you only want queries in the drill or quiz to be sourced from a single chapter, you’ll need to use a zero-weight component. For example:
 
-Weight
-: Number *(displayed in parentheses)*
+> Ephesians 6 (1) Ephesians (0) NIV
 
-Range
-: Reference set optionally with weight
+## Description Components
 
-Translations
-: Set of translation acronyms; auxiliary marked with `*`
+Let’s start off by examining the components of descriptions. Valid descriptions must contain at least 1 reference range and optionally any additional description components.
 
-Description
-: Range set and translation set
+### Reference Ranges
 
-Intersection
-: `~` followed by a reference set
+A *reference range* is an expression that identifies 1 or more Bible verses, including book name and optionally chapters and verses. If verse numbers are included, they must follow a chapter number and a colon. For example:
 
-Filter
-: `|` followed by a reference set
+- John 3:16
+- Romans 3
+- Mark
 
-Label
-: String of a restricted syntax
-  optionally with any reference set therein replaced by a label
+Multiple verses or chapters can be listed explicitly, separated by commas, or in a range, separated by a dash. For example:
 
-Alias
-: Another name for a label that’s a reference within another label
+- Ephesians 6:10, 12, 18
+- Ephesians 6:10-18
+- Ephesians 3, 5-6
 
-Canonical label syntaxes are:
+Multiple ranges can be appended together. For example:
 
-- Range set
-- Description
-- Range set, intersections and/or filters
-- Range set, intersections and/or filters, and translation set
+> Galatians 1:11-2:10; 4:8-20; Ephesians 6:10-18
 
-Sort order within labels and descriptions is:
+It’s not necessary to write out the full and exact book name. Anything that can be recognized as a valid book name will likely work. For example, all the following are valid:
 
-1. References before labels within a range
-    - For example, `James 1:2; Wisdom` where `Wisdom` is an identified valid
-      alias
-2. References sorted Biblically
-    - For example, `Jam 1:2, 3, 4 Rom 12:1, 3, 4, 5`
-      becomes `Romans 12:1, 3-5; James 1:2-4`
-3. Labels sorted alphanumerically
-4. Ranges before intersections
-5. Intersections before filters
-6. Translations last
+- Genesis, Gen, Ge, Gn
+- Exodus, Ex, Exo
+- 2 Corithians, II Corithians, 2 Cor, 2Co
 
-## Canonicalization
+Any recognized book acronym will be replaced by the full, canonical book name.
 
-Label canonicalization means altering the label to be uniform.
+### Range Weights
 
-- Each range will have its references merged, books canonicalized, and all be
-  sorted in Biblical order
-- Any identifiable aliases are maintained but are sorted within their scope
-- If there is only a single range in a range set, weight is removed
-- Weights across multiple ranges are calculated down to their lowest integer
-  value that preserves the weight relationship, with non-numerics dropped; for
-  example, `Romans (25%) James (75%)” becomes “Romans (1) James (3)`
-- Any range without a weight in a range set with more than 1 range is defaulted
-  to a weight of 1
-- Translations are upper-cased, deduplicated *(with a duplicate that’s both
-  primary and auxiliary becoming a deduplicated primary)*, and sorted
-  alphanumerically
-- Any content that remains unidentified is removed
-- Intersections and filters are canonicalized in the same way as above except
-  that:
-    - Any weights are dropped
-    - All intersection blocks are merged into a single intersection block
-    - All filter blocks are merged into a single filter block
+A reference range can be suffixed with a weight, a number in parentheses, which identifies the probability the preceding reference range is used when generating each query. Consider the following:
 
-## Descriptionalization
+> Ephesians 1-3 (1) Ephesians 4 (3)
 
-Label descriptionalization means converting the label to a description
-*(replacing all nested aliases with their associated content recursively)*, then
-canonicalizing the description. A label may contain a label, which itself may
-contain a label; thus, a label may be parsed into a tree of nodes. A label is
-invalid if an embedded label therein refers to a parent label thereof or would
-otherwise result in deep recursion when parsed into a tree.
+When generating a query with the above material description, chapter 4 will be selected 75% of the time, and chapters 1 through 3 will be selected 25% of the time. Note that is on a per query basis; so if you generate 100 queries, about 75 will be from chapter 4, but it’s not necessarily going to be exactly 75.
 
-- Any translations in a parent node override translations in child node
-- Weights within child nodes are respected; meaning that if a child node has
-  weights, these are included as a portion of the weights of the parent when the
-  child node’s content is replacing the alias in the parent node
+Any weights will be simplified to a lowest common denominator, with any non-digits ignored; so writing “Ephesians 1-3 (25%) Ephesians 4 (75%)” would result in the above example.
 
-The following are the specific logic cases for raising child weights to their
-parents:
+### Bible Translation Acronyms
 
-- If both the parent and child labels lack weights,
-  replace the child label name with its contents
-    - Alias: `Luke John`
-    - Parent Label: `Alias; Acts; Jude`
-    - Description: `Luke; John; Acts; Jude`
-- If the parent has weights but the child label lacks weights,
-  replace the child label name with its contents
-    - Alias: `Luke John`
-    - Parent Label: `Alias (1) Acts (2) Jude (3)`
-    - Description: `Luke; John (1) Acts (2) Jude (3)`
-- If both the parent and child labels have weights,
-  and the label is the only reference in its range,
-  proportionally cascade the child label weights
-    - Alias: `Luke (1) John (3)`
-    - Parent Label: `Alias (1) Acts (1)`
-    - Mental Model: `{ Luke (1) John (3) } (1) Acts (1)`
-    - Description: `Luke (1) John (3) Acts (4)`
-- If both the parent and child labels have weights,
-  but the label is not the only reference in its range,
-  drop the child weights
-    - Alias: `Luke (1) John (3)`
-    - Parent Label: `Alias; Acts (1) Jude (1)`
-    - Description: `Luke; John; Acts (1) Jude (1)`
-- If the parent label lacks weights but the child label has weights,
-  drop the child weights
-    - Alias: `Luke (1) John (3)`
-    - Parent Label: `Alias; Acts`
-    - Description: `Luke; John; Acts`
+A description requires at least 1 primary Bible translation acronym. Bible translations can be set as *primary* or *auxiliary*. Both primary and auxiliary translations have their content included in the materials QuizSage uses for the subsequent tool or action; however, if queries are generated, queries will only be constructed from primary translations. Auxiliary translation acronyms are noted by a trailing asterisk. In the following example, the current ESV and NIV translations are primary and the 1984a NIV translation is auxiliary:
 
-## Add Verses Syntax for Parsing
+> Ephesians 5-6 ESV NIV NIV84*
 
-For any complete label that gets parsed, an optional add verses suffix will
-result in inclusion of the next number of verses within a given book for every
-verse the label includes. For example:
+In all cases where QuizSage can accept a label/description, there will be a “Supported Bibles” reference list.
 
-- Label: `1 Cor 16:15-16 (1) 1 Cor 16:15-16, 19, 22-24 (1) NIV +2 Verses`
-- Description: `1 Corinthians 16:15-18 (1) 1 Corinthians 16:15-24 (1) NIV`
+## Label Components
 
-The add verses suffix needs to be in the form "+N Verses" where "Verses" can be
-replaced with "v", "Verse", etc. Spacing within the suffix is ignored.
+As previously mentioned, labels are like descriptions but with greater expressiveness. They’re basically just descriptions with additional supported components. This makes them usually shorter and easier to read at a glance. All descriptions are labels, but not all labels are descriptions.
 
-Note that a canonical label will not include an add verses syntax.
+### Aliases (or Saved Labels)
+
+A label *alias* is a label saved in QuizSage under a name. For example, assume the following is a saved alias name and label:
+
+- *Alias:* Pure Joy
+- *Label:* James 1:2-8
+
+When constructing a new label, one could specify the following:
+
+> James 1:19-21; Pure Joy
+
+Aliases can contain aliases. For example, you could save the following alias:
+
+- *Alias:* James 1 Parts
+- *Label:* James 1:19-21; Pure Joy
+
+Then a new label could be constructed as follows:
+
+> James 2; James 1 Parts
+
+This new label would be equivalent to the following description:
+
+> James 1:2-8, 19-21; 2
+
+In all cases where QuizSage can accept a label/description, there will be an “Available Labels” reference list.
+
+### Filter
+
+A *filter* is a component that will be used to remove verses from a preceding set of label components. Filters start with a pipe character (i.e. “|”) followed by certain label components. For example, consider:
+
+> Rom 1-3; Jam 1:2-8 | Rom 2-6
+
+The filter here removes Romans chapters 2 through 6 from the preceding reference range. Romans chapters 1 through 3 are in the preceding reference range, so chapters 2 and 3 are removed. Thus, the above is equivalent to the following description:
+
+> Romans 1; James 1:2-8
+
+### Intersection
+
+An *intersection* is similar to a filter, but where a filter removes from the preceding set of label components, an intersection results in the verses that exist within both the preceding and following label components. Filters start with a tilde character (i.e. “~”) followed by certain label components. For example, consider:
+
+> Rom 1-3; Jam 1:2-8 ~ Rom 2-6
+
+The above is equivalent to the following description:
+
+> Romans 2-3
+
+A common use case is combining an intersection with an alias representing a club list. For example, consider:
+
+> 1 Cor 1-7 ~ Cor Club 100
+
+This would result in a description for the Corinthians Club 100 verses for chapters 1 through 7.
+
+### Addition (or Add Verses)
+
+An *addition* allows for adding a certain number of subsequent verses to a preceded set of label components. An addition starts with a plus character (i.e. “+”) followed by an integer. For example, consider:
+
+> Cor Club 100 +1
+
+This will add the following verse to each of the Corinthians “Club 100” verses
+
+### Blocks and Nesting
+
+A *block* is a set of label components that should be interpreted in isolation to surrounding label components before being integrated with surrounding label components. Think of blocks like a parentheses in mathematics. Blocks are noted by square brackets. For example, consider:
+
+> 1 Cor 1:1, 3, 5, 7 \[ Cor Club 100 +1 ]
+
+In the above, the “+1” addition applies to only the Corinthians “Club 100” verses, not to the 4 verses from 1 Corinthians 1. Consider also the following label:
+
+> Rom 1-5 \[ Rom 6-10 | Rom 9 ] Rom 11
+
+The above is equivalent to the following description:
+
+> Romans 1-8; 10-11
+
+Note that aliases are functionally equivalent to blocks in terms of nesting precedence.
+
+### Distributive
+
+A *distributive* is a special type of label component that distributes a subsequent set of weighted components into a preceding set of weighted components via intersection. A distributive is denoted by a slash character (i.e. “/”) between the 2 sets of weighted components.
+
+The most common use case for this is when you want a quiz to include weighted club lists (each saved as aliases) to be used as intersections for a weighted split of new versus old material. For example, consider:
+
+> Romans 1-5 (1) Romans 6-7 (1) / Rom Club 100 (1) Rom Club 300 (2) All (3)
+
+The “Rom Club 100” and “Rom Club 300” are aliases. The “All” term is a special alias that refers to all the weighted components that precede the distributive slash. Thus, the above example is functionally equivalent to the following:
+
+> \[ Romans 1-5 ~ Rom Club 100 ] (1)<br>
+> \[ Romans 6-7 ~ Rom Club 100 ] (1)<br>
+> \[ Romans 1-5 ~ Rom Club 300 ] (2)<br>
+> \[ Romans 6-7 ~ Rom Club 300 ] (2)<br>
+> Romans 1-5 (3)<br>
+> Romans 6-7 (3)
+
+## Canonicalization and/or Descriptionization
+
+When QuizSage encounters a label, it may cause that label to go through *canonicalization* and/or *descriptionization*.
+
+Canonicalization includes but is not limited to:
+
+- Parsing the label
+- Confirming it and all its components are valid
+- Changing all book names and alias names to their precise and full names
+- Sorting reference ranges in a given scope first and merging them
+- Sorting aliases in a given scope behind any reference ranges
+- Merging any filters, intersections, and/or additions in a given scope
+- Determining the lowest/simplest weights if any weights are used
+- Organizing Bible translations alphabetically grouped by primary then auxiliary
+- Removing any unnecessary blocks and/or weights
+
+Descriptionization is the conversion of a label into a description.
