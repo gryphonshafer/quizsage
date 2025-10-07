@@ -36,23 +36,68 @@ sub parse ($self) {
 
 sub canonicalize ($self) {
     $self->openapi->valid_input or return;
-    $self->render( openapi => $label->canonicalize(
+
+    my $canonicalize = $label->canonicalize(
         $self->param('label'),
         $self->session('user_id'),
-    ) );
+    );
+
+    $self->render(
+        ($canonicalize)
+            ? ( openapi => $canonicalize )
+            : (
+                status  => 400,
+                openapi => {
+                    errors => [ {
+                        message => 'Failed to canonicalize label',
+                        path    => $self->req->url->path->to_string,
+                    } ],
+                },
+            ),
+    );
 }
 
 sub descriptionize ($self) {
     $self->openapi->valid_input or return;
-    $self->render( openapi => $label->descriptionize(
+
+    my $descriptionize = $label->descriptionize(
         $self->param('label'),
         $self->session('user_id'),
-    ) );
+    );
+
+    $self->render(
+        ($descriptionize)
+            ? ( openapi => $descriptionize )
+            : (
+                status  => 400,
+                openapi => {
+                    errors => [ {
+                        message => 'Failed to candescriptionize label',
+                        path    => $self->req->url->path->to_string,
+                    } ],
+                },
+            ),
+    );
 }
 
 sub format ($self) {
     $self->openapi->valid_input or return;
-    $self->render( openapi => $label->format( $self->req->json ) );
+
+    my $format = $label->format( $self->req->json );
+
+    $self->render(
+        ($format)
+            ? ( openapi => $format )
+            : (
+                status  => 400,
+                openapi => {
+                    errors => [ {
+                        message => 'Failed to format data structure',
+                        path    => $self->req->url->path->to_string,
+                    } ],
+                },
+            ),
+    );
 }
 
 1;

@@ -3,6 +3,14 @@ use exact -conf;
 use Omniframe::Test::App;
 use QuizSage::Test;
 
+my $model_label_obj = QuizSage::Model::Label->new;
+my $mock_label      = mock 'QuizSage::Model::Label' => (
+    override => [
+        new            => sub { $model_label_obj },
+        bible_acronyms => sub { [ qw( ESV NASB NIV ) ] },
+    ],
+);
+
 setup;
 
 mojo->post_ok('/api/v1/label/format')->status_is(401);
