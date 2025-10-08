@@ -22,7 +22,10 @@ sub save_after_edit ( $self, $user_id = undef ) {
     my $get_settings = sub {
         my $settings = from_json $self->saved_data->{settings};
         for ( $settings, $settings->{brackets}->@* ) {
-            $_->{material} = $label->canonicalize( $_->{material} ) if ( $_->{material} );
+            if ( $_->{material} ) {
+                $_->{material} = $label->canonicalize( $_->{material} );
+                die 'Failed to parse material label/description' unless $_->{material};
+            }
         }
 
         return {

@@ -20,9 +20,16 @@ sub to_memorize ( $self, $user ) {
     my $quiz_defaults = conf->get('quiz_defaults');
     my $user_settings = $user->data->{settings}{memorize}  // {};
     my $label         = QuizSage::Model::Label->new( user_id => $user->id );
-    my $material_data = $label->parse( $user_settings->{material_label} // $quiz_defaults->{material_label} );
 
-    my %bibles = map { map { $_ => 1 } $material_data->{bibles}{$_}->@* } keys $material_data->{bibles}->%*;
+    my ( $description, $structure ) = $label->descriptionate(
+        $label->parse(
+            $user_settings->{material_label} // $quiz_defaults->{material_label}
+        )
+    );
+
+    die 'Failed to parse label/description' unless ($description);
+
+    my %bibles = map { map { $_ => 1 } $structure->{bibles}{$_}->@* } keys $structure->{bibles}->%*;
     my @bibles = keys %bibles;
 
     my $sth_text = $self->dq('material')->sql(q{
@@ -66,7 +73,7 @@ sub to_memorize ( $self, $user ) {
                 };
             } @bibles;
         } $self->bible_ref->clear->acronyms(0)->sorting(1)->add_detail(1)->in(
-            join( '; ', map { $_->{range}->@* } $material_data->{ranges}->@* )
+            join( '; ', map { $_->{range} } $structure->{ranges}->@* )
         )->as_verses->@*
     ];
 }
@@ -87,14 +94,13 @@ sub review_verse( $self, $user ) {
     my @material_label_binds;
     if ( $review->{use_material_label} ) {
         my ( $books, $chapters, $verses ) = ( {}, {}, {} );
+
+        my $label = QuizSage::Model::Label->new( user_id => $user->id );
+        my ( $description, $structure ) = $label->descriptionate( $label->parse( $review->{material_label} ) );
+
         for my $book (
             $self->bible_ref->clear->acronyms(0)->sorting(0)->add_detail(0)->in(
-                join( '; ',
-                    map { $_->{range}->@* } QuizSage::Model::Label
-                        ->new( user_id => $user->id )
-                        ->parse( $review->{material_label} )
-                        ->{ranges}->@*
-                )
+                join( '; ', map { $_->{range} } $structure->{ranges}->@* )
             )->as_array->@*
         ) {
             if ( @$book == 1 ) {

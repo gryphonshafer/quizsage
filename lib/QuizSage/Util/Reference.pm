@@ -46,14 +46,20 @@ fun reference_data (
 
     $bible = uc $bible;
 
-    my $mlabel  = QuizSage::Model::Label->new( maybe user_id => $user_id );
+    my $mlabel = QuizSage::Model::Label->new( maybe user_id => $user_id );
     my $parse  = $mlabel->parse( $material_label . ' ' . $bible );
+
+    croak('Failed to parse material label/description')
+        unless ( $parse and ref $parse eq 'HASH' and not exists $parse->{error} );
+
     my %bibles = map { $_ => 1 } map { @$_ } values $parse->{bibles}->%*;
     $bible     = ( delete $bibles{ $bible } ) ? $bible : undef;
 
     croak('Bible specified does not exist') unless $bible;
 
-    my $description = $mlabel->descriptionize( join( '; ', map { $_->{range}->@* } $parse->{ranges}->@* ) );
+    my ( $description, $structure ) = $mlabel->descriptionate($parse);
+    $description = $mlabel->canonicalize_refs( map { $_->{range} } $structure->{ranges}->@* );
+
     my $bibles      = [ $bible, sort keys %bibles ];
     my $id          = substr( Digest->new('SHA-256')->add(
         join( '|',

@@ -17,8 +17,8 @@ sub tester ($self) {
     );
 
     $self->stash(
-        canonical_label       => $label->canonicalize( $self->param('label') ),
-        canonical_description => $label->descriptionize( $self->param('label') ),
+        maybe canonical_label       => $label->canonicalize  ( $self->param('label') ),
+        maybe canonical_description => $label->descriptionize( $self->param('label') ),
     ) if ( $self->param('label') );
 }
 

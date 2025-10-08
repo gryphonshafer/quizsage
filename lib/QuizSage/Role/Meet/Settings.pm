@@ -70,7 +70,10 @@ sub canonical_settings ( $self, $user_id = undef ) {
 
     my $label = QuizSage::Model::Label->new( maybe user_id => $user_id );
     for ( $settings, $settings->{brackets}->@* ) {
-        $_->{material} = $label->canonicalize( $_->{material} ) if ( $_->{material} );
+        if ( $_->{material} ) {
+            $_->{material} = $label->canonicalize( $_->{material} );
+            die 'Failed to parse material label/description' unless $_->{material};
+        }
     }
 
     my @all_labels = grep { $_->{material} } $settings, $settings->{brackets}->@*;

@@ -2,7 +2,7 @@
 use exact -cli, -conf;
 use QuizSage::Util::Material 'material_json';
 
-my $opt = options( qw{ description|d=s label|l=s user|u=i force|f } );
+my $opt = options( qw{ label|l=s user|u=i force|f } );
 
 try {
     my $result = material_json(%$opt);
@@ -22,9 +22,8 @@ json_build.pl - Build JSON file of materials from material SQLite database
 =head1 SYNOPSIS
 
     json_build.pl OPTIONS
-        -d, --description CANONICALIZED_MATERIAL_DESCRIPTION
-        -l, --label       REFERENCE_BLOCKS_AND_TRANSLATION_LABEL
-        -u, --user        USER_ID
+        -l, --label REFERENCE_BLOCKS_AND_TRANSLATION_LABEL
+        -u, --user  USER_ID
         -f, --force
         -h, --help
         -m, --man
@@ -33,11 +32,6 @@ json_build.pl - Build JSON file of materials from material SQLite database
 
 This program will build JSON file of materials from material SQLite database,
 unless that file already exits.
-
-=head2 -d, --description
-
-A string containing a canonicalized material description.
-See L<QuizSage::Model::Label>.
 
 =head2 -l, --label
 

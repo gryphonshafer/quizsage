@@ -35,8 +35,8 @@ $obj->dq('material')->sql(q{
 })->run( conf->get( qw( quiz_defaults bible ) ) );
 
 my $mock = mock $obj => ( override => [ material_json => sub { +{
-    label       => 'label',
-    description => 'description',
+    label       => 'James 1-2 ' . conf->get( qw( quiz_defaults bible ) ),
+    description => 'James 1-2 ' . conf->get( qw( quiz_defaults bible ) ),
     id          => 'id',
 } } ] );
 

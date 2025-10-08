@@ -6,6 +6,12 @@
     font-weight: bold;
 }
 
+details.error {
+    @include theme.apply( themes.$themes ) {
+        background-color: theme.get('dialog_error_background') !important;
+    }
+}
+
 :not( tr, td ).right {
     float: right;
 }

@@ -10,6 +10,26 @@
     </p>
 </details>
 
+[% IF c.param('label') AND ( NOT canonical_label OR NOT canonical_description ) %]
+    <details open class="error">
+        <summary>Parse Input Error</summary>
+        <p>
+            <span class="warning">There was an error in parsing the label/description input.</span>
+            These sorts of things are usually due to:
+        </p>
+        <ul>
+            <li>Mistyped translation acronyms</li>
+            <li>Unrecognized book names</li>
+            <li>Syntax error</li>
+            <li>Extraneous text</li>
+        </ul>
+        <p>
+            Check your input and consider consulting the
+            <a href="[% c.url_for('/docs/material_labels.md') %]">material labels documentation</a>.
+        </p>
+    </details>
+[% END %]
+
 <form method="post">
     <input type="hidden" name="referrer" value="[% referrer || c.req.headers.referrer %]">
 

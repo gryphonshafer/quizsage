@@ -73,7 +73,7 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
 
     my $label      = QuizSage::Model::Label->new( maybe user_id => $user->id );
     my $label_data = $label->parse(
-        $pickup_settings->{material_label}  // $quiz_defaults->{material_label}
+        $pickup_settings->{material_label} // $quiz_defaults->{material_label}
     );
 
     $label_data->{bibles}          //= {};
@@ -100,6 +100,9 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
     );
 
     $quiz_settings->{material} = $self->create_material_json_from_label( $label_data, $user );
+
+    croak('Material must be multi-chapter')
+        unless ( $label->is_multi_chapter( $quiz_settings->{material}{description} ) );
 
     # build distribution
 
@@ -200,7 +203,7 @@ sub ensure_material_json_exists ($self) {
         $self->data->{settings}{material}{id} . '.json',
     ) );
 
-    my $material = material_json( description => $self->data->{settings}{material}{description} );
+    my $material = material_json( label => $self->data->{settings}{material}{description} );
 
     if ( $self->data->{settings}{material}{id} ne $material->{id} ) {
         $self->data->{settings}{material}{id} = $material->{id};
@@ -209,15 +212,16 @@ sub ensure_material_json_exists ($self) {
 }
 
 sub create_material_json_from_label ( $self, $label, $user = undef ) {
-    my $label_obj       = QuizSage::Model::Label->new( maybe user_id => $user->id );
-    my $canonical_label = ( ref $label ) ? $label_obj->format($label) : $label_obj->canonicalize($label);
-    my $material        = material_json( label => $canonical_label );
+    my $user_id = ( ($user) ? $user->id : $user );
+    $label = QuizSage::Model::Label->new( maybe user_id => $user_id )->format($label) if ( ref $label );
 
-    return {
-        label       => $canonical_label,
-        description => $material->{description},
-        id          => $material->{id},
-    };
+    my $material = material_json(
+        label      => $label,
+        maybe user => $user_id,
+    );
+    delete $material->{json_file};
+
+    return $material;
 }
 
 sub recent_pickup_quizzes ( $self, $user_id, $ctime_life = undef ) {

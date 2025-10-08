@@ -3,6 +3,14 @@ use exact -conf;
 use Omniframe::Test::App;
 use QuizSage::Test;
 
+my $model_label_obj = QuizSage::Model::Label->new;
+my $mock_label      = mock 'QuizSage::Model::Label' => (
+    override => [
+        new            => sub { $model_label_obj },
+        bible_acronyms => sub { [ qw( ESV NASB NIV ) ] },
+    ],
+);
+
 setup;
 
 mojo->post_ok('/api/v1/label/format')->status_is(401);
@@ -50,11 +58,15 @@ mojo
 
 mojo->get_ok( '/api/v1/label/parse', %$label_form )->status_is(200)->json_is(
     hash {
-        field ranges => array {
+        field parts => array {
             all_items hash {
+                field type   => 'weighted_set';
                 field weight => D();
-                field range  => array {
-                    all_items E();
+                field parts  => array {
+                    all_items hash {
+                        field type => 'text';
+                        field refs => T();
+                    };
                     etc;
                 };
             };
@@ -71,17 +83,29 @@ mojo->post_ok(
             primary   => ['NIV'],
             auxiliary => ['ESV'],
         },
-        ranges => [
+        parts => [
             {
-                range  => ['Romans 12:1-5'],
-                weight => 2
+                type   => 'weighted_set',
+                weight => 2,
+                parts  => [
+                    {
+                        type => 'text',
+                        refs => 'Romans 12:1-5',
+                    },
+                ],
             },
             {
-                range  => ['James 1:2-4'],
-                weight => 1
+                type   => 'weighted_set',
+                weight => 1,
+                parts  => [
+                    {
+                        type => 'text',
+                        refs => 'James 1:2-4',
+                    },
+                ],
             },
         ],
     },
-)->status_is(200)->json_is('Romans 12:1-5 (2) James 1:2-4 (1) ESV* NIV');
+)->status_is(200)->json_is('Romans 12:1-5 (2) James 1:2-4 (1) NIV ESV*');
 
 teardown;
