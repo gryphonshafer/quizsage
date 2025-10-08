@@ -51,10 +51,10 @@ default:
             location: static/build/material
             path: /build/material
             atime_life: 274
-            delete_if_before: 2025-10-08 12:00
+            delete_if_before: 2025-10-08 11:00
     reference:
         atime_life: 274
-        delete_if_before: 2025-10-08 12:00
+        delete_if_before: 2025-10-08 11:00
         location:
             json: local/reference/json
             html: local/reference/html
