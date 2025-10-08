@@ -165,7 +165,10 @@
     <h3>Bracket: [% bracket.name %]</h3>
 
     [% FOR set IN bracket.sets %]
-        [% schedule = set.rooms.0.schedule %]
+        [%
+            schedule  = set.rooms.0.schedule;
+            first_set = ( loop.first ) ? 1 : 0;
+        %]
 
         [% PROCESS event
             type   = 'pre',
@@ -191,11 +194,13 @@
                 ">
                     <b>Set [% loop.count %]<span class="time_preposition"> — </span></b>
                     [% time( schedule.start, '%a, %b %-d' ) %]
-                    [% IF qm_auth %]
+                    [% IF qm_auth OR first_set %]
                         <span class="time_preposition"> from </span>
                         <b>[% time( schedule.start, '%-I:%M %p' ) %]</b>
-                        <span class="time_preposition"> to </span>
-                        [% time( schedule.stop, '%-I:%M %p' ) %]
+                        [% IF qm_auth %]
+                            <span class="time_preposition"> to </span>
+                            [% time( schedule.stop, '%-I:%M %p' ) %]
+                        [% END %]
                     [% END %]
                     <i>([% UNLESS qm_auth %]~[% END %][% schedule.duration %] min.)</i>
                 </div>
