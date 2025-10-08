@@ -7,6 +7,7 @@ use YAML::XS 'LoadFile';
 my $opt = options( qw{
     context|c=s
     id|i=i
+    user|u=i
     region|r=s
     season|e=s
     name|n=s
@@ -54,6 +55,7 @@ catch ($e) {
 
 my $data = {
     maybe season_id => $season_id,
+    maybe user_id   => $opt->{user},
     maybe name      => $opt->{ ( $opt->{context} eq 'season' ) ? 'season' : 'name'     },
     maybe location  => $opt->{ ( $opt->{context} eq 'season' ) ? 'region' : 'location' },
     maybe start     => $opt->{start},
@@ -100,6 +102,7 @@ setup.pl - Build and edit meets and seasons
     setup.pl OPTIONS
         -c, --context  CONTEXT # season | meet
         -i, --id       PRIMARY_KEY_ID
+        -u, --user     USER_ID
         -r, --region   SEASON_LOCATION
         -e, --season   SEASON_NAME
         -n, --name     MEET_NAME
@@ -123,6 +126,10 @@ Run the program either in the "season" or "meet" context.
 =head2 -i, --id
 
 Primary key ID of the row of the C<context> desired.
+
+=head2 -u, --user
+
+User primary key ID if desired for season create/edit.
 
 =head2 -r, --region
 
@@ -160,3 +167,29 @@ YAML source file for settings.
 =head2 -a, --action
 
 Execute a valid action. Valid actions are: "build" and "delete".
+
+=head1 EXAMPLES
+
+=head2 Season Create
+
+    ./tools/meet/setup.pl \
+        -c season \
+        -e Corinthians \
+        -r Oregon \
+        -s '2025-08-01 00:00-07:00' \
+        -d 365 \
+        -y ./local/seasons/cor/cor_or_season.yaml
+
+=head2 Meet Build
+
+    ./tools/meet/setup.pl \
+        -c meet \
+        -r OR \
+        -e Corinthians \
+        -n 'Meet 1' \
+        -l 'Juniper Community Church (Madras)' \
+        -s 'Oct 11 2025 8 AM PDT' \
+        -d 1 \
+        -p evangelism \
+        -a build \
+        -y ./local/seasons/cor/cor_or_meet_1.yaml

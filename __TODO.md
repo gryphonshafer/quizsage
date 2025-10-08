@@ -1,4 +1,0 @@
-- Launch
-- Set delete_if_before in app.yaml to now-ish
-- Role break-up
-    - lib/QuizSage/Model/Meet.pm

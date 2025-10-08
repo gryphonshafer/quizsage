@@ -118,7 +118,7 @@ A common use case is combining an intersection with an alias representing a club
 
 > 1 Cor 1-7 ~ Cor Club 100
 
-This would result in a description for the Corinthians Club 100 verses for chapters 1 through 7.
+This would result in a description for the Corinthians “Club 100” verses for chapters 1 through 7.
 
 ### Addition (or Add Verses)
 
@@ -126,7 +126,13 @@ An *addition* allows for adding a certain number of subsequent verses to a prece
 
 > Cor Club 100 +1
 
-This will add the following verse to each of the Corinthians “Club 100” verses
+This will add the following verse to each of the Corinthians “Club 100” verses. So for example, assume the Corinthians “Club 100” verses are as follows:
+
+> 1 Corinthians 1:10, 18, 25, 27-28; 2:2, 12, 14
+
+Then the prior addition example would result in the following description:
+
+> 1 Corinthians 1:10-11, 18-19, 25-29; 2:2-3, 12-15
 
 ### Blocks and Nesting
 
