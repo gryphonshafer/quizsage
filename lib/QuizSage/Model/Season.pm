@@ -64,7 +64,7 @@ sub seasons ($self) {
                 ],
             ],
             { active => 1 },
-            { order_by => [ 'location', 'name' ] },
+            { order_by => [ { -desc => 'start' }, 'location', 'name' ] },
         )->run->all({})->@*
     ];
 }
