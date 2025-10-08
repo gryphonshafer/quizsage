@@ -235,31 +235,35 @@
 <details>
     <summary>Rookies of the Meets</summary>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Meet</th>
-                <th>Rookie</th>
-                <th>Avg. / Sum</th>
-                <th>VRA Sum</th>
-            </tr>
-        </thead>
-        <tbody>
-            [% FOR record IN stats.rookies_of_the_meets %]
+    [% IF stats.rookies_of_the_meets.size > 0 %]
+        <table>
+            <thead>
                 <tr>
-                    <td><a href="[%
-                        c.url_for( '/meet/' _ record.meet.meet_id _ '/stats' )
-                    %]">[% record.meet.name %]</a></td>
-                    <td>[% record.rookie.name %]*</td>
-                    <td class="right">
-                        [% record.rookie.points_avg | format('%0.2f') %] /
-                        [% record.rookie.points_sum | format('%0.1f') %]
-                    </td>
-                    <td class="right">[% record.rookie.vra_sum %]</td>
+                    <th>Meet</th>
+                    <th>Rookie</th>
+                    <th>Avg. / Sum</th>
+                    <th>VRA Sum</th>
                 </tr>
-            [% END %]
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                [% FOR record IN stats.rookies_of_the_meets %]
+                    <tr>
+                        <td><a href="[%
+                            c.url_for( '/meet/' _ record.meet.meet_id _ '/stats' )
+                        %]">[% record.meet.name %]</a></td>
+                        <td>[% record.rookie.name %]*</td>
+                        <td class="right">
+                            [% record.rookie.points_avg | format('%0.2f') %] /
+                            [% record.rookie.points_sum | format('%0.1f') %]
+                        </td>
+                        <td class="right">[% record.rookie.vra_sum %]</td>
+                    </tr>
+                [% END %]
+            </tbody>
+        </table>
+    [% ELSE %]
+        <p>No statistics currently available.</p>
+    [% END %]
 </details>
 
 <p>*Indicates a rookie quizzer.</p>

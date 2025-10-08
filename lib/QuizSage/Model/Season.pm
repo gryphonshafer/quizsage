@@ -102,7 +102,7 @@ sub stats ( $self, $rebuild = 0 ) {
         push( @{ $stats->{rookies_of_the_meets} }, +{
             rookie => $meet_stats->{meta}{rookie_of_the_meet},
             meet   => +{ map { $_ => $meet->data->{$_} } qw( meet_id name location start days ) },
-        } );
+        } ) if ( $meet_stats->{meta}{rookie_of_the_meet} );
 
         for my $quizzer ( $meet_stats->{quizzers}->@* ) {
             $quizzers_meet_data->{ $quizzer->{name} }{ $meet->data->{name} } = {
