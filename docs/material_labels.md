@@ -184,3 +184,78 @@ Canonicalization includes but is not limited to:
 - Removing any unnecessary blocks and/or weights
 
 Descriptionization is the conversion of a label into a description.
+
+## Material Concepts
+
+Taking a step back and looking at the big picture for a moment: It may be beneficial to think of material descriptions like a recipe to bake a sort of “mini-Bible” in the form of a customized material data store. That data store combined with a distribution (as defined by the [CBQ rule book](https://cbqz.org/rules)) contains everything necessary to generate queries for a quiz.
+
+Material descriptions serve multiple purposes, with their primary purpose being to define a quiz’s material. A quiz’s material is the content (all the verses and their references) for the quiz along with an embedded thesaurus, which is all contained in the material data store. A quiz’s material description may also define translations, both primary and auxiliary. The resulting data store contains all the content the quiz could plausibly need. Another purpose of the material description is to allow for optional shaping of the probability of sets of verses being the source for any given query.
+
+Each query in a quiz is generated based on the query base type and translation set in the distribution using the quiz’s material data store, both its content and any encoded probability shaping information. Note that the translation source for each query comes from the set of translations in the quiz’s customized material database filtered by the translations the quizzers in the quiz use.
+
+### Description Concepts Examples
+
+Let’s say we want to create a quiz for 3 teams, with most of the quizzers having memorized NKJV but a couple having memorized KJV. Let’s say we use following material description:
+
+> Ephesians 5:1-3; 6:10, 12, 18 ESV NKJV KJV*
+
+The quiz’s distribution will be generated based on the roster. The distribution will only use NKJV, since there are no quizzers who memorized ESV, and KJV is marked as an auxiliary translation in the material description. However, the ESV and KJV content will still be included in the quiz’s customized material data store and thus available in the material content search tools in the lower-left of the quiz screen.
+
+When generating a query, we start by picking a source verse. It’ll be any 1 of the 6 verses in the material description, and it’ll be evenly randomly selected from this set. In other words, there’s an equal probability it’ll be verse 6:12 as verse 5:2.
+
+#### Probability Shaping
+
+Let’s say we want to increase the probability of verses from chapter 6 being selected such that they’re twice as likely to be picked as verses from chapter 5. We need to change the material description to include weights for sets of verses.
+
+> Ephesians 5:1-3 (1) 6:10, 12, 18 (2) ESV NKJV KJV*
+
+The verse content in the resulting new customized material data store will be the same, but the probability is shaped.
+
+Note, though, that there are only 6 verses in the data store across 3 translations (18 total data records). Therefore, if on a query sourced from 6:10 a quizzer called for add a verse, 6:12 would be the verse added, since that’s the next verse in the data store still from the same book. If we don’t want that, if instead we want the subsequent verse of the Bible to be the added verse, we need to add those verses to the data store. But let’s also say that we only want these original 6 verses to be the only verses sourced as the initial verses for queries. We would then need to add verses in a zero-weighted range. For example:
+
+> Ephesians 5:1-3 (1) 6:10, 12, 18 (2) Ephesians 5-6 (0) ESV NKJV KJV*
+
+This label includes all verses from chapters 5 and 6 across the 3 translations into the quiz’s material data store, but only the 6 verses will be used to generate the initial queries.
+
+#### Single-Chapter Pick-Up Quizzes
+
+This is also a useful trick to use when wanting to run a pick-up quiz on a single chapter. Let’s say we want to build a pick-up quiz with queries only generated from chapter 6. We can’t write a description that includes only chapter 6, though, since we need content from multiple chapters to generate valid chapter-reference queries. The solution is to add a zero-weight additional chapter.
+
+> Ephesians 6 (1) Ephesians 5 (0) ESV NKJV KJV*
+
+#### Missing Translations
+
+Let’s say we have a roster with some quizzers having memorized NKJV and some having memorized KJV. And let’s say we use following as the material description:
+
+> Ephesians NKJV
+
+QuizSage will notice the absence of KJV from the description and there being at least 1 quizzer who memorized the KJV. Therefore, QuizSage will automatically add the missing translation to the material description as an auxiliary translation. The resulting quiz’s material data store will include both NKJV and KJV, but queries will only be generated from the NKJV.
+
+#### Ghost Quizzers
+
+A quiz’s translation distribution is filtered by the translations quizzers in each quiz use. Or in other words, if all the quizzers memorized NKJV and KJV, then ESV won’t be part of the quiz’s distribution even if it’s a primary translation in the material description. Given the earlier examples, let’s say you want to force the use of ESV into the translation rotation for query generation.
+
+The solution to force ESV into the distribution is to add a “ghost” quizzer who memorized ESV. It’s probably easiest to add the ghost as the last quizzer on the third team. But if you wanted to add multiple translations, it might be visually cleaner to add a forth team of all ghosts. If you do the latter solution, just remember that if there are 3 incorrect responses in a row, the quiz will be at a D query for the ghost team, but as long as you mark any such queries as a no trigger, the quiz will progress as if the ghost team wasn’t there.
+
+### Label Concepts Examples
+
+Similar to material descriptions being like a recipe to bake a material description, material labels are like a recipe to bake a material description. Labels are essentially descriptions with higher-order expressions making them more expressive (and therefore more complex but also shorter). Labels are baked into descriptions which are thereafter baked into material data stores.
+
+Consider the following label:
+
+> 1 Corinthians 1-2 ~ Cor Club 100 (3)<br>
+> 1 Corinthians 1-2 ~ Cor Club 300 (1)<br>
+> ESV NKJV KJV*
+
+Let’s assume that “Cor Club 100” and “Cor Club 300” are aliases consisting of club list verses. Depending on exactly what those verses are, the above label might be rendered into the following description:
+
+> 1 Corinthians 1:10, 18, 25, 27-28; 2:2, 12, 14 (3)<br>
+> 1 Corinthians 1:1-2, 4-5, 9-10, 12-13, 17-18, 25, 27-28, 30; 2:2, 4-5, 7-14 (1)<br>
+> ESV NKJV KJV*
+
+Note that in the above label and it’s baked description, verse 1:11 will not exist in the quiz’s material data store. If a query is sourced from 1:10 and a quizzer adds a verse, the added verse will be 1:12. To solve for this, just add a zero-weight of the first 2 chapters:
+
+> 1 Corinthians 1-2 ~ Cor Club 100 (3)<br>
+> 1 Corinthians 1-2 ~ Cor Club 300 (1)<br>
+> 1 Corinthians 1-2 (0)<br>
+> ESV NKJV KJV*

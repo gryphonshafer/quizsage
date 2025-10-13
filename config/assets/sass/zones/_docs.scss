@@ -26,6 +26,36 @@ div#docs {
             font-weight: bold;
         }
     }
+
+    div#doc_content {
+        margin-left: 1.2rem;
+
+        h1 {
+            margin-left: -1.2rem;
+        }
+
+        h2 {
+            margin-left: -0.9rem;
+        }
+
+        h3 {
+            margin-left: -0.3rem;
+        }
+
+        h4 {
+            margin-left: 0rem;
+        }
+
+        blockquote {
+            margin-left : 1rem;
+            padding-left: 0.5rem;
+            border-left : 0.25rem solid;
+
+            @include theme.apply( themes.$themes ) {
+                border-color: theme.get('tiles_start_color');
+            }
+        }
+    }
 }
 
 @media ( min-width: 700px ) {
