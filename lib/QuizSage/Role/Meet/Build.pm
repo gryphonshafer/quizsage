@@ -137,7 +137,9 @@ sub build_bracket_data ( $self, $build_settings ) {
             }
         }
         elsif ( $bracket->{type} eq 'positional' ) {
-            my $template = dataload( 'config/meets/brackets/' . $bracket->{template} . '.yaml' );
+            my $template = ( ref $bracket->{template} )
+                ? $bracket->{template}
+                : dataload( 'config/meets/brackets/' . $bracket->{template} . '.yaml' );
 
             for my $quiz_override ( $bracket->{quizzes}->@* ) {
                 my ($quiz_to_override) =
@@ -146,7 +148,8 @@ sub build_bracket_data ( $self, $build_settings ) {
             }
 
             for ( grep { not exists $_->{roster} } $template->{quizzes}->@* ) {
-                push( @{ $_->{roster} }, shift @$teams ) while ( @$teams and @{ $_->{roster} // [] } < 3 );
+                push( @{ $_->{roster} }, shift @$teams )
+                    while ( @$teams and @{ $_->{roster} // [] } < ( $_->{teams_count} // 3 ) );
             }
 
             my ( $current_set, $current_room );

@@ -1,0 +1,29 @@
+---
+quizzes:
+  - name: A
+    teams_count: 2
+  - name: B
+    teams_count: 2
+  - name: C
+    roster:
+      - position: 2
+        quiz: A
+      - position: 2
+        quiz: B
+  - name: D
+    roster:
+      - position: 1
+        quiz: A
+      - position: 1
+        quiz: B
+      - position: 1
+        quiz: C
+rankings:
+  - position: 1
+    quiz: D
+  - position: 2
+    quiz: D
+  - position: 3
+    quiz: D
+  - position: 2
+    quiz: C
