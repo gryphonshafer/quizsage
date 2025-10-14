@@ -81,6 +81,7 @@ default:
     rebuild_stats_if_before: 2025-03-24 18:00
     season_start: 08-01
     thesaurus_patch_log: local/thesaurus_patch.yaml
+    label_parse_log: local/label_parse.log
 www:
     logging:
         filter: ~

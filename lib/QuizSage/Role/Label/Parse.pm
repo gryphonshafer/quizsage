@@ -1,9 +1,11 @@
 package QuizSage::Role::Label::Parse;
 
-use exact -role;
+use exact -role, -conf;
 use Math::Prime::Util 'divisors';
+use Mojo::File 'path';
 use Omniframe::Util::Data 'node_descend';
 use Parse::RecDescent;
+use POSIX 'strftime';
 
 with 'QuizSage::Role::Label::Bible';
 
@@ -59,6 +61,8 @@ sub parse (
 
     return {} unless ( defined $input );
 
+    ( my $original_input_as_single_line = $input ) =~ s/\s+/ /g;
+
     # get aliases to use for this parsing
     $aliases //=
         ( $self->user_aliases and $user_id and $self->user_id and $user_id == $self->user_id )
@@ -91,6 +95,14 @@ sub parse (
 
     # parse input into a data structure
     my $data = $label_prd_obj->start($input);
+
+    my $label_parse_log = path( conf->get('label_parse_log') )->open('>>:encoding(UTF-8)');
+    print $label_parse_log join( ' - ',
+        '[' . strftime( "%d/%b/%Y:%H:%M:%S %z", localtime ) . ']',
+        ( ($data) ? 'SUCCESS' : 'FAILURE' ),
+        ( $user_id // '><' ),
+        $original_input_as_single_line,
+    ) . "\n";
 
     return ($data)
         ? {
