@@ -83,20 +83,73 @@ sub stats ( $self, $rebuild = 0 ) {
         weight => 1,
     } } @$meets ] };
 
+    my $get_meet_id = $self->dq->sql(q{
+        SELECT meet.meet_id
+        FROM meet
+        JOIN season USING (season_id)
+        WHERE
+            season.active AND NOT season.hidden AND NOT meet.hidden AND
+            season.name = ? AND season.location = ? AND meet.name = ?
+    });
+    my $remote_meets = [
+        grep { defined }
+        map {
+            my $id = $get_meet_id->run(@$_)->value;
+            ($id) ? QuizSage::Model::Meet->new->load($id) : undef;
+        }
+        map {
+            my $meet = $_;
+            if ( not ref $meet->{merge} ) {
+                [
+                    $self->data->{name},
+                    $meet->{merge},
+                    $meet->{name},
+                ];
+            }
+            elsif ( ref $meet->{merge} eq 'HASH' ) {
+                [
+                    $meet->{merge}{season} // $self->data->{name},
+                    $meet->{merge}{location},
+                    $meet->{merge}{meet} // $meet->{name},
+                ];
+            }
+            elsif ( ref $meet->{merge} eq 'ARRAY' ) {
+                map {
+                    ( ref $_ )
+                        ? [
+                            $_->{season} // $self->data->{name},
+                            $_->{location},
+                            $_->{meet} // $meet->{name},
+                        ]
+                        : [
+                            $self->data->{name},
+                            $_,
+                            $meet->{name},
+                        ];
+                } $meet->{merge}->@*;
+            }
+        }
+        grep { $_->{merge} }
+        $rules->{meets}->@*
+    ];
+
     my $stats = {
-        meets => [
+        meet_count => scalar @$meets,
+        meets      => [
             sort {
-                $a->{start} cmp $b->{start}
+                $a->{start}    cmp $b->{start} or
+                $a->{name}     cmp $b->{name}  or
+                $a->{location} cmp $b->{location}
             }
             map {
                 my $meet = $_;
                 +{ map { $_ => $meet->data->{$_} } qw( meet_id name location start days ) };
-            } @$meets
+            } @$meets, @$remote_meets
         ],
     };
 
     my $quizzers_meet_data;
-    for my $meet (@$meets) {
+    for my $meet ( @$meets, @$remote_meets ) {
         my $meet_stats = $meet->stats($rebuild);
 
         push( @{ $stats->{rookies_of_the_meets} }, +{
@@ -110,6 +163,15 @@ sub stats ( $self, $rebuild = 0 ) {
             };
         }
     }
+
+    $stats->{rookies_of_the_meets} = [
+        sort {
+            $a->{meet}{start}    cmp $b->{meet}{start} or
+            $a->{meet}{name}     cmp $b->{meet}{name}  or
+            $a->{meet}{location} cmp $b->{meet}{location}
+        }
+        $stats->{rookies_of_the_meets}->@*
+    ];
 
     my %unique_tags;
     $stats->{quizzers} = [
@@ -135,7 +197,16 @@ sub stats ( $self, $rebuild = 0 ) {
 
                     $meet_data;
                 }
-                $stats->{meets}->@*
+                sort {
+                    $a->{start}    cmp $b->{start} or
+                    $a->{name}     cmp $b->{name}  or
+                    $a->{location} cmp $b->{location}
+                }
+                map {
+                    my $meet = $_;
+                    +{ map { $_ => $meet->data->{$_} } qw( meet_id name location start days ) };
+                }
+                @$meets
             ];
 
             if ( $rules->{drop} ) {

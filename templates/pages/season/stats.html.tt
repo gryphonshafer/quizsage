@@ -9,6 +9,7 @@
     <table>
         <thead>
             <tr>
+                <th>#</th>
                 <th>Name</th>
                 <th>Location</th>
                 <th>Start</th>
@@ -17,11 +18,12 @@
         <tbody>
             [% FOR meet IN stats.meets %]
                 <tr>
+                    <td>[% loop.count %]</td>
                     <td><a href="[%
                         c.url_for( '/meet/' _ meet.meet_id _ '/stats' )
                     %]">[% meet.name %]</a></td>
                     <td>[% meet.location %]</td>
-                    <td>[% time( meet.start, '%a, %b %-d, %Y at %-I:%M %p %Z' ) %]</td>
+                    <td>[% time( meet.start, '%a, %b %-d, %Y' ) %]</td>
                 </tr>
             [% END %]
         </tbody>
@@ -93,11 +95,8 @@
                     <th>Total Avg.</th>
                     <th>Total Pts.</th>
                     <th>VRA Sum</th>
-                    [% FOR meet IN stats.meets %]
-                        <th>
-                            <a href="[% c.url_for( '/meet/' _ meet.meet_id _ '/stats' )
-                                %]">[% meet.name %]</a>
-                        </th>
+                    [% FOR meet_number IN [ 1 .. stats.meet_count ] %]
+                        <th>Meet [% meet_number %]</a></th>
                     [% END %]
                 </tr>
             </thead>
@@ -151,7 +150,7 @@
                             [% ELSE %]
                                 <td class="blank_cell"></td>
                             [% END %]
-                            [% LAST IF loop.count >= stats.meets.size %]
+                            [% LAST IF loop.count >= stats.meet_count %]
                         [% END %]
                     </tr>
                     [%
@@ -179,11 +178,8 @@
                     </th>
                     <th>Quizzer</th>
                     <th>Total</th>
-                    [% FOR meet IN stats.meets %]
-                        <th class="small">
-                            <a href="[% c.url_for( '/meet/' _ meet.meet_id _ '/stats' )
-                                %]">[% meet.name.replace( '\s+', '<br>' ) %]</a>
-                        </th>
+                    [% FOR meet_number IN [ 1 .. stats.meet_count ] %]
+                        <th>Meet [% meet_number %]</a></th>
                     [% END %]
                 </tr>
             </thead>
@@ -217,7 +213,7 @@
                             [% ELSE %]
                                 <td class="blank_cell"></td>
                             [% END %]
-                            [% LAST IF loop.count >= stats.meets.size %]
+                            [% LAST IF loop.count >= stats.meet_count %]
                         [% END %]
                     </tr>
                     [%
@@ -239,6 +235,7 @@
         <table>
             <thead>
                 <tr>
+                    <th>#</th>
                     <th>Meet</th>
                     <th>Rookie</th>
                     <th>Avg. / Sum</th>
@@ -248,6 +245,7 @@
             <tbody>
                 [% FOR record IN stats.rookies_of_the_meets %]
                     <tr>
+                        <td>[% loop.count %]</td>
                         <td><a href="[%
                             c.url_for( '/meet/' _ record.meet.meet_id _ '/stats' )
                         %]">[% record.meet.name %]</a></td>
