@@ -49,18 +49,32 @@ export default class Material {
                 .flatMap( bible => Object.values( bible.content ) );
 
             this.verses_by_bible = Object.fromEntries( Object.keys( this.data.bibles )
-                .map( bible => [
-                    bible,
-                    Object
+                .map( bible => {
+                    const verses = Object
                         .values( this.data.bibles[bible].content )
                         .sort( ( a, b ) =>
                             a.book.localeCompare( b.book ) ||
                             a.chapter - b.chapter          ||
                             a.verse   - b.verse
-                        ),
-                ] ) );
+                        );
 
-                return this;
+                    verses.forEach( ( verse, index ) => {
+                        if ( verses.length > index + 1 ) {
+                            const next_verse   = verses[ index + 1 ];
+                            verse.book_next    = next_verse.book;
+                            verse.chapter_next = next_verse.chapter;
+                            verse.verse_next   = next_verse.verse;
+                            verse.text_next    = next_verse.text;
+                            verse.string_next  = next_verse.string;
+                            verse.text_both    = verse.text   + ' ' + next_verse.text;
+                            verse.string_both  = verse.string + ' ' + next_verse.string;
+                        }
+                    } );
+
+                    return [ bible, verses ];
+                } ) );
+
+            return this;
         } );
     }
 
@@ -152,12 +166,36 @@ export default class Material {
     //     type "prompt"  = match lower-case words of input against verse.string with boundary edges
     search( input, bible = undefined, type = 'inexact' ) {
         if ( type == 'inexact' ) input = this.text2string(input);
-        const boundary_regex = ( type == 'prompt' ) ? new RegExp( '\\b' + input + '\\b' ) : null;
+
+        const boundary_regex  = ( type == 'prompt' ) ? new RegExp( '\\b' + input + '\\b' ) : null;
+        const input_by_spaces = input.split(' ');
+        const words_span      = ( text_string_a, text_string_b, words ) => {
+            for ( let index = 1; index < words.length; index++ ) {
+                if (
+                    text_string_a.endsWith( words.slice( 0, index ).join(' ') ) &&
+                    text_string_b.startsWith( words.slice(index).join(' ') )
+                ) return true;
+            }
+            return false;
+        };
 
         return ( ( ! bible ) ? this.all_verses : this.verses_by_bible[bible] )
             .filter( verse =>
-                ( type == 'exact'  ) ? verse.text.indexOf(input) != -1    :
-                ( type == 'prompt' ) ? verse.string.match(boundary_regex) : verse.string.indexOf(input) != -1
+                ( type == 'prompt' ) ? verse.string.match(boundary_regex) :
+                ( type == 'exact' )
+                    ? (
+                        verse.text.indexOf(input) != -1 || (
+                            verse.text_both &&
+                            verse.text_both.indexOf(input) != -1 &&
+                            words_span( verse.text, verse.text_next, input_by_spaces )
+                        )
+                    ) : (
+                        verse.string.indexOf(input) != -1 || (
+                            verse.string_both &&
+                            verse.string_both.indexOf(input) != -1 &&
+                            words_span( verse.string, verse.string_next, input_by_spaces )
+                        )
+                    )
             )
             .sort( ( a, b ) =>
                 a.book.localeCompare( b.book ) ||

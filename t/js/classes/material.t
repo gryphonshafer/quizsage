@@ -1,7 +1,7 @@
 use Test2::V0;
-use exact -conf, -me;
+use exact -conf;
 use Omniframe::Class::Javascript;
-use Mojo::File 'path';
+use Omniframe::Util::File 'opath';
 use Mojo::JSON 'from_json';
 
 my $out = Omniframe::Class::Javascript->new(
@@ -39,7 +39,7 @@ my $out = Omniframe::Class::Javascript->new(
         } );
     },
     {
-        material => from_json( path( me('./material.json') )->slurp('UTF-8') ),
+        material => from_json( opath('t/data/material.json')->slurp('UTF-8') ),
     },
 )->[0][0];
 
@@ -51,16 +51,17 @@ is( $out->{material}{bibles}, [
 ], 'bibles' );
 
 is( $out->{material}{all_verses}, array {
-    all_items {
-        bible     => T,
-        book      => T,
-        breaks    => array { all_items T; etc } ,
-        chapter   => T,
-        reference => T,
-        string    => T,
-        text      => T,
-        verse     => T,
-        words     => array { all_items T; etc },
+    all_items hash {
+        field bible     => T;
+        field book      => T;
+        field breaks    => array { all_items T; etc } ;
+        field chapter   => T;
+        field reference => T;
+        field string    => T;
+        field text      => T;
+        field verse     => T;
+        field words     => array { all_items T; etc };
+        etc;
     };
     etc;
 }, 'all_verses' );
@@ -68,16 +69,17 @@ is( $out->{material}{all_verses}, array {
 is( $out->{material}{verses_by_bible}, hash {
     all_keys match qr/^[A-Z]+$/;
     all_vals array {
-        all_items {
-            bible     => T,
-            book      => T,
-            breaks    => array { all_items T; etc } ,
-            chapter   => T,
-            reference => T,
-            string    => T,
-            text      => T,
-            verse     => T,
-            words     => array { all_items T; etc },
+        all_items hash {
+            field bible     => T;
+            field book      => T;
+            field breaks    => array { all_items T; etc } ;
+            field chapter   => T;
+            field reference => T;
+            field string    => T;
+            field text      => T;
+            field verse     => T;
+            field words     => array { all_items T; etc };
+            etc;
         };
         etc;
     };
@@ -87,41 +89,56 @@ is( $out->{material}{verses_by_bible}, hash {
 is( $out->{text2words}[0], [ qw( gryphon sharalyn alexander and evangeline love the bible ) ], 'text2words' );
 is( [ sort $out->{next_bible}->@* ], [ qw( BSB BSB ESV ESV ) ], 'next_bible' );
 is( $out->{verses}, array {
-    all_items {
-        bible     => T,
-        book      => T,
-        breaks    => array { all_items T; etc } ,
-        chapter   => T,
-        reference => T,
-        string    => T,
-        text      => T,
-        verse     => T,
-        words     => array { all_items T; etc },
+    all_items hash {
+        field bible     => T;
+        field book      => T;
+        field breaks    => array { all_items T; etc } ;
+        field chapter   => T;
+        field reference => T;
+        field string    => T;
+        field text      => T;
+        field verse     => T;
+        field words     => array { all_items T; etc };
+        etc;
     };
     etc;
 }, 'verses' );
 
 is( $out->{lookup}, [{
-    bible     => 'NASB',
-    book      => 'James',
-    breaks    => [],
-    chapter   => 1,
-    reference => 'James 1:2',
-    string    => 'consider it all joy my brothers and sisters when you encounter various trials',
-    text      => 'Consider it all joy, my brothers and sisters, when you encounter various trials,',
-    verse     => 2,
-    words     => [ qw( consider it all joy my brothers and sisters when you encounter various trials ) ],
+    bible        => 'NASB',
+    book         => 'James',
+    breaks       => [],
+    chapter      => 1,
+    reference    => 'James 1:2',
+    string       => 'consider it all joy my brothers and sisters when you encounter various trials',
+    text         => 'Consider it all joy, my brothers and sisters, when you encounter various trials,',
+    verse        => 2,
+    words        => [ qw( consider it all joy my brothers and sisters when you encounter various trials ) ],
+    book_next    => 'James',
+    chapter_next => 1,
+    verse_next   => 3,
+    string_next  => T,
+    text_next    => T,
+    string_both  => T,
+    text_both    => T,
 }], 'lookup' );
 
 my $search = {
-    reference => 'James 1:2',
-    book      => 'James',
-    chapter   => 1,
-    verse     => 2,
-    breaks    => [],
-    text      => T,
-    string    => T,
-    words     => array { all_items T; etc },
+    reference    => 'James 1:2',
+    book         => 'James',
+    chapter      => 1,
+    verse        => 2,
+    breaks       => [],
+    text         => T,
+    string       => T,
+    words        => array { all_items T; etc },
+    book_next    => 'James',
+    chapter_next => 1,
+    verse_next   => 3,
+    string_next  => T,
+    text_next    => T,
+    string_both  => T,
+    text_both    => T,
 };
 is( $out->{search}, array {
     item hash {
