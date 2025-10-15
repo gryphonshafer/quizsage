@@ -71,11 +71,13 @@ export default {
 
                 if ( this.matched_verses ) {
                     const query_verses = this.current.query.verse.toString().split('+');
+                    const make_pattern = (text) => {
+                        return ( this.exact )
+                            ? text
+                            : this.material.text2words(text)[0].join('\\W+');
+                    };
 
-                    const text_pattern = ( this.exact )
-                        ? this.text
-                        : this.material.text2words( this.text )[0].join('\\W+');
-
+                    const text_pattern  = make_pattern(this.text);
                     const search_regexp = new RegExp(
                         '(?=' + text_pattern + ')|(?<=' + text_pattern + ')',
                         ( this.exact ) ? undefined : 'i',
@@ -99,19 +101,70 @@ export default {
                                 } );
                         }
                         else {
-                            verse.text_parts = [
-                                {
-                                    type: 'text',
-                                    text: verse.text,
-                                },
-                                {
-                                    text: ' (' + verse.chapter_next + ':' + verse.verse_next + ') ',
-                                    type: 'reference',
-                                },
-                                {
-                                    text: verse.text_next,
-                                    type: 'next_verse',
+                            const wordsish = this.text.split(' ');
+                            let search_regexp_first, search_regexp_next;
+
+                            for ( let index = 1; index < wordsish.length; index++ ) {
+                                const test_search_regexp_first = new RegExp(
+                                    '(' + make_pattern( wordsish.slice( 0, index ).join(' ') ) +
+                                        ( ( this.exact ) ? '' : '\\W*' ) + ')$',
+                                    ( this.exact ) ? undefined : 'i',
+                                );
+
+                                const test_search_regexp_next = new RegExp(
+                                    '^(' + ( ( this.exact ) ? '' : '\\W*' ) +
+                                        make_pattern( wordsish.slice(index).join(' ') ) + ')',
+                                    ( this.exact ) ? undefined : 'i',
+                                );
+
+                                if (
+                                    verse.text.match(test_search_regexp_first) &&
+                                    verse.text_next.match(test_search_regexp_next)
+                                ) {
+                                    search_regexp_first = test_search_regexp_first;
+                                    search_regexp_next  = test_search_regexp_next;
+                                    break;
                                 }
+                            }
+
+
+                            verse.text_parts = [
+                                ...verse.text
+                                    .split(search_regexp_first)
+                                    .map( part => {
+                                        return {
+                                            text: part,
+                                            type: ( part.match(search_regexp_first) ) ? 'match' : 'text',
+                                        };
+                                    } ),
+                                {
+                                    type: 'reference',
+                                    text:
+                                        ' (' +
+                                        ( ( verse.book != verse.book_next ) ? verse.book_next + ' ' : '' ) +
+                                        (
+                                            ( verse.chapter != verse.chapter_next )
+                                                ? verse.chapter_next + ':'
+                                                : ''
+                                        ) +
+                                        (
+                                            (
+                                                verse.book    == verse.book_next &&
+                                                verse.chapter == verse.chapter_next
+                                            ) ? 'v' : '' ) +
+                                        verse.verse_next +
+                                        ') ',
+                                },
+                                ...verse.text_next
+                                    .split(search_regexp_next)
+                                    .map( part => {
+                                        return {
+                                            text: part,
+                                            type: ( part.match(search_regexp_next) )
+                                                ? 'next_verse_match'
+                                                : 'next_verse',
+                                        };
+                                    } ),
                             ];
                         }
                     } );
