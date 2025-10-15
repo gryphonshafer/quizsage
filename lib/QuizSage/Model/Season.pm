@@ -133,6 +133,13 @@ sub stats ( $self, $rebuild = 0 ) {
         $rules->{meets}->@*
     ];
 
+    my ($most_recent_last_modified) = reverse sort map { $_->data->{last_modified} } @$meets, @$remote_meets;
+    return $self->data->{stats} if (
+        not $rebuild and
+        $self->data->{stats}->%* and
+        $most_recent_last_modified <= $self->data->{last_modified}
+    );
+
     my $stats = {
         meet_count => scalar @$meets,
         meets      => [
