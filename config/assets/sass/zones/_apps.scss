@@ -340,6 +340,15 @@ div#queries {
                     color: theme.get('search_match_text');
                 }
             }
+
+            span.reference,
+            span.next_verse {
+                font-style: italic;
+
+                @include theme.apply( themes.$themes ) {
+                    color: theme.get('search_next_text');
+                }
+            }
         }
     }
 

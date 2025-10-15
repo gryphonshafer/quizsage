@@ -88,14 +88,32 @@ export default {
                             query_verses.find( number => number == verse.verse )
                         ) ? true : false;
 
-                        verse.text_parts = verse.text
-                            .split(search_regexp)
-                            .map( part => {
-                                return {
-                                    text: part,
-                                    type: ( part.match(search_regexp) ) ? 'match' : 'text',
-                                };
-                            } );
+                        if ( verse.text.match(search_regexp) ) {
+                            verse.text_parts = verse.text
+                                .split(search_regexp)
+                                .map( part => {
+                                    return {
+                                        text: part,
+                                        type: ( part.match(search_regexp) ) ? 'match' : 'text',
+                                    };
+                                } );
+                        }
+                        else {
+                            verse.text_parts = [
+                                {
+                                    type: 'text',
+                                    text: verse.text,
+                                },
+                                {
+                                    text: ' (' + verse.chapter_next + ':' + verse.verse_next + ') ',
+                                    type: 'reference',
+                                },
+                                {
+                                    text: verse.text_next,
+                                    type: 'next_verse',
+                                }
+                            ];
+                        }
                     } );
                 }
             }
