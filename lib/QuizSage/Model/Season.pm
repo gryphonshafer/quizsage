@@ -70,13 +70,6 @@ sub seasons ($self) {
 }
 
 sub stats ( $self, $rebuild = 0 ) {
-    return $self->data->{stats} if (
-        not $rebuild and
-        $self->data->{stats}->%* and
-        $time->parse( $self->data->{last_modified} )->{datetime}->epoch >
-        $time->parse( conf->get('rebuild_stats_if_before') )->{datetime}->epoch
-    );
-
     my $meets = QuizSage::Model::Meet->new->every({ season_id => $self->id, hidden => 0 });
     my $rules = deepcopy( $self->data->{settings}{statistics} ) // { meets => [ map { +{
         name   => $_->data->{name},
@@ -137,6 +130,8 @@ sub stats ( $self, $rebuild = 0 ) {
     return $self->data->{stats} if (
         not $rebuild and
         $self->data->{stats}->%* and
+        $time->parse( $self->data->{last_modified} )->{datetime}->epoch >
+        $time->parse( conf->get('rebuild_stats_if_before') )->{datetime}->epoch and
         $most_recent_last_modified <= $self->data->{last_modified}
     );
 
