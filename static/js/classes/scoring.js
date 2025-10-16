@@ -50,7 +50,7 @@ export default class Scoring {
         quiz.state.board.forEach( record => delete record.score );
 
         const scoring_events = quiz.state.board.filter(
-            event => [ 'correct', 'incorrect', 'no_trigger' ].find( action => event.action == action )
+            event => [ 'correct', 'incorrect', 'no_trigger', 'foul' ].find( action => event.action == action )
         );
 
         let message = undefined;
@@ -170,6 +170,25 @@ export default class Scoring {
             }
             else if ( event.action == 'no_trigger' ) {
                 quiz.state.teams.forEach( team => team.trigger_eligible = true );
+            }
+            else if ( event.action == 'foul' ) {
+                const quizzer = quiz.state
+                    .teams.find( team => team.id == event.team_id )
+                    .quizzers.find( quizzer => quizzer.id == event.quizzer_id );
+
+                quizzer.trigger_eligible           = false;
+                quizzer.trigger_eligible_from_foul = true;
+            }
+
+            if ( event.action != 'foul' ) {
+                quiz.state.teams.forEach( team =>
+                    team.quizzers.forEach( quizzer => {
+                        if ( quizzer.trigger_eligible_from_foul ) {
+                            quizzer.trigger_eligible = true;
+                            delete quizzer.trigger_eligible_from_foul;
+                        }
+                    } )
+                );
             }
         } );
 
