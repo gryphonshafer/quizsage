@@ -57,7 +57,7 @@ const store = Pinia.defineStore( 'store', {
     },
     actions: {
         is_quiz_done() {
-            return true;
+            return ! state.board.find( row => row.current );
         },
         view_query() {},
     },
