@@ -7,7 +7,9 @@ export default {
     },
 
     methods: {
-        ...Pinia.mapActions( store, [ 'is_quiz_done', 'view_query', 'toggle_hidden_solution' ] ),
+        ...Pinia.mapActions( store, [
+            'is_quiz_done', 'view_query', 'toggle_hidden_solution', 'save_quiz_data'
+        ] ),
 
         select_quizzer( quizzer_id, team_id ) {
             if ( this.hidden_solution ) this.toggle_hidden_solution();
@@ -34,6 +36,8 @@ export default {
                     this.selected.type.with_reference != true
                 ) this.$root.$refs.controls.select_type('with_reference');
             }
+
+            this.save_quiz_data();
         },
 
         not_trigger_eligible( team, quizzer = null ) {

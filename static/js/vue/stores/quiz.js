@@ -232,7 +232,7 @@ export default Pinia.defineStore( 'store', {
                 new URL( '../../../quiz/save/' + miscellaneous.quiz_id, import.meta.url ),
                 {
                     method : 'POST',
-                    body   : JSON.stringify( quiz.state ),
+                    body   : JSON.stringify( { ...quiz.state, selected: this.selected } ),
                     headers: {
                         'X-CSRF-Token': window.document
                             .querySelector('meta[name="X-CSRF-Token"]')

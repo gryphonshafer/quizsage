@@ -184,12 +184,6 @@ div#board {
             }
         }
 
-        td.selected {
-            @include theme.apply( themes.$themes ) {
-                background: theme.get('td_background');
-            }
-        }
-
         &:nth-of-type(1) {
             position: fixed;
 

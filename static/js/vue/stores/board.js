@@ -66,8 +66,12 @@ const store = Pinia.defineStore( 'store', {
 function handle_fresh_quiz_data (quiz_data) {
     if ( quiz_data && quiz_data.teams && quiz_data.board ) {
         store().$patch({
-            teams: quiz_data.teams,
-            board: quiz_data.board,
+            teams   : quiz_data.teams,
+            board   : quiz_data.board,
+            selected : {
+                quizzer_id: quiz_data.selected.quizzer_id,
+                team_id   : quiz_data.selected.team_id,
+            },
         });
         set_board_scale( quiz_data.teams );
     }
