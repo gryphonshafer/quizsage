@@ -3,20 +3,28 @@ import template from 'modules/template';
 
 export default {
     computed: {
-        ...Pinia.mapState( store, [ 'current', 'selected' ] ),
+        ...Pinia.mapState( store, [ 'current', 'teams', 'selected' ] ),
     },
 
     methods: {
         ...Pinia.mapActions( store, [
             'action', 'alter_query', 'last_event_if_not_viewed', 'is_quiz_done', 'view_query',
-            'delete_last_action', 'exit_quiz', 'save_quiz_data'
+            'delete_last_action', 'exit_quiz', 'save_quiz_data', 'check_open_book_max'
         ] ),
 
         select_type(type) {
-            if (
-                this.is_quiz_done() ||
-                type == 'open_book' && this.current.query.type == 'Q'
-            ) return;
+            if ( this.is_quiz_done() ) return;
+
+            if ( type == 'open_book' ) {
+                if ( this.current.query.type == 'Q' ) {
+                    if ( window.omniframe && omniframe.memo ) omniframe.memo({
+                        class  : 'notice',
+                        message: 'Open book not available on Quote (Q) queries',
+                    });
+                    return;
+                }
+                if ( this.check_open_book_max() ) return;
+            }
 
             if ( type == 'synonymous' || type == 'verbatim' || type == 'open_book' ) {
                 this.selected.type.synonymous_verbatim_open_book = type;

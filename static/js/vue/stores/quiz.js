@@ -149,6 +149,41 @@ export default Pinia.defineStore( 'store', {
             }
         },
 
+        check_trigger_eligibility() {
+            if ( ! window.omniframe || ! omniframe.memo ) return;
+
+            const team    = this.teams   .find( team    => team.id    == this.selected.team_id    );
+            const quizzer = team.quizzers.find( quizzer => quizzer.id == this.selected.quizzer_id );
+
+            if ( team && ! team.trigger_eligible ) {
+                omniframe.memo({
+                    class  : 'notice',
+                    message: 'Team is not eligible to trigger',
+                });
+            }
+            else if ( quizzer && ! quizzer.trigger_eligible ) {
+                omniframe.memo({
+                    class  : 'notice',
+                    message: 'Quizzer is not eligible to trigger',
+                });
+            }
+        },
+
+        check_open_book_max() {
+            const team = this.teams.find( team => team.id == this.selected.team_id );
+            if (
+                window.omniframe && omniframe.memo &&
+                team && team.score && team.score.open_book >= quiz.scoring.open_book_team_max
+            ) {
+                omniframe.memo({
+                    class  : 'notice',
+                    message: 'Team previously reached its open book maximum',
+                });
+                return true;
+            }
+            return false;
+        },
+
         action(
             action,
             team_id    = undefined,

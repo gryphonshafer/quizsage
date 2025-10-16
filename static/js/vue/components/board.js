@@ -8,7 +8,11 @@ export default {
 
     methods: {
         ...Pinia.mapActions( store, [
-            'is_quiz_done', 'view_query', 'toggle_hidden_solution', 'save_quiz_data'
+            'check_trigger_eligibility',
+            'view_query',
+            'save_quiz_data',
+            'toggle_hidden_solution',
+            'is_quiz_done',
         ] ),
 
         select_quizzer( quizzer_id, team_id ) {
@@ -37,6 +41,7 @@ export default {
                 ) this.$root.$refs.controls.select_type('with_reference');
             }
 
+            this.check_trigger_eligibility();
             this.save_quiz_data();
         },
 

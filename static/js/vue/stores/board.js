@@ -56,10 +56,11 @@ const store = Pinia.defineStore( 'store', {
         return state;
     },
     actions: {
+        check_trigger_eligibility() {},
+        view_query() {},
         is_quiz_done() {
             return ! state.board.find( row => row.current );
         },
-        view_query() {},
     },
 } );
 

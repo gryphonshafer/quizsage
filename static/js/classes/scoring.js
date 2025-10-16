@@ -109,7 +109,7 @@ export default class Scoring {
                 if (
                     event.type.indexOf('O') != -1 &&
                     team.score.open_book >= this.open_book_team_max
-                ) message = ( (message) ? message + '<br>' : '' ) + 'Team open book maximum';
+                ) message = ( (message) ? message + '<br>' : '' ) + 'Team has reached its open book maximum';
 
                 const preceding_numeric_id  = parseInt( scoring_events[index].id ) - 1;
                 event.score.follow_bonus = (
