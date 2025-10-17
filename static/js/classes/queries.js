@@ -90,27 +90,36 @@ export default class Queries {
     create_finish(bible) {
         let verse;
         let verse_find_attempts = 0;
+        let finish_prompt_length;
 
-        while (true) {
+        outer_loop: while (true) {
             verse_find_attempts++;
             verse = { words : [] };
+            finish_prompt_length = this.finish_prompt_length;
 
             while (
                 verse.words.length <
-                this.finish_prompt_length + this.finish_minimum_reply_length
+                finish_prompt_length + this.finish_minimum_reply_length
             ) verse = this.#select_verse(bible);
 
-            const check_prompt  = verse.words.slice( 0, this.finish_prompt_length ).join(' ');
-            const check_matches = this.material.verses_by_bible[bible].filter( check_verse =>
-                check_verse.words.slice( 0, this.finish_prompt_length ).join(' ') == check_prompt
-            );
+            while (
+                verse.words.length >=
+                finish_prompt_length + this.finish_minimum_reply_length
+            ) {
+                const check_prompt  = verse.words.slice( 0, finish_prompt_length ).join(' ');
+                const check_matches = this.material.verses_by_bible[bible].filter( check_verse =>
+                    check_verse.words.slice( 0, finish_prompt_length ).join(' ') == check_prompt
+                );
 
-            if ( check_matches.length == 1 ) break;
+                if ( check_matches.length == 1 ) break outer_loop;
+                finish_prompt_length++;
+            }
+
             if ( verse_find_attempts > 100 ) this.reset();
         }
 
         const [ prompt, reply, full_reply, prompt_words ] =
-            this.#prompt_reply_text( verse, 0, this.finish_prompt_length );
+            this.#prompt_reply_text( verse, 0, finish_prompt_length );
 
         return this.#prep_return_data({
             type      : 'F',
