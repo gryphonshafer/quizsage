@@ -154,7 +154,7 @@
             <label>
                 <input type="checkbox" name="whole" checked>
                 Alphabetical Material
-                from First [% PROCESS pick_number, type = 'whole', default = 5, max = 7 %] Words
+                from First [% PROCESS pick_number, type = 'whole', default = 5, max = 40 %] Words
             </label>
             <label>
                 <input type="checkbox" name="chapter">
