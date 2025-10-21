@@ -14,7 +14,7 @@ sub descriptionate( $self, $parse ) {
     );
 
     my $ranges = [ map {
-        ( ref $_ eq 'HASH' and $_->{weight} )
+        ( ref $_ eq 'HASH' and defined $_->{weight} )
             ? {
                 range  => $_->{value},
                 weight => $_->{weight},
@@ -144,7 +144,7 @@ sub descriptionate( $self, $parse ) {
         (
             map {
                 $_->{range} .
-                    ( ( $_->{weight} ) ? ' (' . $_->{weight} . ')' : '' );
+                    ( ( defined $_->{weight} ) ? ' (' . $_->{weight} . ')' : '' );
             } @$ranges
         ),
         grep { defined } $bibles,
