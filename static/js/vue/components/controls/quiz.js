@@ -2,6 +2,12 @@ import store    from 'vue/store';
 import template from 'modules/template';
 
 export default {
+    data() {
+        return {
+            quiz_complete: this.is_quiz_done(),
+        };
+    },
+
     computed: {
         ...Pinia.mapState( store, [ 'current', 'teams', 'selected' ] ),
     },
@@ -9,11 +15,31 @@ export default {
     methods: {
         ...Pinia.mapActions( store, [
             'action', 'alter_query', 'last_event_if_not_viewed', 'is_quiz_done', 'view_query',
-            'delete_last_action', 'exit_quiz', 'save_quiz_data', 'check_open_book_max'
+            'delete_last_action', 'exit_quiz', 'save_quiz_data', 'check_open_book_max', 'replace_query'
         ] ),
 
         select_type(type) {
             if ( this.is_quiz_done() ) return;
+
+            if ( type == 'vra' ) {
+                if (
+                    this.selected.type.synonymous_verbatim_open_book == 'verbatim' &&
+                    this.selected.type.with_reference &&
+                    this.selected.type.add_verse
+                ) {
+                    this.select_type('synonymous');
+                    this.select_type('with_reference');
+                    this.select_type('add_verse');
+                }
+                else {
+                    this.select_type('verbatim');
+
+                    if ( ! this.selected.type.with_reference ) this.select_type('with_reference');
+                    if ( ! this.selected.type.add_verse )      this.select_type('add_verse');
+                }
+
+                return;
+            }
 
             if ( type == 'open_book' ) {
                 if ( this.current.query.type == 'Q' ) {
@@ -145,11 +171,23 @@ export default {
             if ( this.$root.$refs.search ) this.$root.$refs.search.reset();
 
             this.save_quiz_data();
+            this.quiz_complete = this.is_quiz_done();
+        },
+
+        reset_replace_query() {
+            if ( this.$root.$refs.controls ) {
+                this.$root.$refs.controls.trigger_event('reset');
+            }
+            else if ( this.$root.$refs.timer ) {
+                this.$root.$refs.timer.reset();
+            }
+            this.replace_query();
         },
 
         delete_last() {
             if ( this.$root.$refs.controls ) this.$root.$refs.controls.trigger_event('reset');
             this.delete_last_action();
+            this.quiz_complete = this.is_quiz_done();
         },
     },
 
