@@ -345,11 +345,11 @@ sub distribution ($self) {
 }
 
 sub stats ( $self, $rebuild = 0 ) {
-    return $self->data->{stats} if (
-        not $rebuild and
-        $self->data->{stats}->%* and
-        $time->parse( $self->data->{last_modified} )->{datetime}->epoch >
-        $time->parse( conf->get('rebuild_stats_if_before') )->{datetime}->epoch
+    return $self->data->{stats} unless (
+        $rebuild or
+        not $self->data->{stats}->%* or
+        $time->parse( $self->data->{last_modified} )->{datetime}->epoch <
+            $time->parse( conf->get('rebuild_stats_if_before') )->{datetime}->epoch
     );
 
     my $build        = deepcopy( $self->data->{build} );

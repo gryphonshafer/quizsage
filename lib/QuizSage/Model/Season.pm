@@ -126,15 +126,31 @@ sub stats ( $self, $rebuild = 0 ) {
         $rules->{meets}->@*
     ];
 
-    my ($most_recent_last_modified) = reverse sort map { $_->data->{last_modified} } @$meets, @$remote_meets;
-    return $self->data->{stats} if (
-        not $rebuild and
-        $self->data->{stats}->%* and
-        (
-            $most_recent_last_modified <= $self->data->{last_modified} or
-            $time->parse( $self->data->{last_modified} )->{datetime}->epoch >
-                $time->parse( conf->get('rebuild_stats_if_before') )->{datetime}->epoch
-        )
+    my $rebuild_stats_if_before = $time->parse( conf->get('rebuild_stats_if_before') )->{datetime}->epoch;
+
+    my @season_meets_last_mod = map { +{
+        meet                => $_,
+        last_modified_epoch => $time->parse( $_->data->{last_modified} )->{datetime}->epoch,
+    } } @$meets, @$remote_meets;
+
+    my $triggered_rebuild = 0;
+    for ( grep { $_->{last_modified_epoch} < $rebuild_stats_if_before } @season_meets_last_mod ) {
+        $_->rebuild(1);
+        $triggered_rebuild = 1;
+    }
+
+    if ( not $triggered_rebuild ) {
+        my $this_last_mod = $time->parse( $self->data->{last_modified} )->{datetime}->epoch;
+        $triggered_rebuild = 1
+            if ( grep { $this_last_mod < $_->{last_modified_epoch} } @season_meets_last_mod );
+    }
+
+    return $self->data->{stats} unless (
+        $rebuild or
+        $triggered_rebuild or
+        not $self->data->{stats}->%* or
+        $time->parse( $self->data->{last_modified} )->{datetime}->epoch <
+            $time->parse( conf->get('rebuild_stats_if_before') )->{datetime}->epoch
     );
 
     my $stats = {
