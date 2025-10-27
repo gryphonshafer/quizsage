@@ -363,3 +363,22 @@
         %]
     [% END %]
 [% END %]
+
+[%
+    meet_start = date.format( meet.data.start, '%s' );
+    meet_stop  = meet_start + ( meet.data.days || 1 ) * 60 * 60 * 24;
+%]
+[% page_restart_js = BLOCK %]
+    window.addEventListener( 'DOMContentLoaded', () => {
+        const meet_start = [% meet_start * 1000 %];
+        const meet_stop  = [% meet_stop  * 1000 %];
+        const now        = Date.now();
+
+        if ( now < meet_stop ) {
+            let wait = meet_start - now;
+            if ( wait < 60 * 1000 ) wait = 60 * 1000;
+            setTimeout( () => { window.location.reload() }, wait );
+        }
+    } );
+[% END %]
+[% page.js.inline.push(page_restart_js) %]
