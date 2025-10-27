@@ -103,7 +103,7 @@
                 @click="view_query(record)"
                 :class="{
                     clickable: record.query,
-                    selected : record.id == current.event.id,
+                    selected : record.id && current.event.id && record.id == current.event.id,
                 }"
             >{{ record.id }}</td>
             <td>{{ record.type }}</td>
