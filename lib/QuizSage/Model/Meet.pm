@@ -151,6 +151,8 @@ sub state ($self) {
     my $quizzes_done = [ grep { not grep { $_->{current} } $_->{state}{board}->@* } @$quizzes_data ];
     my $brackets_done;
 
+    my $foreign_bibles_boost_factor = _fabricate_foreign_bibles_boost_factor($quizzes_done);
+
     my $find_team_done = sub ( $bracket, $team ) {
         my $team_done = undef;
 
@@ -217,34 +219,45 @@ sub state ($self) {
         #     6. fewer total # of quizzers > more total # of quizzers
         #     7. reverse of team name (i.e. MAD 1 > GIG 1 and MAD 1 > ELK 2 and ELK 2 > KIT 2)
         my $bracket_team_sorting_data;
-        for my $team (
-            map { $_->{state}{teams}->@* }
+        for my $quiz (
             grep { $_->{state}{teams} }
             grep { $_->{bracket} eq $bracket->{name} }
             @$quizzes_done
         ) {
-            $bracket_team_sorting_data->{ $team->{name} }->{points_sum}      += $team->{score}{points};
-            $bracket_team_sorting_data->{ $team->{name} }->{positions_sum}   += $team->{score}{position};
-            $bracket_team_sorting_data->{ $team->{name} }->{team_points_sum} += $team->{score}{bonuses};
+            my $weight = ( $quiz->{weight} // $bracket->{weight} // 1 );
 
-            $bracket_team_sorting_data->{ $team->{name} }->{total_quizzes}++;
-            $bracket_team_sorting_data->{ $team->{name} }->{total_quizzers} //= $team->{quizzers}->@*;
-            $bracket_team_sorting_data->{ $team->{name} }->{reverse_name}   //= reverse $team->{name};
+            for my $team ( $quiz->{state}{teams}->@* ) {
+                $bracket_team_sorting_data->{ $team->{name} }->{positions_sum}   += $team->{score}{position};
+                $bracket_team_sorting_data->{ $team->{name} }->{team_points_sum} += $team->{score}{bonuses};
+
+                $bracket_team_sorting_data->{ $team->{name} }->{points_sum_raw} += $team->{score}{points}
+                    * $weight;
+                $bracket_team_sorting_data->{ $team->{name} }->{points_sum}     += $team->{score}{points}
+                    * $weight
+                    * ( ( $quiz->{bibles} eq 'multiple' ) ? $foreign_bibles_boost_factor : 1 );
+
+                $bracket_team_sorting_data->{ $team->{name} }->{total_quizzes}++;
+                $bracket_team_sorting_data->{ $team->{name} }->{total_quizzers} //= $team->{quizzers}->@*;
+                $bracket_team_sorting_data->{ $team->{name} }->{reverse_name}   //= reverse $team->{name};
+            }
         }
         $brackets_done->{ $bracket->{name} } = [
             map { $_->[0] }
             sort {
-                $b->[1]{points_avg} <=> $a->[1]{points_avg} or
-                $b->[1]{points_sum} <=> $a->[1]{points_sum} or
-                $b->[1]{positions_sum} <=> $a->[1]{positions_sum} or
+                $b->[1]{points_avg}      <=> $a->[1]{points_avg}      or
+                $b->[1]{points_sum}      <=> $a->[1]{points_sum}      or
+                $b->[1]{positions_sum}   <=> $a->[1]{positions_sum}   or
                 $b->[1]{team_points_sum} <=> $a->[1]{team_points_sum} or
-                $b->[1]{total_quizzes} <=> $a->[1]{total_quizzes} or
-                $a->[1]{total_quizzers} <=> $b->[1]{total_quizzers} or
-                $a->[1]{reverse_name} cmp $b->[1]{reverse_name}
+                $b->[1]{total_quizzes}   <=> $a->[1]{total_quizzes}   or
+                $a->[1]{total_quizzers}  <=> $b->[1]{total_quizzers}  or
+                $a->[1]{reverse_name}    cmp $b->[1]{reverse_name}
             }
             map {
                 my $data = $bracket_team_sorting_data->{$_};
-                $data->{points_avg} = $data->{points_sum} / $data->{total_quizzes};
+
+                $data->{points_avg_raw} = $data->{points_sum_raw} / $data->{total_quizzes};
+                $data->{points_avg}     = $data->{points_sum}     / $data->{total_quizzes};
+
                 [ $_, $data ];
             }
             keys %$bracket_team_sorting_data
@@ -343,6 +356,7 @@ sub stats ( $self, $rebuild = 0 ) {
     my $quizzes_data = QuizSage::Model::Quiz->new->every_data({ meet_id => $self->id });
 
     my $stats;
+    $stats->{meta}{foreign_bibles_boost_factor} = _fabricate_foreign_bibles_boost_factor($quizzes_data);
 
     my $first_to_win_twice_positions_cache;
     my $first_to_win_twice_positions = sub (
@@ -441,8 +455,6 @@ sub stats ( $self, $rebuild = 0 ) {
             : undef;
     };
 
-    my $gross_points_by_quizzer_by_bibles;
-
     for my $bracket ( $build->{brackets}->@* ) {
         push( @{ $stats->{rankings} }, {
             bracket   => $bracket->{name},
@@ -494,13 +506,6 @@ sub stats ( $self, $rebuild = 0 ) {
             } @$quizzes_data;
 
             for my $quiz_data (@quiz_data) {
-                my $bibles = {
-                    map { $_->{bible} => 1 }
-                    grep { $_->{bible} }
-                    $quiz_data->{settings}{distribution}->@*
-                };
-                $bibles = ( keys %$bibles > 1 ) ? 'multiple' : 'singular';
-
                 for my $team ( $quiz_data->{state}{teams}->@* ) {
                     push( @{ $stats->{teams}{ $team->{name} } }, {
                         quiz_id  => $quiz_data->{quiz_id},
@@ -509,21 +514,17 @@ sub stats ( $self, $rebuild = 0 ) {
                         weight   => $quiz->{weight} // $bracket->{weight} // 1,
                         points   => $team->{score}{points},
                         position => $team->{score}{position},
-                        bibles   => $bibles,
+                        bibles   => $quiz_data->{bibles},
                     } );
 
                     for my $quizzer ( $team->{quizzers}->@* ) {
-                        push(
-                            @{ $gross_points_by_quizzer_by_bibles->{ $quizzer->{name} }{$bibles} },
-                            $quizzer->{score}{points},
-                        );
                         push( @{ $stats->{quizzers}{ $quizzer->{name} } }, {
                             quiz_id => $quiz_data->{quiz_id},
                             bracket => $bracket->{name},
                             name    => $quiz_data->{name},
                             weight  => $quiz->{weight} // $bracket->{weight} // 1,
                             points  => $quizzer->{score}{points},
-                            bibles  => $bibles,
+                            bibles  => $quiz_data->{bibles},
                             vra     => scalar( grep {
                                 $_->{action}     eq 'correct'            and
                                 $_->{quizzer_id} eq $quizzer->{id}       and
@@ -538,29 +539,6 @@ sub stats ( $self, $rebuild = 0 ) {
             }
         }
     }
-
-    my @boosts;
-    for my $quizzer (
-        grep {
-            $_->{singular} and
-            $_->{multiple}
-        }
-        values %$gross_points_by_quizzer_by_bibles
-    ) {
-        my %points_avg = map {
-            my $points;
-            $points += $_ for ( $quizzer->{$_}->@* );
-            $_ => $points / @{ $quizzer->{$_} };
-        } keys %$quizzer;
-        push( @boosts, $points_avg{multiple} / $points_avg{singular} )
-            if ( $points_avg{multiple} and $points_avg{singular} );
-    }
-    my $factor;
-    if (@boosts) {
-        $factor += $_ for (@boosts);
-        $factor /= @boosts;
-    }
-    $stats->{meta}{foreign_bibles_boost_factor} = ( defined $factor and $factor > 1 ) ? $factor : 1;
 
     my %unique_tags;
     for my $type ( qw( teams quizzers ) ) {
@@ -588,12 +566,6 @@ sub stats ( $self, $rebuild = 0 ) {
                 $points_avg     = $points_sum     / scalar grep { $_->{weight} } @$quizzes;
                 $points_avg_raw = $points_sum_raw / scalar grep { $_->{weight} } @$quizzes;
 
-                if ( $rebuild and $rebuild eq 'raw' ) {
-                    $stats->{meta}{foreign_bibles_boost_factor} = 1;
-                    $points_sum = $points_sum_raw;
-                    $points_avg = $points_avg_raw;
-                }
-
                 my $stat = {
                     name           => $_,
                     quizzes        => $quizzes,
@@ -618,18 +590,15 @@ sub stats ( $self, $rebuild = 0 ) {
                 $stat;
             } keys $stats->{$type}->%*,
         ];
-
-        $stats->{meta}{$type} = {
-            quizzes_max => $quizzes_max,
-        };
+        $stats->{meta}{$type} = { quizzes_max => $quizzes_max };
     };
     $stats->{tags} = [ sort keys %unique_tags ];
 
     $stats->{vra_quizzers} = [
         sort {
-            $b->{vra_sum} <=> $a->{vra_sum} or
+            $b->{vra_sum}    <=> $a->{vra_sum}    or
             $b->{points_sum} <=> $a->{points_sum} or
-            $a->{name} cmp $b->{name}
+            $a->{name}       cmp $b->{name}
         }
         grep { $_->{vra_sum} }
         map {
@@ -824,6 +793,52 @@ sub swap_draw_parts ( $self, $bracket_name, $sets = [], $quizzes = [] ) {
 
     $self->save;
     return;
+}
+
+sub _fabricate_foreign_bibles_boost_factor ($quizzes_data) {
+    my $gross_points_by_quizzer_by_bibles;
+
+    for my $quiz_data (@$quizzes_data) {
+        my $bibles = {
+            map { $_->{bible} => 1 }
+            grep { $_->{bible} }
+            $quiz_data->{settings}{distribution}->@*
+        };
+        $quiz_data->{bibles} = $bibles = ( keys %$bibles > 1 ) ? 'multiple' : 'singular';
+
+        for my $team ( $quiz_data->{state}{teams}->@* ) {
+             for my $quizzer ( $team->{quizzers}->@* ) {
+                push(
+                    @{ $gross_points_by_quizzer_by_bibles->{ $quizzer->{name} }{$bibles} },
+                    $quizzer->{score}{points},
+                );
+            }
+        }
+    }
+
+    my @boosts;
+    for my $quizzer (
+        grep {
+            $_->{singular} and
+            $_->{multiple}
+        }
+        values %$gross_points_by_quizzer_by_bibles
+    ) {
+        my %points_avg = map {
+            my $points;
+            $points += $_ for ( $quizzer->{$_}->@* );
+            $_ => $points / @{ $quizzer->{$_} };
+        } keys %$quizzer;
+        push( @boosts, $points_avg{multiple} / $points_avg{singular} )
+            if ( $points_avg{multiple} and $points_avg{singular} );
+    }
+    my $factor;
+    if (@boosts) {
+        $factor += $_ for (@boosts);
+        $factor /= @boosts;
+    }
+
+    return ( defined $factor and $factor > 1 ) ? $factor : 1;
 }
 
 1;

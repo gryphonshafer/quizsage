@@ -147,16 +147,14 @@
                                 [% END %]
                             </td>
                             <td class="right no_wrap tight_lines">
+                                [% item.points_avg | format('%0.2f') %]
+                                /
+                                [% item.points_sum | format('%0.1f') %]
                                 [% IF
                                     stats.meta.foreign_bibles_boost_factor AND
-                                    stats.meta.foreign_bibles_boost_factor == 1
+                                    stats.meta.foreign_bibles_boost_factor != 1
                                 %]
-                                    [% item.points_avg | format('%0.2f') %]<br>
-                                    [% item.points_sum | format('%0.1f') %]
-                                [% ELSE %]
-                                    [% item.points_avg | format('%0.2f') %]
-                                    /
-                                    [% item.points_sum | format('%0.1f') %]<br>
+                                    <br>
                                     <i class="small">([% item.points_avg_raw | format('%0.2f') %]
                                     /
                                     [% item.points_sum_raw | format('%0.1f') %])</i>
