@@ -46,6 +46,17 @@ export default {
         },
 
         not_trigger_eligible( team, quizzer = null ) {
+            if (
+                ! team.hasOwnProperty('trigger_eligible') ||
+                team.trigger_eligible === undefined
+            ) team.trigger_eligible = true;
+            if (
+                quizzer && (
+                    ! quizzer.hasOwnProperty('trigger_eligible') ||
+                    quizzer.trigger_eligible === undefined
+                )
+            ) quizzer.trigger_eligible = true;
+
             return (
                 ( this.is_quiz_done() ) ? false :
                 ( ! quizzer )
