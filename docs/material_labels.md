@@ -106,7 +106,7 @@ The filter here removes Romans chapters 2 through 6 from the preceding reference
 
 ### Intersection
 
-An *intersection* is similar to a filter, but where a filter removes from the preceding set of label components, an intersection results in the verses that exist within both the preceding and following label components. Filters start with a tilde character (i.e. “~”) followed by certain label components. For example, consider:
+An *intersection* is similar to a filter, but where a filter removes from the preceding set of label components, an intersection results in the verses that exist within both the preceding and following label components. Intersections start with a tilde character (i.e. “~”) followed by certain label components. For example, consider:
 
 > Rom 1-3; Jam 1:2-8 ~ Rom 2-6
 
