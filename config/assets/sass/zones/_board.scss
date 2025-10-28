@@ -51,21 +51,20 @@ table.board {
         }
     }
 
-    tr.vertical td, td.vertical {
+    tr.vertical td {
+        height        : max-content;
+        vertical-align: top;
+        padding       : 0;
+    }
+
+    tr.vertical td div {
         writing-mode  : vertical-rl;
-        padding       : 0.3em 0px 0.3em 0em;
-        width         : 2.5em;
-        vertical-align: middle;
+        padding       : 0.3em 0;
+        width         : 3em;
+        line-height   : 3em;
     }
 
-    @-moz-document url-prefix() {
-        tr.vertical td, td.vertical {
-            padding-left: 0.125em;
-            width       : 3em;
-        }
-    }
-
-    tr.vertical td[rowspan="3"] {
+    tr.vertical td[rowspan="3"] div {
         white-space: nowrap;
     }
 
@@ -196,7 +195,7 @@ div#board {
             }
         }
 
-        &:nth-of-type(2) tr:first-of-type td:first-of-type {
+        td {
             border-radius: 0;
         }
 
@@ -219,10 +218,6 @@ div#board {
                 }
             }
         }
-    }
-
-    &.chrome table.board:nth-of-type(1) thead tr.vertical td[rowspan="3"] {
-        width: calc( 2.5em - 1px );
     }
 }
 

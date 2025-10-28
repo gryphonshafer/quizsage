@@ -58,7 +58,7 @@
                     :class="{
                         not_trigger_eligible: not_trigger_eligible(team),
                     }"
-                >
+                ><div>
                     <span
                         :title="'Timeouts Remaining: ' + team.timeouts_remaining"
                         >TOsR: {{ team.timeouts_remaining }}</span>
@@ -66,7 +66,7 @@
                     <span
                         :title="'Appeals Declined Remaining: ' + team.appeals_declined_remaining"
                         >ADR: {{ team.appeals_declined_remaining }}</span>
-                </td>
+                </div></td>
             </template>
         </tr>
         <tr>

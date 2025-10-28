@@ -40,12 +40,10 @@ function set_board_scale(teams) {
 
     if (board) {
         const columns_count = 3 + teams.length + teams.flatMap( team => team.quizzers ).length;
-        const count_adjust  = ( window.chrome ) ? 3.125 : 3.5;
+        const count_adjust  = 3.125;
 
         board.style.fontSize   = 'calc( ( 100vw - 1em ) / ' + ( columns_count * count_adjust ) + ' )';
         board.style.lineHeight = '1.5em';
-
-        if ( window.chrome ) board.classList.add('chrome');
     }
 }
 
