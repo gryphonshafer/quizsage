@@ -8,11 +8,11 @@ try {
     my $result = material_json(%$opt);
     say
         '  JSON File: ',  $result->{json_file}, "\n",
+        '      Label: "', $result->{label}, '"', "\n",
         'Description: "', $result->{description}, '"';
 }
 catch ($error) {
-    $error =~ s/\sat\s\S+\sline\s\d+\.\s*$//g;
-    pod2usage($error);
+    pod2usage( deat $error );
 }
 
 =head1 NAME

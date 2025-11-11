@@ -84,7 +84,7 @@ label.pl - Work with material labels including label storage
 
 =head1 DESCRIPTION
 
-This program will work with material labels including stored labeles in the
+This program will work with material labels including stored labels in the
 application database.
 
 If a C<name> and C<label> are provided (and the C<remove> flag is not set), the

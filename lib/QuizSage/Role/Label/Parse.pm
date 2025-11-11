@@ -95,8 +95,10 @@ sub parse (
 
     # parse input into a data structure
     my $data = $label_prd_obj->start($input);
+    my $label_parse_log = path(
+        conf->get( qw( config_app root_dir ) ) . '/' . conf->get('label_parse_log')
+    )->open('>>:encoding(UTF-8)');
 
-    my $label_parse_log = path( conf->get('label_parse_log') )->open('>>:encoding(UTF-8)');
     print $label_parse_log join( ' - ',
         '[' . strftime( "%d/%b/%Y:%H:%M:%S %z", localtime ) . ']',
         ( ($data) ? 'SUCCESS' : 'FAILURE' ),
