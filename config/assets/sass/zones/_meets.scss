@@ -137,11 +137,12 @@ body.state div.schedule_row {
     }
 }
 
-select#team_highlight {
+select#team_highlight,
+select#group_highlight {
     padding: 0 0.25em;
 }
 
-b.team_highlight {
+b.highlight {
     cursor: pointer;
 
     &:hover {
@@ -157,7 +158,7 @@ b.team_highlight {
     }
 }
 
-b.team_highlight_on {
+b.highlight_on {
     @include theme.apply( themes.$themes ) {
         color           : theme.get('selection_color');
         background-color: theme.get('selection_background');
@@ -171,7 +172,7 @@ b.team_highlight_on {
     }
 }
 
-div.team_highlight_on {
+div.highlight_on {
     @include theme.apply( themes.$themes ) {
         background-color: theme.get('td_selected_background');
     }

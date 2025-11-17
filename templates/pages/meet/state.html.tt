@@ -71,45 +71,117 @@
 
 <ul class="column no_print">
     <li>
-        Team Highlight:
-        <select id="team_highlight">
-            <option value="">None</option>
-            [% FOR team IN state.roster %]
-                <option value="[% team.name.lower.replace( '\s', '' ) %]">[% team.name %]</option>
-            [% END %]
-        </select>
+        Highlight
+        <ul>
+            <li>
+                Team:
+                <select id="team_highlight">
+                    <option value="">None</option>
+                    [% groups = {} %]
+                    [% FOR team IN state.roster %]
+                        [%
+                            team_code = team.name.lower.replace( '\s', '' );
+                            group     = team.name.replace( '\s*\d+$', '' );
+
+                            UNLESS groups.exists(group);
+                                groups.$group = [];
+                            END;
+
+                            groups.$group.push(team_code);
+                        %]
+                        <option value="[% team_code %]">[% team.name %]</option>
+                    [% END %]
+                </select>
+            </li>
+            <li>
+                Group:
+                <select id="group_highlight">
+                    <option value="">None</option>
+                    [% FOR group IN groups.keys.sort %]
+                        <option value="[% groups.$group.join('|') %]">[% group %]</option>
+                    [% END %]
+                </select>
+                <br>
+                <a href="#" id="clear_highlight">Clear</a>
+            </li>
+        </ul>
     </li>
 </ul>
 
 [% highlight_js = BLOCK %]
     window.addEventListener( 'DOMContentLoaded', () => {
-        const highlight_select = window.document.querySelector('select#team_highlight');
+        const team_highlight_select  = window.document.querySelector('select#team_highlight');
+        const group_highlight_select = window.document.querySelector('select#group_highlight');
 
-        const team_highlight = function () {
-            window.document.querySelectorAll('.team_highlight').forEach( element => {
-                element.classList.remove('team_highlight_on');
+        const get_teams_in_group = () => ( group_highlight_select.value )
+            ? group_highlight_select.value.split('|')
+            : [];
+
+        const set_highlight = function () {
+            const teams_in_group = get_teams_in_group();
+            window.document.querySelectorAll('.highlight').forEach( element => {
+                element.classList.remove('highlight_on');
                 if (
-                    highlight_select.value &&
-                    element.classList.contains( 'team_highlight_' + highlight_select.value )
-                ) element.classList.add('team_highlight_on');
+                    team_highlight_select.value &&
+                    element.classList.contains( 'highlight_' + team_highlight_select.value ) ||
+                    teams_in_group.length &&
+                    teams_in_group.find( team => element.classList.contains( 'highlight_' + team ) )
+                ) element.classList.add('highlight_on');
             } );
         };
-        highlight_select.onchange = team_highlight;
 
-        window.document.querySelectorAll('b.team_highlight').forEach( b => {
+        team_highlight_select.onchange = () => {
+            group_highlight_select.selectedIndex = 0;
+            set_highlight();
+        };
+
+        group_highlight_select.onchange = () => {
+            team_highlight_select.selectedIndex = 0;
+            set_highlight();
+        };
+
+        window.document.querySelector('a#clear_highlight').onclick = () => {
+            team_highlight_select.selectedIndex  = 0;
+            group_highlight_select.selectedIndex = 0;
+            set_highlight();
+        };
+
+        window.document.querySelectorAll('b.highlight').forEach( b => {
             b.onclick = () => {
-                const team_code = b.textContent.toLowerCase().replace( /\s/g, '' );
-                for (let i = 0; i < highlight_select.options.length; i++) {
-                    if ( highlight_select.options[i].value === team_code ) {
-                        highlight_select.options[i].selected = true;
-                        break;
+                const team_code      = b.textContent.toLowerCase().replace( /\s/g, '' );
+                const teams_in_group = get_teams_in_group();
+
+                if ( teams_in_group.find( team => team == team_code ) ) {
+                    team_highlight_select.selectedIndex  = 0;
+                    group_highlight_select.selectedIndex = 0;
+                }
+                else if ( team_code == team_highlight_select.value ) {
+                    team_highlight_select.selectedIndex = 0;
+                    for ( let i = 0; i < group_highlight_select.options.length; i++ ) {
+                        if (
+                            group_highlight_select.options[i].value
+                                .split('|').find( team => team == team_code )
+                        ) {
+                            group_highlight_select.options[i].selected = true;
+                            break;
+                        }
                     }
                 }
-                team_highlight();
+                else {
+                    group_highlight_select.selectedIndex = 0;
+                    for ( let i = 0; i < team_highlight_select.options.length; i++ ) {
+                        if ( team_highlight_select.options[i].value == team_code ) {
+                            team_highlight_select.options[i].selected = true;
+                            break;
+                        }
+                    }
+                }
+
+                set_highlight();
             };
         } );
 
-        team_highlight();
+        set_highlight();
     } );
 [% END %]
 [% page.js.inline.push(highlight_js) %]
@@ -214,7 +286,7 @@
                     FOR team IN quiz.roster;
                         resolved_teams = resolved_teams + 1 IF team.name;
                         teams_names.push( team.name );
-                        teams_codes.push( 'team_highlight_' _ team.name.lower.replace( '\s', '' ) );
+                        teams_codes.push( 'highlight_' _ team.name.lower.replace( '\s', '' ) );
                     END;
                     teams_resolved = ( resolved_teams == quiz.roster.size ) ? 1 : 0;
 
@@ -232,7 +304,7 @@
                 <div class="
                     summary_box
                     schedule_row_cell
-                    team_highlight [% teams_codes.join(' ') %]
+                    highlight [% teams_codes.join(' ') %]
                     relative
                     [% IF quiz.current_query_id %]active_quiz[% END %]
                 ">
@@ -266,8 +338,8 @@
                         [% FOR team IN quiz.roster %]
                             <li>[%
                                 IF team.name;
-                                    '<b class="team_highlight ' _
-                                        'team_highlight_' _ team.name.lower.replace( '\s', '' ) _ '">' _
+                                    '<b class="highlight ' _
+                                        'highlight_' _ team.name.lower.replace( '\s', '' ) _ '">' _
                                         team.name _ '</b> ';
 
                                     title = 'Roster for ' _ team.name;
