@@ -1,6 +1,7 @@
 package QuizSage::Role::Meet::Build;
 
 use exact -role, -conf;
+use Date::Parse;
 use Mojo::JSON 'from_json';
 use Omniframe::Class::Javascript;
 use Omniframe::Class::Time;
@@ -328,7 +329,22 @@ sub schedule_integration( $self, $build_settings ) {
                         )
                     } $schedule->{overrides}->@*
                 ) {
-                    $start    = $time->parse( $override->{start} )->datetime if ( $override->{start} );
+                    if ( $override->{start} ) {
+                        my $parts;
+                        @$parts{ qw( second minute hour day month year offset ) } =
+                            Date::Parse::strptime( $override->{start} );
+
+                        $start = $start->clone->set(
+                            maybe second    => $parts->{second},
+                            maybe minute    => $parts->{minute},
+                            maybe hour      => $parts->{hour},
+                            maybe day       => $parts->{day},
+                            maybe month     => $parts->{month},
+                            maybe year      => $parts->{year},
+                            maybe time_zone => $parts->{offset},
+                        );
+                    }
+
                     $duration = ( $override->{duration} ) ? $override->{duration} : $set_duration;
                     $stop     = $start->clone->add( minutes => $duration );
 
