@@ -74,6 +74,16 @@ export default class Material {
                     return [ bible, verses ];
                 } ) );
 
+            this.aliases_lookup = {};
+            Object.keys( this.data.aliases )
+                .sort()
+                .forEach( alias => {
+                    this.data.aliases[alias].verses.forEach( verse => {
+                        if ( ! this.aliases_lookup[verse] ) this.aliases_lookup[verse] = [];
+                        this.aliases_lookup[verse].push(alias);
+                    } );
+                } );
+
             return this;
         } );
     }

@@ -163,6 +163,29 @@ fun material_json (
         $data->{thesaurus}{$word} = $synonym->{redirected_to} if ( $synonym->{redirected_to} );
     }
 
+    # add alias verses
+    my $find_aliases;
+    $find_aliases = sub ($node) {
+        if ( ref $node eq 'ARRAY' ) {
+            $find_aliases->($_) for (@$node);
+        }
+        elsif ( ref $node eq 'HASH' ) {
+            if ( $node->{aliases} ) {
+                for my $alias ( $node->{aliases}->@* ) {
+                    my $refs = $model_label->descriptionate( { parts => $alias->{parts} } );
+                    $data->{aliases}{ $alias->{name} } //= {
+                        refs   => $refs,
+                        verses => scalar $model_label->versify_refs($refs),
+                    };
+                }
+            }
+            else {
+                $find_aliases->($_) for ( values %$node );
+            }
+        }
+    };
+    $find_aliases->($parse);
+
     # save data to JSON file and return path/name
     make_path( $json_file->dirname ) unless ( -d $json_file->dirname );
     $json_file->spew( to_json($data), 'UTF-8' );
