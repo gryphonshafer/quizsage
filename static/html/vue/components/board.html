@@ -11,7 +11,7 @@
                     }"
                 >
                     {{ team.name }}
-                    <span class="nickname" v-if="team.nickname"> - {{ team.nickname }}</span>
+                    <div class="nickname" v-if="team.nickname">{{ team.nickname }}</div>
                 </td>
                 <td :class="{
                     center              : true,
@@ -50,8 +50,9 @@
                 <td v-for="quizzer in team.quizzers"
                     @click="select_quizzer( quizzer.id, team.id )"
                     :class="{
-                        clickable: true,
-                        selected :
+                        quizzer_name: true,
+                        clickable   : true,
+                        selected    :
                             selected.quizzer_id && quizzer.id && selected.quizzer_id == quizzer.id,
                         not_trigger_eligible: not_trigger_eligible( team, quizzer ),
                     }"
