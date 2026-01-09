@@ -96,52 +96,54 @@
             data = [ ['Set Quiz Magistrate Password'], '/meet/passwd', 'password' ] %]</li></ul>
 
         [% FOR season IN active_seasons %]
-            <h3>
-                [% time( season.start, '%Y' ) %]-[% time( season.stop, '%Y' ) %]
-                [% IF season.location %][% season.location %]:[% END %]
-                [% season.name %]
-            </h3>
+            <div class="season">
+                <h3>
+                    [% time( season.start, '%Y' ) %]-[% time( season.stop, '%Y' ) %]
+                    [% IF season.location %][% season.location %]:[% END %]
+                    [% season.name %]
+                </h3>
 
-            <ul><li class="no_bullet">[%
-                PROCESS icon_link.html.tt
-                    data = [ ['Season Statistics'], [ '/season/', season.season_id, '/stats' ], 'stats' ]
-            %]</li></ul>
+                <ul><li class="no_bullet">[%
+                    PROCESS icon_link.html.tt
+                        data = [ ['Season Statistics'], [ '/season/', season.season_id, '/stats' ], 'stats' ]
+                %]</li></ul>
 
-            [%
-                visible_meets = [];
-                IF season.meets AND season.meets.size > 0;
-                    FOR meet IN season.meets;
-                        IF NOT meet.hidden;
-                            visible_meets.push(meet);
+                [%
+                    visible_meets = [];
+                    IF season.meets AND season.meets.size > 0;
+                        FOR meet IN season.meets;
+                            IF NOT meet.hidden;
+                                visible_meets.push(meet);
+                            END;
                         END;
                     END;
-                END;
-            %]
+                %]
 
-            [% IF visible_meets.size > 0 %]
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Location</th>
-                            <th>Start</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        [% FOR meet IN visible_meets %]
+                [% IF visible_meets.size > 0 %]
+                    <table>
+                        <thead>
                             <tr>
-                                <td><a href="[%
-                                    c.url_for( '/meet/' _ meet.meet_id _ '/state' )
-                                %]">[% meet.name %]</a></td>
-                                <td>[% meet.location %]</td>
-                                <td>[% time( meet.start, '%a, %b %-d, %Y at %-I:%M %p %Z' ) %]</td>
+                                <th>Name</th>
+                                <th>Location</th>
+                                <th>Start</th>
                             </tr>
-                        [% END %]
-                    </tbody>
-                </table>
-            [% ELSE %]
-                <p>There are no meets setup for this season.</p>
-            [% END %]
+                        </thead>
+                        <tbody>
+                            [% FOR meet IN visible_meets %]
+                                <tr>
+                                    <td><a href="[%
+                                        c.url_for( '/meet/' _ meet.meet_id _ '/state' )
+                                    %]">[% meet.name %]</a></td>
+                                    <td>[% meet.location %]</td>
+                                    <td>[% time( meet.start, '%a, %b %-d, %Y at %-I:%M %p %Z' ) %]</td>
+                                </tr>
+                            [% END %]
+                        </tbody>
+                    </table>
+                [% ELSE %]
+                    <p>There are no meets setup for this season.</p>
+                [% END %]
+            </div>
         [% END %]
     [% ELSE %]
         <p>There are currently no active seasons setup.</p>

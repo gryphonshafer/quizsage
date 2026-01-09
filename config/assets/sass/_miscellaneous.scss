@@ -198,3 +198,19 @@ iframe.instructional_video {
     min-width : 560px;
     min-height: 315px;
 }
+
+div.season {
+    border       : 1px solid;
+    width        : fit-content;
+    padding      : 1em 1em 0 1em;
+    margin-bottom: 1em;
+
+    @include theme.apply( themes.$themes ) {
+        background  : theme.get('fieldset_background');
+        border-color: theme.get('lines');
+    }
+
+    @include theme.apply( themes.$styles, 'style' ) {
+        border-radius: calc( theme.get('radius') * 2 );
+    }
+}
