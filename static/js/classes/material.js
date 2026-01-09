@@ -75,7 +75,7 @@ export default class Material {
                 } ) );
 
             this.aliases_lookup = {};
-            Object.keys( this.data.aliases )
+            Object.keys( this.data.aliases || {} )
                 .sort()
                 .forEach( alias => {
                     this.data.aliases[alias].verses.forEach( verse => {

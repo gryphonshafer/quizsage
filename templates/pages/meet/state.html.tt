@@ -89,7 +89,8 @@
 
                             groups.$group.push(team_code);
                         %]
-                        <option value="[% team_code %]">[% team.name %]</option>
+                        <option value="[% team_code %]">[% team.name %][% IF
+                            team.nickname %] - [% team.nickname %][% END %]</option>
                     [% END %]
                 </select>
             </li>
@@ -338,11 +339,16 @@
                         [% FOR team IN quiz.roster %]
                             <li>[%
                                 IF team.name;
-                                    '<b class="highlight ' _
+                                    '<b title="' _
+                                        team.name _
+                                        ( ( team.nickname ) ? ' - ' _ team.nickname : '' ) _ '"' _
+                                        'class="highlight ' _
                                         'highlight_' _ team.name.lower.replace( '\s', '' ) _ '">' _
                                         team.name _ '</b> ';
 
-                                    title = 'Roster for ' _ team.name;
+                                    title =
+                                        'Roster for ' _ team.name _
+                                        ( ( team.nickname ) ? ' - ' _ team.nickname : '' );
                                     PROCESS icon_link.html.tt, data = [
                                             title,
                                             c.url_for('roster').query({ team => team.name }),

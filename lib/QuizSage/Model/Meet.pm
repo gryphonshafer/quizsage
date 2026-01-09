@@ -486,7 +486,11 @@ sub stats ( $self, $rebuild = 0 ) {
                     my ($team) =
                         grep { $rank->{position} == $_->{score}{position} }
                         $quiz->{state}{teams}->@*;
-                    $rank->{team} = $team->{name} if ($team);
+
+                    if ($team) {
+                        $rank->{team}          = $team->{name};
+                        $rank->{team_nickname} = $team->{nickname} if ( $team->{nickname} );
+                    }
                 }
 
                 $rank;
@@ -563,8 +567,8 @@ sub stats ( $self, $rebuild = 0 ) {
                             : 1
                     );
                 }
-                $points_avg     = $points_sum     / scalar grep { $_->{weight} } @$quizzes;
-                $points_avg_raw = $points_sum_raw / scalar grep { $_->{weight} } @$quizzes;
+                $points_avg     = $points_sum     / ( scalar( grep { $_->{weight} } @$quizzes ) || 1 );
+                $points_avg_raw = $points_sum_raw / ( scalar( grep { $_->{weight} } @$quizzes ) || 1 );
 
                 my $stat = {
                     name           => $_,
@@ -575,16 +579,23 @@ sub stats ( $self, $rebuild = 0 ) {
                     points_avg_raw => $points_avg_raw,
                 };
 
+                my $team_name = $_;
                 if ( $type eq 'quizzers' ) {
-                    my $name = $_;
-
                     my ($team) = grep {
-                        my ($quizzer) = grep { $_->{name} eq $name } $_->{quizzers}->@*;
+                        my ($quizzer) = grep { $_->{name} eq $team_name } $_->{quizzers}->@*;
                         $stat->{tags} //= $quizzer->{tags} if ($quizzer);
                     } $build->{roster}->@*;
 
                     $unique_tags{$_}++ for ( $stat->{tags}->@* );
-                    $stat->{team_name} = $team->{name};
+
+                    if ($team) {
+                        $stat->{team_name}     = $team->{name};
+                        $stat->{team_nickname} = $team->{nickname} if ( $team->{nickname} );
+                    }
+                }
+                else {
+                    my ($team) = grep { $_->{name} eq $team_name } $build->{roster}->@*;
+                    $stat->{team_nickname} = $team->{nickname} if ( $team and $team->{nickname} );
                 }
 
                 $stat;

@@ -36,8 +36,8 @@
                         summary_box
                         distribution_box
                         [% IF c.param('quiz') == quiz.name %]
-                            team_highlight
-                            team_highlight_on
+                            highlight
+                            highlight_on
                         [% END %]
                     ">
                         <b>Quiz: [% quiz.name %]</b>

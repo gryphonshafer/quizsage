@@ -96,6 +96,17 @@ table.board {
 
     td.team_name {
         padding-left: 0.7em;
+
+        span.nickname {
+            font-weight: normal;
+            font-style : italic;
+        }
+    }
+
+    thead {
+        td:not(.top_left_corner) {
+            max-width: 8em;
+        }
     }
 }
 

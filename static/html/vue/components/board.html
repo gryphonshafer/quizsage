@@ -9,7 +9,10 @@
                         team_name           : true,
                         not_trigger_eligible: not_trigger_eligible(team),
                     }"
-                >{{ team.name }}</td>
+                >
+                    {{ team.name }}
+                    <span class="nickname" v-if="team.nickname"> - {{ team.nickname }}</span>
+                </td>
                 <td :class="{
                     center              : true,
                     team_score_position : true,

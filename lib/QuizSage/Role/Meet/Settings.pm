@@ -156,9 +156,13 @@ sub thaw_roster_data (
                 my ( $team_name,  @quizzers  ) = split(/\r?\n\s*/);
                 my ( $team_bible, $team_tags ) = $parse_out_bibles_and_tags->( \$team_name );
 
+                my $team_nickname;
+                ( $team_name, $team_nickname ) = split( /\s*[\-:]\s/, $team_name, 2 );
+
                 +{
-                    name     => $team_name,
-                    quizzers => [
+                    name           => $team_name,
+                    maybe nickname => $team_nickname,
+                    quizzers       => [
                         map {
                             my $quizzer = $_;
                             my ( $quizzer_bible, $quizzer_tags ) = $parse_out_bibles_and_tags->( \$quizzer );
@@ -213,7 +217,7 @@ sub freeze_roster_data (
     my $format_line = sub ( $obj = undef ) {
         return join( ' ',
             grep { defined }
-            $obj->{name},
+            $obj->{name} . ( ( $obj->{nickname} ) ? ' - ' . $obj->{nickname} : '' ),
             $obj->{bible},
             ( $obj->{tags} and $obj->{tags}->@* )
                 ? '(' . join( ', ', sort $obj->{tags}->@* ) . ')'

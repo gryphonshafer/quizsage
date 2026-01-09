@@ -15,11 +15,12 @@
         summary_box
         roster_box
         [% IF c.param('team') == team.name %]
-            team_highlight
-            team_highlight_on
+            highlight
+            highlight_on
         [% END %]
     ">
         <b>[% team.name %]</b>
+        [% IF team.nickname %]<i> - [% team.nickname %]</i>[% END %]
         <ul>
             [% FOR quizzer IN team.quizzers %]
                 <li>

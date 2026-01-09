@@ -135,7 +135,7 @@ sub stats ( $self, $rebuild = 0 ) {
 
     my $triggered_rebuild = 0;
     for ( grep { $_->{last_modified_epoch} < $rebuild_stats_if_before } @season_meets_last_mod ) {
-        $_->rebuild(1);
+        $_->{meet}->stats(1);
         $triggered_rebuild = 1;
     }
 
