@@ -98,7 +98,6 @@
         [% FOR season IN active_seasons %]
             <div class="season">
                 <h3>
-                    [% time( season.start, '%Y' ) %]-[% time( season.stop, '%Y' ) %]
                     [% IF season.location %][% season.location %]:[% END %]
                     [% season.name %]
                 </h3>
@@ -125,7 +124,7 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Location</th>
-                                <th>Start</th>
+                                <th>Start Date</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -135,7 +134,7 @@
                                         c.url_for( '/meet/' _ meet.meet_id _ '/state' )
                                     %]">[% meet.name %]</a></td>
                                     <td>[% meet.location %]</td>
-                                    <td>[% time( meet.start, '%a, %b %-d, %Y at %-I:%M %p %Z' ) %]</td>
+                                    <td>[% time( meet.start, '%a, %b %-d, %Y' ) %]</td>
                                 </tr>
                             [% END %]
                         </tbody>
