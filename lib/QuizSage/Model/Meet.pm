@@ -806,6 +806,16 @@ sub swap_draw_parts ( $self, $bracket_name, $sets = [], $quizzes = [] ) {
     return;
 }
 
+sub is_alive ($self) {
+    return 0 unless ( $self->data->{start} );
+
+    my $now   = $time->set(time)->datetime;
+    my $start = $time->parse( $self->data->{start} )->datetime->truncate( to => 'day' );
+    my $stop  = $start->clone->add( days => $self->data->{days} // 1 );
+
+    return ( $now >= $start and $now <= $stop ) ? 1 : 0;
+}
+
 sub _fabricate_foreign_bibles_boost_factor ($quizzes_data) {
     my $gross_points_by_quizzer_by_bibles;
 
@@ -999,6 +1009,11 @@ followed by an arrayref of sets to swap and an arrayref of quizzes to swap.
 
     # swap both the sets and draws from the examples above
     $meet->swap_draw_parts( 'Preliminary', [ 1, 4 ], [ 3, 12 ] );
+
+=head2 is_alive
+
+Returns a boolean indicating if now is within the days the meet is scheduled
+(regardless of time).
 
 =head1 WITH ROLES
 

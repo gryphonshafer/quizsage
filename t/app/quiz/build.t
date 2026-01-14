@@ -1,5 +1,6 @@
 use Test2::V0;
 use exact -conf;
+use Omniframe::Class::Time;
 use Omniframe::Test::App;
 use QuizSage::Model::Meet;
 use QuizSage::Model::Quiz;
@@ -18,7 +19,9 @@ my $mock_meet     = mock 'QuizSage::Model::Meet' => ( override => [
     load          => sub { $_[0] },
     id            => sub { 42 },
     quiz_settings => sub { $quiz_settings },
-    data          => sub { {} },
+    data          => sub { {
+        start => Omniframe::Class::Time->new->set(time)->format('%Y-%m-%d'),
+    } },
 ] );
 
 my $mock_quiz = mock 'QuizSage::Model::Quiz' => ( override => [

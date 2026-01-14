@@ -6,8 +6,14 @@ use QuizSage::Model::Quiz;
 
 sub teams ($self) {
     my $meet = QuizSage::Model::Meet->new->load( $self->param('meet') );
-    return $self->redirect_to( '/meet/' . $self->param('meet') )
-        unless ( $self->stash('user')->qm_auth($meet) );
+
+    unless ( $self->stash('user')->qm_auth($meet) and $meet->is_alive ) {
+        $self->flash( memo => {
+            class   => 'error',
+            message => 'Manual team set/override only allowed by authorized QMs when meet is active',
+        } );
+        return $self->redirect_to( '/meet/' . $self->param('meet') );
+    }
 
     my $state  = $meet->state;
     my $teams  = [ map { $_->{name} } $state->{roster}->@* ];
@@ -64,8 +70,11 @@ sub build ($self) {
     });
     return $self->redirect_to( '/quiz/' . $quizzes->[0]{quiz_id} ) if ( $quizzes and @$quizzes );
 
-    unless ( $meet and $self->stash('user')->qm_auth($meet) ) {
-        $self->flash( memo => { class => 'error', message => 'Unauthorized to build a quiz for this meet' } );
+    unless ( $meet and $meet->is_alive and $self->stash('user')->qm_auth($meet) ) {
+        $self->flash( memo => {
+            class   => 'error',
+            message => 'Meet quiz build only allowed by authorized QMs when meet is active',
+        } );
         return $self->redirect_to( '/meet/' . $self->param('meet') );
     }
 
@@ -174,11 +183,15 @@ sub queries ($self) {
 sub save ($self) {
     my $success = 0;
     my $quiz    = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
+    my $meet    = ( $quiz->data->{meet_id} )
+        ? QuizSage::Model::Meet->new->load( $quiz->data->{meet_id} )
+        : undef;
 
     if (
         $quiz->data->{user_id} and $quiz->data->{user_id} eq $self->stash('user')->id or
         $quiz->data->{meet_id} and
-        $self->stash('user')->qm_auth( QuizSage::Model::Meet->new->load( $quiz->data->{meet_id} ) )
+        $self->stash('user')->qm_auth($meet) and
+        $meet->is_alive
     ) {
         $quiz->save({ state => $self->req->json });
         $success = 1;
@@ -196,9 +209,19 @@ sub save ($self) {
 sub delete ($self) {
     my $quiz = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
 
-    if ( $self->stash('user')->qm_auth( $quiz->data->{meet_id} ) ) {
-        $self->info( 'Quiz delete: ' . $quiz->id );
-        $quiz->delete;
+    try {
+        my $meet = QuizSage::Model::Meet->new->load( $quiz->data->{meet_id} );
+
+        if (
+            $self->stash('user')->qm_auth($meet) and
+            $meet->is_alive
+        ) {
+            $self->info( 'Quiz delete: ' . $quiz->id );
+            $quiz->delete;
+        }
+    }
+    catch ($e) {
+        $self->notice($e);
     }
 
     return $self->redirect_to( '/meet/' . $quiz->data->{meet_id} . '/state' );

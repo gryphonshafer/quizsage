@@ -26,6 +26,8 @@
             event.stop_time = date.format( event.stop, '%s' );
         END;
     END;
+
+    qm_auth_and_meet_is_alive = ( qm_auth AND meet.is_alive ) ? 1 : 0;
 %]
 
 <h2>
@@ -108,6 +110,13 @@
         </ul>
     </li>
 </ul>
+
+[% IF qm_auth %]
+    <ul class="column no_print">
+        <li>QM password authorized</li>
+        <li>Meet currently [% ( meet.is_alive ) ? 'active' : 'inactive' %]</li>
+    </ul>
+[% END %]
 
 [% highlight_js = BLOCK %]
     window.addEventListener( 'DOMContentLoaded', () => {
@@ -293,7 +302,7 @@
 
                     href =
                         ( quiz.id ) ? c.url_for( '/quiz/' _ quiz.id ) :
-                        ( qm_auth AND teams_resolved ) ? c.url_for('/quiz/build').query(
+                        ( qm_auth_and_meet_is_alive AND teams_resolved ) ? c.url_for('/quiz/build').query(
                             meet    => c.param('meet_id'),
                             bracket => bracket.name,
                             quiz    => quiz.name,
@@ -380,7 +389,7 @@
                         [% END %]
                     </ul>
 
-                    [% IF qm_auth %]
+                    [% IF qm_auth_and_meet_is_alive %]
                         [% IF quiz.id %]
                             <a
                                 class="qm_auth"
