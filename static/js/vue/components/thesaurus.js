@@ -26,6 +26,10 @@ export default {
                 data  : item,
             } );
         },
+
+        toggle_clickoned(item) {
+            item.clickedon = ! item.clickedon;
+        },
     },
 
     template: await template( import.meta.url ),

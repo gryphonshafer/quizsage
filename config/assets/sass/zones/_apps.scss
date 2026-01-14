@@ -66,7 +66,8 @@ div#queries {
     }
 
     div.thesaurus {
-        display: inline;
+        display    : inline;
+        white-space: nowrap;
 
         ul {
             margin: 0 0 0 1em;
@@ -85,6 +86,31 @@ div#queries {
         }
 
         span {
+            &.clickonable {
+                display: inline-block;
+                margin : 0 calc( 1em / 8 * -1 );
+                padding: 0 calc( 1em / 8 );
+
+                @include theme.apply( themes.$styles, 'style' ) {
+                    border-radius: calc( theme.get('radius') / 2 );
+                }
+
+                &:hover {
+                    cursor: pointer;
+                }
+
+                &.clickoned {
+                    @include theme.apply( themes.$themes ) {
+                        background-color: theme.get('button_background');
+                    }
+                }
+            }
+
+            &.wrappable {
+                display    : inline;
+                white-space: normal;
+            }
+
             &.word {
                 font-weight    : bold;
                 text-decoration: underline;

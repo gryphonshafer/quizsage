@@ -1,6 +1,15 @@
 <div class="thesaurus">
-    <span v-for="item in items" :class="[ ...item.types, 'item' ]"
-        >{{ item.text }}<div v-if="item.thesaurus" class="details">
+    <span
+        v-for="item in items"
+        :class="{
+            item       : true,
+            clickonable: ( item.thesaurus || item.types.length ),
+            clickoned  : item.clickedon,
+            wrappable  : item.text,
+            ...item.types.reduce( ( obj, val ) => ( obj[val] = true, obj ), {} ),
+        }"
+        @click="toggle_clickoned(item)"
+    >{{ item.text }}<div v-if="item.thesaurus" class="details">
             <span class="word">{{ item.thesaurus.word }}</span>
             <ul>
                 <li v-for="meaning in item.thesaurus.meanings">
