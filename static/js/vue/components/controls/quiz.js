@@ -149,6 +149,16 @@ export default {
                 }
             }
             else {
+                if (
+                    event_type == 'foul'            ||
+                    event_type == 'timeout'         ||
+                    event_type == 'appeal_accepted' ||
+                    event_type == 'appeal_declined'
+                ) {
+                    if ( this.selected.type.with_reference ) this.select_type('with_reference');
+                    if ( this.selected.type.add_verse      ) this.select_type('add_verse');
+                }
+
                 this.action(
                     event_type,
                     this.selected.team_id,
