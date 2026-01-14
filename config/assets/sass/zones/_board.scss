@@ -94,8 +94,26 @@ table.board {
         font-weight: bold;
     }
 
-    td.team_name {
-        padding-left: 0.7em;
+    thead {
+        td.team_name {
+            max-width   : 0;
+            padding-left: 0.375em;
+
+            div.nickname {
+                font-weight  : normal;
+                font-style   : italic;
+                white-space  : nowrap;
+                overflow     : hidden;
+                text-overflow: ellipsis;
+            }
+        }
+
+        td.quizzer_name div {
+            max-height   : 10em;
+            white-space  : nowrap;
+            overflow     : hidden;
+            text-overflow: ellipsis;
+        }
     }
 }
 

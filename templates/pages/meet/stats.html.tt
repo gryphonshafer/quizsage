@@ -142,8 +142,10 @@
                                 %][%
                                     IF item.tags AND item.tags.grep('^Rookie$').size %]*[% END %]
                                 [% IF item.team_name %]
-                                    <br>
-                                    [% item.team_name %]
+                                    <br>[% item.team_name %]
+                                    [% IF item.team_nickname %]<i> - [% item.team_nickname %]</i>[% END %]
+                                [% ELSIF item.team_nickname %]
+                                    <br><i>[% item.team_nickname %]</i>
                                 [% END %]
                             </td>
                             <td class="right no_wrap tight_lines">
@@ -242,10 +244,18 @@
                             <sub class="count">[% loop.count %]</sub>
                         </td>
                         <td>
-                            [% quizzer.name %][% IF
-                                quizzer.tags AND quizzer.tags.grep('^Rookie$').size %]*[% END %]
+                            [%
+                                display_name = quizzer.name _
+                                    ( ( quizzer.tags AND quizzer.tags.grep('^Rookie$').size ) ? '*' : '' );
+                            %]
+                            [% IF stats.meta.rookie_of_the_meet.name == quizzer.name
+                                %]<b>[% display_name %]</b>[%
+                                ELSE %][% display_name %][% END %]
                         </td>
-                        <td>[% quizzer.team_name %]</td>
+                        <td>
+                            [% quizzer.team_name %]
+                            [% IF quizzer.team_nickname %]<i> - [% quizzer.team_nickname %]</i>[% END %]
+                        </td>
                         <td class="right">[% quizzer.vra_sum %]</td>
                     </tr>
                     [%
@@ -279,7 +289,10 @@
                     <tr>
                         <td class="right">[% row_position %]</td>
                         [% IF rank.team %]
-                            <td>[% rank.team %]</td>
+                            <td>
+                                [% rank.team %]
+                                [% IF rank.team_nickname %]<i> - [% quizzer.team_nickname %]</i>[% END %]
+                            </td>
                         [% ELSE %]
                             <td class="blank_cell"></td>
                         [% END %]

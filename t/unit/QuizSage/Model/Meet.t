@@ -1,5 +1,6 @@
 use Test2::V0;
 use exact -conf;
+use Omniframe::Class::Time;
 use QuizSage::Model::Meet;
 use QuizSage::Model::Season;
 use QuizSage::Model::User;
@@ -100,6 +101,15 @@ is( $obj->admins, [{
     last_name  => 'last_name',
     user_id    => T(),
 }], 'admins' );
+
+$obj->data->{start} = Omniframe::Class::Time->new->set( time - 60 * 60 * 24 )->format('%Y-%m-%d');
+is( $obj->is_alive, 0, 'is not alive' );
+
+$obj->data->{start} = Omniframe::Class::Time->new->set(time)->format('%Y-%m-%d');
+is( $obj->is_alive, 1, 'is alive' );
+
+$obj->data->{start} = Omniframe::Class::Time->new->set( time + 60 * 60 * 24 )->format('%Y-%m-%d');
+is( $obj->is_alive, 0, 'is not alive again' );
 
 $obj->dq->rollback;
 $obj->dq('material')->rollback;
