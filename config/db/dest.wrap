@@ -3,9 +3,9 @@ use exact -cli, -conf;
 use Mojo::File 'path';
 use Omniframe;
 
-my $obj = Omniframe->with_roles('+Database')->new;
 conf->put( qw( database settings sqlite_allow_multiple_statements ) => 1 );
 
+my $obj      = Omniframe->with_roles('+Database')->new;
 my $sql_file = path( $ARGV[0] );
 my ($name)   = $sql_file->to_abs->dirname =~ m|/config/db/([^/]+)/[^/]+$|;
 my $dq       = $obj->dq($name);
