@@ -1,7 +1,8 @@
 package QuizSage::Control::Main;
 
 use exact -conf, 'Mojolicious::Controller';
-use Mojo::File 'path';
+use DBD::SQLite::Constants 'SQLITE_OPEN_READONLY';
+use Mojo::File qw( path tempfile );
 use QuizSage::Model::Label;
 use QuizSage::Model::Memory;
 use QuizSage::Model::Quiz;
@@ -212,17 +213,45 @@ sub setup ($self) {
 }
 
 sub download ($self) {
-    $self->stash( shards => conf->get( qw( database shards ) ) );
-    if ( my $shard = $self->param('shard') ) {
-        my $file = $base->child( conf->get( qw( database shards ), $shard, 'file' ) );
+    $self->stash(
+        shards => [
+            map {
+                my @units = qw( B K M G T );
+                my $size = $base->child( conf->get( qw( database shards ), $_, 'file' ) )->stat->size;
+                $size /= 1024 while ( $size > 1000 and shift @units );
+                +{
+                    name  => $_,
+                    size  => sprintf( '%0.1f', $size ),
+                    units => $units[0],
+                };
+            }
+            sort keys %{ conf->get( qw( database shards ) ) }
+        ],
+    );
 
-        $self->res->headers->header(@$_) for (
-            [ 'Content-Type'        => 'application/x-sqlite'                           ],
-            [ 'Content-Disposition' => 'attachment; filename="' . $file->basename . '"' ],
-        );
+    if ( my $shard = lc( $self->param('shard') // '' ) ) {
+        try{
+            my $dbh  = $self->stash('user')->dq($shard)->clone({ sqlite_open_flags => SQLITE_OPEN_READONLY });
+            my $temp = tempfile( SUFFIX => '.sqlite' );
 
-        $self->res->body( $file->slurp );
-        $self->rendered;
+            $dbh->sqlite_backup_to_file($temp);
+            $dbh->disconnect;
+
+            $self->res->headers->content_type('application/x-sqlite');
+            $self->res->headers->content_disposition( 'attachment; filename="' . $shard . '.sqlite"' );
+            $self->res->body( $temp->slurp );
+            $self->rendered;
+        }
+        catch ($e) {
+            $self->notice( 'Download database error: ' . $e );
+            $self->flash(
+                memo => {
+                    class   => 'error',
+                    message => 'There was a problem preparing or downloading the database',
+                },
+            );
+            $self->redirect_to('/download');
+        }
     }
 }
 
