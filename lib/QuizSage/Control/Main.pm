@@ -234,7 +234,7 @@ sub download ($self) {
             my $dbh  = $self->stash('user')->dq($shard)->clone({ sqlite_open_flags => SQLITE_OPEN_READONLY });
             my $temp = tempfile( SUFFIX => '.sqlite' );
 
-            $dbh->sqlite_backup_to_file($temp);
+            $dbh->sqlite_backup_to_file( $temp->to_string );
             $dbh->disconnect;
 
             $self->res->headers->content_type('application/x-sqlite');

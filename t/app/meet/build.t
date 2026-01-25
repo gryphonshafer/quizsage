@@ -77,7 +77,7 @@ mojo->get_ok( '/meet/' . $meet->id . '/state' )
     ->text_is( 'h3:nth-of-type(2)', 'Bracket: Auxiliary' )
     ->text_is( 'h3:nth-of-type(3)', 'Bracket: Top 9' )
     ->text_is( 'h3:nth-of-type(1) + div b', 'Instructions and Announcements' )
-    ->text_is( 'h3:nth-of-type(1) ~ div > div:nth-child(1) + div a b', 'Quiz: 1' );
+    ->text_is( 'h3:nth-of-type(1) ~ div > div:nth-child(1) + div b', 'Quiz: 1' );
 
 mojo->get_ok( '/meet/' . $meet->id . '/roster' )
     ->status_is(200)
