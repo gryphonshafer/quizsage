@@ -89,6 +89,9 @@ www:
         active: 1
 tauntaun:
     database:
+        pragmas:
+            journal_mode: DELETE
+            synchronous : FULL
         shards:
             app:
                 log:
