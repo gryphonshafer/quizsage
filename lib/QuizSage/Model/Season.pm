@@ -69,6 +69,10 @@ sub seasons ($self) {
     ];
 }
 
+sub _significance ( $float, $exponent = 8 ) {
+    return int( $float * 10 ** $exponent ) / 10 ** $exponent;
+}
+
 sub stats ( $self, $rebuild = 0 ) {
     my $meets = QuizSage::Model::Meet->new->every({ season_id => $self->id, hidden => 0 });
     my $rules = deepcopy( $self->data->{settings}{statistics} ) // { meets => [ map { +{
@@ -153,19 +157,27 @@ sub stats ( $self, $rebuild = 0 ) {
             $time->parse( conf->get('rebuild_stats_if_before') )->{datetime}->epoch
     );
 
-    my $stats = {
-        meet_count => scalar @$meets,
-        meets      => [
-            sort {
-                $a->{start}    cmp $b->{start} or
-                $a->{name}     cmp $b->{name}  or
-                $a->{location} cmp $b->{location}
-            }
-            map {
-                my $meet = $_;
-                +{ map { $_ => $meet->data->{$_} } qw( meet_id name location start days ) };
-            } @$meets, @$remote_meets
-        ],
+    my $meet_set = [
+        sort {
+            $a->{start}    cmp $b->{start} or
+            $a->{name}     cmp $b->{name}  or
+            $a->{location} cmp $b->{location}
+        }
+        map {
+            my $meet = $_;
+            +{ map { $_ => $meet->data->{$_} } qw( meet_id name location start days ) };
+        }
+        @$meets, @$remote_meets
+    ];
+
+    my @meet_names;
+    for my $meet (@$meet_set) {
+        push( @meet_names, $meet->{name} ) unless ( grep { $_ eq $meet->{name} } @meet_names );
+    }
+
+    my $stats      = {
+        meet_names => \@meet_names,
+        meets      => $meet_set,
     };
 
     my $quizzers_meet_data;
@@ -200,15 +212,14 @@ sub stats ( $self, $rebuild = 0 ) {
             $a->{name} cmp $b->{name}
         }
         map {
-            my $quizzer_name = $_;
-            my $tags         = [];
-
+            my $quizzer_name  = $_;
+            my $tags          = [];
             my $quizzer_meets = [
                 map {
-                    my $meet = $_;
+                    my $meet_name = $_;
 
-                    my $meet_data = $quizzers_meet_data->{$quizzer_name}{ $meet->{name} };
-                    my ($meet_rule) = grep { $_->{name} eq $meet->{name} } @{ $rules->{meets} // [] };
+                    my $meet_data = $quizzers_meet_data->{$quizzer_name}{$meet_name};
+                    my ($meet_rule) = grep { $_->{name} eq $meet_name } @{ $rules->{meets} // [] };
                     $meet_data->{weight} = ($meet_rule) ? $meet_rule->{weight} : 0;
 
                     my %tags = map { $_ => 1 } @$tags, @{ $meet_data->{tags} // [] };
@@ -217,16 +228,7 @@ sub stats ( $self, $rebuild = 0 ) {
 
                     $meet_data;
                 }
-                sort {
-                    $a->{start}    cmp $b->{start} or
-                    $a->{name}     cmp $b->{name}  or
-                    $a->{location} cmp $b->{location}
-                }
-                map {
-                    my $meet = $_;
-                    +{ map { $_ => $meet->data->{$_} } qw( meet_id name location start days ) };
-                }
-                @$meets
+                @meet_names
             ];
 
             if ( $rules->{drop} ) {
@@ -253,7 +255,7 @@ sub stats ( $self, $rebuild = 0 ) {
                 name    => $_,
                 tags    => $tags,
                 meets   => $quizzer_meets,
-                ytd_avg => (
+                ytd_avg => _significance(
                     $quizzer_stats->{total_avg} / (
                         ( $quizzer_stats->{total_weight} )
                             ? $quizzer_stats->{total_weight}

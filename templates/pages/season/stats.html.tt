@@ -95,8 +95,8 @@
                     <th>Total Avg.</th>
                     <th>Total Pts.</th>
                     <th>VRA Sum</th>
-                    [% FOR meet_number IN [ 1 .. stats.meet_count ] %]
-                        <th>Meet [% meet_number %]</a></th>
+                    [% FOR meet_name IN stats.meet_names %]
+                        <th>[% meet_name %]</a></th>
                     [% END %]
                 </tr>
             </thead>
@@ -150,7 +150,7 @@
                             [% ELSE %]
                                 <td class="blank_cell"></td>
                             [% END %]
-                            [% LAST IF loop.count >= stats.meet_count %]
+                            [% LAST IF loop.count >= stats.meet_names.size %]
                         [% END %]
                     </tr>
                     [%
@@ -178,8 +178,8 @@
                     </th>
                     <th>Quizzer</th>
                     <th>Total</th>
-                    [% FOR meet_number IN [ 1 .. stats.meet_count ] %]
-                        <th>Meet [% meet_number %]</a></th>
+                    [% FOR meet_name IN stats.meet_names %]
+                        <th>[% meet_name %]</a></th>
                     [% END %]
                 </tr>
             </thead>
@@ -213,7 +213,7 @@
                             [% ELSE %]
                                 <td class="blank_cell"></td>
                             [% END %]
-                            [% LAST IF loop.count >= stats.meet_count %]
+                            [% LAST IF loop.count >= stats.meet_names.size %]
                         [% END %]
                     </tr>
                     [%

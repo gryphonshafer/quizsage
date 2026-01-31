@@ -344,6 +344,10 @@ sub distribution ($self) {
     return $build;
 }
 
+sub _significance ( $float, $exponent = 8 ) {
+    return int( $float * 10 ** $exponent ) / 10 ** $exponent;
+}
+
 sub stats ( $self, $rebuild = 0 ) {
     return $self->data->{stats} unless (
         $rebuild or
@@ -567,8 +571,11 @@ sub stats ( $self, $rebuild = 0 ) {
                             : 1
                     );
                 }
-                $points_avg     = $points_sum     / ( scalar( grep { $_->{weight} } @$quizzes ) || 1 );
-                $points_avg_raw = $points_sum_raw / ( scalar( grep { $_->{weight} } @$quizzes ) || 1 );
+
+                my $denominator = scalar( grep { $_->{weight} } @$quizzes ) || 1;
+
+                $points_avg     = _significance( $points_sum     / $denominator );
+                $points_avg_raw = _significance( $points_sum_raw / $denominator );
 
                 my $stat = {
                     name           => $_,
@@ -645,7 +652,7 @@ sub stats ( $self, $rebuild = 0 ) {
             }
 
             $org_data->{points_avg} = ( $org_data->{quizzes} )
-                ? $org_data->{points_sum} / $org_data->{quizzes}
+                ? _significance( $org_data->{points_sum} / $org_data->{quizzes} )
                 : 0;
 
             $org_data;
@@ -848,9 +855,9 @@ sub _fabricate_foreign_bibles_boost_factor ($quizzes_data) {
         my %points_avg = map {
             my $points;
             $points += $_ for ( $quizzer->{$_}->@* );
-            $_ => $points / @{ $quizzer->{$_} };
+            $_ => _significance( $points / @{ $quizzer->{$_} } );
         } keys %$quizzer;
-        push( @boosts, $points_avg{multiple} / $points_avg{singular} )
+        push( @boosts, _significance( $points_avg{multiple} / $points_avg{singular} ) )
             if ( $points_avg{multiple} and $points_avg{singular} );
     }
     my $factor;
@@ -859,7 +866,7 @@ sub _fabricate_foreign_bibles_boost_factor ($quizzes_data) {
         $factor /= @boosts;
     }
 
-    return ( defined $factor and $factor > 1 ) ? $factor : 1;
+    return ( defined $factor and $factor > 1 ) ? _significance($factor) : 1;
 }
 
 1;
