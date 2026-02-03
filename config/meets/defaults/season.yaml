@@ -1,54 +1,8 @@
 ---
 roster:
-    # default_bible: NIV
     tags:
         append : Youth
         default: Veteran
-# per_quiz:
-#     module:
-#         - vue/apps/quiz
-#     importmap:
-#         modules/template      : modules/template
-#         vue/components/element: vue/components/element
-#         vue/store             : vue/stores/quiz
-#     defer:
-#         - util/websocket
-#     inputs:
-#         material:
-#             ignored_types:
-#                 - article
-#                 - preposition
-#             minimum_verity: 3
-#             special_types:
-#                 - pronoun
-#         queries:
-#             chapter_reference_minimum_prompt_length:
-#                 additional: 4
-#                 key: 3
-#             chapter_reference_minimum_reply_length: 1
-#             finish_minimum_reply_length: 1
-#             finish_prompt_length: 5
-#             phrase_minimum_prompt_length: 7
-#             phrase_minimum_reply_length: 1
-#         quiz:
-#             maximum_declined_appeals_per_team: 2
-#             trigger_wait_duration: 7
-#             quizzer_response_duration: 40
-#             timeout_duration: 40
-#             appeal_duration: 180
-#             timeouts_per_team: 1
-#         scoring:
-#             add_verse_synonymous: 1
-#             add_verse_verbatim: 2
-#             ceiling_bonus: 3
-#             ceiling_full: 4
-#             follow_bonus: 1
-#             nth_quizzer_bonus: 1
-#             open_book: 1
-#             open_book_team_max: 3
-#             synonymous: 2
-#             verbatim: 4
-#             with_reference: 1
 statistics:
     drop:
         type : lowest

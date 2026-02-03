@@ -414,7 +414,7 @@ sub schedule_integration( $self, $build_settings ) {
                         ' happens at the same time as ' .
                         $quiz_2->{bracket} . ' Quiz ' . $quiz_2->{name} .
                         ' (room ' . $quiz_1->{room} . ')';
-                    $self->warn( $warning . "\n" );
+                    $self->warn($warning);
                     push( @$warnings, $warning );
                 }
 
@@ -434,7 +434,7 @@ sub schedule_integration( $self, $build_settings ) {
                             $quiz_2->{bracket} . ' Quiz ' . $quiz_2->{name} .
                             ' (room ' . $quiz_1->{room} . ')' .
                             ', which are at the same time';
-                        $self->warn( $warning . "\n" );
+                        $self->warn($warning);
                         push( @$warnings, $warning );
                     }
                 }
