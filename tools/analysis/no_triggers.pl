@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-use exact -cli, -conf;
+use exact -conf;
 use QuizSage::Model::Label;
 use QuizSage::Model::Meet;
 use QuizSage::Model::Quiz;
