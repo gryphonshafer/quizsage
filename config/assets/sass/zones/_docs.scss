@@ -55,6 +55,60 @@ div#docs {
                 border-color: theme.get('tiles_start_color');
             }
         }
+
+        div.table_horizontal_scroll {
+            border    : 1px solid;
+            overflow-x: scroll;
+
+            @include theme.apply( themes.$themes ) {
+                border-color: theme.get('lines');
+            }
+
+            table {
+                margin       : 0;
+                border       : none;
+                border-radius: 0;
+
+                thead {
+                    th {
+                        border-top: none;
+                    }
+
+                    th:first-of-type {
+                        border-left: none;
+                        border-top-left-radius: 0;
+                    }
+
+                    th:last-of-type {
+                        border-right: none;
+                        border-top-right-radius: 0;
+                    }
+                }
+
+                tbody td:first-of-type {
+                    border-left: none;
+                    white-space: nowrap;
+                }
+
+                tbody td:last-of-type {
+                    border-right: none;
+                }
+
+                tbody tr:last-of-type {
+                    td {
+                        border-bottom: none;
+                    }
+
+                    td:first-of-type {
+                        border-bottom-left-radius: 0;
+                    }
+
+                    td:last-of-type {
+                        border-bottom-right-radius: 0;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -70,6 +124,10 @@ div#docs {
 
         div#doc_content {
             flex-grow: 1;
+
+            div.table_horizontal_scroll {
+                width: calc( 100vw - 20em );
+            }
         }
     }
 }
