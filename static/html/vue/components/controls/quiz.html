@@ -37,13 +37,14 @@
 </div>
 
 <div class="results">
-    <button @click="trigger_event('no_trigger'     )" :disabled="quiz_complete || ! no_quizzer_selected">No Trigger</button>
+    <button @click="trigger_event('no_trigger')"
+        :disabled="quiz_complete || ! no_quizzer_selected">No Trigger</button>
     <button @click="trigger_event('correct'        )" :disabled="no_quizzer_selected">Correct</button>
     <button @click="trigger_event('incorrect'      )" :disabled="no_quizzer_selected">Incorrect</button>
     <button @click="trigger_event('foul'           )" :disabled="no_quizzer_selected">Foul</button>
-    <button @click="trigger_event('timeout'        )" :disabled="no_quizzer_selected">Timeout</button>
-    <button @click="trigger_event('appeal_accepted')" :disabled="no_quizzer_selected">Appeal +</button>
-    <button @click="trigger_event('appeal_declined')" :disabled="no_quizzer_selected">Appeal -</button>
+    <button @click="trigger_event('timeout'        )" :disabled="no_team_selected">Timeout</button>
+    <button @click="trigger_event('appeal_accepted')" :disabled="no_team_selected">Appeal +</button>
+    <button @click="trigger_event('appeal_declined')" :disabled="no_team_selected">Appeal -</button>
 </div>
 
 <div class="quiz_control">

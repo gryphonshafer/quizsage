@@ -204,6 +204,22 @@ div#board {
             }
         }
 
+        td.team_name {
+            &:hover {
+                @include theme.apply( themes.$themes ) {
+                    background: theme.get('td_team_arc');
+                }
+            }
+        }
+
+        td.selected {
+            &:hover {
+                @include theme.apply( themes.$themes ) {
+                    background: theme.get('td_selected_background');
+                }
+            }
+        }
+
         td.not_trigger_eligible {
             &:hover {
                 @include theme.apply( themes.$themes ) {

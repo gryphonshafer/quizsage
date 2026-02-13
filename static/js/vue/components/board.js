@@ -15,10 +15,14 @@ export default {
             'is_quiz_done',
         ] ),
 
-        select_quizzer( quizzer_id, team_id ) {
-            if ( this.hidden_solution ) this.toggle_hidden_solution();
-
+        select_team(team_id) {
             if ( this.is_quiz_done() ) return;
+            this.selected.team_id = team_id;
+        },
+
+        select_quizzer( quizzer_id, team_id ) {
+            if ( this.is_quiz_done() ) return;
+            if ( this.hidden_solution ) this.toggle_hidden_solution();
 
             this.selected.quizzer_id = quizzer_id;
             this.selected.team_id    = team_id;

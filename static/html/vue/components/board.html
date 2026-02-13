@@ -5,9 +5,12 @@
             <template v-for="team in teams">
                 <td
                     :colspan="team.quizzers.length"
+                    @click="select_team( team.id )"
                     :class="{
                         team_name           : true,
                         not_trigger_eligible: not_trigger_eligible(team),
+                        clickable           : true,
+                        selected            : selected.team_id && team.id && selected.team_id == team.id,
                     }"
                 >
                     {{ team.name }}

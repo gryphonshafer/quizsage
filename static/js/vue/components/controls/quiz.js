@@ -11,6 +11,10 @@ export default {
     computed: {
         ...Pinia.mapState( store, [ 'board', 'current', 'teams', 'selected', 'timer_state' ] ),
 
+        no_team_selected() {
+            return ! this.selected.team_id;
+        },
+
         no_quizzer_selected() {
             return ! this.selected.quizzer_id;
         },
@@ -144,13 +148,15 @@ export default {
         trigger_event(event_type) {
             if (
                 (
-                    event_type == 'correct'         ||
-                    event_type == 'incorrect'       ||
-                    event_type == 'foul'            ||
+                    event_type == 'correct'   ||
+                    event_type == 'incorrect' ||
+                    event_type == 'foul'
+                ) && ! this.selected.quizzer_id ||
+                (
                     event_type == 'timeout'         ||
                     event_type == 'appeal_accepted' ||
                     event_type == 'appeal_declined'
-                ) && ! this.selected.quizzer_id ||
+                ) && ! this.selected.team_id ||
                 event_type != 'reset' && this.is_quiz_done()
             ) return;
 
