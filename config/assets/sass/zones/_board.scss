@@ -15,6 +15,23 @@ table.board {
         }
     }
 
+    td.team_name,
+    td.team_score_position,
+    td.team_score_points,
+    td.team_score_column {
+        font-weight: bold;
+    }
+
+    td.team_name,
+    td.team_score_position,
+    td.team_score_points,
+    td.team_toradr_status,
+    td.team_score_column {
+        @include theme.apply( themes.$themes ) {
+            background: theme.get('td_team_arc');
+        }
+    }
+
     td.not_trigger_eligible {
         font-style: italic;
 
@@ -86,13 +103,6 @@ table.board {
 
     tbody tr td:nth-of-type(2) {
         width: 3em;
-    }
-
-    td.team_name,
-    td.team_score_position,
-    td.team_score_points,
-    td.team_score_column {
-        font-weight: bold;
     }
 
     thead {
