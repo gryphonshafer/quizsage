@@ -9,7 +9,19 @@ export default {
     },
 
     computed: {
-        ...Pinia.mapState( store, [ 'current', 'teams', 'selected' ] ),
+        ...Pinia.mapState( store, [ 'board', 'current', 'teams', 'selected' ] ),
+
+        no_quizzer_selected() {
+            return ! this.selected.quizzer_id;
+        },
+
+        current_query_is_quote() {
+            return this.current.query.type == 'Q';
+        },
+
+        no_events_to_delete() {
+            return this.board.find( event => event.current ).id == '1A';
+        },
     },
 
     methods: {
@@ -18,8 +30,8 @@ export default {
             'delete_last_action', 'exit_quiz', 'save_quiz_data', 'check_open_book_max', 'replace_query'
         ] ),
 
-        select_type(type) {
-            if ( this.is_quiz_done() ) return;
+        select_type( type, is_a_reset ) {
+            if ( ! this.selected.quizzer_id || this.is_quiz_done() ) return;
 
             if ( type == 'vra' ) {
                 if (
@@ -61,7 +73,7 @@ export default {
                 }
             }
             else if ( type == 'with_reference' ) {
-                if ( this.current.query.type == 'Q' ) {
+                if ( ! is_a_reset && this.current.query.type == 'Q' ) {
                     this.selected.type.with_reference = true;
                 }
                 else {
@@ -144,7 +156,7 @@ export default {
                     this.view_query(last_event);
                 }
                 else {
-                    if ( this.selected.type.with_reference ) this.select_type('with_reference');
+                    if ( this.selected.type.with_reference ) this.select_type( 'with_reference', true );
                     if ( this.selected.type.add_verse      ) this.select_type('add_verse');
                 }
             }

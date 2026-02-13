@@ -2,22 +2,27 @@
     <button
         @click="select_type('open_book')"
         :class="{ selected: selected.type.synonymous_verbatim_open_book == 'open_book' }"
+        :disabled="no_quizzer_selected || current_query_is_quote"
     >Open Book</button>
     <button
         @click="select_type('synonymous')"
         :class="{ selected: selected.type.synonymous_verbatim_open_book == 'synonymous' }"
+        :disabled="no_quizzer_selected"
     >Synonymous</button>
     <button
         @click="select_type('verbatim')"
         :class="{ selected: selected.type.synonymous_verbatim_open_book == 'verbatim' }"
+        :disabled="no_quizzer_selected"
     >Verbatim</button>
     <button
         @click="select_type('with_reference')"
         :class="{ selected: selected.type.with_reference }"
+        :disabled="no_quizzer_selected"
     >With Reference</button>
     <button
         @click="select_type('add_verse')"
         :class="{ selected: selected.type.add_verse }"
+        :disabled="no_quizzer_selected"
     >Add Verse</button>
     <button
         @click="select_type('vra')"
@@ -27,22 +32,23 @@
                 selected.type.with_reference &&
                 selected.type.add_verse
         }"
+        :disabled="no_quizzer_selected"
     >VRA</button>
 </div>
 
 <div class="results">
-    <button @click="trigger_event('no_trigger'     )">No Trigger</button>
-    <button @click="trigger_event('correct'        )">Correct</button>
-    <button @click="trigger_event('incorrect'      )">Incorrect</button>
-    <button @click="trigger_event('foul'           )">Foul</button>
-    <button @click="trigger_event('timeout'        )">Timeout</button>
-    <button @click="trigger_event('appeal_accepted')">Appeal +</button>
-    <button @click="trigger_event('appeal_declined')">Appeal -</button>
+    <button @click="trigger_event('no_trigger'     )" :disabled="quiz_complete || ! no_quizzer_selected">No Trigger</button>
+    <button @click="trigger_event('correct'        )" :disabled="no_quizzer_selected">Correct</button>
+    <button @click="trigger_event('incorrect'      )" :disabled="no_quizzer_selected">Incorrect</button>
+    <button @click="trigger_event('foul'           )" :disabled="no_quizzer_selected">Foul</button>
+    <button @click="trigger_event('timeout'        )" :disabled="no_quizzer_selected">Timeout</button>
+    <button @click="trigger_event('appeal_accepted')" :disabled="no_quizzer_selected">Appeal +</button>
+    <button @click="trigger_event('appeal_declined')" :disabled="no_quizzer_selected">Appeal -</button>
 </div>
 
 <div class="quiz_control">
     <button @click="trigger_event('reset')">Reset Trigger</button>
     <button @click="reset_replace_query">Replace Query</button>
-    <button @click="delete_last">Delete Last Event</button>
+    <button @click="delete_last" :disabled="no_events_to_delete">Delete Last Event</button>
     <button @click="exit_quiz">Exit {{ quiz_complete ? 'Completed' : 'Incomplete' }} Quiz</button>
 </div>
