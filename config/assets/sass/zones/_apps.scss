@@ -40,8 +40,20 @@ div#queries {
         }
     }
 
-    div.query p.announcement {
-        margin-top: 0;
+    div.query {
+        p.announcement {
+            margin-top: 0;
+        }
+
+        div.top_block {
+            position: relative;
+        }
+
+        div.buttons {
+            position: absolute;
+            bottom  : 0;
+            right   : 0;
+        }
     }
 
     div.material span.reference {

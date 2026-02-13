@@ -8,7 +8,7 @@ export default {
 
     methods: {
         ...Pinia.mapActions( store, [
-            'create_query', 'toggle_auto_hide', 'set_next_query_bible', 'toggle_add_verse', 'exit_drill',
+            'create_query', 'toggle_auto_hide', 'set_next_query_bible', 'toggle_add_verse',
         ] ),
 
         reset_create_query(query_type_key) {

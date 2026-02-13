@@ -2,10 +2,9 @@
     <div class="timer_display" @click="toggle">{{ value }}</div>
     <div class="button_group">
         <button @click="toggle">{{ state }}</button>
-        <button v-for="( value, key ) in durations"
-            @click="start(key)">
-                {{ key.charAt(0).toUpperCase() + key.slice(1) }}:
-                {{ value }}
-            </button>
+        <button v-for="( value, key ) in durations" @click="start(key)">
+            {{ key.charAt(0).toUpperCase() + key.slice(1) }}:
+            {{ value }}
+        </button>
     </div>
 </div>

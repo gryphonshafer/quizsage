@@ -135,9 +135,5 @@ export default Pinia.defineStore( 'store', {
                 ...queries.material.materials(current_query),
             };
         },
-
-        exit_drill() {
-            window.location.href = new URL( '/drill/setup', url );
-        },
     },
 } );

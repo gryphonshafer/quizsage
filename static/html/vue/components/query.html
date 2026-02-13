@@ -1,25 +1,35 @@
 <div class="query">
-    <p class="announcement" v-if="eligible_teams">
-        Query <span>{{ current.event.id }}</span>
-        <template v-if="! last_event_if_not_viewed() && ! is_quiz_done()">
-            for <span>{{ eligible_teams }}</span>
-            is
-        </template>
-        <template v-else>
-            was
-        </template>
-        a<br>
-        <span>{{ current.query.type_name }}</span><template v-if="current.query.type != 'Q'">
-        from the <span>{{ current.event.bible }}</span></template>.
-        Ready. Begin.
-    </p>
+    <div class="top_block">
+        <p class="announcement">
+            Query
+            <template v-if="eligible_teams">
+                <span>{{ current.event.id }}</span>
+                <template v-if="! last_event_if_not_viewed() && ! is_quiz_done()">
+                    for <span>{{ eligible_teams }}</span>
+                    is
+                </template>
+                <template v-else>
+                    was
+                </template>
+            </template>
+            <template v-else>
+                is
+            </template>
+            a
+            <br v-if="eligible_teams">
+            <span>{{ current.query.type_name }}</span>
+            <br v-if="! eligible_teams">
+            <template v-if="current.query.type != 'Q'">
+                from the
+                <span>{{ eligible_teams ? current.event.bible : current.query.bible }}</span>.
+            </template>
+            Ready. Begin.
+        </p>
 
-    <p class="announcement" v-if="! eligible_teams">
-        Query is a
-        <span>{{ current.query.type_name }}</span><template v-if="current.query.type != 'Q'">
-        from the <span>{{ current.query.bible }}</span></template>.
-        Ready. Begin.
-    </p>
+        <div class="buttons">
+            <button @click="toggle_hidden_solution">{{ (hidden_solution) ? 'Show' : 'Hide' }}</button>
+        </div>
+    </div>
 
     <p
         :class="{
