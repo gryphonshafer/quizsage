@@ -47,8 +47,8 @@
 </div>
 
 <div class="quiz_control">
-    <button @click="trigger_event('reset')">Reset Trigger</button>
-    <button @click="reset_replace_query">Replace Query</button>
-    <button @click="delete_last" :disabled="no_events_to_delete">Delete Last Event</button>
+    <button @click="trigger_event('reset')" :disabled="reset_state_unnecessary">Reset State</button>
+    <button @click="reset_replace_query"    :disabled="replace_query_not_available">Replace Query</button>
+    <button @click="delete_last"            :disabled="no_events_to_delete">Delete Last Event</button>
     <button @click="exit_quiz">Exit {{ quiz_complete ? 'Completed' : 'Incomplete' }} Quiz</button>
 </div>

@@ -124,10 +124,15 @@ export default Pinia.defineStore( 'store', {
             hidden_solution: ( ( miscellaneous.meet_id && quiz.board_row() ) ? true : false ),
             is_drill       : false,
             exit_quiz_url  : exit_quiz_url,
+            timer_state    : 'Start',
         };
     },
 
     actions: {
+        set_timer_state(state) {
+            this.timer_state = state;
+        },
+
         replace_query() {
             try {
                 quiz.replace_query();

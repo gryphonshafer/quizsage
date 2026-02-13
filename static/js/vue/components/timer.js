@@ -12,11 +12,17 @@ export default {
     },
 
     computed: {
-        ...Pinia.mapState( store, ['durations'] ),
+        ...Pinia.mapState( store, [ 'durations', 'set_timer_state' ] ),
     },
 
     created() {
         this.value = this.durations.quizzer || this.durations.standard;
+    },
+
+    watch: {
+        state(value) {
+            this.set_timer_state(value);
+        },
     },
 
     methods: {

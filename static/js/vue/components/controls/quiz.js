@@ -9,7 +9,7 @@ export default {
     },
 
     computed: {
-        ...Pinia.mapState( store, [ 'board', 'current', 'teams', 'selected' ] ),
+        ...Pinia.mapState( store, [ 'board', 'current', 'teams', 'selected', 'timer_state' ] ),
 
         no_quizzer_selected() {
             return ! this.selected.quizzer_id;
@@ -21,6 +21,19 @@ export default {
 
         no_events_to_delete() {
             return this.board.find( event => event.current ).id == '1A';
+        },
+
+        replace_query_not_available() {
+            return this.selected.quizzer_id || ! this.current.event.current;
+        },
+
+        reset_state_unnecessary() {
+            return (
+                this.timer_state == 'Start' &&
+                ! this.selected.team_id &&
+                ! this.selected.quizzer_id &&
+                this.current.event.current
+            ) ? true : false;
         },
     },
 

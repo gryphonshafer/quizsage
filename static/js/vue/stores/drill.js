@@ -80,10 +80,15 @@ export default Pinia.defineStore( 'store', {
             hidden_solution : true,
             is_drill        : true,
             auto_hide       : true,
+            timer_state     : 'Start',
         };
     },
 
     actions: {
+        set_timer_state(state) {
+            this.timer_state = state;
+        },
+
         replace_query() {
             this.current         = get_current( this.current.query.type, this.next_query_bible );
             this.add_verse       = false;

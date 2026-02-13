@@ -1,7 +1,7 @@
 <div class="search">
     <input type="text" v-model="term" placeholder="Term (Word or Phrase)">
-    <button class="clear" @click="match_terms">Match</button>
-    <button class="clear" @click="term = ''">Clear</button>
+    <button class="clear" @click="match_terms" :disabled="! term.length">Match</button>
+    <button class="clear" @click="term = ''"   :disabled="! term.length">Clear</button>
 
     <p class="terms">
         <span
@@ -38,7 +38,7 @@
     <br>
 
     <input type="text" v-model="text" placeholder="Search Verse Text">
-    <button class="clear" @click="text = ''">Clear</button>
+    <button class="clear" @click="text = ''" :disabled="! text.length">Clear</button>
     <label><input type="checkbox" v-model="exact"> Exact</label>
 
     <br>
