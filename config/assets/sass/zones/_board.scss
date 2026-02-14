@@ -186,13 +186,22 @@ table.board {
 }
 
 div#board {
-    width     : max-content;
-    margin    : 1em auto;
-    overflow-y: scroll;
-    max-height: calc( 100vh - 2em );
+    width        : max-content;
+    margin       : 1em auto;
+    overflow-y   : scroll;
+    max-height   : calc( 100vh - 2em - 1px );
+    border-bottom: 1px solid;
+
+    @include theme.apply( themes.$themes ) {
+        border-color: theme.get('lines');
+    }
 
     table.board {
         margin: 0;
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
 
         td.clickable {
             cursor: default;
