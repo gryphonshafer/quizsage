@@ -76,6 +76,7 @@ for my $quiz (
                 ref            => $ref,
                 aliases        => $aliases,
                 aliases_string => $aliases_string,
+                quiz           => $quiz->data->{name},
             };
         }
         grep { $_->{query} }
@@ -90,7 +91,7 @@ if ( lc( substr( $opt->{type}, 0, 1 ) ) eq 'f' ) {
         for my $query_row ( $data->{$bracket_name}->@* ) {
             $csv->combine(
                 $bracket_name,
-                @$query_row{ qw( number letter ref ) },
+                @$query_row{ qw( quiz number letter ref ) },
                 @{ $query_row->{aliases} // [] },
             );
             say $csv->string;
