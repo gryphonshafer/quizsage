@@ -41,14 +41,18 @@ function set_board_scale(teams) {
     if (board) {
         const columns_count = 3 + teams.length + teams.flatMap( team => team.quizzers ).length;
         const inner_ratio   = window.innerHeight / window.innerWidth;
-        const count_adjust  = 3.125 / ( ( inner_ratio < 0.6 ) ? inner_ratio / 0.6 : 1 );
+        const count_adjust  = 3.125 / (
+            ( columns_count * inner_ratio < 8.5 )
+                ? columns_count * inner_ratio / 8.5
+                : 1
+        );
 
         board.style.fontSize   = 'calc( ( 100vw - 1em ) / ' + ( columns_count * count_adjust ) + ' )';
         board.style.lineHeight = '1.5em';
     }
 }
 
-set_board_scale( quiz_data.teams );
+window.addEventListener( 'load',   () => set_board_scale( quiz_data.teams ) );
 window.addEventListener( 'resize', () => set_board_scale( quiz_data.teams ) );
 
 const store = Pinia.defineStore( 'store', {
