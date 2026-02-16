@@ -24,11 +24,11 @@ export default {
         },
 
         no_events_to_delete() {
-            return this.board.find( event => event.current ).id == '1A';
+            return this.board.find( event => event.current )?.id == '1A';
         },
 
         replace_query_not_available() {
-            return this.selected.quizzer_id || ! this.current.event.current;
+            return this.quiz_complete || this.selected.quizzer_id || ! this.current.event.current;
         },
 
         reset_state_unnecessary() {
