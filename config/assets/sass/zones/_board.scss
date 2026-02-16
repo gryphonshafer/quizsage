@@ -196,6 +196,11 @@ div#board {
         border-color: theme.get('lines');
     }
 
+    &[v-cloak] {
+        border: none;
+        height: 6em;
+    }
+
     table.board {
         margin: 0;
 
