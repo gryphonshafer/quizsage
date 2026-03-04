@@ -102,11 +102,20 @@ sub fabricate ($self) {
             $params->{range},
             $params->{sizes},
         );
-        $self->stash(
-            range => $range,
-            sizes => join( ' ', @$sizes ),
-            lists => $lists,
-        );
+
+        if ( $range and @$sizes and @$lists and $lists->[0]{refs} ) {
+            $self->stash(
+                range => $range,
+                sizes => join( ' ', @$sizes ),
+                lists => $lists,
+            );
+        }
+        else {
+            $self->stash( memo => {
+                class   => 'error',
+                message => 'There was a problem with the scope inputs. Please review them and resubmit.',
+            } );
+        }
     }
     elsif ( my @lists = sort { $a <=> $b } grep { /^\d+$/ } keys $params->%* ) {
         my $bible_ref = QuizSage::Model::Label->new->bible_ref;

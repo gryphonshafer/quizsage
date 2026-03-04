@@ -90,7 +90,7 @@
                     <td>% of Total</td>
                     [% FOR list IN lists %]
                         <td class="right">[%
-                            value = list.size / lists.-1.size * 100;
+                            value = list.size / ( lists.-1.size * 100 || 1 );
                             UNLESS loop.last;
                                 value | format('%0.1f');
                             ELSE;
