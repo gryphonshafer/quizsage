@@ -340,7 +340,7 @@ QuizSage::Role::Label::Parse
 
     with 'QuizSage::Role::Label::Parse';
 
-    sub example ( $self, $label, $user_id = undef ) {
+    sub parse ( $self, $label, $user_id = undef ) {
         return $self->parse( $label, $user_id );
     }
 
