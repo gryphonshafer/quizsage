@@ -240,6 +240,8 @@ export default class Quiz {
         );
         if ( ! action ) throw '"' + action + '" is not a valid action';
 
+        const is_quiz_done_already = ( this.board_row() ) ? false : true;
+
         const event = (event_id)
             ? this.state.events[ this.state.board.findIndex( row => event_id == row.id ) ]
             : {};
@@ -282,9 +284,46 @@ export default class Quiz {
         }
 
         if ( ! event_id ) this.state.events.push(event);
-        const message = this.#build_board();
+
+        let message             = this.#build_board();
+        const current_board_row = this.board_row();
+        const is_quiz_done_now  = (current_board_row) ? false : true;
+
+        if ( ! is_quiz_done_already && is_quiz_done_now ) {
+            message =
+                ( (message) ? message + '<br><br>' : '' ) +
+                'Quiz is complete. ' + 'Final score:' + '<br>' + this.#score_message( this.state.teams );
+        }
+        else if (
+            ! is_quiz_done_now &&
+            current_board_row.id.charCodeAt( current_board_row.id.length - 1 ) === 65 &&
+            parseInt( current_board_row.id ) > 1 &&
+            parseInt( current_board_row.id ) % 4 === 1
+        ) {
+            message =
+                ( (message) ? message + '<br><br>' : '' ) +
+                'Current score:' + '<br>' + this.#score_message( this.state.teams );
+        }
+
         if ( message && window.omniframe && omniframe.memo )
             omniframe.memo({ class: 'notice', message: message });
+    }
+
+    #score_message(teams) {
+        return teams.map( team =>
+            ( ( team.score?.position )
+                ? team.score?.position + '<sup>' + (
+                    ( team.score?.position == 0 ) ? '' :
+                    ( team.score?.position == 1 ) ? 'st' :
+                    ( team.score?.position == 2 ) ? 'nd' :
+                    ( team.score?.position == 3 ) ? 'rd' : 'th'
+                ) + '</sup> '
+                : ''
+            ) +
+            team.name +
+            ( ( team.nickname ) ? ' <i>"' + team.nickname + '"</i>' : '' ) +
+            ' with ' + team.score?.points + ' pts.'
+        ).join('<br>');
     }
 
     replace_query() {

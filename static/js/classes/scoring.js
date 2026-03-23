@@ -102,9 +102,10 @@ export default class Scoring {
                 if ( quizzer.score.correct + quizzer.score.open_book >= this.ceiling_full ) {
                     quizzer.trigger_eligible = false;
                     message = 'Ceiling reached: ' + quizzer.name + '<br>'
-                        + '<i>(' + quizzer.score.correct + ' correct '
+                        + '<i>(' + quizzer.score.correct + ' correct'
+                        + ( ( quizzer.score.incorrect ) ? ' ' : ', 0 incorrect, ' )
                         + 'with ' + quizzer.score.open_book + ' open book)</i>';
-                }
+                    }
 
                 if (
                     event.type.indexOf('O') != -1 &&
