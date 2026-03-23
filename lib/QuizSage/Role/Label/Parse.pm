@@ -1,7 +1,6 @@
 package QuizSage::Role::Label::Parse;
 
 use exact -role, -conf;
-use Math::Prime::Util 'divisors';
 use Mojo::File 'path';
 use Omniframe::Util::Data 'node_descend';
 use Parse::RecDescent;
@@ -136,6 +135,24 @@ sub _sort_aliases_for_display ($aliases) {
     ];
 }
 
+sub _divisors ($n) {
+    return wantarray ? ( 0, 1 ) : 2 if ( not defined $n or $n == 0 );
+    $n = abs($n);
+    return wantarray ? (1) : 1 if ( $n == 1 );
+    return wantarray ? ()  : 0 if ( $n < 1 );
+
+    my @divisors;
+    for ( my $i = 1; $i * $i <= $n; $i++ ) {
+        if ( $n % $i == 0 ) {
+            push( @divisors, $i );
+            push( @divisors, $n / $i ) if ( $i != $n / $i );
+        }
+    }
+    @divisors = sort { $a <=> $b } @divisors;
+
+    return wantarray ? @divisors : scalar(@divisors);
+}
+
 sub _parse_parts_cleanup ( $self, $parts, $aliases, $tokenized_aliases ) {
     try {
         node_descend(
@@ -145,7 +162,7 @@ sub _parse_parts_cleanup ( $self, $parts, $aliases, $tokenized_aliases ) {
                 if ( my @weighted_sets = grep { $_->{type} and $_->{type} eq 'weighted_set' } @$node ) {
                     $_->{weight} =~ s/\D+//g for (@weighted_sets);
                     my %factors;
-                    $factors{$_}++ for ( map { divisors( $_->{weight} ) } @weighted_sets );
+                    $factors{$_}++ for ( map { _divisors( $_->{weight} ) } @weighted_sets );
                     my ($largest_common_factor) =
                         sort { $b <=> $a }
                         grep { $factors{$_} == @weighted_sets }

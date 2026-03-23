@@ -6,7 +6,6 @@ requires 'Email::Address', '1.913';
 requires 'File::Path', '2.18';
 requires 'Hash::Merge', '0.302';
 requires 'MIME::Base64', '3.16';
-requires 'Math::Prime::Util', '0.73';
 requires 'Mojolicious::Plugin::CaptchaPNG', '1.08';
 requires 'Mojolicious::Plugin::OpenAPI', '5.11';
 requires 'Mojolicious::Plugin::SwaggerUI', 'v0.0.4';
