@@ -27,7 +27,7 @@ jobs:
             HARNESS_PERL_SWITCHES: -MDevel::Cover
             CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         steps:
-            # - run: apt-get update && apt-get install -y libgd3 libgd-dev
+            - run: apt-get update && apt-get install -y unzip libgd3 libgd-dev
             - run: |-
                 remotes=$(
                     git ls-remote --heads https://github.com/gryphonshafer/omniframe.git | \
