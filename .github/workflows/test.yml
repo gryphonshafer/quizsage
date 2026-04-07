@@ -6,8 +6,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                # perl-version: [ 42, 40, 38, 36, 34, 32 ]
-                perl-version: [ 42 ]
+                perl-version: [ 42, 40, 38, 36, 34, 32 ]
         container:
             image: |-
                 perldocker/perl-tester:${{
