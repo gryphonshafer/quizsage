@@ -159,7 +159,7 @@ sub fabricate ( $self, $range = undef, $sizes = undef ) {
 
         my $verses = [
             sort { $b->[1] <=> $a->[1] }
-            grep { $_ }
+            grep { $_ and defined $_->[1] }
             map {
                 /^(?<book>.+?)\s(?<chapter>\d+):(?<verse>\d+)$/;
                 [ $_, $sth->run( $+{book}, $+{chapter}, $+{verse} )->value ];
