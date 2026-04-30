@@ -232,6 +232,17 @@ sub tagged ($self) {
     $self->stash( quizzes_by_tag => QuizSage::Model::Quiz->new->quizzes_by_tag );
 }
 
+sub verses ($self) {
+    $self->stash( $self->req->params->to_hash->%* );
+    if ( $self->param('name') ) {
+        $self->stash( quizzer_verses => QuizSage::Model::Quiz->new->quizzer_verses({
+            user_id   => $self->stash('user')->id,
+            name      => $self->param('name'),
+            maybe tag => $self->param('tag'),
+        }) );
+    }
+}
+
 1;
 
 =head1 NAME
@@ -309,6 +320,10 @@ L<QuizSage::Model::User>'s C<qm_auth>.
 =head2 tagged
 
 Handler for the "Tagged Quizzes" page.
+
+=head2 verses
+
+Handler for rendering quizzer verses report.
 
 =head1 INHERITANCE
 

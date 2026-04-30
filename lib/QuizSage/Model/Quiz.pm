@@ -299,6 +299,70 @@ sub quizzes_by_tag ($self) {
     ];
 }
 
+sub quizzer_verses ( $self, $params ) {
+    my $quizzer_verses;
+
+    $quizzer_verses->{ join( '|',
+        $_->{query}{book},
+        $_->{query}{chapter},
+        $_->{query}{verse},
+    ) }{
+        $_->{action}
+    }++ for (
+        grep { defined }
+        map {
+            my ($quizzer) =
+                grep { $_->{name} eq $params->{name} }
+                map { $_->{quizzers}->@* }
+                $_->{state}{teams}->@*;
+
+            grep {
+                $_->{query} and
+                $_->{quizzer_id} and $quizzer and $_->{quizzer_id} eq $quizzer->{id}
+            } $_->{state}{board}->@*;
+        }
+        grep { $_->{state} and $_->{state}{board} }
+        $self->every_data(
+            ( $params->{tag} )
+                ? { tag => $params->{tag} }
+                : {
+                    tag     => \q{ IS NULL },
+                    user_id => $params->{user_id},
+                },
+        )->@*
+    );
+
+    return [
+        sort {
+            $b->{accuracy}     <=> $a->{accuracy}     or
+            $b->{correct}      <=> $a->{correct}      or
+            $a->{incorrect}    <=> $b->{incorrect}    or
+            $a->{book}         cmp $b->{book}         or
+            $a->{chapter}      <=> $b->{chapter}      or
+            $a->{single_verse} <=> $b->{single_verse} or
+            $a->{verse}        cmp $b->{verse}
+        }
+        map {
+            my ( $book, $chapter, $verse ) = split(/\|/);
+            ( my $single_verse = $verse ) =~ s/\+.*//;
+            my $correct   = $quizzer_verses->{$_}{correct}   // 0;
+            my $incorrect = $quizzer_verses->{$_}{incorrect} // 0;
+
+            +{
+                book         => $book,
+                chapter      => $chapter,
+                verse        => $verse,
+                single_verse => $single_verse,
+                ref          => "$book $chapter:$verse",
+                correct      => $correct,
+                incorrect    => $incorrect,
+                accuracy     => $correct / ( $correct + $incorrect ),
+            };
+        }
+        keys %$quizzer_verses
+    ];
+}
+
 1;
 
 =head1 NAME
@@ -430,6 +494,10 @@ remaining pickup quizzes.
 Returns all quizzes that have tags grouped by tag. Specifically, returns an
 arrayref containing hashrefs where each hashref has a property of tag (string)
 and quizzes (arrayref of quiz data hashrefs).
+
+=head2 quizzer_verses
+
+Return quizzer verses report data.
 
 =head1 WITH ROLES
 

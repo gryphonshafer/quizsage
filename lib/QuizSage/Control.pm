@@ -137,8 +137,7 @@ sub startup ($self) {
     )->to('main#setup');
 
     $users->any("/label/$_")->to("label#$_") for ( qw( tester editor fabricate ) );
-
-    $users->any("/quiz/$_")->to("quiz#$_") for ( qw( teams build tagged ) );
+    $users->any("/quiz/$_" )->to("quiz#$_" ) for ( qw( teams build tagged verses ) );
 
     $users
         ->any( $_->[0] => [ format => ['json'] ] )

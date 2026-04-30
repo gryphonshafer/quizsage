@@ -1,0 +1,54 @@
+[% page.title = 'Quizzer Verses' %]
+
+<details>
+    <summary>Instructions</summary>
+
+    <p>
+        Enter a quizzer's name (which must be spelled exactly as it was in a
+        quiz's settings) and optionally a quiz tag, then submit to generate a
+        report of verses in quizzes the quizzer responded to with correct and
+        incorrect counts.
+    </p>
+
+    <p>
+        Note this will only be for pick-up quizzes (standard or tagged). For
+        meet quizzer verses, find the meet's statistics and click on a quizzer's
+        name.
+    </p>
+</details>
+
+<form method="get">
+    <fieldset>
+        <legend>Quizzer Verses Report</legend>
+
+        <label>Quizzer Name <input type="text" name="name" value="[% name %]"></label>
+        <label>Quiz Tag <input type="text" name="tag" value="[% tag %]"></label>
+
+        <input type="submit" value="Generate Report">
+    </fieldset>
+</form>
+
+[% IF quizzer_verses AND quizzer_verses.size > 0 %]
+    <table>
+        <thead>
+            <tr>
+                <th>Reference(s)</th>
+                <th>Correct</th>
+                <th>Incorrect</th>
+                <th>Accuracy</th>
+            </tr>
+        </thead>
+        <tbody>
+            [% FOR verse IN quizzer_verses %]
+                <tr>
+                    <td>[% verse.ref %]</td>
+                    <td class="right">[% verse.correct %]</td>
+                    <td class="right">[% verse.incorrect %]</td>
+                    <td class="right">[% 100 * verse.accuracy | format('%0.1f') %]%</td>
+                </tr>
+            [% END %]
+        </tbody>
+    </table>
+[% ELSE %]
+    <p>There appear to be no data .</p>
+[% END %]
