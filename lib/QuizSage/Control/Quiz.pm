@@ -123,6 +123,7 @@ sub quiz ($self) {
     }
 
     if (
+        not $quiz->data->{tag} and
         not $quiz->data->{meet_id} and
         $quiz->data->{user_id} and $quiz->data->{user_id} ne $self->stash('user')->id
     ) {
@@ -227,6 +228,10 @@ sub delete ($self) {
     return $self->redirect_to( '/meet/' . $quiz->data->{meet_id} . '/state' );
 }
 
+sub tagged ($self) {
+    $self->stash( quizzes_by_tag => QuizSage::Model::Quiz->new->quizzes_by_tag );
+}
+
 1;
 
 =head1 NAME
@@ -300,6 +305,10 @@ The method requires a C<quiz_id> parameter value to identify the quiz to delete.
 
 The handler requires a user be "quiz magistrate authorized" as defined by
 L<QuizSage::Model::User>'s C<qm_auth>.
+
+=head2 tagged
+
+Handler for the "Tagged Quizzes" page.
 
 =head1 INHERITANCE
 

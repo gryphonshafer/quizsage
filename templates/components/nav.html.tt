@@ -51,8 +51,9 @@
                     <b>Practice</b>
                     <ul>
                         [% FOR icon_link_data IN [
-                            [ ['Queries Drill'], '/drill/setup',       'drill'  ],
-                            [ ['Pick-Up Quiz'],  '/quiz/pickup/setup', 'pickup' ],
+                            [ ['Queries Drill'],  '/drill/setup',       'drill'  ],
+                            [ ['Pick-Up Quiz'],   '/quiz/pickup/setup', 'pickup' ],
+                            [ ['Tagged Quizzes'], '/quiz/tagged',       'tag'    ],
                         ] %]
                             <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
                         [% END %]
@@ -63,7 +64,7 @@
                     <ul>
                         [% FOR icon_link_data IN [
                             [ ['Mat. &amp; Thes. Lookup'], '/reference/lookup/setup',    'lookup'    ],
-                            [ ['Reference Generator'],           '/reference/generator/setup', 'reference' ],
+                            [ ['Reference Generator'],     '/reference/generator/setup', 'reference' ],
                         ] %]
                             <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
                         [% END %]

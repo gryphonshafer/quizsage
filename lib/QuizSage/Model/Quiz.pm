@@ -122,6 +122,8 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
         },
     )->[0][0];
 
+    delete $pickup_settings->{tag} unless ( length $pickup_settings->{tag} );
+
     # cleanup roster data and save user pickup quiz settings
 
     if ($user) {
@@ -135,6 +137,7 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
             bible          => $pickup_settings->{bible},
             material_label => $quiz_settings->{material}{label},
             roster_data    => $pickup_settings->{roster_data},
+            maybe tag      => $pickup_settings->{tag},
         };
 
         $user->save;
@@ -145,6 +148,7 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
     return $self->create({
         settings      => $quiz_settings,
         maybe user_id => ($user) ? $user->id : undef,
+        maybe tag     => $pickup_settings->{tag},
     });
 }
 
@@ -262,6 +266,36 @@ sub recent_pickup_quizzes ( $self, $user_id, $ctime_life = undef ) {
                 limit    => 20,
             },
         )->@*
+    ];
+}
+
+sub quizzes_by_tag ($self) {
+    my @quizzes = map {
+        if ( ( $_->{state} and $_->{state}{board} and $_->{state}{board}->@* ) ) {
+            my ($current_query) = grep { $_->{current} } $_->{state}{board}->@*;
+            $_->{current_query} = $current_query->{id}
+        }
+        else {
+            $_->{current_query} = '1A';
+        }
+        $_;
+    }
+    $self->every_data(
+        { tag => \q{ IS NOT NULL } },
+        { order_by => [ 'tag', { -desc => 'created'} ] },
+    );
+
+    my %tags = map { $_->{tag} => 1 } @quizzes;
+
+    return [
+        map {
+            my $tag = $_;
+            +{
+                tag     => $tag,
+                quizzes => [ grep { $tag eq $_->{tag} } @quizzes ],
+            };
+        }
+        sort keys %tags
     ];
 }
 
@@ -390,6 +424,12 @@ This method requires a user ID and an optional integer. It will delete all
 pickup quizzes created older in days than the integer or
 C<pickup_quiz_mtime_life> configuration value. It will then return a list of
 remaining pickup quizzes.
+
+=head2 quizzes_by_tag
+
+Returns all quizzes that have tags grouped by tag. Specifically, returns an
+arrayref containing hashrefs where each hashref has a property of tag (string)
+and quizzes (arrayref of quiz data hashrefs).
 
 =head1 WITH ROLES
 

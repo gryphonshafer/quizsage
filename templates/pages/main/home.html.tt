@@ -53,9 +53,10 @@
                     [% PROCESS icon_link.html.tt data = [ ['Queries Drill'], '/drill/setup', 'drill' ] %]
                 </li>
                 <li class="no_bullet">
-                    [% PROCESS icon_link.html.tt
-                        data = [ ['Pick-Up Quiz'], '/quiz/pickup/setup', 'pickup' ] %]
-                    <br><i>(and Generate Queries to Print)</i>
+                    [% PROCESS icon_link.html.tt data = [ ['Pick-Up Quiz'], '/quiz/pickup/setup', 'pickup' ] %]
+                </li>
+                <li class="no_bullet">
+                    [% PROCESS icon_link.html.tt data = [ ['Tagged Quizzes'], '/quiz/tagged', 'tag' ] %]
                 </li>
             </ul>
         </li>
