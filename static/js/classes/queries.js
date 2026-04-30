@@ -165,7 +165,7 @@ export default class Queries {
                 new RegExp(
                     '(\\b' + verse.words.slice(
                         phrase_start + phrase_length, next_break
-                    ).join('\\W+') + '\\b\\S*)',
+                    ).join('\\W+') + '\\b(?:(?!--)\\S)*)',
                     'i',
                 )
             )[1]
