@@ -24,7 +24,7 @@ export default {
         },
 
         no_events_to_delete() {
-            return this.board.find( event => event.current )?.id == '1A';
+            return this.board.findIndex( event => event.current ) == 0;
         },
 
         replace_query_not_available() {
