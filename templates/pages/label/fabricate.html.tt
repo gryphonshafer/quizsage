@@ -90,12 +90,7 @@
                     <td>% of Total</td>
                     [% FOR list IN lists %]
                         <td class="right">[%
-                            value = list.size / ( lists.-1.size * 100 || 1 );
-                            UNLESS loop.last;
-                                value | format('%0.1f');
-                            ELSE;
-                                value;
-                            END;
+                            100 * list.size / ( lists.-1.size || 1 ) | format('%0.1f')
                         %]%</td>
                     [% END %]
                 </tr>
@@ -171,7 +166,7 @@
             let form, memorization, months, queries, brackets, brackets_value;
 
             function percent(value) {
-                return Math.floor( value * 1000 ) / 10 + '%';
+                return ( value * 100 ).toFixed(1) + '%';
             }
 
             function set_brackets_tables() {
@@ -225,7 +220,7 @@
                 memorization.querySelectorAll('tbody tr:last-child td:not(:first-child)')
                     .forEach( ( element, index ) => {
                         element.textContent =
-                            Math.round( list_sizes[index] / ( months.value * 4.3 ) * 10 ) / 10;
+                            Math.round( list_sizes[index] / ( months.value * 4.3 ) ).toFixed(1);
                     } );
 
                 form.querySelectorAll('table.brackets').forEach( bracket => {
@@ -283,7 +278,7 @@
                         td.textContent = percent( probabilities[td_index] ) );
 
                     trs.shift().querySelectorAll(td_selector).forEach( ( td, td_index ) =>
-                        td.textContent = Math.floor( probabilities[td_index] * queries.value * 10 ) / 10 );
+                        td.textContent = ( probabilities[td_index] * queries.value ).toFixed(1) );
                 } );
             }
 

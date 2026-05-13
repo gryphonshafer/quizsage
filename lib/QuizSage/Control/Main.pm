@@ -57,7 +57,7 @@ sub setup ($self) {
     $settings->{$_} = $self->param($_) // $user_settings->{$_} // $quiz_defaults->{$_}
         for (
             ( $self->stash('setup_label') eq 'pickup_quiz' )
-                ? ( qw( bible roster_data material_label ) ) :
+                ? ( qw( bible roster_data material_label tag ) ) :
             ( $self->stash('setup_label') eq 'ref_gen' )
                 ? ( qw( bible material_label ) ) : ('material_label')
         );

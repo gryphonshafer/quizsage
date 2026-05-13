@@ -1,4 +1,6 @@
 [%
+    page.js.defer.push('util/memo');
+
     PROCESS macros;
 
     setup_name =
@@ -77,6 +79,17 @@
         <a href="[% c.url_for('/docs/material_labels.md') %]">material labels documentation</a>.
     </p>
 
+    [% IF setup_label == 'pickup_quiz' %]
+        <p>
+            Normally, pick-up quizzes are private, only viewable by the user who
+            creates them. However, you may elect to add a "tag" for the quiz,
+            which will cause it to be published publicly under that tag. Tags
+            can be any string of characters; however, it's likely you'll want
+            to use a common tag for a set of quizzes you and others generate.
+            Ensure you and your co-creators are using the correct tag or tags.
+        </p>
+    [% END %]
+
     [% IF setup_label == 'memorize' %]
         <p>
             For initial memorization, it's recommended you enter a material
@@ -112,118 +125,167 @@
 
     <br>
 
-    [% IF setup_label == 'pickup_quiz' %]
-        <fieldset class="roster">
-            <legend>Roster</legend>
-            <label>
-                Default Bible:
-                <input type="text" name="bible" value="[% bible %]">
-            </label>
-            <textarea name="roster_data">[% c.param('roster') || roster_data %]</textarea>
-        </fieldset>
-    [% END %]
-
-    [% IF setup_label == 'ref_gen' %]
-        [% BLOCK pick_number %]
-            <select name="[% type %]_number">
-                [% FOR number IN [ 1 .. max ] %]
-                    <option[% IF number == default %] selected[% END %]>[% number %]</option>
-                [% END %]
-            </select>
+    <div class="fieldset_grid">
+        [% IF setup_label == 'pickup_quiz' %]
+            <fieldset class="roster">
+                <legend>Roster</legend>
+                <label>
+                    Default Bible:
+                    <input type="text" name="bible" value="[% bible %]">
+                </label>
+                <textarea name="roster_data">[% c.param('roster') || roster_data %]</textarea>
+            </fieldset>
         [% END %]
-        <fieldset class="ref_gen">
-            <legend>Reference Generation Options</legend>
 
-            <label>
-                Memorized Bible:
-                <input type="text" name="bible" value="[% bible %]">
-            </label>
+        <div class="fieldset_gridwide_stack">
+            [% IF setup_label == 'ref_gen' %]
+                [% BLOCK pick_number %]
+                    <select name="[% type %]_number">
+                        [% FOR number IN [ 1 .. max ] %]
+                            <option[% IF number == default %] selected[% END %]>[% number %]</option>
+                        [% END %]
+                    </select>
+                [% END %]
+                <fieldset class="ref_gen">
+                    <legend>Reference Generation Options</legend>
 
-            <label>
-                <input type="checkbox" name="cover" checked>
-                Title Block (Print Cover Page)
-            </label>
-            <label>
-                <input type="checkbox" name="reference" checked>
-                Reference Material for
-                <select name="reference_scope">
-                    <option value="memorized">Memorized Bible</option>
-                    <option value="all">All Bibles</option>
-                </select>
-            </label>
-            <label>
-                <input type="checkbox" name="whole" checked>
-                Alphabetical Material
-                from First [% PROCESS pick_number, type = 'whole', default = 5, max = 40 %] Words
-            </label>
-            <label>
-                <input type="checkbox" name="chapter">
-                [% PROCESS pick_number, type = 'chapter', default = 3, max = 7 %]-Word Unique Phrases by Chapter
-            </label>
-            <label>
-                <input type="checkbox" name="phrases">
-                Global [% PROCESS pick_number, type = 'phrases', default = 4, max = 7 %]-Word Unique Phrases
-            </label>
-            <label>
-                <input type="checkbox" name="concordance">
-                Concordance for
-                <select name="concordance_scope">
-                    <option value="memorized">Memorized Bible</option>
-                    <option value="all">All Bibles</option>
-                </select>
-            </label>
-            <label>
-                <input type="checkbox" name="mark_unique">
-                Mark Unique Words
-                <br><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Uses exponential time with material length)</i>
-            </label>
-        </fieldset>
+                    <label>
+                        Memorized Bible:
+                        <input type="text" name="bible" value="[% bible %]">
+                    </label>
 
-        <fieldset class="ref_gen_print">
-            <legend>Page Print Options</legend>
+                    <label>
+                        <input type="checkbox" name="cover" checked>
+                        Title Block (Print Cover Page)
+                    </label>
+                    <label>
+                        <input type="checkbox" name="reference" checked>
+                        Reference Material for
+                        <select name="reference_scope">
+                            <option value="memorized">Memorized Bible</option>
+                            <option value="all">All Bibles</option>
+                        </select>
+                    </label>
+                    <label>
+                        <input type="checkbox" name="whole" checked>
+                        Alphabetical Material
+                        from First [% PROCESS pick_number, type = 'whole', default = 5, max = 40 %] Words
+                    </label>
+                    <label>
+                        <input type="checkbox" name="chapter">
+                        [% PROCESS pick_number, type = 'chapter', default = 3, max = 7
+                        %]-Word Unique Phrases by Chapter
+                    </label>
+                    <label>
+                        <input type="checkbox" name="phrases">
+                        Global [% PROCESS pick_number, type = 'phrases', default = 4, max = 7
+                        %]-Word Unique Phrases
+                    </label>
+                    <label>
+                        <input type="checkbox" name="concordance">
+                        Concordance for
+                        <select name="concordance_scope">
+                            <option value="memorized">Memorized Bible</option>
+                            <option value="all">All Bibles</option>
+                        </select>
+                    </label>
+                    <label>
+                        <input type="checkbox" name="mark_unique">
+                        Mark Unique Words
+                        <br><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Uses exponential time with material length)</i>
+                    </label>
+                </fieldset>
 
-            <div>Page Dimensions:</div>
-            <label>Width:  <input type="text" name="page_width"  value="8.5"> inches</label>
-            <label>Height: <input type="text" name="page_height" value="11" > inches</label>
+                <fieldset class="ref_gen_print">
+                    <legend>Page Print Options</legend>
 
-            <div>Odd/Right Page Margins:</div>
-            <label>Left:   <input type="text" name="page_right_margin_left"   value="1"  > inches</label>
-            <label>Right:  <input type="text" name="page_right_margin_right"  value="0.5"> inches</label>
-            <label>Top:    <input type="text" name="page_right_margin_top"    value="0.5"> inches</label>
-            <label>Bottom: <input type="text" name="page_right_margin_bottom" value="0.5"> inches</label>
+                    <div>Page Dimensions:</div>
+                    <label>Width:  <input type="text" name="page_width"  value="8.5"> inches</label>
+                    <label>Height: <input type="text" name="page_height" value="11" > inches</label>
 
-            <div>Even/Left Page Margins:</div>
-            <label>Left:   <input type="text" name="page_left_margin_left"   value="0.5"> inches</label>
-            <label>Right:  <input type="text" name="page_left_margin_right"  value="1"  > inches</label>
-            <label>Top:    <input type="text" name="page_left_margin_top"    value="0.5"> inches</label>
-            <label>Bottom: <input type="text" name="page_left_margin_bottom" value="0.5"> inches</label>
-        </fieldset>
-    [% END %]
+                    <div>Odd/Right Page Margins:</div>
+                    <label>Left:
+                        <input type="text" name="page_right_margin_left"   value="1"  > inches</label>
+                    <label>Right:
+                        <input type="text" name="page_right_margin_right"  value="0.5"> inches</label>
+                    <label>Top:
+                        <input type="text" name="page_right_margin_top"    value="0.5"> inches</label>
+                    <label>Bottom:
+                        <input type="text" name="page_right_margin_bottom" value="0.5"> inches</label>
 
-    <fieldset class="material_label">
-        <legend>Material Label/Description</legend>
-        <textarea name="material_label">[%
-            label = c.param('label') || material_label;
-            label.split('\)\s*').join(")\n");
-        %]</textarea>
+                    <div>Even/Left Page Margins:</div>
+                    <label>Left:
+                        <input type="text" name="page_left_margin_left"   value="0.5"> inches</label>
+                    <label>Right:
+                        <input type="text" name="page_left_margin_right"  value="1"  > inches</label>
+                    <label>Top:
+                        <input type="text" name="page_left_margin_top"    value="0.5"> inches</label>
+                    <label>Bottom:
+                        <input type="text" name="page_left_margin_bottom" value="0.5"> inches</label>
+                </fieldset>
+            [% END %]
 
-        <p class="fieldset_base_buttons">
-            <a href="[% c.url_for('/label/tester') %]" class="button" onclick="
-                const form = window.document.querySelector('form#label_tester');
-                form.elements.namedItem('label').value =
-                    window.document.querySelector('textarea[name=material_label]').value;
-                form.submit();
-                return false;
-            ">Material Label/Description Tester</a>
-        </p>
-    </fieldset>
+            <fieldset class="material_label">
+                <legend>Material Label/Description</legend>
+                <textarea name="material_label">[%
+                    label = c.param('label') || material_label;
+                    label.split('\)\s*').join(")\n");
+                %]</textarea>
 
-    [% IF setup_label == 'ref_gen' %]
-        <fieldset>
-            <legend>Labels to Markup</legend>
-            <textarea name="labels_to_markup">[% labels_to_markup %]</textarea>
-        </fieldset>
-    [% END %]
+                <p class="fieldset_base_buttons">
+                    <a href="[% c.url_for('/label/tester') %]" class="button" onclick="
+                        const form = window.document.querySelector('form#label_tester');
+                        form.elements.namedItem('label').value =
+                            window.document.querySelector('textarea[name=material_label]').value;
+                        form.submit();
+                        return false;
+                    ">Material Label/Description Tester</a>
+                </p>
+            </fieldset>
+
+            [% IF setup_label == 'pickup_quiz' %]
+                <fieldset class="publish_tag">
+                    <legend>Publish Quiz with Tag</legend>
+                    <label>
+                        Tag:
+                        <input type="text" name="tag" value="[% tag %]">
+                    </label>
+                </fieldset>
+
+                [% js = BLOCK %]
+                    window.addEventListener( 'DOMContentLoaded', () => {
+                        window.document.querySelector('form').addEventListener( 'submit', form => {
+                            const tag = form.target.elements['tag'];
+                            if ( tag.value.length > 0 ) {
+                                form.preventDefault();
+
+                                omniframe.memo({
+                                    messages:
+                                        'You have entered a tag to publish this quiz under.<br>' +
+                                        'This will cause this quiz to be made public.<br>' +
+                                        'Are you sure you want to do this?',
+                                    options : [ 'Yes, publish', 'No, remove the tag' ],
+                                    classes : 'notice',
+                                    callback: event => {
+                                        if ( event.target.textContent != 'Yes, publish' ) tag.value = '';
+                                        form.target.submit();
+                                    },
+                                });
+                            }
+                        } );
+                    } );
+                [% END %]
+                [% page.js.inline.push(js) %]
+            [% END %]
+
+            [% IF setup_label == 'ref_gen' %]
+                <fieldset>
+                    <legend>Labels to Markup</legend>
+                    <textarea name="labels_to_markup">[% labels_to_markup %]</textarea>
+                </fieldset>
+            [% END %]
+        </div>
+    </div>
 </form>
 
 <form class="hidden" id="label_tester" method="post" action="[% c.url_for('/label/tester') %]">

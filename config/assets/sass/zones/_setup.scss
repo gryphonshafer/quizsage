@@ -1,0 +1,89 @@
+@use 'theme';
+@use 'themes';
+
+@media ( min-width: 700px ) {
+    div.fieldset_grid {
+        display              : grid;
+        grid-template-columns: auto 1fr;
+        align-items          : start;
+
+        div.wide_stack {
+            fieldset {
+                display       : flex;
+                flex-direction: column;
+            }
+        }
+    }
+}
+
+fieldset.roster {
+    margin-right: 1em;
+
+    input[type='text'] {
+        width: 5em !important;
+    }
+
+    textarea {
+        width : 11em;
+        height: 22em;
+    }
+}
+
+fieldset.ref_gen {
+    margin-right: 1em;
+    text-align  : left;
+
+    input[type='text'] {
+        width: 5em !important;
+    }
+
+    select {
+        padding: 0 0.25em;
+
+        @include theme.apply( themes.$styles, 'style' ) {
+            border-radius: calc( theme.get('radius') / 2 );
+        }
+    }
+}
+
+fieldset.ref_gen_print {
+    div {
+        font-weight: bold;
+        text-align: left;
+    }
+
+    input[type='text'] {
+        width: 2em !important;
+        text-align: right;
+    }
+}
+
+fieldset.material_label {
+    text-align: left;
+
+    textarea {
+        width : calc( 100vw - 21em );
+        height: 10em;
+    }
+
+    @media ( max-width: 700px ) {
+        display: block;
+
+        textarea {
+            width : calc( 100vw - 5em );
+        }
+    }
+}
+
+fieldset.publish_tag {
+    text-align: left;
+}
+
+fieldset.teams {
+    text-align: left;
+
+    textarea {
+        width : 10em;
+        height: 5em;
+    }
+}

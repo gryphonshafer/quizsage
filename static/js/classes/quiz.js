@@ -169,16 +169,34 @@ export default class Quiz {
             this.state.board.push( distribution.shift() );
         }
 
-        let scoring_message = this.scoring.score(this);
+        let scoring_message     = this.scoring.score(this);
+        let eligibility_message = undefined;
 
-        if (
+        const numeric_id = parseInt( this.state.board.find( row => row.current )?.id );
+        if (numeric_id) this.state.teams
+            .flatMap( team => team.quizzers )
+            .filter( quizzer => quizzer.next_eligible )
+            .forEach( quizzer => {
+                if ( quizzer.next_eligible ) {
+                    if ( quizzer.next_eligible > numeric_id ) {
+                        quizzer.trigger_eligible = false;
+                    }
+                    else if ( quizzer.next_eligible == numeric_id ) {
+                        quizzer.trigger_eligible = true;
+                        delete quizzer.next_eligible;
+                        eligibility_message = quizzer.name + ' is eligible to trigger';
+                    }
+                }
+            } );
+
+        let message = (
             scoring_message && (
                 this.state.events.at(-1).action == 'correct' ||
                 this.state.events.at(-1).action == 'incorrect'
             )
-        ) return scoring_message;
-
-        return event_message;
+        ) ? scoring_message : event_message;
+        if (eligibility_message) message = ( (message) ? message + '<br><br>' : '' ) + eligibility_message;
+        return message;
     }
 
     #setup_query( record, distribution ) {

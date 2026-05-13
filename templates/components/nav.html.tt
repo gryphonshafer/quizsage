@@ -63,7 +63,18 @@
                     <ul>
                         [% FOR icon_link_data IN [
                             [ ['Mat. &amp; Thes. Lookup'], '/reference/lookup/setup',    'lookup'    ],
-                            [ ['Reference Generator'],           '/reference/generator/setup', 'reference' ],
+                            [ ['Reference Generator'],     '/reference/generator/setup', 'reference' ],
+                        ] %]
+                            <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
+                        [% END %]
+                    </ul>
+                </li>
+                <li>
+                    <b>Reports</b>
+                    <ul>
+                        [% FOR icon_link_data IN [
+                            [ ['Tagged Quizzes'], '/quiz/tagged', 'sell'         ],
+                            [ ['Quizzer Verses'], '/quiz/verses', 'sports_score' ],
                         ] %]
                             <li>[% PROCESS icon_link.html.tt, data = icon_link_data %]</li>
                         [% END %]

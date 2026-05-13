@@ -122,6 +122,8 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
         },
     )->[0][0];
 
+    delete $pickup_settings->{tag} unless ( length $pickup_settings->{tag} );
+
     # cleanup roster data and save user pickup quiz settings
 
     if ($user) {
@@ -135,6 +137,7 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
             bible          => $pickup_settings->{bible},
             material_label => $quiz_settings->{material}{label},
             roster_data    => $pickup_settings->{roster_data},
+            maybe tag      => $pickup_settings->{tag},
         };
 
         $user->save;
@@ -145,6 +148,7 @@ sub pickup ( $self, $pickup_settings, $user = undef ) {
     return $self->create({
         settings      => $quiz_settings,
         maybe user_id => ($user) ? $user->id : undef,
+        maybe tag     => $pickup_settings->{tag},
     });
 }
 
@@ -262,6 +266,101 @@ sub recent_pickup_quizzes ( $self, $user_id, $ctime_life = undef ) {
                 limit    => 20,
             },
         )->@*
+    ];
+}
+
+sub quizzes_by_tag ($self) {
+    my @quizzes = map {
+        if ( ( $_->{state} and $_->{state}{board} and $_->{state}{board}->@* ) ) {
+            my ($current_query) = grep { $_->{current} } $_->{state}{board}->@*;
+            $_->{current_query} = $current_query->{id}
+        }
+        else {
+            $_->{current_query} = '1A';
+        }
+        $_;
+    }
+    $self->every_data(
+        { tag => \q{ IS NOT NULL } },
+        { order_by => [ 'tag', { -desc => 'created'} ] },
+    );
+
+    my %tags = map { $_->{tag} => 1 } @quizzes;
+
+    return [
+        map {
+            my $tag = $_;
+            +{
+                tag     => $tag,
+                quizzes => [ grep { $tag eq $_->{tag} } @quizzes ],
+            };
+        }
+        sort keys %tags
+    ];
+}
+
+sub quizzer_verses ( $self, $params ) {
+    my $quizzer_verses;
+
+    $quizzer_verses->{ join( '|',
+        $_->{query}{book},
+        $_->{query}{chapter},
+        $_->{query}{verse},
+    ) }{
+        $_->{action}
+    }++ for (
+        grep { defined }
+        map {
+            my ($quizzer) =
+                grep { $_->{name} eq $params->{name} }
+                map { $_->{quizzers}->@* }
+                $_->{state}{teams}->@*;
+
+            grep {
+                $_->{query} and
+                $_->{quizzer_id} and $quizzer and $_->{quizzer_id} eq $quizzer->{id}
+            } $_->{state}{board}->@*;
+        }
+        grep { $_->{state} and $_->{state}{board} }
+        $self->every_data(
+            ( $params->{meet_id} ) ? { meet_id => $params->{meet_id} } :
+            ( $params->{tag} )
+                ? { tag => $params->{tag} }
+                : {
+                    tag     => \q{ IS NULL },
+                    user_id => $params->{user_id},
+                },
+        )->@*
+    );
+
+    return [
+        sort {
+            $b->{accuracy}     <=> $a->{accuracy}     or
+            $b->{correct}      <=> $a->{correct}      or
+            $a->{incorrect}    <=> $b->{incorrect}    or
+            $a->{book}         cmp $b->{book}         or
+            $a->{chapter}      <=> $b->{chapter}      or
+            $a->{single_verse} <=> $b->{single_verse} or
+            $a->{verse}        cmp $b->{verse}
+        }
+        map {
+            my ( $book, $chapter, $verse ) = split(/\|/);
+            ( my $single_verse = $verse ) =~ s/\+.*//;
+            my $correct   = $quizzer_verses->{$_}{correct}   // 0;
+            my $incorrect = $quizzer_verses->{$_}{incorrect} // 0;
+
+            +{
+                book         => $book,
+                chapter      => $chapter,
+                verse        => $verse,
+                single_verse => $single_verse,
+                ref          => "$book $chapter:$verse",
+                correct      => $correct,
+                incorrect    => $incorrect,
+                accuracy     => $correct / ( $correct + $incorrect ),
+            };
+        }
+        keys %$quizzer_verses
     ];
 }
 
@@ -390,6 +489,18 @@ This method requires a user ID and an optional integer. It will delete all
 pickup quizzes created older in days than the integer or
 C<pickup_quiz_mtime_life> configuration value. It will then return a list of
 remaining pickup quizzes.
+
+=head2 quizzes_by_tag
+
+Returns all quizzes that have tags grouped by tag. Specifically, returns an
+arrayref containing hashrefs where each hashref has a property of tag (string)
+and quizzes (arrayref of quiz data hashrefs).
+
+=head2 quizzer_verses
+
+Return quizzer verses report data. Expects a hashref with the C<name> of the
+quizzer. Then optionally a C<tag> and/or C<user_id> to limit on or instead a
+C<meet_id>.
 
 =head1 WITH ROLES
 

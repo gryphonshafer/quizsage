@@ -111,7 +111,8 @@ sub startup ($self) {
     $users
         ->any( '/meet/:meet_id/board/:room_number' => [ format => ['json'] ] )
         ->to( 'meet#board', format => undef );
-    $users->any( '/meet/:meet_id/' . $_ )->to( 'meet#' . $_ ) for ( qw( state roster distribution stats ) );
+    $users->any( '/meet/:meet_id/' . $_ )->to( 'meet#' . $_ )
+        for ( qw( state roster distribution stats verses ) );
 
     $users->any(
         '/season/:season_id/meet/:meet_id/:meet_action_type',
@@ -137,8 +138,7 @@ sub startup ($self) {
     )->to('main#setup');
 
     $users->any("/label/$_")->to("label#$_") for ( qw( tester editor fabricate ) );
-
-    $users->any("/quiz/$_")->to("quiz#$_") for ( qw( teams build ) );
+    $users->any("/quiz/$_" )->to("quiz#$_" ) for ( qw( teams build tagged verses ) );
 
     $users
         ->any( $_->[0] => [ format => ['json'] ] )

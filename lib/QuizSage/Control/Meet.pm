@@ -82,6 +82,16 @@ sub board ($self) {
     }
 }
 
+sub verses ($self) {
+    my $meet = QuizSage::Model::Meet->new->load( $self->param('meet_id') );
+
+    $self->stash(
+        quizzer_name   => $self->param('name'),
+        quizzer_verses => $meet->quizzer_verses( $self->param('name') ),
+        meet           => $meet,
+    );
+}
+
 1;
 
 =head1 NAME
@@ -128,6 +138,10 @@ C<meet_id> and C<room_number> parameters. Based on these, it'll either load the
 latest quiz for the meet and room into the stash as C<quiz> (if a web page is
 requested), return quiz data in JSON (if JSON is requested), or setup a web
 socket for the meet and room (if a web socket is requested).
+
+=head2 verses
+
+Quizzer verses from a meet handler.
 
 =head1 INHERITANCE
 

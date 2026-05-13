@@ -1,0 +1,46 @@
+[%
+    page.title = 'Tagged Quizzes';
+    PROCESS macros;
+%]
+
+<p>
+    Tagged quizzes are pick-up quizzes that the quiz's creator tagged, which
+    causes them to be published here and viewable. These quizzes can be viewed
+    by anyone but edited only be the quiz's creator.
+</p>
+
+[% IF quizzes_by_tag.size > 0 %]
+    [% FOR set IN quizzes_by_tag %]
+        <details>
+            <summary>[% set.tag %]</summary>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Created</th>
+                        <th>Teams</th>
+                        <th>Query</th>
+                        <th>Material Label</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    [% FOR quiz IN set.quizzes %]
+                        <tr>
+                            <td><a href="[% c.url_for( '/quiz/pickup/' _ quiz.quiz_id ) %]">[%
+                                time( quiz.created, '%a, %b %-d %-I:%M %p' )
+                            %]</a></td>
+                            <td>
+                                [% FOR team IN quiz.settings.teams %]
+                                    [% team.name %][% UNLESS loop.last %], [% END %]
+                                [% END %]
+                            </td>
+                            <td>[% quiz.current_query || 'Done' %]</td>
+                            <td>[% quiz.settings.material.label.split('\)').join(')<br>') %]</td>
+                        </tr>
+                    [% END %]
+                </tbody>
+            </table>
+        </details>
+    [% END %]
+[% ELSE %]
+    <p>There appear to be no tagged quizzes currently.</p>
+[% END %]

@@ -1,0 +1,15 @@
+[%
+    PROCESS macros;
+    page.title = 'Verses from Meet';
+%]
+
+The following quizzer verse from meet report is for:
+
+<ul>
+    <li>Quizzer Name:  <b>[% quizzer_name %]</b></li>
+    <li>Meet Name:     <b>[% meet.data.name %]</b></li>
+    <li>Meet Location: <b>[% meet.data.location %]</b></li>
+    <li>Meet Start:    <b>[% time( meet.data.start, '%a, %b %-d, %Y' ) %]</b></li>
+</ul>
+
+[% PROCESS verses_report.html.tt%]
