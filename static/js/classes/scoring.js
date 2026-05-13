@@ -170,7 +170,11 @@ export default class Scoring {
                 if ( quiz.state.teams.filter( team => team.trigger_eligible == true ).length == 0 )
                     quiz.state.teams.forEach( team => team.trigger_eligible = true );
 
-                if ( quizzer.score.incorrect >= 2 ) quizzer.next_eligible = numeric_id + 2;
+                if ( quizzer.score.incorrect >= 2 ) {
+                    quizzer.next_eligible = numeric_id + 2;
+                    message = ( (message) ? message + '<br>' : '' ) +
+                        quizzer.name + ' is ineligible to trigger until query ' + quizzer.next_eligible;
+                }
             }
             else if ( event.action == 'no_trigger' ) {
                 quiz.state.teams.forEach( team => team.trigger_eligible = true );
