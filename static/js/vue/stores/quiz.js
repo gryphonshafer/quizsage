@@ -289,6 +289,17 @@ export default Pinia.defineStore( 'store', {
 
         toggle_hidden_solution() {
             this.hidden_solution = ! this.hidden_solution;
+
+            if ( ! this.hidden_solution && window.omniframe && omniframe.memo ) {
+                omniframe.memo({
+                    class   : 'notice',
+                    message : 'Would you like to replace the query?',
+                    options : [ 'Yes, replace', 'No, keep' ],
+                    callback: event => {
+                        if ( event.target.textContent == 'Yes, replace' ) this.replace_query();
+                    },
+                });
+            }
         },
 
         is_quiz_done() {
