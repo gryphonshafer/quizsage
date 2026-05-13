@@ -869,6 +869,13 @@ sub _fabricate_foreign_bibles_boost_factor ($quizzes_data) {
     return ( defined $factor and $factor > 1 ) ? _significance($factor) : 1;
 }
 
+sub quizzer_verses ( $self, $quizzer_name ) {
+    return ( $self->id ) ? QuizSage::Model::Quiz->new->quizzer_verses({
+        meet_id => $self->id,
+        name    => $quizzer_name,
+    }) : [];
+}
+
 1;
 
 =head1 NAME
@@ -1021,6 +1028,10 @@ followed by an arrayref of sets to swap and an arrayref of quizzes to swap.
 
 Returns a boolean indicating if now is within the days the meet is scheduled
 (regardless of time).
+
+=head2 quizzer_verses
+
+Return quizzer verses report data. Requires the quizzer's name.
 
 =head1 WITH ROLES
 

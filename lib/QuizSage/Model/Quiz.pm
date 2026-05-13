@@ -323,6 +323,7 @@ sub quizzer_verses ( $self, $params ) {
         }
         grep { $_->{state} and $_->{state}{board} }
         $self->every_data(
+            ( $params->{meet_id} ) ? { meet_id => $params->{meet_id} } :
             ( $params->{tag} )
                 ? { tag => $params->{tag} }
                 : {
@@ -497,7 +498,9 @@ and quizzes (arrayref of quiz data hashrefs).
 
 =head2 quizzer_verses
 
-Return quizzer verses report data.
+Return quizzer verses report data. Expects a hashref with the C<name> of the
+quizzer. Then optionally a C<tag> and/or C<user_id> to limit on or instead a
+C<meet_id>.
 
 =head1 WITH ROLES
 
