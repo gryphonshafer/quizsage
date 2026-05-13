@@ -171,6 +171,22 @@ export default class Quiz {
 
         let scoring_message = this.scoring.score(this);
 
+        const numeric_id = parseInt( this.state.board.find( row => row.current )?.id );
+        if (numeric_id) this.state.teams
+            .flatMap( team => team.quizzers )
+            .filter( quizzer => quizzer.next_eligible )
+            .forEach( quizzer => {
+                if ( quizzer.next_eligible ) {
+                    if ( quizzer.next_eligible > numeric_id ) {
+                        quizzer.trigger_eligible = false;
+                    }
+                    else if ( quizzer.next_eligible <= numeric_id ) {
+                        quizzer.trigger_eligible = true;
+                        delete quizzer.next_eligible;
+                    }
+                }
+            } );
+
         if (
             scoring_message && (
                 this.state.events.at(-1).action == 'correct' ||

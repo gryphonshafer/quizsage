@@ -37,6 +37,7 @@ export default class Scoring {
             };
             team.quizzers.forEach( quizzer => {
                 quizzer.trigger_eligible = true;
+                quizzer.next_eligible    = 0;
                 quizzer.score            = {
                     points     : 0,
                     team_points: 0,
@@ -56,6 +57,7 @@ export default class Scoring {
         let message = undefined;
         scoring_events.forEach( ( event, index ) => {
             message = undefined;
+            const numeric_id = parseInt( scoring_events[index].id );
 
             if ( event.action == 'correct' ) {
                 const team    = quiz.state.teams.find( team => team.id == event.team_id );
@@ -112,14 +114,13 @@ export default class Scoring {
                     team.score.open_book >= this.open_book_team_max
                 ) message = ( (message) ? message + '<br>' : '' ) + 'Team has reached its open book maximum';
 
-                const preceding_numeric_id  = parseInt( scoring_events[index].id ) - 1;
                 event.score.follow_bonus = (
                     index > 0 &&
                     scoring_events.find( scoring_event =>
                         scoring_event.action         == 'correct' &&
                         scoring_event.team_id        == event.team_id &&
                         scoring_event.quizzer_id     != event.quizzer_id &&
-                        parseInt( scoring_event.id ) == preceding_numeric_id
+                        parseInt( scoring_event.id ) == numeric_id - 1
                     )
                 ) ? this.follow_bonus : 0;
 
@@ -168,6 +169,8 @@ export default class Scoring {
 
                 if ( quiz.state.teams.filter( team => team.trigger_eligible == true ).length == 0 )
                     quiz.state.teams.forEach( team => team.trigger_eligible = true );
+
+                if ( quizzer.score.incorrect >= 2 ) quizzer.next_eligible = numeric_id + 2;
             }
             else if ( event.action == 'no_trigger' ) {
                 quiz.state.teams.forEach( team => team.trigger_eligible = true );
