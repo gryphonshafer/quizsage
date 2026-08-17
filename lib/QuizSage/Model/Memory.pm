@@ -157,7 +157,7 @@ sub review_verse( $self, $user ) {
         WHERE
             user_id = ? AND
             level > 0 AND
-            ( NOT ? OR last_modified BETWEEN ? AND ? )
+            ( NOT ? OR last_modified BETWEEN ? AND DATE( ?, '+1 day' ) )
             $material_label_sql
         ORDER BY
             CASE
