@@ -49,7 +49,7 @@ for my $bible ( $opt->{bible}->@* ) {
 
     for my $book ( grep { not $_->{num_chapters} } $structure->{ uc($bible) }->@* ) {
         my $chapters = result( lc($bible) . '/cmenus/' . $book->{path} )->dom
-            ->find('li')->map( sub { $_->at('h3')->text } )->grep(qr/^\d+$/);
+            ->find('a')->map( sub { $_->text =~ /(\d+)/ } );
 
         $book->{chapters}     = [ ( $chapters->size ) ? $chapters->to_array->@* : 1 ];
         $book->{num_chapters} = $chapters->size || 1;

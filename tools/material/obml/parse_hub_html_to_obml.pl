@@ -94,12 +94,13 @@ sub parse ($html) {
     my $dom = Mojo::DOM->new($html);
 
     my $reference = $dom->at('div#topheading');
-    my $chapter   = $dom->find('div.chap');
+    my $chapter   = $dom->at('div.chap');
 
     croak('source appears to be invalid; check your inputs')
-        unless ( $reference and $reference->text and $chapter->size == 1 );
+        unless ( $reference and $reference->text and $chapter );
 
-    $chapter = $chapter->first;
+    $chapter->at('div#botbox')->remove;
+
     _retag( $chapter, 'obml' );
 
     ( $reference = $reference->text ) =~ s/(?:^\s+|\s+$)//g;
@@ -198,8 +199,19 @@ sub parse ($html) {
         $_->content($content) if ( $content ne $_->content );
     } );
 
+    $chapter->find('p > woj:first-child > verse_number:first-child')->each( sub ( $verse_number, $i ) {
+        my $woj = $verse_number->parent;
+        $woj->prepend( $verse_number );
+        $verse_number->remove;
+    } );
+    $chapter->find('woj')->grep( sub { $_->content =~ /^\s/ } )->each( sub ( $woj, $i ) {
+        ( my $content = $woj->content ) =~ s/^\s+//;
+        $woj->content($content);
+    } );
+
     my $obml = $bible_obml->html( $chapter->to_string )->obml;
     $obml =~ s/([a-z])([:;,!?])([A-Za-z])/$1$2 $3/g;
+
     return $obml;
 }
 

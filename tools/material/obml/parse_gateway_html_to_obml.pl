@@ -47,7 +47,7 @@ $files->each( sub ( $item, $count ) {
     if ( not $pm->start ) {
         my $obml;
         try {
-            $obml = $o->html( $bg->parse( $item->{source}->slurp('UTF-8') )->obml;
+            $obml = $o->html( $bg->parse( $item->{source}->slurp('UTF-8') ) )->obml;
         }
         catch ($e) {
             $e =~ s/\s+at\s+.+\s+line\s+\d+\.//;
