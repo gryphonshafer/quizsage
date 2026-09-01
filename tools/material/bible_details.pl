@@ -3,6 +3,7 @@ use exact -cli, -conf;
 use Omniframe;
 use Mojo::UserAgent;
 use Term::ANSIColor qw( colored color );
+use Text::Unidecode 'unidecode';
 
 my $opt = options( qw{ save|s report|r nocolor|n } );
 my $dq  = Omniframe->with_roles('+Database')->new->dq('material');
@@ -98,9 +99,10 @@ sub report ( $current, $update = undef ) {
         )
     ) {
         $line .= " \x{2192} " . $update->{year} . " \x{201c}" . $update->{name} . "\x{201d}";
-        $line = colored( $line, 'bright_red' ) unless ( $opt->{nocolor} ) ;
+        $line = colored( $line, 'bright_red' ) unless $opt->{nocolor};
     }
 
+    $line = unidecode $line if $opt->{nocolor};
     say $line;
 }
 
