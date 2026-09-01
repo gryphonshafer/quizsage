@@ -4,7 +4,7 @@ use Omniframe;
 use Mojo::UserAgent;
 use Term::ANSIColor qw( colored color );
 
-my $opt = options( qw{ save|s report|r } );
+my $opt = options( qw{ save|s report|r nocolor|n } );
 my $dq  = Omniframe->with_roles('+Database')->new->dq('material');
 my $ua  = Mojo::UserAgent->new( max_redirects => 3 );
 
@@ -98,7 +98,7 @@ sub report ( $current, $update = undef ) {
         )
     ) {
         $line .= " \x{2192} " . $update->{year} . " \x{201c}" . $update->{name} . "\x{201d}";
-        $line = colored( $line, 'bright_red' );
+        $line = colored( $line, 'bright_red' ) unless ( $opt->{nocolor} ) ;
     }
 
     say $line;
@@ -113,6 +113,7 @@ bible_details.pl - Add/update Bible details in material database from sources
     bible_details.pl OPTIONS
         -s, --save    # save add/update to database
         -r, --report  # report on bibles details (and red-mark any delta)
+        -n, --nocolor
         -h, --help
         -m, --man
 
