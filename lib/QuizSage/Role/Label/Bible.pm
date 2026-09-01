@@ -2,6 +2,7 @@ package QuizSage::Role::Label::Bible;
 
 use exact -role;
 use Bible::Reference;
+use Text::Unidecode 'unidecode';
 
 with 'Omniframe::Role::Database';
 
@@ -38,7 +39,7 @@ sub canonicalize_refs ( $self, @refs ) {
         ->sorting(1)
         ->add_detail(1)
         ->simplify(1)
-        ->in(@refs)->refs;
+        ->in( map { unidecode($_) } @refs )->refs;
 }
 
 sub versify_refs ( $self, @refs ) {
@@ -47,7 +48,7 @@ sub versify_refs ( $self, @refs ) {
         ->sorting(1)
         ->add_detail(1)
         ->simplify(0)
-        ->in(@refs)->as_verses;
+        ->in( map { unidecode($_) } @refs )->as_verses;
 }
 
 sub chapterify_refs ( $self, @refs ) {
@@ -56,7 +57,7 @@ sub chapterify_refs ( $self, @refs ) {
         ->sorting(1)
         ->add_detail(1)
         ->simplify(0)
-        ->in(@refs)->as_chapters;
+        ->in( map { unidecode($_) } @refs )->as_chapters;
 }
 
 1;
