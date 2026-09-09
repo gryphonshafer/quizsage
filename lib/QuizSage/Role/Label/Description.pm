@@ -1,12 +1,12 @@
 package QuizSage::Role::Label::Description;
 
 use exact -role;
-use Omniframe::Util::Data qw( deepcopy node_descend );
+use Omniframe::Util::Data qw( deepcopy expand_shared_refs node_descend );
 
 with 'QuizSage::Role::Label::Bible';
 
 sub descriptionate( $self, $parse ) {
-    $parse = deepcopy $parse;
+    $parse = expand_shared_refs( deepcopy($parse) );
     return if (
         not $parse or
         not $parse->{parts} or
