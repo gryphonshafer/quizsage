@@ -172,8 +172,9 @@ export default class Quiz {
         let scoring_message     = this.scoring.score(this);
         let eligibility_message = undefined;
 
-        const numeric_id = parseInt( this.state.board.find( row => row.current )?.id );
-        if (numeric_id) this.state.teams
+        const numeric_id  = parseInt( this.state.board.find( row => row.current )?.id );
+        const letteric_id = this.state.board.find( row => row.current )?.id.match(/[a-zA-D]/g)?.join('');
+        if ( numeric_id && letteric_id ) this.state.teams
             .flatMap( team => team.quizzers )
             .filter( quizzer => quizzer.next_eligible )
             .forEach( quizzer => {
@@ -181,7 +182,7 @@ export default class Quiz {
                     if ( quizzer.next_eligible > numeric_id ) {
                         quizzer.trigger_eligible = false;
                     }
-                    else if ( quizzer.next_eligible == numeric_id ) {
+                    else if ( quizzer.next_eligible == numeric_id && letteric_id == 'A' ) {
                         quizzer.trigger_eligible = true;
                         delete quizzer.next_eligible;
                         eligibility_message = quizzer.name + ' is eligible to trigger';
