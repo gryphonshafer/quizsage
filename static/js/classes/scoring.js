@@ -50,13 +50,12 @@ export default class Scoring {
 
         quiz.state.board.forEach( record => delete record.score );
 
+        const messages       = [];
         const scoring_events = quiz.state.board.filter(
             event => [ 'correct', 'incorrect', 'no_trigger', 'foul' ].find( action => event.action == action )
         );
 
-        let message = undefined;
-        scoring_events.forEach( ( event, index ) => {
-            message = undefined;
+        scoring_events.forEach( ( event, index, array ) => {
             const numeric_id = parseInt( scoring_events[index].id );
 
             if ( event.action == 'correct' ) {
@@ -101,18 +100,24 @@ export default class Scoring {
                     ! quizzer.score.open_book
                 ) ? this.ceiling_bonus : 0;
 
-                if ( quizzer.score.correct + quizzer.score.open_book >= this.ceiling_full ) {
+                if (
+                    quizzer.score.correct + quizzer.score.open_book >= this.ceiling_full &&
+                    index === array.length - 1
+                ) {
                     quizzer.trigger_eligible = false;
-                    message = 'Ceiling reached: ' + quizzer.name + '<br>'
+                    messages.push(
+                        'Ceiling reached: ' + quizzer.name + '<br>'
                         + '<i>(' + quizzer.score.correct + ' correct'
                         + ( ( quizzer.score.incorrect ) ? ' ' : ', 0 incorrect, ' )
-                        + 'with ' + quizzer.score.open_book + ' open book)</i>';
-                    }
+                        + 'with ' + quizzer.score.open_book + ' open book)</i>'
+                    );
+                }
 
                 if (
                     event.type.indexOf('O') != -1 &&
-                    team.score.open_book >= this.open_book_team_max
-                ) message = ( (message) ? message + '<br>' : '' ) + 'Team has reached its open book maximum';
+                    team.score.open_book >= this.open_book_team_max &&
+                    index === array.length - 1
+                ) messages.push('Team has reached its open book maximum');
 
                 event.score.follow_bonus = (
                     index > 0 &&
@@ -172,8 +177,13 @@ export default class Scoring {
 
                 if ( quizzer.score.incorrect >= 2 ) {
                     quizzer.next_eligible = numeric_id + 2;
-                    message = ( (message) ? message + '<br>' : '' ) +
-                        quizzer.name + ' is ineligible to trigger until query ' + quizzer.next_eligible;
+                    if ( index === array.length - 1 ) messages.push(
+                        quizzer.name + ' is ineligible to trigger ' + (
+                            ( quizzer.next_eligible <= quiz.state.board.at(-1).id )
+                                ? ( 'until query ' + quizzer.next_eligible )
+                                : 'for the remainder of the quiz'
+                        )
+                    );
                 }
             }
             else if ( event.action == 'no_trigger' ) {
@@ -225,6 +235,6 @@ export default class Scoring {
             .map( ({ team }) => team )
             .forEach( team => team.score.position = ++position );
 
-        return message;
+        return messages;
     }
 }

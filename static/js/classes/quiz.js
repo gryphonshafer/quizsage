@@ -92,6 +92,8 @@ export default class Quiz {
     }
 
     #build_board() {
+        const messages = [];
+
         const distribution       = JSON.parse( JSON.stringify( this.distribution ) );
         this.state.teams       ||= JSON.parse( JSON.stringify( this.teams ) );
         this.state.board       ||= [];
@@ -105,9 +107,7 @@ export default class Quiz {
             team.appeals_declined_remaining = this.maximum_declined_appeals_per_team;
         } );
 
-        let event_message = undefined;
-        this.state.events.forEach( event => {
-            event_message = undefined;
+        this.state.events.forEach( ( event, index, array ) => {
             const record = JSON.parse( JSON.stringify(event) );
 
             // if event is a ruled action...
@@ -127,7 +127,10 @@ export default class Quiz {
             else if ( record.action == 'timeout' ) {
                 const team = this.state.teams.find( team => team.id == record.team_id );
                 team.timeouts_remaining--;
-                if ( team.timeouts_remaining <= 0 ) event_message = 'Timeouts expended: ' + team.name;
+                if ( team.timeouts_remaining <= 0 && index === array.length - 1 ) messages.push( {
+                    type   : 'event',
+                    message: 'Timeouts expended: ' + team.name,
+                } );
                 record.team_label = 'T';
             }
             else if ( record.action == 'appeal_accepted' ) {
@@ -136,8 +139,10 @@ export default class Quiz {
             else if ( record.action == 'appeal_declined' ) {
                 const team = this.state.teams.find( team => team.id == record.team_id );
                 team.appeals_declined_remaining--;
-                if ( team.appeals_declined_remaining <= 0 )
-                    event_message = 'Appeal opportunities expended: ' + team.name;
+                if ( team.appeals_declined_remaining <= 0 && index === array.length - 1 ) messages.push( {
+                    type   : 'event',
+                    message: 'Appeal opportunities expended: ' + team.name,
+                } );
                 record.team_label = 'A-';
             }
 
@@ -169,8 +174,10 @@ export default class Quiz {
             this.state.board.push( distribution.shift() );
         }
 
-        let scoring_message     = this.scoring.score(this);
-        let eligibility_message = undefined;
+        messages.push( ...this.scoring.score(this).map( message => ( {
+            type   : 'scoring',
+            message: message,
+        } ) ) );
 
         const numeric_id  = parseInt( this.state.board.find( row => row.current )?.id );
         const letteric_id = this.state.board.find( row => row.current )?.id.match(/[a-zA-D]/g)?.join('');
@@ -185,19 +192,15 @@ export default class Quiz {
                     else if ( quizzer.next_eligible == numeric_id && letteric_id == 'A' ) {
                         quizzer.trigger_eligible = true;
                         delete quizzer.next_eligible;
-                        eligibility_message = quizzer.name + ' is eligible to trigger';
+                        messages.push( {
+                            type   : 'eligibility',
+                            message: quizzer.name + ' is eligible to trigger',
+                        } );
                     }
                 }
             } );
 
-        let message = (
-            scoring_message && (
-                this.state.events.at(-1).action == 'correct' ||
-                this.state.events.at(-1).action == 'incorrect'
-            )
-        ) ? scoring_message : event_message;
-        if (eligibility_message) message = ( (message) ? message + '<br><br>' : '' ) + eligibility_message;
-        return message;
+        return messages;
     }
 
     #setup_query( record, distribution ) {
@@ -304,14 +307,15 @@ export default class Quiz {
 
         if ( ! event_id ) this.state.events.push(event);
 
-        let message             = this.#build_board();
+        const messages          = this.#build_board();
         const current_board_row = this.board_row();
         const is_quiz_done_now  = (current_board_row) ? false : true;
 
         if ( ! is_quiz_done_already && is_quiz_done_now ) {
-            message =
-                ( (message) ? message + '<br><br>' : '' ) +
-                'Quiz is complete. ' + 'Final score:' + '<br>' + this.#score_message( this.state.teams );
+            messages.push( {
+                type   : 'quiz_complete',
+                message: 'Quiz is complete. Final score:<br>' + this.#current_score_message( this.state.teams ),
+            } );
         }
         else if (
             ! is_quiz_done_now &&
@@ -319,16 +323,25 @@ export default class Quiz {
             parseInt( current_board_row.id ) > 1 &&
             parseInt( current_board_row.id ) % 4 === 1
         ) {
-            message =
-                ( (message) ? message + '<br><br>' : '' ) +
-                'Current score:' + '<br>' + this.#score_message( this.state.teams );
+            messages.push( {
+                type   : 'current_score',
+                message: 'Current score:<br>' + this.#current_score_message( this.state.teams ),
+            } );
         }
 
-        if ( message && window.omniframe && omniframe.memo )
-            omniframe.memo({ class: 'notice', message: message });
+        // delete scoring messages unless action is correct/incorrect
+        if (
+            this.state.events.at(-1).action != 'correct' &&
+            this.state.events.at(-1).action != 'incorrect'
+        ) messages.splice( 0, messages.length, ...messages.filter( message => message.type !== 'scoring' ) );
+
+        if ( messages && messages.length > 0 && window.omniframe && omniframe.memo ) omniframe.memo( {
+            class   : 'notice',
+            messages: messages.map( message => message.message ),
+        } );
     }
 
-    #score_message(teams) {
+    #current_score_message(teams) {
         return teams.map( team =>
             ( ( team.score?.position )
                 ? team.score?.position + '<sup>' + (
