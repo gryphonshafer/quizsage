@@ -19,6 +19,8 @@ INSERT INTO quiz ( quiz_id, meet_id, user_id, bracket, name, tag, settings, stat
     SELECT quiz_id, meet_id, user_id, bracket, name, NULL, settings, state, last_modified, created
     FROM __OLD__quiz;
 
+DROP TABLE __OLD__quiz;
+
 CREATE INDEX IF NOT EXISTS quiz_meet_id ON quiz (meet_id);
 CREATE INDEX IF NOT EXISTS quiz_user_id ON quiz (user_id);
 
@@ -36,5 +38,3 @@ CREATE TRIGGER IF NOT EXISTS quiz_last_modified
             SET last_modified = STRFTIME( '%Y-%m-%d %H:%M:%f', 'NOW', 'LOCALTIME' )
             WHERE quiz_id = OLD.quiz_id;
     END;
-
-DROP TABLE __OLD__quiz;
