@@ -123,6 +123,7 @@ sub quiz ($self) {
     }
 
     if (
+        not $self->stash('user')->is_app_admin and
         not $quiz->data->{tag} and
         not $quiz->data->{meet_id} and
         $quiz->data->{user_id} and $quiz->data->{user_id} ne $self->stash('user')->id
