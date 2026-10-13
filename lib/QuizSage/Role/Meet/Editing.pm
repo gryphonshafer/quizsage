@@ -152,6 +152,19 @@ sub save_after_edit ( $self, $user_id = undef ) {
                     push( @actions, 'null_saved_stats', 'save', 'propagate_roster' );
                 }
             }
+
+            push( @actions, 'null_saved_stats', 'save' ) if (
+                defined $settings->{old}{skip_foreign_bibles_boost_factor} and
+                not defined $settings->{new}{skip_foreign_bibles_boost_factor}
+                or
+                not defined $settings->{old}{skip_foreign_bibles_boost_factor} and
+                defined $settings->{new}{skip_foreign_bibles_boost_factor}
+                or
+                defined $settings->{old}{skip_foreign_bibles_boost_factor} and
+                defined $settings->{new}{skip_foreign_bibles_boost_factor} and
+                $settings->{old}{skip_foreign_bibles_boost_factor} ne
+                $settings->{new}{skip_foreign_bibles_boost_factor}
+            );
         }
     }
 

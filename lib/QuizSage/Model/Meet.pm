@@ -151,7 +151,10 @@ sub state ($self) {
     my $quizzes_done = [ grep { not grep { $_->{current} } $_->{state}{board}->@* } @$quizzes_data ];
     my $brackets_done;
 
-    my $foreign_bibles_boost_factor = _fabricate_foreign_bibles_boost_factor($quizzes_done);
+    my $foreign_bibles_boost_factor =
+        ( $self->data->{settings}{skip_foreign_bibles_boost_factor} )
+            ? 1
+            : _fabricate_foreign_bibles_boost_factor($quizzes_data);
 
     my $find_team_done = sub ( $bracket, $team ) {
         my $team_done = undef;
@@ -360,7 +363,10 @@ sub stats ( $self, $rebuild = 0 ) {
     my $quizzes_data = QuizSage::Model::Quiz->new->every_data({ meet_id => $self->id });
 
     my $stats;
-    $stats->{meta}{foreign_bibles_boost_factor} = _fabricate_foreign_bibles_boost_factor($quizzes_data);
+    $stats->{meta}{foreign_bibles_boost_factor} =
+        ( $self->data->{settings}{skip_foreign_bibles_boost_factor} )
+            ? 1
+            : _fabricate_foreign_bibles_boost_factor($quizzes_data);
 
     my $first_to_win_twice_positions_cache;
     my $first_to_win_twice_positions = sub (
@@ -566,7 +572,7 @@ sub stats ( $self, $rebuild = 0 ) {
                 for (@$quizzes) {
                     $points_sum_raw += $_->{points} * $_->{weight};
                     $points_sum     += $_->{points} * $_->{weight} * (
-                        ( $_->{bibles} eq 'multiple' )
+                        ( $_->{bibles} and $_->{bibles} eq 'multiple' )
                             ? $stats->{meta}{foreign_bibles_boost_factor}
                             : 1
                     );

@@ -27,6 +27,9 @@ sub merged_settings ($self) {
         for my $name ( qw( schedule per_quiz material ) ) {
             $settings->{$name} = delete $source->{$name} if ( $source->{$name} );
         }
+
+        $settings->{skip_foreign_bibles_boost_factor} = $source->{skip_foreign_bibles_boost_factor}
+            if ( exists $source->{skip_foreign_bibles_boost_factor} );
     }
 
     return $settings;
