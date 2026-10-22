@@ -102,6 +102,7 @@ sub build_bracket_data ( $self, $build_settings ) {
                 $teams,
                 $bracket->{rooms},
                 $bracket->{quizzes_per_team},
+                $bracket->{max_teams_per_quiz},
             );
 
             my $name;
@@ -473,10 +474,16 @@ sub schedule_integration( $self, $build_settings ) {
 sub build_score_sum_draw (
     $self,
     $teams,
-    $rooms            = 1,
-    $quizzes_per_team = 6,
-    $no_random        = 0,
+    $rooms              = 1,
+    $quizzes_per_team   = 6,
+    $max_teams_per_quiz = 3,
+    $no_random          = 0,
 ) {
+    $rooms              //= 1;
+    $quizzes_per_team   //= 6;
+    $max_teams_per_quiz //= 3;
+    $no_random          //= 0;
+
     my $team_id               = 0;
     my $teams_matrix          = [ map { { name => $_, id => $team_id++ } } @$teams ];
     my $skip_room_sort_matrix = {
@@ -494,29 +501,52 @@ sub build_score_sum_draw (
     ] unless ($no_random);
 
     # calculate quiz counts
-    my $remainder = @$teams_matrix * $quizzes_per_team % 3;
-    my $three_team_quizzes = int( @$teams_matrix * $quizzes_per_team / 3 );
-    $three_team_quizzes-- if ( $remainder == 1 );
-    my $two_team_quizzes = ( $remainder == 1 ) ? 2 : ( $remainder == 2 ) ? 1 : 0;
+    my $n_team_quizzes = {};
+    my $n              = $max_teams_per_quiz;
+    my $quizzes_count  = @$teams_matrix * $quizzes_per_team;
+    while ( $n >= 2 ) {
+        my $remainder = $quizzes_count % $n;
+        $n_team_quizzes->{$n} = int( $quizzes_count / $n );
+
+        last unless ($remainder);
+
+        $n_team_quizzes->{$n}-- if ( $remainder == 1 );
+        $quizzes_count -= $n_team_quizzes->{$n} * $n;
+        $n--;
+    }
 
     # generate meet schema
     my ( $meet, @quizzes );
-    for ( 1 .. $three_team_quizzes + $two_team_quizzes ) {
+
+    my $sizes      = [ sort { $b <=> $a } keys %$n_team_quizzes ];
+    $quizzes_count = 0;
+    $quizzes_count += $_ for ( values %$n_team_quizzes );
+
+    for ( 1 .. $quizzes_count ) {
         my $set = [];
         for ( 1 .. $rooms ) {
-            my $quiz = [ (undef) x 3 ];
+            my $quiz = [ (undef) x $sizes->[0] ];
             push( @$set, $quiz );
             push( @quizzes, $quiz );
-            last if ( @quizzes >= $three_team_quizzes + $two_team_quizzes );
+            last if ( @quizzes >= $quizzes_count );
         }
         push( @$meet, $set );
-        last if ( @quizzes >= $three_team_quizzes + $two_team_quizzes );
+        last if ( @quizzes >= $quizzes_count );
     }
-    if ($two_team_quizzes) {
-        @quizzes = map { $_->[0] } sort { $a->[1] <=> $b->[1] } map { [ $_, rand ] } @quizzes
+    shift @$sizes;
+    while ( my $size = shift @$sizes ) {
+        my @full_size_quizzes = grep { @$_ == $max_teams_per_quiz } @quizzes;
+
+        @full_size_quizzes =
+            map { $_->[0] }
+            sort { $a->[1] <=> $b->[1] }
+            map { [ $_, rand ] }
+            @full_size_quizzes
             unless ($no_random);
 
-        pop @{ $quizzes[$_] } for ( 0 .. $two_team_quizzes - 1 );
+        for my $index ( 0 .. $n_team_quizzes->{$size} - 1 ) {
+            pop @{ $full_size_quizzes[$index] } for ( 0 .. $max_teams_per_quiz - $size - 1 );
+        }
     }
 
     my $set_count = 0;

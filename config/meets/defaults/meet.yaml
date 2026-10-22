@@ -11,6 +11,7 @@ brackets:
     material: Galatians (1) Ephesians (2) BSB* ESV NASB NIV
   - name: Auxiliary
     quizzes_per_team: 2
+    # max_teams_per_quiz: 3
     rooms: 1
     teams:
         places:
