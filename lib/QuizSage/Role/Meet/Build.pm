@@ -123,21 +123,6 @@ sub build_bracket_data ( $self, $build_settings ) {
                 } @$meet
             ];
         }
-        elsif ( $bracket->{type} eq 'manual' ) {
-            my @rooms;
-            for my $quiz ( @{ ( $bracket->{quizzes} ) ? $bracket->{quizzes} : [ $bracket->{name} ] } ) {
-                push( @rooms, {
-                    name   => $quiz,
-                    room   => @rooms + 1,
-                    roster => [ ({}) x $bracket->{teams_count} ],
-                } );
-
-                if ( @rooms == $bracket->{rooms} ) {
-                    push( @{ $bracket->{sets} }, { rooms => [@rooms] } );
-                    @rooms = ();
-                }
-            }
-        }
         elsif ( $bracket->{type} eq 'positional' ) {
             my $template = ( ref $bracket->{template} )
                 ? $bracket->{template}
