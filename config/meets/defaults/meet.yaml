@@ -36,6 +36,39 @@ brackets:
         weight: 0
     weight: 1
     material: Galatians (1) Ephesians (1) BSB* ESV NASB NIV
+schedule:
+    blocks:
+      - start: Dec 1 2023 5:30 PM PST
+        stop: Dec 1 2023 9:00 PM PST
+      - start: Dec 2 2023 8:30 AM PST
+    duration: 30
+    events:
+      - name: Instructions and Announcements
+      - name: Evening Snack
+        duration: 15
+        before: [ 'Preliminary', 10 ]
+      - name: Host Home Assignments
+        duration: 15
+        after: Preliminary
+      - name: Late Morning Snack
+        duration: 15
+        start: Dec 2 9:15 AM
+      - name: Awards and Closing
+        duration: 15
+        after: Top 9
+    overrides:
+      - bracket: Auxiliary
+        quiz: [ 1, 2, 4 ]
+        room: 4
+        duration: 20
+      - bracket: Auxiliary
+        quiz: 3
+        room: 3
+        duration: 20
+      - bracket: Auxiliary
+        quiz: 4
+        duration: 15
+        start: Dec 2 10:35 AM
 roster:
     data: |
         TEAM 1
@@ -104,36 +137,3 @@ roster:
         Xray Whiskey BSB
         Zulu Yankee
         Breakfast Awesome
-schedule:
-    blocks:
-      - start: Dec 1 2023 5:30 PM PST
-        stop: Dec 1 2023 9:00 PM PST
-      - start: Dec 2 2023 8:30 AM PST
-    duration: 30
-    events:
-      - name: Instructions and Announcements
-      - name: Evening Snack
-        duration: 15
-        before: [ 'Preliminary', 10 ]
-      - name: Host Home Assignments
-        duration: 15
-        after: Preliminary
-      - name: Late Morning Snack
-        duration: 15
-        start: Dec 2 9:15 AM
-      - name: Awards and Closing
-        duration: 15
-        after: Top 9
-    overrides:
-      - bracket: Auxiliary
-        quiz: [ 1, 2, 4 ]
-        room: 4
-        duration: 20
-      - bracket: Auxiliary
-        quiz: 3
-        room: 3
-        duration: 20
-      - bracket: Auxiliary
-        quiz: 4
-        duration: 15
-        start: Dec 2 10:35 AM
