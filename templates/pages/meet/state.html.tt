@@ -73,6 +73,26 @@
 
 <ul class="column no_print">
     <li>
+        Display:
+        <select id="display_by">
+            <option value="by_bracket">By Bracket</option>
+            <option value="by_block">By Block</option>
+        </select>
+
+        [% display_by_js = BLOCK %]
+            window.addEventListener( 'DOMContentLoaded', () => {
+                const by_bracket = window.document.querySelector('div#by_bracket');
+                const by_block   = window.document.querySelector('div#by_block');
+
+                window.document.querySelector('select#display_by').addEventListener( 'change', () => {
+                    by_bracket.classList.toggle('by_display_hide');
+                    by_block.classList.toggle('by_display_hide');
+                } );
+            } );
+        [% END %]
+        [% page.js.inline.push(display_by_js) %]
+    </li>
+    <li>
         Highlight
         <ul>
             <li>
@@ -243,53 +263,71 @@
     [% END %]
 [% END %]
 
-[% FOR bracket IN state.brackets %]
-    <h3>Bracket: [% bracket.name %]</h3>
+<div id="by_block" class="by_display_hide">
+    [%
+        starts = {};
+        FOR bracket IN state.brackets;
+            FOR set IN bracket.sets;
+                FOR quiz IN set.rooms;
+                    start = quiz.schedule.start;
+                    UNLESS starts.$start;
+                        starts.$start = [];
+                    END;
+                    starts.$start.push( {
+                        bracket => bracket,
+                        quiz    => quiz,
+                        room    => quiz.room,
+                    } );
+                END;
+            END;
+        END;
+        event_index = 0;
+    %]
+    [% FOR start IN starts.keys.sort %]
+        [% start_time = date.format( start, '%s' ) %]
+        [% WHILE event_index < state.events.size AND state.events.$event_index.start_time <= start_time %]
 
-    [% FOR set IN bracket.sets %]
-        [%
-            schedule  = set.rooms.0.schedule;
-            first_set = ( loop.first ) ? 1 : 0;
-        %]
+            [% event = state.events.$event_index %]
 
-        [% PROCESS event
-            type   = 'pre',
-            events = state.events,
-            row    = schedule,
-        %]
+            <div class="info_box">
+                <b>[% event.name %]</b> —
+                [% time( event.start, '%a, %b %-d' ) %]
+                from <b>[% time( event.start, '%-I:%M %p' ) %]</b>
+                to [% time( event.stop, '%-I:%M %p' ) %]
+                <i>([% event.duration %] min.)</i>
+            </div>
+
+            [% event_index = event_index + 1 %]
+        [% END %]
 
         <div class="schedule_row">
             [%
+                schedule = starts.$start.0.quiz.schedule;
+
                 row_has_active_quiz = 0;
-                FOR quiz IN set.rooms;
-                    IF quiz.current_query_id;
+                FOR object IN starts.$start;
+                    IF object.quiz.current_query_id;
                         row_has_active_quiz = 1;
                     END;
                 END;
             %]
+            <div class="
+                summary_box
+                schedule_row_lead
+                [% IF row_has_active_quiz %]active_quiz[% END %]
+            ">
+                <b>Block [% loop.count %]<span class="time_preposition"> — </span></b>
+                [% time( schedule.start, '%a, %b %-d' ) %]
+                [% IF qm_auth %]
+                    <span class="time_preposition"> at </span>
+                    <b>[% UNLESS qm_auth %]~[% END %][% time( schedule.start, '%-I:%M %p' ) %]</b>
+                [% END %]
+            </div>
 
-            [% IF schedule %]
-                <div class="
-                    summary_box
-                    schedule_row_lead
-                    [% IF row_has_active_quiz %]active_quiz[% END %]
-                ">
-                    <b>Set [% loop.count %]<span class="time_preposition"> — </span></b>
-                    [% time( schedule.start, '%a, %b %-d' ) %]
-                    [% IF qm_auth OR first_set %]
-                        <span class="time_preposition"> from </span>
-                        <b>[% time( schedule.start, '%-I:%M %p' ) %]</b>
-                        [% IF qm_auth %]
-                            <span class="time_preposition"> to </span>
-                            [% time( schedule.stop, '%-I:%M %p' ) %]
-                        [% END %]
-                    [% END %]
-                    <i>([% UNLESS qm_auth %]~[% END %][% schedule.duration %] min.)</i>
-                </div>
-            [% END %]
-
-            [% FOR quiz IN set.rooms %]
+            [% FOR object IN starts.$start.sort('room') %]
                 [%
+                    quiz = object.quiz;
+
                     resolved_teams = 0;
                     teams_names    = [];
                     teams_codes    = [];
@@ -311,6 +349,17 @@
                         undef;
                 %]
 
+                [% blanks_needed = quiz.room - loop.count %]
+                [% FOR i IN [ 1 .. blanks_needed ] %]
+                    <div class="
+                        summary_box
+                        schedule_row_cell
+                        relative
+                        hidden_spacer
+                    ">
+                    </div>
+                [% END %]
+
                 <div class="
                     summary_box
                     schedule_row_cell
@@ -318,11 +367,13 @@
                     relative
                     [% IF quiz.current_query_id %]active_quiz[% END %]
                 ">
+                    <i>[% object.bracket.name %]</i><br>
+
                     [% IF href %]<a href="[% href %]">[% END %]<b>Quiz: [%
                         quiz.name
                     %]</b>[% IF href %]</a>[% END %]<br>
 
-                    Room: [% quiz.room %]
+                    Room: [% quiz.room %]<br>
 
                     [% IF quiz.current_query_id %]
                         <span class="query">
@@ -418,38 +469,239 @@
                                 %]"
                             >[% IF NOT teams_resolved %]Set[% ELSE %]Override[% END %] Teams</a>
                         [% END %]
-
-                        [% confirm_js = BLOCK %]
-                            window.addEventListener( 'DOMContentLoaded', () => {
-                                window.document.querySelectorAll('a.qm_auth').forEach( a => {
-                                    a.onclick = () => {
-                                        if ( window.omniframe && omniframe.memo ) omniframe.memo({
-                                            class   : 'notice',
-                                            message : a.attributes.getNamedItem('data-confirm').textContent,
-                                            options : [ 'Yes, I am sure!', 'Nevermind' ],
-                                            callback: event => {
-                                                if ( event.target.textContent == 'Yes, I am sure!' )
-                                                    window.location.href = a.href;
-                                            },
-                                        });
-                                        return false;
-                                    };
-                                } );
-                            } );
-                        [% END %]
-                        [% page.js.inline.push(confirm_js) %]
                     [% END %]
+
+                    [% IF qm_auth %]
+                        Stop: [% time( schedule.stop, '%-I:%M %p' ) %]<br>
+                    [% END %]
+                    <i>([% UNLESS qm_auth %]~[% END %][% schedule.duration %] min.)</i>
                 </div>
             [% END %]
         </div>
-
-        [% PROCESS event
-            type   = 'post',
-            events = state.events,
-            row    = schedule,
-        %]
     [% END %]
-[% END %]
+
+    [% WHILE event_index < state.events.size %]
+        [% event = state.events.$event_index %]
+        <div class="info_box">
+            <b>[% event.name %]</b> —
+            [% time( event.start, '%a, %b %-d' ) %]
+            from <b>[% time( event.start, '%-I:%M %p' ) %]</b>
+            to [% time( event.stop, '%-I:%M %p' ) %]
+            <i>([% event.duration %] min.)</i>
+        </div>
+        [% event_index = event_index + 1 %]
+    [% END %]
+</div>
+
+<div id="by_bracket">
+    [% FOR bracket IN state.brackets %]
+        <h3>Bracket: [% bracket.name %]</h3>
+
+        [% FOR set IN bracket.sets %]
+            [%
+                schedule  = set.rooms.0.schedule;
+                first_set = ( loop.first ) ? 1 : 0;
+            %]
+
+            [% PROCESS event
+                type   = 'pre',
+                events = state.events,
+                row    = schedule,
+            %]
+
+            <div class="schedule_row">
+                [%
+                    row_has_active_quiz = 0;
+                    FOR quiz IN set.rooms;
+                        IF quiz.current_query_id;
+                            row_has_active_quiz = 1;
+                        END;
+                    END;
+                %]
+
+                [% IF schedule %]
+                    <div class="
+                        summary_box
+                        schedule_row_lead
+                        [% IF row_has_active_quiz %]active_quiz[% END %]
+                    ">
+                        <b>Set [% loop.count %]<span class="time_preposition"> — </span></b>
+                        [% time( schedule.start, '%a, %b %-d' ) %]
+                        [% IF qm_auth OR first_set %]
+                            <span class="time_preposition"> from </span>
+                            <b>[% time( schedule.start, '%-I:%M %p' ) %]</b>
+                            [% IF qm_auth %]
+                                <span class="time_preposition"> to </span>
+                                [% time( schedule.stop, '%-I:%M %p' ) %]
+                            [% END %]
+                        [% END %]
+                        <i>([% UNLESS qm_auth %]~[% END %][% schedule.duration %] min.)</i>
+                    </div>
+                [% END %]
+
+                [% FOR quiz IN set.rooms %]
+                    [%
+                        resolved_teams = 0;
+                        teams_names    = [];
+                        teams_codes    = [];
+                        FOR team IN quiz.roster;
+                            resolved_teams = resolved_teams + 1 IF team.name;
+                            teams_names.push( team.name );
+                            teams_codes.push( 'highlight_' _ team.name.lower.replace( '\s', '' ) );
+                        END;
+                        teams_resolved = ( resolved_teams == quiz.roster.size ) ? 1 : 0;
+
+                        href =
+                            ( quiz.id ) ? c.url_for( '/quiz/' _ quiz.id ) :
+                            ( qm_auth_and_meet_is_alive AND teams_resolved ) ? c.url_for('/quiz/build').query(
+                                meet    => c.param('meet_id'),
+                                bracket => bracket.name,
+                                quiz    => quiz.name,
+                                team    => teams_names,
+                            ) :
+                            undef;
+                    %]
+
+                    <div class="
+                        summary_box
+                        schedule_row_cell
+                        highlight [% teams_codes.join(' ') %]
+                        relative
+                        [% IF quiz.current_query_id %]active_quiz[% END %]
+                    ">
+                        [% IF href %]<a href="[% href %]">[% END %]<b>Quiz: [%
+                            quiz.name
+                        %]</b>[% IF href %]</a>[% END %]<br>
+
+                        Room: [% quiz.room %]
+
+                        [% IF quiz.current_query_id %]
+                            <span class="query">
+                                Query: [% quiz.current_query_id %]
+                            </span>
+                        [% ELSIF NOT quiz.id %]
+                            <span class="query">
+                                [%
+                                    title = 'Distribution for Quiz ' _ quiz.name;
+                                    PROCESS icon_link.html.tt, data = [
+                                            title,
+                                            c.url_for('distribution').query({
+                                                bracket => bracket.name,
+                                                quiz    => quiz.name,
+                                            }),
+                                            'distribution',
+                                        ];
+                                %]
+                            </span>
+                        [% END %]
+
+                        <ul>
+                            [% FOR team IN quiz.roster %]
+                                <li>[%
+                                    IF team.name;
+                                        '<b title="' _
+                                            team.name _
+                                            ( ( team.nickname ) ? ' - ' _ team.nickname : '' ) _ '"' _
+                                            'class="highlight ' _
+                                            'highlight_' _ team.name.lower.replace( '\s', '' ) _ '">' _
+                                            team.name _ '</b> ';
+
+                                        title =
+                                            'Roster for ' _ team.name _
+                                            ( ( team.nickname ) ? ' - ' _ team.nickname : '' );
+                                        PROCESS icon_link.html.tt, data = [
+                                                title,
+                                                c.url_for('roster').query({ team => team.name }),
+                                                'roster',
+                                            ];
+
+                                        IF team.score;
+                                            '<br><i>';
+                                            IF team.score.position;
+                                                PROCESS st_ing.html.tt position = team.score.position;
+                                                ' with ';
+                                            END;
+                                            team.score.points;
+                                            ' pts.</i>';
+                                        END;
+                                    ELSIF team.position AND ( team.quiz OR team.bracket );
+                                        '<i>';
+                                        PROCESS st_ing.html.tt position = team.position;
+                                        IF team.quiz;
+                                            ' in ' _ team.quiz;
+                                        ELSE;
+                                            ' of ' _ team.bracket;
+                                        END;
+                                        '</i>';
+                                    ELSE;
+                                        '<i>(to be determined)</i>';
+                                    END;
+                                %]</li>
+                            [% END %]
+                        </ul>
+
+                        [% IF qm_auth_and_meet_is_alive %]
+                            [% IF quiz.id %]
+                                <a
+                                    class="qm_auth"
+                                    data-confirm="
+                                        Are you absolutely sure you want to do this?<br>
+                                        This will delete all data for this quiz.<br>
+                                        There is no undo...
+                                    "
+                                    href="[% c.url_for('/quiz/delete/' _ quiz.id ) %]"
+                                >Delete Data</a>
+                            [% ELSE %]
+                                <a
+                                    class="qm_auth"
+                                    data-confirm="
+                                        Are you absolutely sure you want to do this?<br>
+                                        This is likely not needed as teams should<br>
+                                        auto-populate when prerequist quizzes are<br>
+                                        all complete. There is no undo...
+                                    "
+                                    href="[%
+                                        c.url_for('/quiz/teams').query(
+                                            meet    => c.param('meet_id'),
+                                            bracket => bracket.name,
+                                            quiz    => quiz.name,
+                                        )
+                                    %]"
+                                >[% IF NOT teams_resolved %]Set[% ELSE %]Override[% END %] Teams</a>
+                            [% END %]
+
+                            [% confirm_js = BLOCK %]
+                                window.addEventListener( 'DOMContentLoaded', () => {
+                                    window.document.querySelectorAll('a.qm_auth').forEach( a => {
+                                        a.onclick = () => {
+                                            if ( window.omniframe && omniframe.memo ) omniframe.memo({
+                                                class   : 'notice',
+                                                message : a.attributes.getNamedItem('data-confirm').textContent,
+                                                options : [ 'Yes, I am sure!', 'Nevermind' ],
+                                                callback: event => {
+                                                    if ( event.target.textContent == 'Yes, I am sure!' )
+                                                        window.location.href = a.href;
+                                                },
+                                            });
+                                            return false;
+                                        };
+                                    } );
+                                } );
+                            [% END %]
+                            [% page.js.inline.push(confirm_js) %]
+                        [% END %]
+                    </div>
+                [% END %]
+            </div>
+
+            [% PROCESS event
+                type   = 'post',
+                events = state.events,
+                row    = schedule,
+            %]
+        [% END %]
+    [% END %]
+</div>
 
 [%
     meet_start = date.format( meet.data.start, '%s' );
