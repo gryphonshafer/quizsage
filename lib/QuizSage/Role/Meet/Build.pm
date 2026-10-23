@@ -341,6 +341,59 @@ sub schedule_integration( $self, $build_settings ) {
             }
         }
 
+        # re-set quizzes if they start different than their set's first quiz
+        my @quizzes_to_reset;
+        for my $set ( $bracket->{sets}->@* ) {
+            my $index = 0;
+            while ( $index < $set->{rooms}->@* ) {
+                if ( $set->{rooms}->[0]{schedule}{start} ne $set->{rooms}[$index]->{schedule}{start} ) {
+                    push( @quizzes_to_reset, splice( $set->{rooms}->@*, $index, 1 ) );
+                }
+                else {
+                    $index++;
+                }
+            }
+        }
+        while ( my $quiz = shift @quizzes_to_reset ) {
+            my ($set) =
+                grep { $_->{rooms}[0]{schedule}{start} eq $quiz->{schedule}{start} }
+                $bracket->{sets}->@*;
+
+            unless ($set) {
+                $set = { rooms => [] };
+                push( $bracket->{sets}->@*, $set );
+            }
+
+            push( $set->{rooms}->@*, $quiz );
+
+            $set->{rooms} = [
+                sort {
+                    $a->{room} <=> $b->{room} or
+                    $a->{name} cmp $b->{name}
+                }
+                $set->{rooms}->@*
+            ];
+
+            $bracket->{sets} = [
+                sort {
+                    $a->{rooms}[0]{schedule}{start} cmp $b->{rooms}[0]{schedule}{start}
+                }
+                $bracket->{sets}->@*
+            ];
+        }
+
+        # remove any sets without quizzes
+        my $index = 0;
+        while ( $index < $bracket->{sets}->@* ) {
+            my $set = $bracket->{sets}[$index];
+            if ( not $set or not $set->{rooms} or not $set->{rooms}->@* ) {
+                splice( $bracket->{sets}->@*, $index, 1 );
+            }
+            else {
+                $index++;
+            }
+        }
+
         for my $event ( grep {
             $_->{after} and not $_->{stop} and
             not ref $_->{after} and $_->{after} eq $bracket->{name}
