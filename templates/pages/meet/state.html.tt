@@ -83,8 +83,14 @@
             window.addEventListener( 'DOMContentLoaded', () => {
                 const by_bracket = window.document.querySelector('div#by_bracket');
                 const by_block   = window.document.querySelector('div#by_block');
+                const display_by = window.document.querySelector('select#display_by');
 
-                window.document.querySelector('select#display_by').addEventListener( 'change', () => {
+                if ( display_by.value == 'by_block' ) {
+                    by_bracket.classList.toggle('by_display_hide');
+                    by_block.classList.toggle('by_display_hide');
+                }
+
+                display_by.addEventListener( 'change', () => {
                     by_bracket.classList.toggle('by_display_hide');
                     by_block.classList.toggle('by_display_hide');
                 } );
@@ -326,7 +332,8 @@
 
             [% FOR object IN starts.$start.sort('room') %]
                 [%
-                    quiz = object.quiz;
+                    bracket = object.bracket;
+                    quiz    = object.quiz;
 
                     resolved_teams = 0;
                     teams_names    = [];
@@ -475,6 +482,8 @@
                         Stop: [% time( schedule.stop, '%-I:%M %p' ) %]<br>
                     [% END %]
                     <i>([% UNLESS qm_auth %]~[% END %][% schedule.duration %] min.)</i>
+
+                    [% IF qm_auth_and_meet_is_alive %]<br><br>[% END %]
                 </div>
             [% END %]
         </div>
