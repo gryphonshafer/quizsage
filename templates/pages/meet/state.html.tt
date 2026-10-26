@@ -269,6 +269,43 @@
     [% END %]
 [% END %]
 
+[% BLOCK schedule_row_lead %]
+    [% IF schedule %]
+        [%
+            row_has_active_quiz = 0;
+            FOR item IN quizzes;
+                quiz = (is_objects) ? item.quiz : item;
+                IF quiz.current_query_id;
+                    row_has_active_quiz = 1;
+                END;
+            END;
+        %]
+        <div class="
+            summary_box
+            schedule_row_lead
+            [% IF row_has_active_quiz %]active_quiz[% END %]
+        ">
+            <b>[% label %] [% number %]<span class="time_preposition"> — </span></b>
+            [% IF label == 'Set' %]
+                [% IF qm_auth OR first_set %]
+                    <span class="time_preposition"> from </span>
+                    <b>[% time( schedule.start, '%-I:%M %p' ) %]</b>
+                    [% IF qm_auth %]
+                        <span class="time_preposition"> to </span>
+                        [% time( schedule.stop, '%-I:%M %p' ) %]
+                    [% END %]
+                [% END %]
+                <i>([% UNLESS qm_auth %]~[% END %][% schedule.duration %] min.)</i>
+            [% ELSE %]
+                [% IF qm_auth %]
+                    <span class="time_preposition"> at </span>
+                    <b>[% UNLESS qm_auth %]~[% END %][% time( schedule.start, '%-I:%M %p' ) %]</b>
+                [% END %]
+            [% END %]
+        </div>
+    [% END %]
+[% END %]
+
 <div id="by_block" class="by_display_hide">
     [%
         starts = {};
@@ -307,28 +344,14 @@
         [% END %]
 
         <div class="schedule_row">
-            [%
-                schedule = starts.$start.0.quiz.schedule;
-
-                row_has_active_quiz = 0;
-                FOR object IN starts.$start;
-                    IF object.quiz.current_query_id;
-                        row_has_active_quiz = 1;
-                    END;
-                END;
+            [% PROCESS schedule_row_lead
+                label      = 'Block',
+                number     = loop.count,
+                schedule   = starts.$start.0.quiz.schedule,
+                quizzes    = starts.$start,
+                is_objects = true,
+                qm_auth    = qm_auth,
             %]
-            <div class="
-                summary_box
-                schedule_row_lead
-                [% IF row_has_active_quiz %]active_quiz[% END %]
-            ">
-                <b>Block [% loop.count %]<span class="time_preposition"> — </span></b>
-                [% time( schedule.start, '%a, %b %-d' ) %]
-                [% IF qm_auth %]
-                    <span class="time_preposition"> at </span>
-                    <b>[% UNLESS qm_auth %]~[% END %][% time( schedule.start, '%-I:%M %p' ) %]</b>
-                [% END %]
-            </div>
 
             [% FOR object IN starts.$start.sort('room') %]
                 [%
@@ -519,34 +542,14 @@
             %]
 
             <div class="schedule_row">
-                [%
-                    row_has_active_quiz = 0;
-                    FOR quiz IN set.rooms;
-                        IF quiz.current_query_id;
-                            row_has_active_quiz = 1;
-                        END;
-                    END;
+                [% PROCESS schedule_row_lead
+                    label     = 'Set',
+                    number    = loop.count,
+                    schedule  = schedule,
+                    quizzes   = set.rooms,
+                    first_set = first_set,
+                    qm_auth   = qm_auth,
                 %]
-
-                [% IF schedule %]
-                    <div class="
-                        summary_box
-                        schedule_row_lead
-                        [% IF row_has_active_quiz %]active_quiz[% END %]
-                    ">
-                        <b>Set [% loop.count %]<span class="time_preposition"> — </span></b>
-                        [% time( schedule.start, '%a, %b %-d' ) %]
-                        [% IF qm_auth OR first_set %]
-                            <span class="time_preposition"> from </span>
-                            <b>[% time( schedule.start, '%-I:%M %p' ) %]</b>
-                            [% IF qm_auth %]
-                                <span class="time_preposition"> to </span>
-                                [% time( schedule.stop, '%-I:%M %p' ) %]
-                            [% END %]
-                        [% END %]
-                        <i>([% UNLESS qm_auth %]~[% END %][% schedule.duration %] min.)</i>
-                    </div>
-                [% END %]
 
                 [% FOR quiz IN set.rooms %]
                     [%
