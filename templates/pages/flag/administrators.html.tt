@@ -40,8 +40,8 @@
     window.addEventListener( 'DOMContentLoaded', () => {
         window.document.querySelectorAll('input').forEach( input => {
             input.onchange = () => {
-                const url = new URL( 'is_app_admin', window.location.href );
-                url.searchParams.append( 'is_app_admin', ( input.checked ) ? 1 : 0 );
+                const url = new URL( 'set_app_admin', window.location.href );
+                url.searchParams.append( 'set_app_admin', ( input.checked ) ? 1 : 0 );
                 url.searchParams.append( 'user_id', input.value );
                 fetch(url);
             };

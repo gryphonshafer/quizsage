@@ -730,8 +730,13 @@ sub admin_auth ( $self, $user ) {
         $self->dq->sql(q{
             SELECT COUNT(*)
             FROM administrator
-            WHERE meet_id = ? AND user_id = ?
-        })->run( $self->id, $user->id )->value
+            WHERE
+                (
+                    season_id = ? OR
+                    meet_id   = ? OR
+                    season_id IS NULL AND meet_id IS NULL
+                ) AND user_id = ?
+        })->run( $self->data->{season_id}, $self->id, $user->id )->value
     ) ? 1 : 0;
 }
 

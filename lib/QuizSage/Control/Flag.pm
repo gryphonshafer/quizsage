@@ -54,10 +54,10 @@ sub remove ($self) {
     $self->redirect_to('/flag/list');
 }
 
-sub is_app_admin ($self) {
+sub set_app_admin ($self) {
     return unless ( $self->stash('user')->is_app_admin );
 
-    if ( $self->param('is_app_admin') ) {
+    if ( $self->param('set_app_admin') ) {
         $self->stash('user')->dq
             ->sql('INSERT INTO administrator (user_id) VALUES (?)')
             ->run( $self->param('user_id') );
@@ -149,7 +149,7 @@ This controller handles returning the JSON data of a flag.
 
 This controller handles removing a flag.
 
-=head2 is_app_admin
+=head2 set_app_admin
 
 This controller handles user application administrator checkbox checking and
 unchecking on the flag list page.
