@@ -164,11 +164,17 @@ sub descriptionate( $self, $parse ) {
 sub _descriptionize_array_node ( $self, $node ) {
     my $verses = {};
 
-    my @sets = map {
-        my $set = $_;
-        $set->{verses}{$_} = 1 for ( $self->versify_refs( $set->{value} )->@* );
-        $set;
-    } grep { $_->{type} and $_->{type} eq 'weighted_set' } @$node;
+    my @sets =
+        map {
+            my $set = $_;
+            $set->{verses}{$_} = 1 for ( $self->versify_refs( $set->{value} )->@* );
+            $set;
+        }
+        grep {
+            $_->{type} and $_->{type} eq 'weighted_set' and
+            $_->{value} and not ref $_->{value}
+        }
+        @$node;
 
     my @not_sets = grep { not ( $_->{type} and $_->{type} eq 'weighted_set' ) } @$node;
 

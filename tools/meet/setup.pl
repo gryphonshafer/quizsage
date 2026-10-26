@@ -27,7 +27,8 @@ $opt->{context} =
 $opt->{action} =
     ( not $opt->{action}      ) ? ''       :
     ( $opt->{action} =~ /^b/i ) ? 'build'  :
-    ( $opt->{action} =~ /^d/i ) ? 'delete' : '';
+    ( $opt->{action} =~ /^e/i ) ? 'edit'   :
+    ( $opt->{action} =~ /^d/i ) ? 'delete' : 'build';
 
 pod2usage('Most provide valid context and either a season name or meet name or primary ID') unless (
     $opt->{context} eq 'season' and $opt->{season} or
@@ -79,18 +80,14 @@ catch ($e) {
     $object->create($data) unless ( $opt->{action} eq 'delete' );
 }
 
-if ( $opt->{action} and ( not $object or not $object->data ) ) {
-    die "Unable to $opt->{action} without loadable $opt->{context}\n";
+if ( $opt->{action} eq 'build' ) {
+    $object->build;
+}
+elsif ( $opt->{action} eq 'edit' ) {
+    $object->save_after_edit( $opt->{user} );
 }
 elsif ( $opt->{action} eq 'delete' ) {
     $object->delete;
-}
-elsif ( $opt->{action} and not $object->can( $opt->{action} ) ) {
-    die "Class $opt->{context} cannot $opt->{action}\n";
-}
-elsif ( $opt->{action} ) {
-    my $method = $opt->{action};
-    $object->$method;
 }
 
 =head1 NAME
@@ -111,7 +108,7 @@ setup.pl - Build and edit meets and seasons
         -d, --days     DURATION
         -p, --password PASSWORD
         -y, --yaml     YAML_SETTINGS_FILE
-        -a, --action   ACTION # build | delete
+        -a, --action   ACTION # build | edit | delete (defaults: build)
         -h, --help
         -m, --man
 
@@ -166,7 +163,8 @@ YAML source file for settings.
 
 =head2 -a, --action
 
-Execute a valid action. Valid actions are: "build" and "delete".
+Execute a valid action. Valid actions are: build, edit, and delete. Defaults to:
+build.
 
 =head1 EXAMPLES
 
