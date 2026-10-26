@@ -69,6 +69,7 @@ schedule:
         quiz: 4
         duration: 15
         start: Dec 2 10:35 AM
+# skip_foreign_bibles_boost_factor: 0
 roster:
     data: |
         TEAM 1

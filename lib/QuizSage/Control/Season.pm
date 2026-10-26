@@ -144,7 +144,7 @@ sub meet ($self) {
                 conf->get( qw( config_app root_dir ) ) . '/config/meets/defaults/meet.yaml'
             )->slurp('UTF-8') ) =~ s/^\-+//;
             my $roster_data = Load( encode( 'UTF-8', $yaml ) )->{roster}{data};
-            $yaml =~ s/\nroster\s*:.*(?=\n\w)//ms;
+            $yaml =~ s/\nroster\s*:.*/\n\n/ms;
 
             my $meet_count = QuizSage::Model::Meet->new
                 ->every_data({ season_id => $self->param('season_id') })->@*;
@@ -222,6 +222,7 @@ sub meet ($self) {
                 my $roster_data   = delete $meet->data->{settings}{roster}{data};
                 my $default_bible = delete $meet->data->{settings}{roster}{default_bible};
 
+                delete $meet->data->{settings}{roster}{tags} unless ( $meet->data->{settings}{roster}{tags} );
                 delete $meet->data->{settings}{roster} unless ( $meet->data->{settings}{roster}->%* );
 
                 ( my $yaml = decode( 'UTF-8', Dump( $meet->data->{settings} ) ) ) =~ s/^\-+//;
