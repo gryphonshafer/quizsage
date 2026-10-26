@@ -15,9 +15,11 @@ with qw(
 sub save_after_edit ( $self, $user_id = undef ) {
     $self->data->{settings} = $self->canonical_settings($user_id);
 
-    my $meet_quizzes = QuizSage::Model::Quiz->new->every({ meet_id => $self->id });
-    my $meet_data    = $self->thaw( $self->freeze( $self->data ) );
-    my $label        = QuizSage::Model::Label->new( maybe user_id => $user_id );
+    my $meet_quizzes           = QuizSage::Model::Quiz->new->every({ meet_id => $self->id });
+    my $unencrypted_new_passwd = ( $self->is_dirty('passwd') ) ? $self->data->{passwd} : undef;
+    my $meet_data              = $self->thaw( $self->freeze( $self->data ) );
+    $meet_data->{passwd}       = $unencrypted_new_passwd if ( defined $unencrypted_new_passwd );
+    my $label                  = QuizSage::Model::Label->new( maybe user_id => $user_id );
 
     my $get_settings = sub {
         my $settings = from_json $self->saved_data->{settings};
