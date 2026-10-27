@@ -470,12 +470,13 @@
             [% page.js.inline.push(confirm_js) %]
         [% END %]
 
-        [% IF qm_auth %]
-            Stop: [% time( schedule.stop, '%-I:%M %p' ) %]<br>
+        [% IF bracket_name %]
+            [% IF qm_auth %]
+                Stop: [% time( schedule.stop, '%-I:%M %p' ) %]<br>
+            [% END %]
+            <i>([% UNLESS qm_auth %]~[% END %][% schedule.duration %] min.)</i>
+            [% IF qm_auth_and_meet_is_alive %]<br><br>[% END %]
         [% END %]
-        <i>([% UNLESS qm_auth %]~[% END %][% schedule.duration %] min.)</i>
-
-        [% IF qm_auth_and_meet_is_alive %]<br><br>[% END %]
     </div>
 [% END %]
 
@@ -533,11 +534,11 @@
                 [% PROCESS schedule_row
                     bracket                   = object.bracket,
                     quiz                      = object.quiz,
-                    blanks_needed             = ( object.quiz.room - loop.count ),
-                    bracket_name              = object.bracket.name,
                     qm_auth                   = qm_auth,
                     qm_auth_and_meet_is_alive = qm_auth_and_meet_is_alive,
                     first_set                 = first_set,
+                    bracket_name              = object.bracket.name,
+                    blanks_needed             = ( object.quiz.room - loop.count ),
                 %]
             [% END %]
         </div>
@@ -571,20 +572,23 @@
 
             <div class="schedule_row">
                 [% PROCESS schedule_row_lead
-                    label    = 'Set',
-                    number   = loop.count,
-                    schedule = set.rooms.0.schedule,
-                    quizzes  = set.rooms,
-                    qm_auth  = qm_auth,
+                    label      = 'Set',
+                    number     = loop.count,
+                    schedule   = set.rooms.0.schedule,
+                    quizzes    = set.rooms,
+                    is_objects = false,
+                    qm_auth    = qm_auth,
                 %]
 
                 [% FOR quiz IN set.rooms %]
                     [% PROCESS schedule_row
-                        bracket                   = object.bracket,
-                        quiz                      = object.quiz,
+                        bracket                   = bracket,
+                        quiz                      = quiz,
                         qm_auth                   = qm_auth,
                         qm_auth_and_meet_is_alive = qm_auth_and_meet_is_alive,
                         first_set                 = first_set,
+                        bracket_name              = false,
+                        blanks_needed             = 0,
                     %]
                 [% END %]
             </div>
