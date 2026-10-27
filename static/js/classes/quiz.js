@@ -10,6 +10,7 @@ export default class Quiz {
         appeal_duration                  : 180,
         timeouts_per_team                : 1,
         maximum_declined_appeals_per_team: 2,
+        memo_messages                    : true,
     };
 
     constructor ( inputs = { quiz : {} } ) {
@@ -335,7 +336,11 @@ export default class Quiz {
             this.state.events.at(-1).action != 'incorrect'
         ) messages.splice( 0, messages.length, ...messages.filter( message => message.type !== 'scoring' ) );
 
-        if ( messages && messages.length > 0 && window.omniframe && omniframe.memo ) omniframe.memo( {
+        if (
+            this.memo_messages &&
+            messages && messages.length > 0 &&
+            window.omniframe && omniframe.memo
+        ) omniframe.memo( {
             class   : 'notice',
             messages: messages.map( message => message.message ),
         } );

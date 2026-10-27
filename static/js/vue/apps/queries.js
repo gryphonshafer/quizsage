@@ -17,8 +17,9 @@ const queries = await Promise.all( [ quiz_promise, material_promise ] )
         inputs.material    ||= {};
         inputs.material.data = material_data;
 
-        inputs.quiz       ||= {};
-        inputs.quiz.teams   = quiz_data.settings.teams;
+        inputs.quiz             ||= {};
+        inputs.quiz.teams         = quiz_data.settings.teams;
+        inputs.quiz.memo_messages = false;
 
         return new Quiz(inputs);
     } )
