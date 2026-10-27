@@ -61,7 +61,7 @@ body.state div.schedule_row {
         width      : 6em;
         margin-left: calc( -8em + 1px );
 
-        time {
+        b, i {
             display: block;
         }
 
@@ -119,8 +119,7 @@ body.state div.schedule_row {
             margin-left : 0;
             margin-right: 0;
 
-            time,
-            span.time_preposition {
+            b, i, span.time_preposition {
                 display: inline;
             }
         }
