@@ -102,7 +102,7 @@ sub thesaurus_patch ( $self, $yaml, $user = undef ) {
                     'DELETE FROM reverse WHERE word_id IN (' . join( ',', keys %word_ids ) . ')'
                 );
                 $dq->do(
-                    'INSERT INTO reverse ( word_id, synonym, verity ) VALUES ' .
+                    'INSERT OR IGNORE INTO reverse ( word_id, synonym, verity ) VALUES ' .
                     join( ',', map { '(' . join( ',', @$_ ) . ')' } @buffer )
                 );
             }

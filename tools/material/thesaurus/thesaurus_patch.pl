@@ -4,7 +4,11 @@ use Omniframe::Util::File 'opath';
 use QuizSage::Model::Flag;
 
 my $opt = options('input|i=s');
-QuizSage::Model::Flag->new->thesaurus_patch( opath( $opt->{input} // conf->get('thesaurus_patch_log') ) );
+QuizSage::Model::Flag->new->thesaurus_patch(
+    opath(
+        $opt->{input} // conf->get('thesaurus_patch_log')
+    )->slurp('UTF-8')
+);
 
 =head1 NAME
 
@@ -21,7 +25,7 @@ thesaurus_patch.pl - Patch the thesaurus contained in a material SQLite database
 
 This program will patch the thesaurus contained in a material SQLite database.
 By default, the program will look at the "thesaurus_patch_log" setting as the
-file for input. The input is expected to be YAML and be an array of hashs. Each
+file for input. The input is expected to be YAML and be an array of hashes. Each
 hash should describe the end-state of a given word.
 
 A regular, full entry will have C<text> (the word) and C<meanings> (a data
@@ -47,7 +51,7 @@ structure representing the synonyms of each meaning of the word):
                   - be apprised of
                   - pay attention to
                   - take notice
-        - word: appreciate, comprehen
+        - word: appreciate, comprehend
           type: verb
           synonyms:
             - verity: 3
@@ -76,7 +80,7 @@ To ensure a word does not exist in the thesaurus, define only the word:
     - text: Gryphon
 
 Note that it's entirely reasonable (and recommended) to setup 2 entries for a
-word that should be capicalized:
+word that should be capitalized:
 
     - text: Christ
       meanings:
