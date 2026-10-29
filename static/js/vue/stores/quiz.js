@@ -88,8 +88,8 @@ export default Pinia.defineStore( 'store', {
             current        = get_current() || get_current( quiz.state.board.at(-1).id );
             eligible_teams = get_eligible_teams( quiz.state.teams );
         }
-        catch (e) {
-            console.log(e);
+        catch (error) {
+            console.error(error);
             if ( window.omniframe && omniframe.memo ) omniframe.memo({
                 class  : 'error',
                 message:
@@ -120,11 +120,13 @@ export default Pinia.defineStore( 'store', {
                     synonymous_verbatim_open_book: '',
                 },
             },
-            eligible_teams : eligible_teams,
-            hidden_solution: ( ( miscellaneous.meet_id && quiz.board_row() ) ? true : false ),
-            is_drill       : false,
-            exit_quiz_url  : exit_quiz_url,
-            timer_state    : 'Start',
+            eligible_teams  : eligible_teams,
+            hidden_solution : ( ( miscellaneous.meet_id && quiz.board_row() ) ? true : false ),
+            is_drill        : false,
+            exit_quiz_url   : exit_quiz_url,
+            timer_state     : 'Start',
+            quiz_save_status: 'pre-save',
+            last_quiz_save  : undefined,
         };
     },
 
@@ -138,18 +140,18 @@ export default Pinia.defineStore( 'store', {
                 quiz.replace_query();
                 update_data(this);
             }
-            catch (e) {
-                console.log(e);
+            catch (error) {
+                console.error(error);
                 if ( window.omniframe && omniframe.memo ) omniframe.memo({
                     class  : 'error',
                     message:
                         (
-                            e == 'Unable to select a verse from which to construct query' ||
-                            e == 'Unable to find phrase block from which to construct query'
+                            error == 'Unable to select a verse from which to construct query' ||
+                            error == 'Unable to find phrase block from which to construct query'
                         )
                         ? 'Unable to replace query, likely due to insufficient size of material.<br>' +
                             'Try exiting the quiz and expanding the material.'
-                        : 'Unexpected error occurred: ' + e,
+                        : 'Unexpected error occurred: ' + error,
                 });
             }
         },
@@ -202,11 +204,11 @@ export default Pinia.defineStore( 'store', {
                 update_data(this);
                 this.save_quiz_data();
             }
-            catch (e) {
-                console.log(e);
+            catch (error) {
+                console.error(error);
                 if (
-                    e == 'Unable to select a verse from which to construct query' ||
-                    e == 'Unable to find phrase block from which to construct query'
+                    error == 'Unable to select a verse from which to construct query' ||
+                    error == 'Unable to find phrase block from which to construct query'
                 ) {
                     if ( window.omniframe && omniframe.memo ) omniframe.memo({
                         class  : 'error',
@@ -219,7 +221,7 @@ export default Pinia.defineStore( 'store', {
                 else {
                     if ( window.omniframe && omniframe.memo ) omniframe.memo({
                         class  : 'error',
-                        message: 'Unexpected error occurred: ' + e,
+                        message: 'Unexpected error occurred: ' + error,
                     });
                 }
             }
@@ -268,18 +270,40 @@ export default Pinia.defineStore( 'store', {
         },
 
         save_quiz_data() {
+            this.quiz_save_status = 'pending';
+
+            const meta_token    = window.document.querySelector('meta[name="X-CSRF-Token"]');
+            const current_token = meta_token.getAttribute('content');
+            const now           = new Date();
+
             fetch(
                 new URL( '../../../quiz/save/' + miscellaneous.quiz_id, import.meta.url ),
                 {
                     method : 'POST',
-                    body   : JSON.stringify( { ...quiz.state, selected: this.selected } ),
+                    body   : JSON.stringify( {
+                        ...quiz.state,
+                        selected : this.selected,
+                        timestamp: now.getTime() + '.' + now.getMilliseconds(),
+                    } ),
+                    signal : AbortSignal.timeout( 10 * 1000 ), // abort after waiting 10 seconds
                     headers: {
-                        'X-CSRF-Token': window.document
-                            .querySelector('meta[name="X-CSRF-Token"]')
-                            .getAttribute('content'),
+                        'X-CSRF-Token': current_token,
                     },
                 },
-            );
+            )
+                .then( response => {
+                    if ( ! response.ok ) throw new Error('Server error');
+                    return Promise.all( [ response.headers.get('X-CSRF-Token'), response.json() ] );
+                } )
+                .then( ( [ token, json ] ) => {
+                    this.quiz_save_status = json.quiz_data_saved;
+                    if ( json.quiz_data_saved == 'saved' ) this.last_quiz_save = now;
+                    if ( token != current_token ) meta_token.setAttribute( 'content', token );
+                } )
+                .catch( error => {
+                    console.error(error);
+                    this.quiz_save_status = 'failed';
+                } );
         },
 
         last_event_if_not_viewed() {

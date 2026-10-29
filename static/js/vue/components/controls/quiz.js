@@ -9,7 +9,18 @@ export default {
     },
 
     computed: {
-        ...Pinia.mapState( store, [ 'board', 'current', 'teams', 'selected', 'timer_state' ] ),
+        ...Pinia.mapState(
+            store,
+            [
+                'board',
+                'current',
+                'teams',
+                'selected',
+                'timer_state',
+                'quiz_save_status',
+                'last_quiz_save',
+            ],
+        ),
 
         no_team_selected() {
             return ! this.selected.team_id;
@@ -38,6 +49,17 @@ export default {
                 ! this.selected.quizzer_id &&
                 this.current.event.current
             ) ? true : false;
+        },
+
+        quiz_save_status_message() {
+            return 'Quiz save status: ' +
+                this.quiz_save_status.charAt(0).toUpperCase() +
+                this.quiz_save_status.slice(1) +
+                (
+                    ( this.last_quiz_save )
+                        ? "\nLast saved: " + this.last_quiz_save.toLocaleTimeString()
+                        : ''
+                );
         },
     },
 

@@ -52,4 +52,16 @@
     <button @click="reset_replace_query"    :disabled="replace_query_not_available">Replace Query</button>
     <button @click="delete_last"            :disabled="no_events_to_delete">Delete Last Event</button>
     <button @click="exit_quiz">Exit {{ quiz_complete ? 'Completed' : 'Incomplete' }} Quiz</button>
+
+    <div class="quiz_save_status" :title="quiz_save_status_message">
+        <span class="material-symbols-outlined">{{
+            ( quiz_save_status == 'pre-save'           ) ? 'cloud'        :
+            ( quiz_save_status == 'saved'              ) ? 'cloud_done'   :
+            ( quiz_save_status == 'pending'            ) ? 'cloud_sync'   :
+            ( quiz_save_status == 'unsaved'            ) ? 'cloud_off'    :
+            ( quiz_save_status == 'timestamp outdated' ) ? 'cloud_circle' :
+            ( quiz_save_status == 'unauthorized'       ) ? 'cloud_lock'   :
+            ( quiz_save_status == 'failed'             ) ? 'cloud_alert'  : 'cloud'
+        }}</span>
+    </div>
 </div>

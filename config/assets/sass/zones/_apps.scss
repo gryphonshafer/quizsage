@@ -466,6 +466,14 @@ div#quiz {
             }
         }
     }
+
+    div.quiz_control div.quiz_save_status {
+        display       : inline-block;
+        font-size     : 1.25rem;
+        vertical-align: bottom;
+        margin-left   : 0.125em;
+        cursor        : default;
+    }
 }
 
 div#drill {
