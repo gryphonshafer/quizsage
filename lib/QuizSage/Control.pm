@@ -6,6 +6,7 @@ use MIME::Base64 'encode_base64';
 use Mojo::JSON 'to_json';
 use Mojo::Util 'encode';
 use Omniframe::Util::File 'opath';
+use Omniframe::Util::Output 'dp';
 use QuizSage::Model::User;
 use YAML::XS 'Load';
 
@@ -17,6 +18,21 @@ sub startup ($self) {
     my $captcha_conf = conf->get('captcha');
     $captcha_conf->{ttf} = opath( $captcha_conf->{ttf} );
     $self->plugin( CaptchaPNG => $captcha_conf );
+
+    # CSRF logging customization
+    $self->csrf->{on_success} = sub { 1 };
+    $self->csrf->{on_failure} = sub ($c) {
+        $c->reply->exception(
+            'Access Forbidden: CSRF check failure' . ( dp( [ {
+                token   => $c->csrf->token,
+                session => $c->session( $c->csrf->token_name ),
+                param   => $c->param( $c->csrf->token_name ),
+                header  => $c->req->headers->header( $c->csrf->header ),
+            } ] ) )[0],
+            { status => 403 },
+        );
+        return 0;
+    };
 
     my $api_spec = {};
     opath( 'config/api', { no_check => 1 } )->list_tree->each( sub {
