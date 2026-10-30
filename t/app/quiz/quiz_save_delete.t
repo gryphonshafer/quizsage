@@ -29,7 +29,7 @@ mojo->get_ok('/quiz/42.json')
 
 mojo->post_ok( '/quiz/save/42', form => {@$csrf} )
     ->status_is(200)
-    ->json_is( '/quiz_data_saved', 0 );
+    ->json_is( '/quiz_data_saved', 'unauthorized' );
 
 $meet_id = 42;
 

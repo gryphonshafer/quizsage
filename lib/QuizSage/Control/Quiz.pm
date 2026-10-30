@@ -183,29 +183,52 @@ sub queries ($self) {
 }
 
 sub save ($self) {
-    my $success = 0;
-    my $quiz    = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
-    my $meet    = ( $quiz->data->{meet_id} )
+    my $quiz = QuizSage::Model::Quiz->new->load( $self->param('quiz_id') );
+    my $meet = ( $quiz->data->{meet_id} )
         ? QuizSage::Model::Meet->new->load( $quiz->data->{meet_id} )
         : undef;
 
+    my $result         = 'unsaved';
+    my $is_user_s_quiz = (
+        $quiz->data->{user_id} and
+        $quiz->data->{user_id} eq $self->stash('user')->id
+    ) ? 1 : 0;
+
     if (
-        $quiz->data->{user_id} and $quiz->data->{user_id} eq $self->stash('user')->id or
-        $quiz->data->{meet_id} and
-        $self->stash('user')->qm_auth($meet) and
-        $meet->is_alive
+        (
+            $is_user_s_quiz and
+            not $quiz->data->{meet_id}
+        ) or
+        (
+            $quiz->data->{meet_id} and
+            $meet and $meet->is_alive and
+            (
+                $is_user_s_quiz or
+                $self->stash('user')->qm_auth($meet)
+            )
+        )
     ) {
-        $quiz->save({ state => $self->req->json });
-        $success = 1;
+        my $json = $self->req->json;
+
+        if (
+            not $is_user_s_quiz or
+            not $quiz->data->{state} or
+            not $quiz->data->{state}{save_counter} or
+            $quiz->data->{state}{save_counter} < $json->{save_counter}
+        ) {
+            $quiz->save({ state => $json });
+            $result = 'saved';
+        }
+        else {
+            $result = 'misordered';
+        }
+    }
+    else {
+        $result = 'unauthorized';
     }
 
-    $self->info(
-        'Save quiz data ' .
-        ( ($success) ? 'success' : 'failure' ) .
-        ' for quiz ID: ' . $self->stash('quiz_id')
-    );
-
-    $self->render( json => { quiz_data_saved => $success } );
+    $self->info( 'Save quiz data result: ' . $result . '; for quiz ID: ' . $self->stash('quiz_id') );
+    $self->render( json => { quiz_data_saved => $result } );
 }
 
 sub delete ($self) {
