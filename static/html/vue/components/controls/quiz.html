@@ -55,13 +55,13 @@
 
     <div class="quiz_save_status" :title="quiz_save_status_message">
         <span class="material-symbols-outlined">{{
-            ( quiz_save_status == 'pre-save'           ) ? 'cloud'        :
-            ( quiz_save_status == 'saved'              ) ? 'cloud_done'   :
-            ( quiz_save_status == 'pending'            ) ? 'cloud_sync'   :
-            ( quiz_save_status == 'unsaved'            ) ? 'cloud_off'    :
-            ( quiz_save_status == 'timestamp outdated' ) ? 'cloud_circle' :
-            ( quiz_save_status == 'unauthorized'       ) ? 'cloud_lock'   :
-            ( quiz_save_status == 'failed'             ) ? 'cloud_alert'  : 'cloud'
+            ( quiz_save_status == 'pre-save'     ) ? 'cloud'        :
+            ( quiz_save_status == 'saved'        ) ? 'cloud_done'   :
+            ( quiz_save_status == 'pending'      ) ? 'cloud_sync'   :
+            ( quiz_save_status == 'unsaved'      ) ? 'cloud_off'    :
+            ( quiz_save_status == 'misordered'   ) ? 'cloud_circle' :
+            ( quiz_save_status == 'unauthorized' ) ? 'cloud_lock'   :
+            ( quiz_save_status == 'failed'       ) ? 'cloud_alert'  : 'cloud'
         }}</span>
     </div>
 </div>

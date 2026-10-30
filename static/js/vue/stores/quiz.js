@@ -73,6 +73,8 @@ function update_data(store) {
     store.eligible_teams = get_eligible_teams( quiz.state.teams );
 }
 
+let save_quiz_data_counter = 0;
+
 export default Pinia.defineStore( 'store', {
     state() {
         const exit_quiz_url = new URL(
@@ -282,8 +284,8 @@ export default Pinia.defineStore( 'store', {
                     method : 'POST',
                     body   : JSON.stringify( {
                         ...quiz.state,
-                        selected : this.selected,
-                        timestamp: now.getTime() + '.' + now.getMilliseconds(),
+                        selected    : this.selected,
+                        save_counter: ++save_quiz_data_counter,
                     } ),
                     signal : AbortSignal.timeout( 10 * 1000 ), // abort after waiting 10 seconds
                     headers: {

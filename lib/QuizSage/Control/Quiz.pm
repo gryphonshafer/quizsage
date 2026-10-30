@@ -213,14 +213,14 @@ sub save ($self) {
         if (
             not $is_user_s_quiz or
             not $quiz->data->{state} or
-            not $quiz->data->{state}{timestamp} or
-            $quiz->data->{state}{timestamp} < $json->{timestamp}
+            not $quiz->data->{state}{save_counter} or
+            $quiz->data->{state}{save_counter} < $json->{save_counter}
         ) {
             $quiz->save({ state => $json });
             $result = 'saved';
         }
         else {
-            $result = 'timestamp outdated';
+            $result = 'misordered';
         }
     }
     else {
