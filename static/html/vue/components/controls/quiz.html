@@ -54,7 +54,9 @@
     <button @click="exit_quiz">Exit {{ quiz_complete ? 'Completed' : 'Incomplete' }} Quiz</button>
 
     <div class="quiz_save_status" :title="quiz_save_status_message">
-        <span class="material-symbols-outlined">{{
+        <span class="material-symbols-outlined"
+            :style="( quiz_save_status == 'failed' ) ? 'color: red' : ''"
+        >{{
             ( quiz_save_status == 'pre-save'     ) ? 'cloud'        :
             ( quiz_save_status == 'saved'        ) ? 'cloud_done'   :
             ( quiz_save_status == 'pending'      ) ? 'cloud_sync'   :
